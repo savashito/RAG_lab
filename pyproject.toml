@@ -1,0 +1,23 @@
+[project]
+name = "rag-labs"
+version = "0.1.0"
+description = "Hands-on RAG tutorials, easiest to hardest, on Postgres + pgvector"
+requires-python = ">=3.12"
+dependencies = [
+    # DB access (sync psycopg3 — chosen for readable, top-to-bottom tutorials)
+    "psycopg[binary]>=3.2",
+    "pgvector>=0.3.6",
+    # config
+    "python-dotenv>=1.0",
+    # numerics
+    "numpy>=2.0",
+]
+
+[project.optional-dependencies]
+# Installed starting at Lab 01 (local embeddings — free, offline).
+embed = [
+    "sentence-transformers>=3.0",
+]
+
+[tool.uv]
+package = false
