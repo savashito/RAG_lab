@@ -66,8 +66,8 @@ def make_sentences(n: int, seed: int = 0) -> list[str]:
 
 
 # ── build: generate → embed → store → index ─────────────────────────────────────
-def build(n: int, m: int, ef_construction: int) -> None:
-    embedder = get_embedder("minilm")
+def build(n: int, m: int, ef_construction: int, model: str) -> None:
+    embedder = get_embedder(model)
     print(f"generating {n} sentences...")
     sentences = make_sentences(n)
     print(f"embedding with {embedder.name} ({embedder.dim}d)... (this is the slow part)")
@@ -141,8 +141,8 @@ def _total_ms(cur, k: int) -> float:
     return cur.fetchone()[0][0]["Execution Time"]
 
 
-def run(n_queries: int, k: int, ef_values: list[int]) -> None:
-    embedder = get_embedder("minilm")
+def run(n_queries: int, k: int, ef_values: list[int], model: str) -> None:
+    embedder = get_embedder(model)
     # Held-out queries: NEW sentences the index has never seen (seed differs).
     queries = make_sentences(n_queries, seed=999)
     qvecs = embedder.encode(queries)
@@ -195,18 +195,20 @@ def main() -> None:
     pb.add_argument("--n", type=int, default=5000)
     pb.add_argument("--m", type=int, default=16, help="HNSW: max edges per node")
     pb.add_argument("--ef-construction", type=int, default=64, help="HNSW: build-time search width")
+    pb.add_argument("--model", default="minilm", help="embedder: minilm (CPU) | tei (GPU) | mpnet | ...")
 
     pr = sub.add_parser("run", help="benchmark exact vs HNSW")
     pr.add_argument("--queries", type=int, default=100)
     pr.add_argument("--k", type=int, default=10)
     pr.add_argument("--ef", type=int, nargs="+", default=[10, 20, 40, 100, 200],
                     help="hnsw.ef_search values to sweep")
+    pr.add_argument("--model", default="minilm", help="must match what you built with")
 
     args = p.parse_args()
     if args.cmd == "build":
-        build(args.n, args.m, args.ef_construction)
+        build(args.n, args.m, args.ef_construction, args.model)
     else:
-        run(args.queries, args.k, args.ef)
+        run(args.queries, args.k, args.ef, args.model)
 
 
 if __name__ == "__main__":

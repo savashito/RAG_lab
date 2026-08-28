@@ -36,3 +36,7 @@ static/vendor/
 
 # ── Local preview/demo artifacts (generated) ──────────────────────────────────
 static/demo/
+
+# ── Ingestion lab: user PDFs and generated Markdown (do not commit) ──
+ingestion/pdfs/
+ingestion/out/

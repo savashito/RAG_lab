@@ -11,12 +11,24 @@ dependencies = [
     "python-dotenv>=1.0",
     # numerics
     "numpy>=2.0",
+    # proper sentence segmentation (Lab 03) — pure-Python, no model download
+    "pysbd>=0.3.4",
 ]
 
 [project.optional-dependencies]
 # Installed starting at Lab 01 (local embeddings — free, offline).
 embed = [
     "sentence-transformers>=3.0",
+]
+# Companion ingestion lab: PDF -> Markdown (+ optional MinIO upload).
+parse = [
+    "pymupdf4llm>=0.0.17",
+    "minio>=7.2",
+]
+# Didactic notebooks (Jupyter + plots).
+viz = [
+    "jupyterlab>=4.0",
+    "matplotlib>=3.8",
 ]
 
 [tool.uv]

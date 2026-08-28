@@ -18,6 +18,19 @@ uv run python 02_indexing/bench.py build --n 5000
 uv run python 02_indexing/bench.py run --queries 100 --k 10
 ```
 
+**Embed on CPU or GPU** — both `build` and `run` take `--model` (default `minilm`,
+laptop CPU). The `build` step is the embedding-heavy one, so the GPU pays off most
+at scale:
+
+```bash
+# large ingest via the rtx5090 TEI service (needs the :8085 tunnel)
+uv run python 02_indexing/bench.py build --n 50000 --model tei
+uv run python 02_indexing/bench.py run   --queries 100 --k 10 --model tei
+```
+> Use the **same `--model` for `run` as you built with** — otherwise the query
+> vectors live in a different space than the stored ones. (`minilm` and `tei` are
+> the same model, so those two are interchangeable.)
+
 Real output from a 5000-vector run (yours will differ slightly):
 
 ```

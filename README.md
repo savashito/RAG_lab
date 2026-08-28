@@ -57,6 +57,51 @@ The embedder is swappable (`shared/embedder.py`). Every lab takes `--model`:
 serves the same normalised MiniLM, vectors are interchangeable with local
 `minilm` — you can ingest with one and query with the other.
 
+### Managing the TEI service (on rtx5090)
+
+The service is a Docker container named `tei-embed`, started with
+`--restart unless-stopped` (so it comes back on reboot — unless you explicitly
+stop it). You manage it over SSH. Docker needs `sudo` there, and `sudo` needs a
+terminal to read your password — so use **`ssh -t`** (the `-t` allocates a TTY;
+without it you get `sudo: a terminal is required`). You'll be prompted for your
+sudo password each time.
+
+```bash
+ssh -t rtx5090 'sudo docker ps --filter name=tei-embed'     # is it running?
+```
+```bash
+ssh -t rtx5090 'sudo docker logs --tail 50 tei-embed'       # recent logs
+```
+```bash
+ssh -t rtx5090 'sudo docker stop tei-embed'                 # stop (stays stopped across reboots)
+```
+```bash
+ssh -t rtx5090 'sudo docker start tei-embed'                # start again
+```
+```bash
+ssh -t rtx5090 'sudo docker restart tei-embed'              # restart
+```
+
+Quick health check from your laptop — no sudo needed (just the `:8085` tunnel):
+```bash
+curl -s localhost:8085/info | python3 -m json.tool
+```
+
+**Optional: drop `sudo` for good.** Add yourself to the `docker` group once, then
+log out of *all* sessions on that box and back in:
+```bash
+ssh -t rtx5090 'sudo usermod -aG docker $USER'
+```
+After a fresh login, `ssh rtx5090 'docker ps'` works with **no `sudo` and no
+`-t`**. (Until that full re-login, keep using `ssh -t ... sudo`.)
+
+**To change the served model** (e.g. try BGE), recreate the container:
+```bash
+ssh -t rtx5090 'sudo docker rm -f tei-embed && sudo docker run -d --name tei-embed --restart unless-stopped --gpus all -p 127.0.0.1:8085:80 -v /home/ai-server/tei-data:/data ghcr.io/huggingface/text-embeddings-inference:120-1.9 --model-id BAAI/bge-small-en-v1.5'
+```
+> Changing the model changes the vectors (and maybe the dimension), so anything
+> you embedded with the old model must be re-ingested.
+
 ## Roadmap
 
 | Lab | Title | You learn | Storage |
@@ -64,12 +109,25 @@ serves the same normalised MiniLM, vectors are interchangeable with local
 | **00** | Setup & sanity | Connect end-to-end; nearest-neighbour in raw SQL (`<=>`) | ✅ built |
 | **01** | Naive RAG | chunk → embed → store → retrieve | ✅ built |
 | **02** | Indexing & scale | HNSW index, why brute-force breaks, recall vs speed | ✅ built |
-| **03** | Chunking | fixed vs recursive vs semantic; measure the difference | pgvector |
-| **04** | Hybrid retrieval | BM25 (Postgres full-text) + dense, fused with RRF | pgvector |
-| **05** | Reranking | cross-encoder / late-interaction rerank | pgvector |
-| **06** | Evaluation | faithfulness, context recall — so every later change is *measured* | pgvector |
-| **07** | Corrective / adaptive RAG | grade retrieval, re-retrieve when weak | pgvector |
-| **08+** | Graph / agentic / multimodal | the frontier | — |
+| 📎 *companion* | [Ingestion: PDF → Markdown](ingestion/) | turn your own PDFs into a corpus the labs can retrieve over | ✅ built |
+| **03** | Chunking | fixed vs recursive vs semantic; measure the difference | ✅ built |
+| **04** | Hybrid retrieval | BM25 + dense, fused with RRF; exact-vs-semantic queries | ✅ built |
+| **05** | Reranking | cross-encoder / late-interaction rerank | 📄 planned |
+| **06** | Evaluation | faithfulness, context recall — the keystone; every later change is *measured* | 📄 planned |
+| **07** | Adaptive / Corrective RAG | grade retrieval, re-retrieve when weak, know when to abstain | 📄 planned |
+| **08** | GraphRAG | knowledge-graph retrieval for multi-hop / global questions | 📄 planned |
+| **09** | Agentic RAG | the model plans its own multi-step, multi-tool retrieval | 📄 planned |
+| **10** | Multimodal RAG | retrieve over page images / tables; VLM answers (capstone) | 📄 planned |
+
+Each planned lab already has a README with concepts and paper references — read
+ahead. "✅ built" labs have runnable code.
+
+## Foundational reading
+
+- Lewis et al. 2020, *Retrieval-Augmented Generation for Knowledge-Intensive NLP* (the original RAG paper) — [arXiv:2005.11401](https://arxiv.org/abs/2005.11401)
+- Gao et al. 2023, *Retrieval-Augmented Generation for LLMs: A Survey* — [arXiv:2312.10997](https://arxiv.org/abs/2312.10997)
+- Malkov & Yashunin 2016, *HNSW* (the index behind Lab 02) — [arXiv:1603.09320](https://arxiv.org/abs/1603.09320)
+- pgvector — [github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)
 
 ## Isolation & safety
 
