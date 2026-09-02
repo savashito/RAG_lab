@@ -16,7 +16,12 @@ so the only variable is where the text gets cut:
 
 - **Fixed-size** (`chunkers.fixed`) at three sizes — the Lab 01 baseline.
 - **Recursive** (`chunkers.recursive`) — pack whole sentences up to a size budget.
-- **Sentence** (`chunkers.sentence`) — N sentences per chunk, never cut mid-sentence.
+- **Sentence** (`chunkers.sentence`) — N sentences per chunk, using a *naive*
+  regex splitter (breaks on any `.`/`!`/`?` + space).
+- **Sentence-pysbd** (`chunkers.sentence_pysbd`) — same grouping, but a **proper
+  segmenter** (pysbd) that doesn't break on `Dr.`, `U.S.`, `e.g.`, or decimals.
+  This is the real-pipeline upgrade over the naive splitter (spaCy/nltk do the
+  same job; pysbd needs no model download).
 - **Semantic** (`chunkers.semantic`) — start a new chunk where adjacent sentences
   become dissimilar (a topic shift), using the pipeline's embedder.
 
@@ -34,30 +39,43 @@ uv run python 03_chunking/compare.py                 # local CPU embedder
 uv run python 03_chunking/compare.py --model tei     # GPU embedder (identical results)
 ```
 
+### Or run it as a notebook (recommended for exploring)
+A guided, visual version lives in [`lab03.ipynb`](lab03.ipynb) — it imports the
+same modules (no duplicated logic), shows the naive-vs-pysbd segmentation
+side-by-side, and **plots** the hit@k comparison.
+```bash
+uv sync --all-extras            # installs Jupyter + matplotlib (the `viz` extra)
+uv run jupyter lab              # then open 03_chunking/lab03.ipynb (tunnel must be up)
+```
+
 ## Reading the results
 A sample run (MiniLM):
 
 ```
 strategy       #chunks avg_words   hit@1   hit@3   hit@5    MRR
-fixed-20/5          25      18.4    0.50    0.75    0.83   0.62
-fixed-40/10         12      36.2    0.83    1.00    1.00   0.90
-fixed-80/20          7      59.1    1.00    1.00    1.00   1.00
-recursive-40        12      29.5    0.83    1.00    1.00   0.90
-sentence-2          12      29.5    0.83    1.00    1.00   0.90
-semantic-0.5        18      19.7    0.67    0.92    1.00   0.79
+fixed-20/5          28      18.2    0.60    0.80    0.87   0.69
+fixed-40/10         14      34.6    0.87    1.00    1.00   0.92
+fixed-80/20          8      56.9    1.00    1.00    1.00   1.00
+recursive-40        14      28.2    0.87    1.00    1.00   0.92
+sentence-2          16      24.7    0.80    0.93    0.93   0.86
+sentence-pysbd      15      26.3    0.87    1.00    1.00   0.92
+semantic-0.5        26      15.2    0.60    0.80    0.87   0.70
 ```
 
 What to notice:
-- **Too-small chunks hurt** (`fixed-20`: hit@1 0.50). A 20-word window often
+- **Proper segmentation beats naive** (`sentence-pysbd` 0.87 vs `sentence-2` 0.80
+  hit@1). The naive splitter breaks after `Dr.` and `approx.`, stranding
+  `Dr. Ingrid Halvorsen` and `approx. every 6 months` across a chunk boundary;
+  pysbd keeps them whole. This is *the* reason real pipelines use spaCy/nltk/pysbd.
+- **Too-small chunks hurt** (`fixed-20`: hit@1 0.60). A 20-word window often
   splits the answer phrase or strands it from its context.
-- **`recursive`/`sentence` match `fixed-40` using fewer words** — respecting
-  sentence boundaries is more *efficient* per token stored.
+- **`recursive`/`sentence-pysbd` match `fixed-40` using fewer words** — respecting
+  real sentence boundaries is more *efficient* per token stored.
 - **⚠️ The tiny-corpus trap:** `fixed-80` looks "perfect" only because each doc
-  here is ~90 words, so an 80-word chunk swallows the whole document — retrieval
+  here is short, so an 80-word chunk swallows the whole document — retrieval
   can't miss. That does **not** generalize: at real scale, oversized chunks blur
   multiple ideas into one vector and *lower* precision. This is exactly why we
-  measure, and why Lab 06 builds a proper eval set. Try shrinking the corpus docs
-  or lengthening them to watch the winner change.
+  measure, and why Lab 06 builds a proper eval set.
 
 ## Key concepts
 | Term | Meaning |
@@ -81,7 +99,7 @@ What to notice:
 - LangChain docs, *Text splitters* — [python.langchain.com](https://python.langchain.com/docs/concepts/text_splitters/)
 
 ### Recent (2025–2026)
-- Qu & Ding 2024, *Is Semantic Chunking Worth the Computational Cost?* (measures it — often not) — [arXiv:2410.13070](https://arxiv.org/abs/2410.13070)
+- Qu et al. 2024, *Is Semantic Chunking Worth the Computational Cost?* (measures it — often not) — [arXiv:2410.13070](https://arxiv.org/abs/2410.13070)
 - **Hierarchical / parent-child chunking** (small chunks to *find*, larger parents to *read*) is the dominant 2025–26 production pattern; late chunking's edge shrinks as embedding models gain long context.
 
 ## Next

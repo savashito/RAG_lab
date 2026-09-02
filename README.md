@@ -43,19 +43,37 @@ uv run python 00_setup/check.py
 > Prefer to run *on the server* instead of tunnelling? Set `RAG_DB_HOST=localhost`
 > and `RAG_DB_PORT=5432` in `.env`, and skip the tunnel.
 
+### Notebooks (didactic)
+Each built lab ships a guided notebook (`labNN.ipynb`) that imports the lab's
+own modules and adds narrative + **plots** — no logic duplicated, so notebook and
+CLI never drift. Built so far: `00_setup/lab00`, `01_naive_rag/lab01`,
+`02_indexing/lab02`, `03_chunking/lab03`, `04_hybrid_retrieval/lab04`.
+```bash
+uv sync --all-extras     # includes the `viz` extra (Jupyter + matplotlib)
+uv run jupyter lab       # keep ./tunnel.sh running in another terminal
+```
+
 ## Embedding: laptop CPU vs GPU service
 
 The embedder is swappable (`shared/embedder.py`). Every lab takes `--model`:
 
 | `--model` | Where it runs | Notes |
 |-----------|---------------|-------|
-| `minilm` (default) | your laptop CPU | all-MiniLM-L6-v2, 384d. No GPU needed. |
-| `mpnet`, `bge-small` | your laptop CPU | other local models to compare. |
-| **`tei`** | **rtx5090 GPU** | same MiniLM via TEI, ~10× faster. Needs the `:8085` tunnel. Drop-in with `minilm` (identical vectors). |
+| **`tei`** (default) | **rtx5090 GPU** | whatever model TEI serves. Needs the `:8085` tunnel. **Nothing downloads to your laptop.** |
+| `minilm`, `mpnet`, `bge-small`, `bge-base` | your laptop CPU | local models — **blocked by default** (see below). |
 
-`tei` reads `TEI_URL` from `.env` (default `http://localhost:8085`). Because it
-serves the same normalised MiniLM, vectors are interchangeable with local
-`minilm` — you can ingest with one and query with the other.
+**GPU-only by default.** The labs default to `tei` so embedding happens on the
+server. Local (`sentence-transformers`) models are **blocked from downloading** —
+a data-plan/disk safeguard — so `--model minilm` errors unless you opt in with
+`RAG_ALLOW_DOWNLOAD=1` (a one-time ~100–900 MB download to *this* machine):
+
+```bash
+RAG_ALLOW_DOWNLOAD=1 uv run python 01_naive_rag/naive_rag.py ingest --model minilm
+```
+
+`tei` reads `TEI_URL` from `.env` (default `http://localhost:8085`). Whatever
+model TEI serves defines the vectors — swap models with the docker command below,
+and **re-ingest** any lab afterwards (the vector dimension may change).
 
 ### Managing the TEI service (on rtx5090)
 

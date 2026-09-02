@@ -1,6 +1,39 @@
 # Lab 06 — Evaluation
 
-> **Status:** planned. The keystone lab — everything after this is measured.
+> **Status:** part 1 built (retrieval metrics + embedder bake-off on the real RAM
+> papers). Generation metrics (RAGAS-style) still to come.
+
+## Built: the embedder bake-off (retrieval metrics on real data)
+Reuses the ingestion pipeline (`ingestion/ram_rag.py`) + a **hand-labelled eval
+set** (`eval_set.py`: 15 questions → the paper that answers each) to score any
+embedder with real metrics (`metrics.py`: recall@k, MRR, nDCG). One model at a
+time — swap what TEI serves, score, repeat, then `report`.
+
+Everything embeds on the GPU (`--model tei`); **nothing downloads to your laptop.**
+
+```bash
+# A) point TEI at a candidate (downloads on rtx5090), then tunnel up
+ssh -t rtx5090 'sudo docker rm -f tei-embed && sudo docker run -d --name tei-embed \
+  --restart unless-stopped --gpus all -p 127.0.0.1:8085:80 -v /home/ai-server/tei-data:/data \
+  ghcr.io/huggingface/text-embeddings-inference:120-1.9 --model-id Qwen/Qwen3-Embedding-0.6B'
+
+# B) score it
+uv run python 06_evaluation/bakeoff.py run --k 5
+
+# C) swap to the next model and score again
+ssh -t rtx5090 'sudo docker rm -f tei-embed && sudo docker run -d --name tei-embed \
+  --restart unless-stopped --gpus all -p 127.0.0.1:8085:80 -v /home/ai-server/tei-data:/data \
+  ghcr.io/huggingface/text-embeddings-inference:120-1.9 --model-id BAAI/bge-m3'
+uv run python 06_evaluation/bakeoff.py run --k 5
+
+# D) combined table (sorted by MRR)
+uv run python 06_evaluation/bakeoff.py report
+```
+
+Candidates verified TEI-compatible (all self-hosted, 1024-dim): `Qwen/Qwen3-Embedding-0.6B`
+(32K ctx), `BAAI/bge-m3` (8K ctx, multilingual). Qwen3 gets an instruction prefix
+on queries automatically. Note the vector dim changes to 1024, so each `run`
+re-ingests — that's handled.
 
 ## The problem
 Up to now we've eyeballed results. That doesn't scale and it lies. To improve a
@@ -44,7 +77,7 @@ better on the three queries you happened to try.
 
 ### Recent (2025–2026)
 - 2025, *Benchmarking LLM Faithfulness in RAG with Evolving Leaderboards* (FaithJudge, EMNLP 2025) — [arXiv:2505.04847](https://arxiv.org/abs/2505.04847)
-- *FaithBench* — hallucination benchmark for modern-LLM summarization (NAACL 2025).
+- Bao et al. 2025, *FaithBench: A Diverse Hallucination Benchmark for Summarization* (NAACL 2025) — [ACL Anthology](https://aclanthology.org/2025.naacl-short.38/)
 - *LiveRAG 2025 Challenge* — live single- and multi-hop QA over DataMorgana pairs.
 
 ## Next

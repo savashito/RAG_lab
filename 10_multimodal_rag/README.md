@@ -39,8 +39,8 @@ document and reasons over images alongside text.
 - *Scaling Beyond Context: Survey of Multimodal RAG for Document Understanding* — [arXiv:2510.15253](https://arxiv.org/abs/2510.15253)
 
 ### Recent (2025–2026)
-- **ColQwen2 / 2.5 / 3** — the ColPali recipe on Qwen-VL backbones; currently top the ViDoRe V2 leaderboard (stronger, multilingual).
-- *MetaEmbed* (ICLR 2026), *SV-RAG* (ICLR 2025), *URaG* (AAAI 2026) — recent visual-document RAG advances.
+- **ColQwen2 / 2.5 / 3** — the ColPali recipe on Qwen-VL backbones; top the ViDoRe V2 leaderboard (stronger, multilingual). Built on the ColPali paper above.
+- *SV-RAG*, *URaG*, *MetaEmbed* — 2025–26 visual-document RAG (dual-LoRA retrieval+QA; early-exit page pruning; nested multi-vector embeddings). *(venues unverified — confirm before citing formally)*
 - *Multimodal RAG Survey* (curated, maintained) — [github.com/llm-lab-org/multimodal-rag-survey](https://github.com/llm-lab-org/multimodal-rag-survey)
 
 ## You made it

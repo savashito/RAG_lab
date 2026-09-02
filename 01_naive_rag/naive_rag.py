@@ -98,10 +98,10 @@ def ingest(model: str) -> None:
 
 
 # ── 3. Search: embed query → nearest neighbours ────────────────────────────────
-def ask(question: str, model: str, k: int) -> None:
-    embedder = get_embedder(model)
+def retrieve(embedder, question: str, k: int) -> list[tuple]:
+    """Embed the query and return the k nearest chunks as (source, idx, text, dist).
+    Importable so notebooks/other labs can reuse the exact retrieval step."""
     qvec = embedder.encode([question])[0]
-
     with connect() as conn, conn.cursor() as cur:
         # `<=>` = cosine distance. ORDER BY it, take the k closest. That's kNN.
         cur.execute(
@@ -113,8 +113,11 @@ def ask(question: str, model: str, k: int) -> None:
             """,
             (qvec, k),
         )
-        results = cur.fetchall()
+        return cur.fetchall()
 
+
+def ask(question: str, model: str, k: int) -> None:
+    results = retrieve(get_embedder(model), question, k)
     print(f"\nQ: {question}\n")
     for rank, (src, idx, text, dist) in enumerate(results, 1):
         snippet = text if len(text) < 240 else text[:237] + "..."
@@ -128,11 +131,11 @@ def main() -> None:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     pi = sub.add_parser("ingest", help="chunk + embed + store the corpus")
-    pi.add_argument("--model", default="minilm")
+    pi.add_argument("--model", default="tei")
 
     pa = sub.add_parser("ask", help="retrieve the top-k chunks for a question")
     pa.add_argument("question")
-    pa.add_argument("--model", default="minilm")
+    pa.add_argument("--model", default="tei")
     pa.add_argument("--k", type=int, default=3)
 
     args = p.parse_args()

@@ -41,9 +41,9 @@ gap to GraphRAG on multi-hop tasks — by iterating rather than pre-structuring.
 - *Do We Still Need GraphRAG?* (agentic vs graph benchmark) — [arXiv:2604.09666](https://arxiv.org/abs/2604.09666)
 
 ### Recent (2025–2026)
-- *Search-R1* — LLM search agents trained with RL to learn *when* and *what* to retrieve (2025).
+- 2025, *Search-R1* (LLM search agents trained with RL to learn *when* and *what* to retrieve) — [arXiv:2503.09516](https://arxiv.org/abs/2503.09516)
 - 2026, *GRASP: Graph Agentic Search over Propositions* (multi-hop QA) — [arXiv:2605.16598](https://arxiv.org/abs/2605.16598)
-- *RAGCap-Bench* — benchmarking the capabilities agentic RAG systems actually need — [arXiv:2510.13910](https://arxiv.org/abs/2510.13910)
+- 2025, *RAGCap-Bench* (the capabilities agentic RAG systems actually need) — [arXiv:2510.13910](https://arxiv.org/abs/2510.13910)
 
 ## Next
 **Lab 10 — Multimodal RAG.** Retrieve over images, tables, and document pages.

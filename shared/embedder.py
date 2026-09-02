@@ -18,6 +18,15 @@ import urllib.request
 
 import numpy as np
 
+# ── Download guard (data-plan / disk safety) ────────────────────────────────────
+# A LOCAL embedder (sentence-transformers) downloads model weights to THIS machine
+# — hundreds of MB, easy to trigger by accident on a metered connection. Prefer
+# `--model tei`, which embeds on the GPU server (downloads happen there, not here).
+# Local downloads are blocked unless you explicitly opt in with RAG_ALLOW_DOWNLOAD=1.
+if os.environ.get("RAG_ALLOW_DOWNLOAD") != "1":
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+
 
 class Embedder:
     """Minimal interface every embedder implements."""
@@ -36,7 +45,15 @@ class SentenceTransformerEmbedder(Embedder):
         from sentence_transformers import SentenceTransformer
 
         self.name = model_name
-        self._model = SentenceTransformer(model_name)
+        try:
+            self._model = SentenceTransformer(model_name)
+        except Exception as e:  # usually: not cached + offline guard active
+            raise RuntimeError(
+                f"Local model '{model_name}' isn't cached and downloads are blocked "
+                f"(RAG_ALLOW_DOWNLOAD != 1). Use `--model tei` to embed on the GPU "
+                f"server (nothing downloads to this machine), or set "
+                f"RAG_ALLOW_DOWNLOAD=1 to permit a one-time local download."
+            ) from e
         # method was renamed in sentence-transformers 6.0; support both
         get_dim = getattr(
             self._model, "get_embedding_dimension", None
@@ -92,9 +109,10 @@ class RemoteTEIEmbedder(Embedder):
 # Short aliases so labs/CLI can say "minilm" instead of the full HF path.
 # Add more here as you explore — that's the experiment.
 ALIASES = {
-    "minilm": "sentence-transformers/all-MiniLM-L6-v2",   # 384d — default (local CPU)
+    "minilm": "sentence-transformers/all-MiniLM-L6-v2",   # 384d, 256 tok — default
     "mpnet": "sentence-transformers/all-mpnet-base-v2",   # 768d — stronger, slower
     "bge-small": "BAAI/bge-small-en-v1.5",                # 384d — strong small model
+    "bge-base": "BAAI/bge-base-en-v1.5",                  # 768d, 512 tok — stronger retrieval
 }
 
 

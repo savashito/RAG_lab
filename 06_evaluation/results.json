@@ -1,0 +1,12 @@
+{
+  "tei:Qwen/Qwen3-Embedding-0.6B": {
+    "recall@1": 0.8666666666666667,
+    "recall@3": 1.0,
+    "recall@5": 1.0,
+    "mrr": 0.9222222222222223,
+    "ndcg@5": 0.9420619835714306,
+    "model": "tei:Qwen/Qwen3-Embedding-0.6B",
+    "dim": 1024,
+    "n_chunks": 457
+  }
+}

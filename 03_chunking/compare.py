@@ -81,17 +81,13 @@ def build(embedder) -> None:
         conn.commit()
 
 
-def evaluate(embedder) -> None:
+def collect_metrics(embedder) -> list[dict]:
+    """Score every strategy and RETURN the numbers (so notebooks can plot them)."""
     qvecs = embedder.encode([q for q, _ in QUESTIONS])
-
+    nq = len(QUESTIONS)
+    rows: list[dict] = []
     with connect() as conn, conn.cursor() as cur:
-        names = [n for n, _ in strategies(embedder)]
-
-        print(f"\n{'strategy':<14}{'#chunks':>8}{'avg_words':>10}"
-              f"{'hit@1':>8}{'hit@3':>8}{'hit@5':>8}{'MRR':>7}")
-        print("-" * 63)
-
-        for name in names:
+        for name, _ in strategies(embedder):
             cur.execute(f"SELECT count(*), avg(array_length(string_to_array(text,' '),1)) "
                         f"FROM {TABLE} WHERE strategy=%s", (name,))
             n_chunks, avg_words = cur.fetchone()
@@ -112,18 +108,29 @@ def evaluate(embedder) -> None:
                     for k in (1, 3, 5):
                         if rank <= k:
                             hits[k] += 1
+            rows.append({
+                "strategy": name, "n_chunks": n_chunks, "avg_words": float(avg_words),
+                "hit@1": hits[1] / nq, "hit@3": hits[3] / nq, "hit@5": hits[5] / nq,
+                "mrr": rr_sum / nq,
+            })
+    return rows
 
-            nq = len(QUESTIONS)
-            print(f"{name:<14}{n_chunks:>8}{float(avg_words):>10.1f}"
-                  f"{hits[1]/nq:>8.2f}{hits[3]/nq:>8.2f}{hits[5]/nq:>8.2f}{rr_sum/nq:>7.2f}")
 
+def evaluate(embedder) -> None:
+    rows = collect_metrics(embedder)
+    print(f"\n{'strategy':<14}{'#chunks':>8}{'avg_words':>10}"
+          f"{'hit@1':>8}{'hit@3':>8}{'hit@5':>8}{'MRR':>7}")
+    print("-" * 63)
+    for r in rows:
+        print(f"{r['strategy']:<14}{r['n_chunks']:>8}{r['avg_words']:>10.1f}"
+              f"{r['hit@1']:>8.2f}{r['hit@3']:>8.2f}{r['hit@5']:>8.2f}{r['mrr']:>7.2f}")
     print("\nSame corpus, same questions, same embedder — only the chunking changed.")
     print("Higher hit@k / MRR = the answer landed in retrievable chunks more often.")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Lab 03 — compare chunking strategies")
-    ap.add_argument("--model", default="minilm", help="minilm (CPU) | tei (GPU) | mpnet | ...")
+    ap.add_argument("--model", default="tei", help="minilm (CPU) | tei (GPU) | mpnet | ...")
     args = ap.parse_args()
 
     embedder = get_embedder(args.model)

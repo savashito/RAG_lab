@@ -41,7 +41,7 @@ several points of accuracy for little extra latency (you only rerank ~50 items).
 - Faysse et al. 2024, *ColPali* (late interaction over document images) — [arXiv:2407.01449](https://arxiv.org/abs/2407.01449)
 
 ### Recent (2025–2026)
-- Sun et al. 2023, *RankGPT* (listwise reranking with LLMs — the line the below build on) — [arXiv:2304.09542](https://arxiv.org/abs/2304.09542)
+- Sun et al. 2023, *Is ChatGPT Good at Search?* (a.k.a. **RankGPT** — listwise reranking with LLMs, the line the below build on) — [arXiv:2304.09542](https://arxiv.org/abs/2304.09542)
 - 2025, *InsertRank* (inject the BM25 score into listwise LLM reranking) — [arXiv:2506.14086](https://arxiv.org/abs/2506.14086)
 - 2025, *How Good are LLM-based Rerankers? An Empirical Analysis* — [arXiv:2508.16757](https://arxiv.org/abs/2508.16757)
 - 2025, *GroupRank* (efficient groupwise passage reranking) — [arXiv:2511.11653](https://arxiv.org/abs/2511.11653)

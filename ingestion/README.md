@@ -54,6 +54,28 @@ Convert **once, ahead of time**; store both the original PDF and the `.md` in
 MinIO so it's reproducible and inspectable. Then any lab can chunk the `.md` and
 retrieve over it — e.g. drop the `.md` files into a lab's `corpus/` folder.
 
+## Experiment: RAG on real papers (Root Apical Meristem)
+
+`ram_rag.py` runs the full pipeline over a real corpus (10 plant-biology PDFs +
+20 research questions from a `.docx`) and measures two fixes with an ablation:
+
+```bash
+uv run python ingestion/ram_rag.py compare        # A/B/C ablation
+uv run python ingestion/ram_rag.py askall --model bge-small --k 3
+```
+
+| config | #chunks | avg top-1 dist | ref-noise@3 |
+|---|---|---|---|
+| minilm (raw) | 653 | 0.420 | **15%** |
+| minilm + strip refs | 392 | 0.423 | **0%** |
+| bge-small + strip refs | 392 | **0.199** | **0%** |
+
+**Findings:** stripping bibliographies removed ~40% of chunks (all citation
+noise) and killed reference-noise (15%→0%); a retrieval-tuned embedder
+(`bge-small`, 512-token window) then tightened matches (dist 0.42→0.20). Coverage
+gaps stay honest — *Casparian strip* questions retrieve weakly because no paper
+covers it. Full walkthrough + plots: [`ram_experiment.ipynb`](ram_experiment.ipynb).
+
 ## Concepts
 | Term | Meaning |
 |------|---------|

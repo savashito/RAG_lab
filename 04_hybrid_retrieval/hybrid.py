@@ -111,21 +111,17 @@ def score_group(rankings: dict[str, list[str]], group: str):
     return hit1 / n, hit3 / n, rr / n
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description="Lab 04 — hybrid retrieval")
-    ap.add_argument("--model", default="minilm")
-    ap.add_argument("--rrf-k", type=int, default=60)
-    ap.add_argument("--show", action="store_true", help="print per-query top-3 for each retriever")
-    args = ap.parse_args()
-
+def evaluate_all(embedder, rrf_k: int = 60):
+    """Build/store the corpus, rank every query with bm25/dense/hybrid, and return
+    (retrievers, rows):
+      retrievers = {name: {query: [ranked sources]}}
+      rows       = [{retriever, group, hit@1, hit@3, mrr}]  (for tables/plots)
+    Importable so notebooks reuse the exact same pipeline.
+    """
     docs = load_docs()
     sources = [s for s, _ in docs]
     texts = [t for _, t in docs]
-
-    embedder = get_embedder(args.model)
-    print(f"embedder: {embedder.name} ({embedder.dim}d), {len(docs)} docs\n")
     vecs = embedder.encode(texts)
-
     with connect() as conn, conn.cursor() as cur:
         cur.execute(f"DROP TABLE IF EXISTS {TABLE}")
         cur.execute(f"CREATE TABLE {TABLE} (source text, text text, embedding vector({embedder.dim}))")
@@ -137,8 +133,6 @@ def main() -> None:
 
         bm25 = BM25([tokenize(t) for t in texts])
         qvecs = embedder.encode([q for q, _, _ in QUERIES])
-
-        # per-retriever ranking for every query
         dense_r: dict[str, list[str]] = {}
         bm25_r: dict[str, list[str]] = {}
         hybrid_r: dict[str, list[str]] = {}
@@ -149,10 +143,29 @@ def main() -> None:
             )
             dense_r[q] = [r[0] for r in cur.fetchall()]
             bm25_r[q] = rank_by_score(sources, bm25.scores(tokenize(q)))
-            hybrid_r[q] = rrf([dense_r[q], bm25_r[q]], k=args.rrf_k)
+            hybrid_r[q] = rrf([dense_r[q], bm25_r[q]], k=rrf_k)
 
-    # ── results table ────────────────────────────────────────────────────────────
     retrievers = {"bm25": bm25_r, "dense": dense_r, "hybrid": hybrid_r}
+    rows = []
+    for name, rk in retrievers.items():
+        for group in ("exact", "semantic"):
+            h1, h3, mrr = score_group(rk, group)
+            rows.append({"retriever": name, "group": group,
+                         "hit@1": h1, "hit@3": h3, "mrr": mrr})
+    return retrievers, rows
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Lab 04 — hybrid retrieval")
+    ap.add_argument("--model", default="tei")
+    ap.add_argument("--rrf-k", type=int, default=60)
+    ap.add_argument("--show", action="store_true", help="print per-query top-3 for each retriever")
+    args = ap.parse_args()
+
+    embedder = get_embedder(args.model)
+    print(f"embedder: {embedder.name} ({embedder.dim}d), {len(load_docs())} docs\n")
+    retrievers, _ = evaluate_all(embedder, rrf_k=args.rrf_k)
+
     print(f"{'':<9}| {'exact-token queries':^22} | {'semantic queries':^22} |")
     print(f"{'retriever':<9}| {'hit@1':>6}{'hit@3':>7}{'MRR':>7} | {'hit@1':>6}{'hit@3':>7}{'MRR':>7} |")
     print("-" * 56)
@@ -168,9 +181,8 @@ def main() -> None:
         print("\n── per-query top-3 ──")
         for q, tgt, g in QUERIES:
             print(f"\n[{g}] {q}\n   target: {tgt}")
-            print(f"   bm25  : {bm25_r[q][:3]}")
-            print(f"   dense : {dense_r[q][:3]}")
-            print(f"   hybrid: {hybrid_r[q][:3]}")
+            for name, rk in retrievers.items():
+                print(f"   {name:<6}: {rk[q][:3]}")
 
 
 if __name__ == "__main__":

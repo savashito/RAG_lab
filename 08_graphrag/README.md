@@ -41,8 +41,8 @@ structure so the system can *traverse* instead of just match.
 
 ### Recent (2025–2026)
 - 2025, *Think-on-Graph 3.0* (adaptive multi-agent reasoning over heterogeneous graphs) — [arXiv:2509.21710](https://arxiv.org/abs/2509.21710)
-- *Graph-R1* — agentic GraphRAG trained end-to-end with reinforcement learning (2025).
-- *GFM-RAG* — a graph foundation model for multi-hop reasoning (2025).
+- 2025, *Graph-R1* (agentic GraphRAG trained end-to-end with reinforcement learning) — [arXiv:2507.21892](https://arxiv.org/abs/2507.21892)
+- 2025, *GraphRAG-R1* (process-constrained RL for graph RAG) — [arXiv:2507.23581](https://arxiv.org/abs/2507.23581)
 - *A Survey of Agentic GraphRAG* (2026) — the shift from graph retrieval to graph-native agents.
 
 ## Next
