@@ -1,1 +1,0 @@
-The pressure sensor operates at 3.5 volts and must not exceed 5.0 volts. Dr. Ingrid Halvorsen, Ph.D., approved the design in the U.S. lab. Calibrate it approx. every 6 months, e.g. after any firmware update. The measured tolerance is 0.2 units.

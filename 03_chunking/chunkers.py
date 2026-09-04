@@ -128,3 +128,44 @@ def semantic(text: str, embedder, threshold: float = 0.5) -> list[str]:
             cur.append(sents[i])
     chunks.append(" ".join(cur))
     return chunks
+
+
+# ── 5. By-article (structure-aware, for legal codes) ────────────────────────────
+# Start of an article at the beginning of a line, tolerating the Markdown markup
+# (#, *, _, >, <u>) left over from the PDF → Markdown conversion.
+_ARTICLE_START = re.compile(r"(?m)^[\s#*_>]*(?:<u>)?\**Art[íi]culo\s+\d+\s*[oº]?", re.I)
+
+
+def article_spans(text: str) -> list[str]:
+    """El texto de cada artículo (de un 'Artículo N' al siguiente), para analizar
+    su tamaño. Excluye el preámbulo anterior al primer artículo; lista vacía si el
+    documento no tiene marcas de artículo."""
+    starts = [m.start() for m in _ARTICLE_START.finditer(text)]
+    bounds = starts + [len(text)]
+    return [text[bounds[i] : bounds[i + 1]] for i in range(len(starts))]
+
+
+def by_article(text: str, max_words: int = 250, overlap: int = 25) -> list[str]:
+    """
+    Cut on 'Artículo N' boundaries so each chunk is ONE article — the unit people
+    actually ask a legal code about — instead of a blind word window that slices
+    an article in half. Articles longer than `max_words` are sub-split with
+    `fixed`; prose with no article markers (e.g. a doctrinal book) falls back to a
+    single `fixed` pass over the whole text, so it's safe on any document.
+    """
+    starts = [m.start() for m in _ARTICLE_START.finditer(text)]
+    if not starts:
+        return fixed(text, size=max_words, overlap=overlap)
+    bounds = starts + [len(text)]
+    blocks = ([text[: starts[0]]] if starts[0] > 0 else [])  # preamble before art. 1
+    blocks += [text[bounds[i] : bounds[i + 1]] for i in range(len(starts))]
+    chunks: list[str] = []
+    for block in blocks:
+        block = block.strip()
+        if not block:
+            continue
+        if len(block.split()) <= max_words:
+            chunks.append(block)
+        else:
+            chunks.extend(fixed(block, size=max_words, overlap=overlap))
+    return chunks

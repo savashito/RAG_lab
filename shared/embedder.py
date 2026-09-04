@@ -74,7 +74,7 @@ class SentenceTransformerEmbedder(Embedder):
 class RemoteTEIEmbedder(Embedder):
     """
     Calls a Hugging Face Text Embeddings Inference (TEI) server running on the
-    GPU box (rtx5090), instead of embedding locally on the laptop CPU.
+    GPU box (rtx5090)
 
     Same interface as the local embedder, so it's a drop-in: labs pick it with
     `--model tei`. TEI serves the *same* all-MiniLM-L6-v2 with L2 normalisation,
@@ -116,13 +116,13 @@ ALIASES = {
 }
 
 
-def get_embedder(name: str = "minilm") -> Embedder:
+def get_embedder(name: str = "rtx") -> Embedder:
     """
     Resolve a name to a ready Embedder.
       * "tei"  → the remote GPU service (rtx5090) via TEI_URL
       * alias  → a local sentence-transformers model (minilm/mpnet/bge-small)
       * raw HF id → that model, locally
     """
-    if name in ("tei", "remote", "gpu"):
+    if name in ("tei", "remote", "gpu", "rtx"):
         return RemoteTEIEmbedder()
     return SentenceTransformerEmbedder(ALIASES.get(name, name))

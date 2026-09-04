@@ -1,81 +1,81 @@
 # Lab 03 — Chunking
 
-> **Status:** planned. Builds on Lab 01–02.
+> **Status:** built & runnable. Builds on Lab 01–02.
 
 ## The problem
-In Lab 01 the chunk that literally defined "hybrid retrieval" ranked **#2**,
-because our naive fixed-size splitter cut the idea awkwardly and glued half of a
-neighbouring topic to it. Chunking is the single most underrated lever in RAG:
-the *unit* you embed decides what can ever be retrieved. Too big → one vector
-blurs several ideas. Too small → the vector loses the context needed to match.
+Chunking is the single most underrated lever in RAG: the *unit* you embed decides
+what can ever be retrieved. Too big → one vector blurs several ideas. Too small →
+the vector loses the context needed to match. And a blind fixed-size window
+ignores the document's real structure — in a legal code it slices an **article**
+in half, so the article you asked about is split across two chunks and neither one
+retrieves cleanly.
+
+## The corpus
+The two Mexican penal codes — **CNPP** (Código Nacional de Procedimientos Penales)
+and **Código Penal Federal** — converted to Markdown under
+`ingestion/out/Sistema Penal Acusatorio/`. They're where article structure exists,
+so they're where the chunking strategy actually changes the outcome. Questions and
+the expected article come from [`ingestion/penal_qa.json`](../ingestion/penal_qa.json).
+
+> The corpus is **Spanish**, so the embedder must be multilingual. Use `--model tei`
+> (a multilingual TEI model such as Qwen3-Embedding or bge-m3). English-only models
+> (`minilm`, `bge-small-en`) retrieve poorly here.
 
 ## What you'll build
-A chunking playground (`compare.py`) that runs the **same corpus + same 12
-questions + same embedder** through several strategies and **measures** each,
-so the only variable is where the text gets cut:
+A chunking playground (`compare.py`) that runs the **same corpus + same questions +
+same embedder** through several strategies and **measures** each, so the only
+variable is where the text gets cut:
 
-- **Fixed-size** (`chunkers.fixed`) at three sizes — the Lab 01 baseline.
+- **Fixed-size** (`chunkers.fixed`) at two sizes — the blind-window baseline.
 - **Recursive** (`chunkers.recursive`) — pack whole sentences up to a size budget.
-- **Sentence** (`chunkers.sentence`) — N sentences per chunk, using a *naive*
-  regex splitter (breaks on any `.`/`!`/`?` + space).
-- **Sentence-pysbd** (`chunkers.sentence_pysbd`) — same grouping, but a **proper
-  segmenter** (pysbd) that doesn't break on `Dr.`, `U.S.`, `e.g.`, or decimals.
-  This is the real-pipeline upgrade over the naive splitter (spaCy/nltk do the
-  same job; pysbd needs no model download).
-- **Semantic** (`chunkers.semantic`) — start a new chunk where adjacent sentences
-  become dissimilar (a topic shift), using the pipeline's embedder.
+- **By-article** (`chunkers.by_article`) — **structure-aware**: cut on `Artículo N`
+  boundaries so each chunk is one article (long articles are sub-split; prose with
+  no articles falls back to fixed). This is the strategy that fits legal text.
 
-Metric: retrieve top-5 chunks per question; `hit@k` = answer phrase is in the
-top-k, `MRR` = 1/(rank of the first chunk containing it).
+Metric: retrieve the top-5 chunks per question and check whether the expected
+article appears in them.
+  * `art_hit@k` = fraction of questions whose article is in the top-k chunks
+  * `MRR` = 1/(rank of the first chunk containing the article)
 
-> **Stretch:** *late chunking* (embed the whole doc, then pool per-chunk so each
-> chunk keeps global context) needs token-level embeddings — a good extension
-> once you've seen the basics here. See the reference below.
+> The `sentence` / `sentence_pysbd` / `semantic` strategies in `chunkers.py` are
+> English-tuned (pysbd `language="en"`). Porting them to Spanish
+> (`language="es"`) and adding them to `strategies()` is a good exercise.
 
 ## Run it
 Tunnel open (`./tunnel.sh`), then:
 ```bash
-uv run python 03_chunking/compare.py                 # local CPU embedder
-uv run python 03_chunking/compare.py --model tei     # GPU embedder (identical results)
+uv run python 03_chunking/compare.py --model tei     # GPU, multilingual embedder
 ```
 
 ### Or run it as a notebook (recommended for exploring)
 A guided, visual version lives in [`lab03.ipynb`](lab03.ipynb) — it imports the
-same modules (no duplicated logic), shows the naive-vs-pysbd segmentation
-side-by-side, and **plots** the hit@k comparison.
+same modules (no duplicated logic), shows a concrete `Artículo 261` split
+**fixed-window vs by-article**, and **plots** the `art_hit@k` comparison.
 ```bash
 uv sync --all-extras            # installs Jupyter + matplotlib (the `viz` extra)
 uv run jupyter lab              # then open 03_chunking/lab03.ipynb (tunnel must be up)
 ```
 
 ## Reading the results
-A sample run (MiniLM):
+`compare.py` prints one row per strategy:
 
 ```
-strategy       #chunks avg_words   hit@1   hit@3   hit@5    MRR
-fixed-20/5          28      18.2    0.60    0.80    0.87   0.69
-fixed-40/10         14      34.6    0.87    1.00    1.00   0.92
-fixed-80/20          8      56.9    1.00    1.00    1.00   1.00
-recursive-40        14      28.2    0.87    1.00    1.00   0.92
-sentence-2          16      24.7    0.80    0.93    0.93   0.86
-sentence-pysbd      15      26.3    0.87    1.00    1.00   0.92
-semantic-0.5        26      15.2    0.60    0.80    0.87   0.70
+strategy       #chunks avg_words   art@1   art@3   art@5    MRR
+fixed-150/25      ...      ...       ...     ...     ...     ...
+fixed-400/40      ...      ...       ...     ...     ...     ...
+recursive-150     ...      ...       ...     ...     ...     ...
+by-article        ...      ...       ...     ...     ...     ...
 ```
 
-What to notice:
-- **Proper segmentation beats naive** (`sentence-pysbd` 0.87 vs `sentence-2` 0.80
-  hit@1). The naive splitter breaks after `Dr.` and `approx.`, stranding
-  `Dr. Ingrid Halvorsen` and `approx. every 6 months` across a chunk boundary;
-  pysbd keeps them whole. This is *the* reason real pipelines use spaCy/nltk/pysbd.
-- **Too-small chunks hurt** (`fixed-20`: hit@1 0.60). A 20-word window often
-  splits the answer phrase or strands it from its context.
-- **`recursive`/`sentence-pysbd` match `fixed-40` using fewer words** — respecting
-  real sentence boundaries is more *efficient* per token stored.
-- **⚠️ The tiny-corpus trap:** `fixed-80` looks "perfect" only because each doc
-  here is short, so an 80-word chunk swallows the whole document — retrieval
-  can't miss. That does **not** generalize: at real scale, oversized chunks blur
-  multiple ideas into one vector and *lower* precision. This is exactly why we
-  measure, and why Lab 06 builds a proper eval set.
+What to look for (run it to fill in the numbers — they depend on your embedder):
+- **`by-article` should win `art_hit@k`.** When each chunk *is* an article, the
+  vector is about one coherent legal unit, so the query for that article matches it
+  cleanly instead of matching a window that straddles two articles.
+- **Fixed vs. article count:** `by-article` produces fewer, more meaningful chunks
+  than a tight fixed window — same content, boundaries that mean something.
+- **Oversized fixed chunks blur ideas.** Unlike a toy corpus, these codes are large
+  and dense, so a 400-word window genuinely mixes multiple articles into one vector
+  and can *lower* precision. This is exactly why we measure.
 
 ## Key concepts
 | Term | Meaning |
@@ -83,14 +83,14 @@ What to notice:
 | Chunk granularity | The size/shape of the retrieval unit. |
 | Overlap | Shared tokens between neighbours so ideas aren't cut at boundaries. |
 | Recursive splitting | Prefer natural boundaries; fall back to smaller ones. |
+| Structure-aware chunking | Cut on the document's real units (headings, articles), not blind windows. |
 | Semantic chunking | Boundary placed where embedding similarity drops. |
 | Late chunking | Contextualise tokens across the full doc *before* pooling into chunks. |
-| Proposition indexing | Retrieve atomic factual statements instead of raw spans. |
 
 ## Experiments to try
-- Same query set, each strategy → which gives highest recall@5?
-- Does overlap help, or just inflate the index?
-- Re-run with `--model tei` (GPU) so sweeping many configs is fast.
+- Sweep `by_article(max_words=...)` (150 / 250 / 400) — where's the sweet spot?
+- Does overlap help fixed windows here, or just inflate the index?
+- Add a Spanish semantic chunker (pysbd `language="es"`) and compare it.
 
 ## References
 - Chen et al. 2023, *Dense X Retrieval: What Retrieval Granularity Should We Use?* (propositions) — [arXiv:2312.06648](https://arxiv.org/abs/2312.06648)

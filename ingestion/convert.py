@@ -16,6 +16,7 @@ Usage (install deps first: `uv sync --extra parse`):
     uv run python ingestion/convert.py                       # pdfs/ -> out/
     uv run python ingestion/convert.py --in some/dir --out md/
     uv run python ingestion/convert.py --minio-prefix rag_lab/markdown
+    uv run python ingestion/convert.py --in "ingestion/pdfs/Sistema Penal Acusatorio-Bibliografía" --out "ingestion/out/Sistema Penal Acusatorio"
 """
 
 from __future__ import annotations

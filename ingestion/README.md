@@ -76,6 +76,42 @@ noise) and killed reference-noise (15%→0%); a retrieval-tuned embedder
 gaps stay honest — *Casparian strip* questions retrieve weakly because no paper
 covers it. Full walkthrough + plots: [`ram_experiment.ipynb`](ram_experiment.ipynb).
 
+## Vector table naming convention
+
+Each corpus you ingest gets its own vector table. To keep those names consistent
+(and avoid the `penal_chunks` vs `penal_fixed` drift), **don't hand-write table
+names** — build them with `ram_rag.table_name(corpus, model, chunker)`.
+
+**The rule** — one table per `(corpus, model, chunker)` combination:
+
+```
+{corpus}__{model}__{chunker}
+```
+
+- **lowercase**; every run of non-alphanumeric chars (`-`, `/`, `:`, `.`, spaces,
+  and `_`) collapses to a single `_` — because `-`/`/` would force double-quoting
+  or be invalid in a Postgres identifier.
+- axis separator is `__` (double underscore), so it's distinct from the single
+  `_` that can appear *inside* a part (e.g. `bge_small`).
+- pass a **short model alias** (`minilm`, `bge-small`, `qwen06`), not the full HF
+  id — `table_name("penal", "tei:Qwen/Qwen3-Embedding-0.6B", …)` slugs into an
+  unreadable mess.
+
+```python
+ram_rag.table_name("penal", "bge-small", "article")  # -> "penal__bge_small__article"
+ram_rag.table_name("ram",   "qwen06")                # -> "ram__qwen06__fixed"
+```
+
+**Why the model is in the name (the hard constraint):** different embedders emit
+different vector dimensions, and two dimensions can't share one `vector(N)`
+column — so a different embedder *forces* a different table. Corpus and chunker
+don't force it (they could be filter columns instead); they're in the name only
+because we chose the simple **one-table-per-config** design for the labs. The
+table name is just a readable handle — the exact model is also stored in each
+row's `model` column (see `store_chunks`) as the source of truth. `CHUNK_TABLE`
+(`"ram_chunks"`) is the legacy flat name for the original RAM lab; new work uses
+`table_name()`.
+
 ## Concepts
 | Term | Meaning |
 |------|---------|

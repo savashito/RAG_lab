@@ -45,10 +45,10 @@ QWEN_INSTRUCT = (
 )
 
 
-def ranked_papers(embedder, question: str, n: int) -> list[str]:
+def ranked_papers(embedder, question: str, n: int, table: str) -> list[str]:
     """Retrieve top-n chunks, collapse to a ranked list of unique papers."""
     q = QWEN_INSTRUCT + question if "qwen3" in embedder.name.lower() else question
-    rows = ram_rag.retrieve(embedder, q, n)  # [(source, text, dist), ...]
+    rows = ram_rag.retrieve(embedder, q, n, table)  # [(source, text, dist), ...]
     seen: set[str] = set()
     order: list[str] = []
     for src, _, _ in rows:
@@ -60,11 +60,12 @@ def ranked_papers(embedder, question: str, n: int) -> list[str]:
 
 def run(model: str, k: int) -> None:
     embedder = get_embedder(model)
-    print(f"model: {embedder.name} ({embedder.dim}d)")
-    n_chunks = ram_rag.ingest(model, clean=True)  # references stripped (Lab: cleaning)
+    table = ram_rag.table_name("ram", model)  # e.g. ram__minilm__fixed
+    print(f"model: {embedder.name} ({embedder.dim}d) → table {table}")
+    n_chunks = ram_rag.ingest(model, remove_citations=True, table=table)  # refs stripped
     print(f"ingested {n_chunks} chunks; scoring {len(EVAL)} labelled questions...")
 
-    rankings = [(ranked_papers(embedder, q, RETRIEVE_N), gold) for q, gold in EVAL]
+    rankings = [(ranked_papers(embedder, q, RETRIEVE_N, table), gold) for q, gold in EVAL]
     res = M.aggregate(rankings, ks=(1, 3, k))
     res |= {"model": embedder.name, "dim": embedder.dim, "n_chunks": n_chunks}
 
