@@ -10,6 +10,7 @@ the mechanics stay visible.
 from __future__ import annotations
 
 import re
+from collections import Counter
 
 import numpy as np
 
@@ -134,6 +135,46 @@ def semantic(text: str, embedder, threshold: float = 0.5) -> list[str]:
 # Start of an article at the beginning of a line, tolerating the Markdown markup
 # (#, *, _, >, <u>) left over from the PDF → Markdown conversion.
 _ARTICLE_START = re.compile(r"(?m)^[\s#*_>]*(?:<u>)?\**Art[íi]culo\s+\d+\s*[oº]?", re.I)
+
+
+# ── Limpieza previa: mobiliario de página del convertidor PDF→MD ─────────────────
+_PAGE_NUMBER = re.compile(r"^\d+\s+de\s+\d+$")
+
+
+def _strip_markup(line: str) -> str:
+    """Normaliza una línea para contar repeticiones: quita markup y espacios."""
+    return re.sub(r"</?u>|[*_#>~`]", "", line).strip()
+
+
+def strip_page_headers(text: str, min_repeats: int = 10) -> str:
+    """Quita el 'mobiliario de página' que el convertidor de PDF dejó repetido en
+    cada hoja: el número de página ('154 de 168') y los encabezados/pies que se
+    repiten (título del código, 'Última Reforma DOF…', 'CÁMARA DE DIPUTADOS…').
+
+    Dos criterios, por línea (así NO hay que codificar el título de cada código):
+      * número de página → coincide con el patrón '<n> de <m>' (solo en su línea),
+      * encabezado/pie recurrente → una línea (normalizada) que aparece
+        `min_repeats` veces o más. El mobiliario se repite una vez por página
+        (cientos de veces), muy por encima de cualquier repetición legítima.
+
+    Corta la continuidad del texto (un salto de página parte una oración o separa
+    el encabezado de un artículo de su cuerpo), así que conviene aplicarlo ANTES
+    de chunquear — es el análogo legal de `remove_citation_block` del lab del RAM.
+    """
+    lines = text.split("\n")
+    frequency = Counter(norm for norm in (_strip_markup(line) for line in lines) if norm)
+    kept: list[str] = []
+    for line in lines:
+        normalized = _strip_markup(line)
+        if not normalized:
+            kept.append(line)                       # conserva blancos (estructura)
+        elif _PAGE_NUMBER.match(normalized):
+            continue                                # '154 de 168'
+        elif frequency[normalized] >= min_repeats:
+            continue                                # encabezado/pie recurrente
+        else:
+            kept.append(line)
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(kept))  # colapsa blancos sobrantes
 
 
 def article_spans(text: str) -> list[str]:
