@@ -1,0 +1,497 @@
+{
+  "meta": {
+    "golden": "golden_penal.json",
+    "n_questions": 34,
+    "n_chunks": 3616,
+    "embed_model": "Qwen/Qwen3-Embedding-0.6B",
+    "served": "Qwen/Qwen3-Embedding-0.6B",
+    "ks": [
+      5,
+      10,
+      20
+    ],
+    "timestamp": "2026-09-08T21:03:02+00:00"
+  },
+  "metrics": {
+    "global": {
+      "denso": {
+        "n": 34,
+        "recall@5": 0.1765,
+        "recall@10": 0.2941,
+        "recall@20": 0.4118,
+        "MRR": 0.1758
+      },
+      "bm25": {
+        "n": 34,
+        "recall@5": 0.1176,
+        "recall@10": 0.1765,
+        "recall@20": 0.2647,
+        "MRR": 0.0746
+      },
+      "híbrido": {
+        "n": 34,
+        "recall@5": 0.2353,
+        "recall@10": 0.3529,
+        "recall@20": 0.4412,
+        "MRR": 0.1764
+      },
+      "multi-query": {
+        "n": 34,
+        "recall@5": 0.2647,
+        "recall@10": 0.4412,
+        "recall@20": 0.5882,
+        "MRR": 0.1958
+      }
+    },
+    "difficulty:easy": {
+      "denso": {
+        "n": 2,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.55
+      },
+      "bm25": {
+        "n": 2,
+        "recall@5": 0.5,
+        "recall@10": 0.5,
+        "recall@20": 0.5,
+        "MRR": 0.1699
+      },
+      "híbrido": {
+        "n": 2,
+        "recall@5": 0.5,
+        "recall@10": 0.5,
+        "recall@20": 1.0,
+        "MRR": 0.525
+      },
+      "multi-query": {
+        "n": 2,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.625
+      }
+    },
+    "difficulty:medium": {
+      "denso": {
+        "n": 9,
+        "recall@5": 0.2222,
+        "recall@10": 0.2222,
+        "recall@20": 0.3333,
+        "MRR": 0.1807
+      },
+      "bm25": {
+        "n": 9,
+        "recall@5": 0.2222,
+        "recall@10": 0.3333,
+        "recall@20": 0.3333,
+        "MRR": 0.1585
+      },
+      "híbrido": {
+        "n": 9,
+        "recall@5": 0.3333,
+        "recall@10": 0.4444,
+        "recall@20": 0.4444,
+        "MRR": 0.0993
+      },
+      "multi-query": {
+        "n": 9,
+        "recall@5": 0.2222,
+        "recall@10": 0.5556,
+        "recall@20": 0.6667,
+        "MRR": 0.1717
+      }
+    },
+    "difficulty:hard": {
+      "denso": {
+        "n": 18,
+        "recall@5": 0.0556,
+        "recall@10": 0.2222,
+        "recall@20": 0.3889,
+        "MRR": 0.0667
+      },
+      "bm25": {
+        "n": 18,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.1111,
+        "MRR": 0.0126
+      },
+      "híbrido": {
+        "n": 18,
+        "recall@5": 0.1111,
+        "recall@10": 0.2222,
+        "recall@20": 0.3333,
+        "MRR": 0.1034
+      },
+      "multi-query": {
+        "n": 18,
+        "recall@5": 0.1667,
+        "recall@10": 0.3333,
+        "recall@20": 0.5556,
+        "MRR": 0.1003
+      }
+    },
+    "difficulty:very_hard": {
+      "denso": {
+        "n": 5,
+        "recall@5": 0.4,
+        "recall@10": 0.4,
+        "recall@20": 0.4,
+        "MRR": 0.4102
+      },
+      "bm25": {
+        "n": 5,
+        "recall@5": 0.2,
+        "recall@10": 0.4,
+        "recall@20": 0.6,
+        "MRR": 0.109
+      },
+      "híbrido": {
+        "n": 5,
+        "recall@5": 0.4,
+        "recall@10": 0.6,
+        "recall@20": 0.6,
+        "MRR": 0.4387
+      },
+      "multi-query": {
+        "n": 5,
+        "recall@5": 0.4,
+        "recall@10": 0.4,
+        "recall@20": 0.4,
+        "MRR": 0.4111
+      }
+    },
+    "type:causal_reasoning": {
+      "denso": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0063
+      },
+      "bm25": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0074
+      },
+      "híbrido": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0111
+      },
+      "multi-query": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0084
+      }
+    },
+    "type:colloquial_to_legal": {
+      "denso": {
+        "n": 5,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0124
+      },
+      "bm25": {
+        "n": 5,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0008
+      },
+      "híbrido": {
+        "n": 5,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.005
+      },
+      "multi-query": {
+        "n": 5,
+        "recall@5": 0.0,
+        "recall@10": 0.4,
+        "recall@20": 0.4,
+        "MRR": 0.0687
+      }
+    },
+    "type:conceptual_distinction": {
+      "denso": {
+        "n": 7,
+        "recall@5": 0.0,
+        "recall@10": 0.1429,
+        "recall@20": 0.4286,
+        "MRR": 0.0572
+      },
+      "bm25": {
+        "n": 7,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0078
+      },
+      "híbrido": {
+        "n": 7,
+        "recall@5": 0.0,
+        "recall@10": 0.1429,
+        "recall@20": 0.2857,
+        "MRR": 0.0383
+      },
+      "multi-query": {
+        "n": 7,
+        "recall@5": 0.1429,
+        "recall@10": 0.2857,
+        "recall@20": 0.5714,
+        "MRR": 0.0809
+      }
+    },
+    "type:conceptual_reasoning": {
+      "denso": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.5,
+        "recall@20": 1.0,
+        "MRR": 0.1218
+      },
+      "bm25": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.5,
+        "MRR": 0.0445
+      },
+      "híbrido": {
+        "n": 2,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.2381
+      },
+      "multi-query": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 1.0,
+        "MRR": 0.0646
+      }
+    },
+    "type:direct_concept": {
+      "denso": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 1.0
+      },
+      "bm25": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.3333
+      },
+      "híbrido": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 1.0
+      },
+      "multi-query": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 1.0
+      }
+    },
+    "type:direct_principle": {
+      "denso": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.1
+      },
+      "bm25": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0064
+      },
+      "híbrido": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 1.0,
+        "MRR": 0.05
+      },
+      "multi-query": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.25
+      }
+    },
+    "type:legal_paraphrase": {
+      "denso": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0179
+      },
+      "bm25": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0005
+      },
+      "híbrido": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0074
+      },
+      "multi-query": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.1429
+      }
+    },
+    "type:multi_concept_reasoning": {
+      "denso": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0385
+      },
+      "bm25": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 1.0,
+        "MRR": 0.0769
+      },
+      "híbrido": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.1667
+      },
+      "multi-query": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0213
+      }
+    },
+    "type:negative_question": {
+      "denso": {
+        "n": 3,
+        "recall@5": 0.3333,
+        "recall@10": 0.6667,
+        "recall@20": 0.6667,
+        "MRR": 0.1643
+      },
+      "bm25": {
+        "n": 3,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.3333,
+        "MRR": 0.0255
+      },
+      "híbrido": {
+        "n": 3,
+        "recall@5": 0.3333,
+        "recall@10": 0.3333,
+        "recall@20": 0.6667,
+        "MRR": 0.3633
+      },
+      "multi-query": {
+        "n": 3,
+        "recall@5": 0.6667,
+        "recall@10": 0.6667,
+        "recall@20": 0.6667,
+        "MRR": 0.2544
+      }
+    },
+    "type:precise_conceptual_retrieval": {
+      "denso": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0017
+      },
+      "bm25": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0108
+      },
+      "híbrido": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0063
+      },
+      "multi-query": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.02
+      }
+    },
+    "type:semantic_paraphrase": {
+      "denso": {
+        "n": 10,
+        "recall@5": 0.4,
+        "recall@10": 0.4,
+        "recall@20": 0.5,
+        "MRR": 0.3609
+      },
+      "bm25": {
+        "n": 10,
+        "recall@5": 0.3,
+        "recall@10": 0.5,
+        "recall@20": 0.5,
+        "MRR": 0.187
+      },
+      "híbrido": {
+        "n": 10,
+        "recall@5": 0.5,
+        "recall@10": 0.6,
+        "recall@20": 0.6,
+        "MRR": 0.2886
+      },
+      "multi-query": {
+        "n": 10,
+        "recall@5": 0.4,
+        "recall@10": 0.6,
+        "recall@20": 0.7,
+        "MRR": 0.3402
+      }
+    }
+  }
+}

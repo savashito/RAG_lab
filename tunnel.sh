@@ -11,10 +11,13 @@ set -euo pipefail
 echo "Tunnels (Ctrl-C to close both):"
 echo "  localhost:5433 -> srv1312754:5432   Postgres/pgvector"
 echo "  localhost:8085 -> rtx5090:8085      TEI embeddings (GPU)"
+echo "  localhost:41499 -> rtx5090:59149      llama.cpp server (GPU, puerto remoto dinámico)"
 
 ssh -N -o ServerAliveInterval=20 -L 5433:localhost:5432 tlacua-hstgr &
 PG=$!
 ssh -N -o ServerAliveInterval=20 -L 8085:localhost:8085 rtx5090 &
 TEI=$!
-trap 'kill $PG $TEI 2>/dev/null' INT TERM EXIT
+ssh -N -o ServerAliveInterval=20 -L 41499:localhost:59149 rtx5090 &
+LLAMA=$!
+trap 'kill $PG $TEI $LLAMA 2>/dev/null' INT TERM EXIT
 wait

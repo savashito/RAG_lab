@@ -1,0 +1,240 @@
+[
+  {
+    "q": "¿Se puede tratar a un acusado como culpable antes de que un juez dicte sentencia?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "se presume inocente y será tratada como tal",
+    "difficulty": "easy",
+    "type": "direct_principle"
+  },
+  {
+    "q": "¿Qué grado de certeza necesita el tribunal para poder condenar a una persona?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "más allá de toda duda razonable",
+    "difficulty": "easy",
+    "type": "direct_concept"
+  },
+  {
+    "q": "¿Cómo se garantiza que la evidencia recogida en la escena no se altere ni se cambie?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "sistema de control y registro que se aplica al indicio",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "Si la policía obtiene una prueba violando derechos, ¿esa prueba puede usarse en el juicio?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "Cualquier acto realizado con violación de derechos humanos será nulo",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "¿Puede la víctima llegar a un arreglo con el acusado para resolver el asunto sin llegar a juicio?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "acuerdos reparatorios son aquéllos celebrados entre la víctima u ofendido y el imputado",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "Aunque una persona haya sido acusada, ¿la autoridad puede comportarse como si su culpabilidad ya estuviera demostrada?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "se presume inocente y será tratada como tal",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "Si todavía existe una duda razonable sobre lo ocurrido, ¿qué impide que el tribunal declare culpable al acusado?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "más allá de toda duda razonable",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "¿Qué mecanismo evita que una persona sea juzgada nuevamente por exactamente los mismos hechos?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "no podrá ser sometida a otro proceso penal por los mismos hechos",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "¿Qué permite que la defensa cuestione la evidencia utilizada por la fiscalía?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "controvertir o confrontar los medios de prueba",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "¿Qué resolución judicial hace que una persona pase formalmente a enfrentar un proceso penal?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "dictará el auto de vinculación del imputado a proceso",
+    "difficulty": "medium",
+    "type": "legal_paraphrase"
+  },
+  {
+    "q": "¿Puede un juez imponer varias restricciones al imputado al mismo tiempo mientras continúa el procedimiento?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "una o varias de las siguientes medidas cautelares",
+    "difficulty": "medium",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "Si los policías agarran a alguien y no lo dejan ir, ¿qué límite legal existe para que eso no sea arbitrario?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "nadie podrá ser privado de la misma",
+    "difficulty": "hard",
+    "type": "colloquial_to_legal"
+  },
+  {
+    "q": "¿Me pueden volver a acusar por algo de lo que ya salí absuelto?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "no podrá ser sometida a otro proceso penal por los mismos hechos",
+    "difficulty": "hard",
+    "type": "colloquial_to_legal"
+  },
+  {
+    "q": "Si los policías consiguieron algo importante para inculparme pero lo obtuvieron violando mis derechos, ¿todavía lo pueden usar?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "Cualquier acto realizado con violación de derechos humanos será nulo",
+    "difficulty": "hard",
+    "type": "colloquial_to_legal"
+  },
+  {
+    "q": "¿Puede mi abogado pelearse legalmente con las pruebas que presenta el Ministerio Público?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "controvertir o confrontar los medios de prueba",
+    "difficulty": "hard",
+    "type": "colloquial_to_legal"
+  },
+  {
+    "q": "¿Puede la persona afectada y el acusado arreglarse entre ellos para terminar el problema?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "acuerdos reparatorios son aquéllos celebrados entre la víctima u ofendido y el imputado",
+    "difficulty": "hard",
+    "type": "colloquial_to_legal"
+  },
+  {
+    "q": "¿No basta con que una persona esté acusada para considerarla responsable penalmente?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "se presume inocente y será tratada como tal",
+    "difficulty": "hard",
+    "type": "negative_question"
+  },
+  {
+    "q": "¿No puede una persona ser sometida indefinidamente a nuevos procesos por el mismo acontecimiento?",
+    "source": "Código Nacional de Procedimientos Penales.md",
+    "answer": "no podrá ser sometida a otro proceso penal por los mismos hechos",
+    "difficulty": "hard",
+    "type": "negative_question"
+  },
+  {
+    "q": "¿No toda información obtenida durante una investigación tiene automáticamente el valor de una prueba?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "en estas etapas aún no adquieren la calidad de pruebas",
+    "difficulty": "hard",
+    "type": "negative_question"
+  },
+  {
+    "q": "Si la fiscalía tiene información obtenida durante la investigación pero el juez todavía no la ha escuchado en juicio, ¿qué categoría tiene?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "dato de prueba es la referencia al contenido de un determinado medio",
+    "difficulty": "hard",
+    "type": "conceptual_distinction"
+  },
+  {
+    "q": "¿En qué momento deja de ser solo información de investigación y adquiere formalmente valor de prueba?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "hasta su desahogo en la audiencia de juicio",
+    "difficulty": "hard",
+    "type": "conceptual_distinction"
+  },
+  {
+    "q": "¿Una declaración tomada por la policía ya es automáticamente prueba suficiente para condenar?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "aún no adquieren la calidad de pruebas",
+    "difficulty": "hard",
+    "type": "conceptual_distinction"
+  },
+  {
+    "q": "¿Por qué una entrevista tomada durante la investigación no puede simplemente copiarse en una sentencia?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "debe ser desahogado (nuevamente) ante el juez",
+    "difficulty": "hard",
+    "type": "causal_reasoning"
+  },
+  {
+    "q": "¿Todo objeto encontrado en una escena del crimen puede considerarse inmediatamente una prueba judicial?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "no todo indicio es evidencia, no toda evidencia es prueba",
+    "difficulty": "hard",
+    "type": "conceptual_distinction"
+  },
+  {
+    "q": "¿Puede algo ser útil para orientar una investigación sin haber alcanzado todavía el nivel de prueba?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "no toda evidencia es prueba",
+    "difficulty": "hard",
+    "type": "conceptual_distinction"
+  },
+  {
+    "q": "¿Qué diferencia existe entre encontrar algo sospechoso y poder utilizarlo formalmente para demostrar un hecho ante un juez?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "no todo indicio es evidencia, no toda evidencia es prueba",
+    "difficulty": "hard",
+    "type": "conceptual_distinction"
+  },
+  {
+    "q": "¿Tener una enorme cantidad de elementos de investigación garantiza que exista evidencia suficiente?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "no se mide en razón de cantidad sino de calidad",
+    "difficulty": "hard",
+    "type": "conceptual_reasoning"
+  },
+  {
+    "q": "¿Qué importa más para determinar si los datos permiten sostener una hipótesis: cuántos hay o qué tan útiles son?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "La suficiencia, por tanto, no se mide en razón de cantidad sino de calidad",
+    "difficulty": "hard",
+    "type": "conceptual_reasoning"
+  },
+  {
+    "q": "¿Puede una evidencia estar relacionada con el caso y aun así ser insuficiente para demostrar quién fue responsable?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "idónea y pertinente, no necesariamente es suficiente",
+    "difficulty": "hard",
+    "type": "conceptual_distinction"
+  },
+  {
+    "q": "Si existe información que apunta hacia un posible responsable, pero todavía no ha sido sometida a contradicción ante el juez, ¿qué impide tratarla como prueba definitiva?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "hasta su desahogo en la audiencia de juicio",
+    "difficulty": "very_hard",
+    "type": "multi_concept_reasoning"
+  },
+  {
+    "q": "¿Qué distingue a un elemento que solo permite orientar una inferencia de uno que puede utilizarse formalmente para acreditar un hecho en una sentencia?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "no todo indicio es evidencia, no toda evidencia es prueba",
+    "difficulty": "very_hard",
+    "type": "precise_conceptual_retrieval"
+  },
+  {
+    "q": "Si un objeto fue correctamente localizado y asegurado, ¿eso significa por sí solo que conserva su valor y autenticidad durante todo el procedimiento?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "garantizar su idoneidad, integridad y autenticidad",
+    "difficulty": "very_hard",
+    "type": "causal_reasoning"
+  },
+  {
+    "q": "¿Qué procedimiento permite demostrar que un objeto presentado posteriormente ante la autoridad es el mismo que originalmente fue localizado durante la investigación?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "cadena de custodia",
+    "difficulty": "very_hard",
+    "type": "semantic_paraphrase"
+  },
+  {
+    "q": "Si una evidencia pasa por varias personas y lugares antes de llegar al juicio, ¿qué sistema permite reconstruir y controlar ese recorrido?",
+    "source": "Dato de prueba en el sistema penal acusatorio.md",
+    "answer": "cadena de custodia",
+    "difficulty": "very_hard",
+    "type": "semantic_paraphrase"
+  }
+]
