@@ -1,0 +1,163 @@
+idx,question,difficulty,type,method,gold_rank,hit@5,hit@10,hit@20,rr
+0,¿Cuál es el plazo en el que deberá concluir la investigación complementaria?,medium,direct_fact,denso,1,1,1,1,1.0
+1,¿Qué se entiende por sentencia firme?,medium,direct_concept,denso,1,1,1,1,1.0
+2,¿En qué plazo debe resolverse la queja?,medium,direct_fact,denso,2,1,1,1,0.5
+3,¿Cuál es el primer acto procesal en que intervienen las partes contrarias en la audiencia de juicio oral?,medium,semantic_paraphrase,denso,12,0,0,1,0.0833
+4,¿Qué plazo tiene el Ministerio Público para proveer sobre la solicitud de la víctima para realizar un acto de investigación?,medium,direct_fact,denso,1,1,1,1,1.0
+5,"Según el Código Nacional de Procedimientos Penales, ¿cuáles autoridades integran los órganos jurisdiccionales?",easy,direct_concept,denso,2,1,1,1,0.5
+6,¿Qué es el aseguramiento de bienes?,medium,direct_concept,denso,12,0,0,1,0.0833
+7,¿Qué es la intervención de comunicaciones privadas?,medium,direct_concept,denso,2,1,1,1,0.5
+8,¿Cuáles son los efectos del criterio de oportunidad?,medium,direct_concept,denso,2,1,1,1,0.5
+9,¿Cuáles son las causales para la devolución de bienes asegurados?,medium,direct_fact,denso,1,1,1,1,1.0
+10,¿Cómo se extingue la pretensión punitiva?,medium,semantic_paraphrase,denso,173,0,0,0,0.0058
+11,¿Qué es la Defensa Técnica y cómo se garantiza?,medium,direct_concept,denso,10,0,1,1,0.1
+12,¿Cuál es la duración máxima de una medida de protección?,easy,direct_fact,denso,1,1,1,1,1.0
+13,¿Qué finalidad tiene la imposición de una medida de protección?,medium,direct_concept,denso,1,1,1,1,1.0
+14,¿En qué término se debe promover el recurso de revocación contra resoluciones emitidas fuera de audiencia?,medium,direct_fact,denso,1,1,1,1,1.0
+15,Desarrolla el contenido y alcance del principio de contradicción.,easy,direct_principle,denso,5,1,1,1,0.2
+16,Desarrolla el contenido y alcance del principio de concentración.,easy,direct_principle,denso,4,1,1,1,0.25
+17,Desarrolla el contenido y alcance del principio de inmediación.,easy,direct_principle,denso,7,0,1,1,0.1429
+18,¿En qué plazo se debe presentar la acusación coadyuvante?,medium,direct_fact,denso,1,1,1,1,1.0
+19,"En el caso de que existan violaciones al derecho de defensa adecuada, ¿qué figura jurídica procede y qué condición se requiere para que proceda?",hard,direct_fact,denso,18,0,0,1,0.0556
+20,¿En qué término se debe promover la apelación en contra de sentencias definitivas?,medium,direct_fact,denso,1,1,1,1,1.0
+21,¿En qué casos proceden los acuerdos reparatorios?,medium,direct_concept,denso,1,1,1,1,1.0
+22,¿Cómo se inicia la investigación?,easy,direct_concept,denso,1,1,1,1,1.0
+23,¿Qué es el No Ejercicio de la Acción Penal?,medium,direct_concept,denso,1,1,1,1,1.0
+24,¿Qué requisitos se necesitan cumplir para la aplicación de un criterio de oportunidad?,medium,direct_concept,denso,2,1,1,1,0.5
+25,¿Qué requisitos son necesarios para que pueda proceder el procedimiento abreviado?,medium,direct_concept,denso,2,1,1,1,0.5
+26,¿Qué constituye la conducta de un juez consistente en dar consejos extrajudicialmente a las partes sobre el procedimiento penal?,hard,semantic_paraphrase,denso,120,0,0,0,0.0083
+27,Menciona las etapas del procedimiento penal acusatorio.,medium,direct_concept,denso,2,1,1,1,0.5
+28,¿Qué sanción amerita que un Ministerio Público se ausente de una audiencia sin causa justificada?,medium,direct_fact,denso,1,1,1,1,1.0
+29,Menciona las excepciones al principio de publicidad.,medium,direct_concept,denso,1,1,1,1,1.0
+30,¿Cuáles son los lineamientos para realizar una inspección por parte de los cuerpos de seguridad en caso de flagrancia?,medium,direct_concept,denso,2,1,1,1,0.5
+31,¿Qué se entiende por reclasificación jurídica?,medium,direct_concept,denso,2,1,1,1,0.5
+32,"¿Qué proceso inicia cuando un imputado infringe una medida cautelar establecida en las fracciones V, VII, VIII, IX, XII y XIII del artículo 155 del Código Nacional de Procedimientos Penales?",hard,direct_fact,denso,26,0,0,0,0.0385
+33,¿Cómo se garantiza el derecho a la defensa en caso de reclasificación jurídica en la etapa de juicio oral?,hard,semantic_paraphrase,denso,13,0,0,1,0.0769
+34,¿En qué casos procede la suspensión de la medida cautelar?,medium,direct_concept,denso,1,1,1,1,1.0
+35,¿Qué autos y resoluciones deben constar por escrito?,medium,direct_concept,denso,1,1,1,1,1.0
+36,¿En qué término se debe promover la apelación en contra de resoluciones que versen sobre la negativa por parte del Ministerio Público de realizar actos de investigación que requieren control judicial?,medium,direct_fact,denso,10,0,1,1,0.1
+37,¿Pueden ser responsables penalmente las personas jurídicas?,medium,direct_concept,denso,1,1,1,1,1.0
+38,¿En qué término se debe promover el recurso de revocación contra resoluciones emitidas durante audiencia?,medium,direct_fact,denso,1,1,1,1,1.0
+39,"¿Cuál es la diferencia entre un indicio, dato de prueba, medio de prueba y prueba?",hard,conceptual_distinction,denso,3,1,1,1,0.3333
+40,¿Qué es la teoría del caso?,medium,direct_concept,denso,11,0,0,1,0.0909
+41,¿Cuáles son las etapas de la audiencia inicial?,medium,direct_concept,denso,2,1,1,1,0.5
+42,¿En qué término se debe dictar el auto de vinculación a proceso?,medium,direct_fact,denso,19,0,0,1,0.0526
+43,¿Qué se requiere para que se dicte un auto de vinculación a proceso?,medium,direct_concept,denso,1,1,1,1,1.0
+44,¿Qué se entiende por verdad material?,hard,semantic_paraphrase,denso,1720,0,0,0,0.0006
+45,"Una vez iniciada la investigación en sede ministerial, ¿en qué término el Ministerio Público debe determinar la situación jurídica del detenido?",hard,semantic_paraphrase,denso,5,1,1,1,0.2
+46,¿Cuál es la principal condición epistemológica de la prueba?,hard,direct_concept,denso,124,0,0,0,0.0081
+47,¿Qué finalidades tiene el proceso penal acusatorio?,easy,direct_concept,denso,274,0,0,0,0.0036
+48,¿A qué se refiere el término “cadena de custodia”?,easy,direct_concept,denso,1,1,1,1,1.0
+49,¿Cuáles son las reglas para reproducir un documento en la audiencia de juicio oral?,medium,semantic_paraphrase,denso,1,1,1,1,1.0
+50,¿En dónde reside la legitimidad del poder punitivo según César Beccaria?,hard,direct_concept,denso,2,1,1,1,0.5
+51,¿Qué criterios son necesarios para conservar íntegramente la evidencia?,medium,direct_concept,denso,21,0,0,0,0.0476
+52,¿Cuál es el papel de la víctima en el modelo abolicionista?,hard,semantic_paraphrase,denso,21,0,0,0,0.0476
+53,¿Qué es la prueba tasada?,hard,semantic_paraphrase,denso,3,1,1,1,0.3333
+0,¿Cuál es el plazo en el que deberá concluir la investigación complementaria?,medium,direct_fact,bm25,1,1,1,1,1.0
+1,¿Qué se entiende por sentencia firme?,medium,direct_concept,bm25,7,0,1,1,0.1429
+2,¿En qué plazo debe resolverse la queja?,medium,direct_fact,bm25,1,1,1,1,1.0
+3,¿Cuál es el primer acto procesal en que intervienen las partes contrarias en la audiencia de juicio oral?,medium,semantic_paraphrase,bm25,167,0,0,0,0.006
+4,¿Qué plazo tiene el Ministerio Público para proveer sobre la solicitud de la víctima para realizar un acto de investigación?,medium,direct_fact,bm25,8,0,1,1,0.125
+5,"Según el Código Nacional de Procedimientos Penales, ¿cuáles autoridades integran los órganos jurisdiccionales?",easy,direct_concept,bm25,125,0,0,0,0.008
+6,¿Qué es el aseguramiento de bienes?,medium,direct_concept,bm25,17,0,0,1,0.0588
+7,¿Qué es la intervención de comunicaciones privadas?,medium,direct_concept,bm25,2,1,1,1,0.5
+8,¿Cuáles son los efectos del criterio de oportunidad?,medium,direct_concept,bm25,2,1,1,1,0.5
+9,¿Cuáles son las causales para la devolución de bienes asegurados?,medium,direct_fact,bm25,1,1,1,1,1.0
+10,¿Cómo se extingue la pretensión punitiva?,medium,semantic_paraphrase,bm25,985,0,0,0,0.001
+11,¿Qué es la Defensa Técnica y cómo se garantiza?,medium,direct_concept,bm25,37,0,0,0,0.027
+12,¿Cuál es la duración máxima de una medida de protección?,easy,direct_fact,bm25,2,1,1,1,0.5
+13,¿Qué finalidad tiene la imposición de una medida de protección?,medium,direct_concept,bm25,25,0,0,0,0.04
+14,¿En qué término se debe promover el recurso de revocación contra resoluciones emitidas fuera de audiencia?,medium,direct_fact,bm25,2,1,1,1,0.5
+15,Desarrolla el contenido y alcance del principio de contradicción.,easy,direct_principle,bm25,24,0,0,0,0.0417
+16,Desarrolla el contenido y alcance del principio de concentración.,easy,direct_principle,bm25,8,0,1,1,0.125
+17,Desarrolla el contenido y alcance del principio de inmediación.,easy,direct_principle,bm25,57,0,0,0,0.0175
+18,¿En qué plazo se debe presentar la acusación coadyuvante?,medium,direct_fact,bm25,110,0,0,0,0.0091
+19,"En el caso de que existan violaciones al derecho de defensa adecuada, ¿qué figura jurídica procede y qué condición se requiere para que proceda?",hard,direct_fact,bm25,624,0,0,0,0.0016
+20,¿En qué término se debe promover la apelación en contra de sentencias definitivas?,medium,direct_fact,bm25,1,1,1,1,1.0
+21,¿En qué casos proceden los acuerdos reparatorios?,medium,direct_concept,bm25,4,1,1,1,0.25
+22,¿Cómo se inicia la investigación?,easy,direct_concept,bm25,285,0,0,0,0.0035
+23,¿Qué es el No Ejercicio de la Acción Penal?,medium,direct_concept,bm25,22,0,0,0,0.0455
+24,¿Qué requisitos se necesitan cumplir para la aplicación de un criterio de oportunidad?,medium,direct_concept,bm25,2,1,1,1,0.5
+25,¿Qué requisitos son necesarios para que pueda proceder el procedimiento abreviado?,medium,direct_concept,bm25,4,1,1,1,0.25
+26,¿Qué constituye la conducta de un juez consistente en dar consejos extrajudicialmente a las partes sobre el procedimiento penal?,hard,semantic_paraphrase,bm25,1,1,1,1,1.0
+27,Menciona las etapas del procedimiento penal acusatorio.,medium,direct_concept,bm25,41,0,0,0,0.0244
+28,¿Qué sanción amerita que un Ministerio Público se ausente de una audiencia sin causa justificada?,medium,direct_fact,bm25,1,1,1,1,1.0
+29,Menciona las excepciones al principio de publicidad.,medium,direct_concept,bm25,2,1,1,1,0.5
+30,¿Cuáles son los lineamientos para realizar una inspección por parte de los cuerpos de seguridad en caso de flagrancia?,medium,direct_concept,bm25,5,1,1,1,0.2
+31,¿Qué se entiende por reclasificación jurídica?,medium,direct_concept,bm25,2,1,1,1,0.5
+32,"¿Qué proceso inicia cuando un imputado infringe una medida cautelar establecida en las fracciones V, VII, VIII, IX, XII y XIII del artículo 155 del Código Nacional de Procedimientos Penales?",hard,direct_fact,bm25,1,1,1,1,1.0
+33,¿Cómo se garantiza el derecho a la defensa en caso de reclasificación jurídica en la etapa de juicio oral?,hard,semantic_paraphrase,bm25,7,0,1,1,0.1429
+34,¿En qué casos procede la suspensión de la medida cautelar?,medium,direct_concept,bm25,14,0,0,1,0.0714
+35,¿Qué autos y resoluciones deben constar por escrito?,medium,direct_concept,bm25,1,1,1,1,1.0
+36,¿En qué término se debe promover la apelación en contra de resoluciones que versen sobre la negativa por parte del Ministerio Público de realizar actos de investigación que requieren control judicial?,medium,direct_fact,bm25,17,0,0,1,0.0588
+37,¿Pueden ser responsables penalmente las personas jurídicas?,medium,direct_concept,bm25,1,1,1,1,1.0
+38,¿En qué término se debe promover el recurso de revocación contra resoluciones emitidas durante audiencia?,medium,direct_fact,bm25,2,1,1,1,0.5
+39,"¿Cuál es la diferencia entre un indicio, dato de prueba, medio de prueba y prueba?",hard,conceptual_distinction,bm25,47,0,0,0,0.0213
+40,¿Qué es la teoría del caso?,medium,direct_concept,bm25,55,0,0,0,0.0182
+41,¿Cuáles son las etapas de la audiencia inicial?,medium,direct_concept,bm25,22,0,0,0,0.0455
+42,¿En qué término se debe dictar el auto de vinculación a proceso?,medium,direct_fact,bm25,224,0,0,0,0.0045
+43,¿Qué se requiere para que se dicte un auto de vinculación a proceso?,medium,direct_concept,bm25,29,0,0,0,0.0345
+44,¿Qué se entiende por verdad material?,hard,semantic_paraphrase,bm25,48,0,0,0,0.0208
+45,"Una vez iniciada la investigación en sede ministerial, ¿en qué término el Ministerio Público debe determinar la situación jurídica del detenido?",hard,semantic_paraphrase,bm25,1018,0,0,0,0.001
+46,¿Cuál es la principal condición epistemológica de la prueba?,hard,direct_concept,bm25,1,1,1,1,1.0
+47,¿Qué finalidades tiene el proceso penal acusatorio?,easy,direct_concept,bm25,1517,0,0,0,0.0007
+48,¿A qué se refiere el término “cadena de custodia”?,easy,direct_concept,bm25,4,1,1,1,0.25
+49,¿Cuáles son las reglas para reproducir un documento en la audiencia de juicio oral?,medium,semantic_paraphrase,bm25,45,0,0,0,0.0222
+50,¿En dónde reside la legitimidad del poder punitivo según César Beccaria?,hard,direct_concept,bm25,16,0,0,1,0.0625
+51,¿Qué criterios son necesarios para conservar íntegramente la evidencia?,medium,direct_concept,bm25,38,0,0,0,0.0263
+52,¿Cuál es el papel de la víctima en el modelo abolicionista?,hard,semantic_paraphrase,bm25,172,0,0,0,0.0058
+53,¿Qué es la prueba tasada?,hard,semantic_paraphrase,bm25,2,1,1,1,0.5
+0,¿Cuál es el plazo en el que deberá concluir la investigación complementaria?,medium,direct_fact,híbrido,1,1,1,1,1.0
+1,¿Qué se entiende por sentencia firme?,medium,direct_concept,híbrido,1,1,1,1,1.0
+2,¿En qué plazo debe resolverse la queja?,medium,direct_fact,híbrido,1,1,1,1,1.0
+3,¿Cuál es el primer acto procesal en que intervienen las partes contrarias en la audiencia de juicio oral?,medium,semantic_paraphrase,híbrido,25,0,0,0,0.04
+4,¿Qué plazo tiene el Ministerio Público para proveer sobre la solicitud de la víctima para realizar un acto de investigación?,medium,direct_fact,híbrido,2,1,1,1,0.5
+5,"Según el Código Nacional de Procedimientos Penales, ¿cuáles autoridades integran los órganos jurisdiccionales?",easy,direct_concept,híbrido,11,0,0,1,0.0909
+6,¿Qué es el aseguramiento de bienes?,medium,direct_concept,híbrido,12,0,0,1,0.0833
+7,¿Qué es la intervención de comunicaciones privadas?,medium,direct_concept,híbrido,1,1,1,1,1.0
+8,¿Cuáles son los efectos del criterio de oportunidad?,medium,direct_concept,híbrido,1,1,1,1,1.0
+9,¿Cuáles son las causales para la devolución de bienes asegurados?,medium,direct_fact,híbrido,1,1,1,1,1.0
+10,¿Cómo se extingue la pretensión punitiva?,medium,semantic_paraphrase,híbrido,396,0,0,0,0.0025
+11,¿Qué es la Defensa Técnica y cómo se garantiza?,medium,direct_concept,híbrido,8,0,1,1,0.125
+12,¿Cuál es la duración máxima de una medida de protección?,easy,direct_fact,híbrido,1,1,1,1,1.0
+13,¿Qué finalidad tiene la imposición de una medida de protección?,medium,direct_concept,híbrido,2,1,1,1,0.5
+14,¿En qué término se debe promover el recurso de revocación contra resoluciones emitidas fuera de audiencia?,medium,direct_fact,híbrido,1,1,1,1,1.0
+15,Desarrolla el contenido y alcance del principio de contradicción.,easy,direct_principle,híbrido,11,0,0,1,0.0909
+16,Desarrolla el contenido y alcance del principio de concentración.,easy,direct_principle,híbrido,21,0,0,0,0.0476
+17,Desarrolla el contenido y alcance del principio de inmediación.,easy,direct_principle,híbrido,16,0,0,1,0.0625
+18,¿En qué plazo se debe presentar la acusación coadyuvante?,medium,direct_fact,híbrido,20,0,0,1,0.05
+19,"En el caso de que existan violaciones al derecho de defensa adecuada, ¿qué figura jurídica procede y qué condición se requiere para que proceda?",hard,direct_fact,híbrido,49,0,0,0,0.0204
+20,¿En qué término se debe promover la apelación en contra de sentencias definitivas?,medium,direct_fact,híbrido,1,1,1,1,1.0
+21,¿En qué casos proceden los acuerdos reparatorios?,medium,direct_concept,híbrido,2,1,1,1,0.5
+22,¿Cómo se inicia la investigación?,easy,direct_concept,híbrido,13,0,0,1,0.0769
+23,¿Qué es el No Ejercicio de la Acción Penal?,medium,direct_concept,híbrido,2,1,1,1,0.5
+24,¿Qué requisitos se necesitan cumplir para la aplicación de un criterio de oportunidad?,medium,direct_concept,híbrido,2,1,1,1,0.5
+25,¿Qué requisitos son necesarios para que pueda proceder el procedimiento abreviado?,medium,direct_concept,híbrido,2,1,1,1,0.5
+26,¿Qué constituye la conducta de un juez consistente en dar consejos extrajudicialmente a las partes sobre el procedimiento penal?,hard,semantic_paraphrase,híbrido,4,1,1,1,0.25
+27,Menciona las etapas del procedimiento penal acusatorio.,medium,direct_concept,híbrido,2,1,1,1,0.5
+28,¿Qué sanción amerita que un Ministerio Público se ausente de una audiencia sin causa justificada?,medium,direct_fact,híbrido,1,1,1,1,1.0
+29,Menciona las excepciones al principio de publicidad.,medium,direct_concept,híbrido,1,1,1,1,1.0
+30,¿Cuáles son los lineamientos para realizar una inspección por parte de los cuerpos de seguridad en caso de flagrancia?,medium,direct_concept,híbrido,2,1,1,1,0.5
+31,¿Qué se entiende por reclasificación jurídica?,medium,direct_concept,híbrido,2,1,1,1,0.5
+32,"¿Qué proceso inicia cuando un imputado infringe una medida cautelar establecida en las fracciones V, VII, VIII, IX, XII y XIII del artículo 155 del Código Nacional de Procedimientos Penales?",hard,direct_fact,híbrido,1,1,1,1,1.0
+33,¿Cómo se garantiza el derecho a la defensa en caso de reclasificación jurídica en la etapa de juicio oral?,hard,semantic_paraphrase,híbrido,2,1,1,1,0.5
+34,¿En qué casos procede la suspensión de la medida cautelar?,medium,direct_concept,híbrido,3,1,1,1,0.3333
+35,¿Qué autos y resoluciones deben constar por escrito?,medium,direct_concept,híbrido,1,1,1,1,1.0
+36,¿En qué término se debe promover la apelación en contra de resoluciones que versen sobre la negativa por parte del Ministerio Público de realizar actos de investigación que requieren control judicial?,medium,direct_fact,híbrido,9,0,1,1,0.1111
+37,¿Pueden ser responsables penalmente las personas jurídicas?,medium,direct_concept,híbrido,1,1,1,1,1.0
+38,¿En qué término se debe promover el recurso de revocación contra resoluciones emitidas durante audiencia?,medium,direct_fact,híbrido,1,1,1,1,1.0
+39,"¿Cuál es la diferencia entre un indicio, dato de prueba, medio de prueba y prueba?",hard,conceptual_distinction,híbrido,14,0,0,1,0.0714
+40,¿Qué es la teoría del caso?,medium,direct_concept,híbrido,12,0,0,1,0.0833
+41,¿Cuáles son las etapas de la audiencia inicial?,medium,direct_concept,híbrido,2,1,1,1,0.5
+42,¿En qué término se debe dictar el auto de vinculación a proceso?,medium,direct_fact,híbrido,58,0,0,0,0.0172
+43,¿Qué se requiere para que se dicte un auto de vinculación a proceso?,medium,direct_concept,híbrido,6,0,1,1,0.1667
+44,¿Qué se entiende por verdad material?,hard,semantic_paraphrase,híbrido,126,0,0,0,0.0079
+45,"Una vez iniciada la investigación en sede ministerial, ¿en qué término el Ministerio Público debe determinar la situación jurídica del detenido?",hard,semantic_paraphrase,híbrido,39,0,0,0,0.0256
+46,¿Cuál es la principal condición epistemológica de la prueba?,hard,direct_concept,híbrido,5,1,1,1,0.2
+47,¿Qué finalidades tiene el proceso penal acusatorio?,easy,direct_concept,híbrido,550,0,0,0,0.0018
+48,¿A qué se refiere el término “cadena de custodia”?,easy,direct_concept,híbrido,1,1,1,1,1.0
+49,¿Cuáles son las reglas para reproducir un documento en la audiencia de juicio oral?,medium,semantic_paraphrase,híbrido,5,1,1,1,0.2
+50,¿En dónde reside la legitimidad del poder punitivo según César Beccaria?,hard,direct_concept,híbrido,3,1,1,1,0.3333
+51,¿Qué criterios son necesarios para conservar íntegramente la evidencia?,medium,direct_concept,híbrido,6,0,1,1,0.1667
+52,¿Cuál es el papel de la víctima en el modelo abolicionista?,hard,semantic_paraphrase,híbrido,38,0,0,0,0.0263
+53,¿Qué es la prueba tasada?,hard,semantic_paraphrase,híbrido,3,1,1,1,0.3333

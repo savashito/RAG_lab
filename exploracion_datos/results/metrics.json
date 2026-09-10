@@ -10,7 +10,7 @@
       10,
       20
     ],
-    "timestamp": "2026-09-08T21:03:02+00:00"
+    "timestamp": "2026-09-08T21:18:28+00:00"
   },
   "metrics": {
     "global": {
@@ -34,6 +34,13 @@
         "recall@10": 0.3529,
         "recall@20": 0.4412,
         "MRR": 0.1764
+      },
+      "rewrite-solo": {
+        "n": 34,
+        "recall@5": 0.4118,
+        "recall@10": 0.5294,
+        "recall@20": 0.6765,
+        "MRR": 0.2946
       },
       "multi-query": {
         "n": 34,
@@ -65,6 +72,13 @@
         "recall@20": 1.0,
         "MRR": 0.525
       },
+      "rewrite-solo": {
+        "n": 2,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.6667
+      },
       "multi-query": {
         "n": 2,
         "recall@5": 1.0,
@@ -94,6 +108,13 @@
         "recall@10": 0.4444,
         "recall@20": 0.4444,
         "MRR": 0.0993
+      },
+      "rewrite-solo": {
+        "n": 9,
+        "recall@5": 0.7778,
+        "recall@10": 0.8889,
+        "recall@20": 1.0,
+        "MRR": 0.4306
       },
       "multi-query": {
         "n": 9,
@@ -125,6 +146,13 @@
         "recall@20": 0.3333,
         "MRR": 0.1034
       },
+      "rewrite-solo": {
+        "n": 18,
+        "recall@5": 0.1667,
+        "recall@10": 0.2778,
+        "recall@20": 0.5,
+        "MRR": 0.1455
+      },
       "multi-query": {
         "n": 18,
         "recall@5": 0.1667,
@@ -154,6 +182,13 @@
         "recall@10": 0.6,
         "recall@20": 0.6,
         "MRR": 0.4387
+      },
+      "rewrite-solo": {
+        "n": 5,
+        "recall@5": 0.4,
+        "recall@10": 0.6,
+        "recall@20": 0.6,
+        "MRR": 0.4377
       },
       "multi-query": {
         "n": 5,
@@ -185,6 +220,13 @@
         "recall@20": 0.0,
         "MRR": 0.0111
       },
+      "rewrite-solo": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0083
+      },
       "multi-query": {
         "n": 2,
         "recall@5": 0.0,
@@ -214,6 +256,13 @@
         "recall@10": 0.0,
         "recall@20": 0.0,
         "MRR": 0.005
+      },
+      "rewrite-solo": {
+        "n": 5,
+        "recall@5": 0.4,
+        "recall@10": 0.6,
+        "recall@20": 0.6,
+        "MRR": 0.2235
       },
       "multi-query": {
         "n": 5,
@@ -245,6 +294,13 @@
         "recall@20": 0.2857,
         "MRR": 0.0383
       },
+      "rewrite-solo": {
+        "n": 7,
+        "recall@5": 0.0,
+        "recall@10": 0.1429,
+        "recall@20": 0.5714,
+        "MRR": 0.0543
+      },
       "multi-query": {
         "n": 7,
         "recall@5": 0.1429,
@@ -275,6 +331,13 @@
         "recall@20": 1.0,
         "MRR": 0.2381
       },
+      "rewrite-solo": {
+        "n": 2,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.5,
+        "MRR": 0.0384
+      },
       "multi-query": {
         "n": 2,
         "recall@5": 0.0,
@@ -299,6 +362,13 @@
         "MRR": 0.3333
       },
       "híbrido": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 1.0
+      },
+      "rewrite-solo": {
         "n": 1,
         "recall@5": 1.0,
         "recall@10": 1.0,
@@ -335,6 +405,13 @@
         "recall@20": 1.0,
         "MRR": 0.05
       },
+      "rewrite-solo": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.3333
+      },
       "multi-query": {
         "n": 1,
         "recall@5": 1.0,
@@ -364,6 +441,13 @@
         "recall@10": 0.0,
         "recall@20": 0.0,
         "MRR": 0.0074
+      },
+      "rewrite-solo": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.3333
       },
       "multi-query": {
         "n": 1,
@@ -395,6 +479,13 @@
         "recall@20": 1.0,
         "MRR": 0.1667
       },
+      "rewrite-solo": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0091
+      },
       "multi-query": {
         "n": 1,
         "recall@5": 0.0,
@@ -424,6 +515,13 @@
         "recall@10": 0.3333,
         "recall@20": 0.6667,
         "MRR": 0.3633
+      },
+      "rewrite-solo": {
+        "n": 3,
+        "recall@5": 0.3333,
+        "recall@10": 0.3333,
+        "recall@20": 0.3333,
+        "MRR": 0.3467
       },
       "multi-query": {
         "n": 3,
@@ -455,6 +553,13 @@
         "recall@20": 0.0,
         "MRR": 0.0063
       },
+      "rewrite-solo": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.1667
+      },
       "multi-query": {
         "n": 1,
         "recall@5": 0.0,
@@ -484,6 +589,13 @@
         "recall@10": 0.6,
         "recall@20": 0.6,
         "MRR": 0.2886
+      },
+      "rewrite-solo": {
+        "n": 10,
+        "recall@5": 0.8,
+        "recall@10": 0.9,
+        "recall@20": 1.0,
+        "MRR": 0.5542
       },
       "multi-query": {
         "n": 10,

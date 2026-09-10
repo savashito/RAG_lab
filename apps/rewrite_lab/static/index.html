@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rewrite Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<style>
+ :root{color-scheme:light dark}
+ body{font:14px/1.5 system-ui,sans-serif;margin:0;background:#0f1115;color:#e6e6e6}
+ header{padding:14px 20px;background:#171a21;border-bottom:1px solid #2a2f3a}
+ h1{font-size:16px;margin:0} h2{font-size:14px;color:#9aa4b2;margin:26px 0 8px;border-top:1px solid #2a2f3a;padding-top:18px}
+ .wrap{max-width:1200px;margin:0 auto;padding:20px}
+ textarea{width:100%;min-height:170px;background:#0b0d12;color:#e6e6e6;border:1px solid #2a2f3a;
+   border-radius:8px;padding:12px;font:13px/1.5 ui-monospace,monospace;box-sizing:border-box}
+ .row{display:flex;gap:12px;align-items:center;margin:12px 0;flex-wrap:wrap}
+ button{background:#3b82f6;color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer}
+ button.ghost{background:#232833} button.danger{background:#7f1d1d;padding:4px 9px;font-size:12px}
+ button:disabled{opacity:.5;cursor:default}
+ select,input[type=text]{background:#0b0d12;color:#e6e6e6;border:1px solid #2a2f3a;border-radius:8px;padding:8px}
+ input[type=text]{min-width:220px}
+ table{border-collapse:collapse;width:100%;margin-top:10px;font-size:13px}
+ th,td{border:1px solid #2a2f3a;padding:6px 8px;text-align:left;vertical-align:top}
+ th{background:#171a21} td.r{text-align:center;font-weight:700;width:46px}
+ .cards{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+ .card{background:#171a21;border:1px solid #2a2f3a;border-radius:10px;padding:12px 16px;min-width:170px}
+ .card h3{margin:0 0 6px;font-size:13px;color:#9aa4b2}
+ .m{display:flex;justify-content:space-between;gap:16px}
+ .muted{color:#9aa4b2}.rw{color:#a5d6ff}.spin{display:none}
+ .legend{background:#171a21;border:1px solid #2a2f3a;border-radius:8px;padding:10px 14px;font-size:13px;color:#c7cdd6;margin:8px 0}
+ .legend ul{margin:6px 0 0;padding-left:18px} .legend li{margin:2px 0}
+ th[title]{cursor:help;text-decoration:underline dotted}
+ .hist{width:100%} .hist td{cursor:default}
+ canvas{background:#0b0d12;border:1px solid #2a2f3a;border-radius:8px;padding:8px;margin-top:10px;max-height:340px}
+ .tabs{display:flex;gap:4px;padding:0 20px;background:#171a21;border-bottom:1px solid #2a2f3a}
+ .tabs button{background:transparent;color:#9aa4b2;border:0;border-bottom:2px solid transparent;
+   border-radius:0;padding:11px 16px;font-weight:600}
+ .tabs button.active{color:#e6e6e6;border-bottom-color:#3b82f6}
+ .tabpage[hidden]{display:none}
+ .ans{background:#0b0d12;border:1px solid #2a2f3a;border-left:3px solid #3b82f6;border-radius:8px;
+   padding:2px 16px;margin-top:12px}
+ .ans h1,.ans h2,.ans h3{border:0;padding:0;margin:14px 0 6px;color:#e6e6e6;font-size:15px}
+ .ans p{margin:8px 0} .ans ul,.ans ol{margin:8px 0;padding-left:22px} .ans li{margin:3px 0}
+ .ans code{background:#171a21;padding:1px 5px;border-radius:4px;font-size:12px}
+ .ans strong{color:#fff} .ans table{margin:8px 0} .ans blockquote{border-left:3px solid #3b82f6;margin:8px 0;padding-left:12px;color:#c7cdd6}
+ .badge{float:right;font:11px ui-monospace,monospace;background:#0b0d12;border:1px solid #2a2f3a;
+   border-radius:6px;padding:2px 7px;color:#a5d6ff}
+ .chunk{background:#171a21;border:1px solid #2a2f3a;border-radius:8px;padding:10px 14px;margin:8px 0}
+ .chunk h4{margin:0 0 4px;font-size:13px;color:#a5d6ff}
+ .chunk .body{font:12px/1.5 ui-monospace,monospace;color:#c7cdd6;max-height:180px;overflow:auto;white-space:pre-wrap}
+ details summary{cursor:pointer;color:#9aa4b2;margin-top:10px}
+</style>
+</head>
+<body>
+<header><h1>🧪 Rewrite Lab — experimenta y compara prompts de query rewriting</h1></header>
+<div class="tabs">
+  <button id="tabbtn-rewrite" class="active" onclick="showTab('rewrite')">Rewrite Lab</button>
+  <button id="tabbtn-ask" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
+</div>
+<div id="tab-rewrite" class="wrap tabpage">
+ <p class="muted">Pega un <b>system prompt</b>, elige el test set y el subset, y corre.</p>
+ <div class="legend">
+   Cada celda es el <b>rank del chunk correcto</b> (la posición en que el buscador lo trae; <b>1</b>=primero/ideal, <b>∞</b>=no apareció en 1500). Colores: 🟩 ≤5 · 🟨 ≤20 · 🟧 ≤100 · 🟥 &gt;100.
+   <ul>
+     <li><b>orig</b> — buscas con tu <b>pregunta tal cual</b> (consulta original, sin tocar).</li>
+     <li><b>rw</b> — buscas con <b>solo la reescritura</b> del LLM (coloquial → jurídico).</li>
+     <li><b>mq</b> — <b>multi-query</b>: buscas con la original <b>y</b> la reescritura, y fusionas los resultados (RRF).</li>
+   </ul>
+   La idea: comparar si reescribir la pregunta sube el chunk correcto (rw/mq mejores que orig).
+ </div>
+ <textarea id="prompt"></textarea>
+ <div class="row">
+   <label>Test set: <select id="golden"></select></label>
+   <label>Subset: <select id="subset">
+     <option value="hard">hard + very_hard</option>
+     <option value="muestra">primeras 6</option>
+     <option value="todas">todas</option>
+   </select></label>
+   <button id="run">▶ Correr</button>
+   <span class="spin" id="spin">⏳ reescribiendo con el LLM… (~1-2s por pregunta)</span>
+ </div>
+ <div id="cards" class="cards"></div>
+ <div id="out"></div>
+
+ <div id="saverow" class="row" style="display:none">
+   <input type="text" id="label" placeholder="Etiqueta de esta corrida (ej. 'prompt terso v2')">
+   <button id="save" class="ghost">💾 Guardar corrida</button>
+   <span id="savemsg" class="muted"></span>
+ </div>
+
+ <h2>Historial y comparación</h2>
+ <div class="row">
+   <button id="refresh" class="ghost">↻ Recargar historial</button>
+   <label>Métrica gráfica: <select id="metric">
+     <option>recall@5</option><option selected>recall@10</option><option>recall@20</option><option>MRR</option>
+   </select></label>
+   <label>Heatmap método: <select id="hmethod">
+     <option value="rank_mq" selected>multi-query</option>
+     <option value="rank_rewrite">rewrite-solo</option>
+     <option value="rank_orig">orig</option>
+   </select></label>
+   <button id="compare">📊 Comparar seleccionadas</button>
+ </div>
+ <div id="history"></div>
+ <canvas id="chart" style="display:none"></canvas>
+ <div id="heatmap"></div>
+</div>
+
+<div id="tab-ask" class="wrap tabpage" hidden>
+ <p class="muted">Elige el <b>método de recuperación</b>, trae los 5 chunks más cercanos y deja que el LLM (Llama) responda usándolos como contexto.</p>
+ <div class="row">
+   <label>Pregunta:
+     <select id="ask-mode">
+       <option value="free">escribir</option>
+       <option value="golden">elegir del set</option>
+     </select>
+   </label>
+   <label id="ask-golden-wrap" style="display:none">set: <select id="ask-golden"></select></label>
+   <label>Método: <select id="ask-setting"></select></label>
+   <label>Top-k: <select id="ask-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
+ </div>
+ <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…" style="min-height:80px"></textarea>
+ <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
+ <details id="ask-prompt-box" style="margin-top:10px">
+   <summary>⚙️ System prompt (editable — experimenta con distintos prompts)</summary>
+   <textarea id="ask-system" style="min-height:120px;margin-top:8px"></textarea>
+   <div class="row"><button id="ask-prompt-reset" class="ghost">↺ Restaurar default</button>
+     <span class="muted">Se usa este texto como instrucción del asistente en cada respuesta.</span></div>
+ </details>
+ <div class="row">
+   <button id="ask-run">▶ Responder</button>
+   <span class="spin" id="ask-spin">⏳ recuperando + generando con el LLM…</span>
+ </div>
+ <div id="ask-out"></div>
+</div>
+
+<script>
+let lastRun=null, chart=null, ASK_SYSTEM_DEFAULT='';
+const $=id=>document.getElementById(id);
+function color(r){ if(r==null) return '#7f1d1d'; if(r<=5) return '#166534'; if(r<=20) return '#3f6212';
+  if(r<=100) return '#854d0e'; return '#7f1d1d'; }
+function cell(r){ return `<td class="r" style="background:${color(r)}">${r==null?'∞':r}</td>`; }
+const METHODS=['denso (orig)','rewrite-solo','multi-query'];
+
+const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function showTab(name){
+  for(const t of ['rewrite','ask']){
+    $('tab-'+t).hidden = (t!==name);
+    $('tabbtn-'+t).classList.toggle('active', t===name);
+  }
+}
+async function loadConfig(){ try{ const c=await (await fetch('/api/config')).json();
+  $('prompt').value=c.default_prompt||'';
+  const opts=(c.goldens||[]).map(g=>`<option ${g===c.default_golden?'selected':''}>${g}</option>`).join('');
+  $('golden').innerHTML=opts;
+  $('ask-golden').innerHTML=opts;
+  $('ask-setting').innerHTML=(c.ask_settings||['orig']).map(s=>`<option>${s}</option>`).join('');
+  ASK_SYSTEM_DEFAULT=c.ask_system||'';
+  $('ask-system').value=ASK_SYSTEM_DEFAULT;
+  loadAskQuestions();
+  }catch(e){} }
+
+async function loadAskQuestions(){
+  try{
+    const g=$('ask-golden').value;
+    const qs=await (await fetch('/api/questions?golden='+encodeURIComponent(g))).json();
+    $('ask-golden-q').innerHTML=qs.map(x=>`<option value="${esc(x.q)}">#${x.i} [${x.difficulty}] ${esc(x.q)}</option>`).join('');
+  }catch(e){}
+}
+
+function askModeChange(){
+  const golden=$('ask-mode').value==='golden';
+  $('ask-golden-wrap').style.display=golden?'inline':'none';
+  $('ask-golden-q').style.display=golden?'block':'none';
+  $('ask-question').style.display=golden?'none':'block';
+}
+
+async function askRun(){
+  const b=$('ask-run'), s=$('ask-spin'); b.disabled=true; s.style.display='inline'; $('ask-out').innerHTML='';
+  const question=$('ask-mode').value==='golden' ? $('ask-golden-q').value : $('ask-question').value;
+  try{
+    const d=await (await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question, setting:$('ask-setting').value, k:+$('ask-k').value,
+        system:$('ask-system').value})})).json();
+    if(d.error){ $('ask-out').innerHTML='<p style="color:#f87171">Error: '+esc(d.error)+'</p>'; return; }
+    const skind=d.score_kind||'', fmt=v=>(skind==='dist'?v.toFixed(4):(skind==='rrf'?v.toFixed(4):v.toFixed(2)));
+    let h=`<div class="row muted" style="margin-top:14px">método: <b>${esc(d.setting)}</b> · score: <b>${esc(skind||'—')}</b> · ${d.chunks.length} chunks · ${d.seconds}s</div>`;
+    if(d.rewrite) h+=`<div class="muted">↳ reescritura: <span class="rw">${esc(d.rewrite)}</span></div>`;
+    h+=`<div class="ans">${marked.parse(d.answer||'')}</div>`;
+    h+=`<details open><summary>📄 ${d.chunks.length} chunks usados como contexto (score = ${esc(skind)})</summary>`+
+      d.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
+        <span class="badge">${esc(skind)}: ${fmt(ch.score)}</span></h4>
+        <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details>`;
+    $('ask-out').innerHTML=h;
+  }catch(e){ $('ask-out').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
+  finally{ b.disabled=false; s.style.display='none'; }
+}
+
+async function run(){
+  const b=$('run'), s=$('spin'); b.disabled=true; s.style.display='inline';
+  $('out').innerHTML=''; $('cards').innerHTML=''; $('saverow').style.display='none';
+  try{
+    const d=await (await fetch('/run',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt:$('prompt').value, subset:$('subset').value, golden:$('golden').value})})).json();
+    if(d.error){ $('out').innerHTML='<p style="color:#f87171">Error: '+d.error+'</p>'; return; }
+    lastRun={prompt:$('prompt').value, subset:$('subset').value, golden:$('golden').value, result:d};
+    $('cards').innerHTML=METHODS.map(name=>{ const m=d.agg[name];
+      return `<div class="card"><h3>${name}</h3>`+Object.entries(m).map(([k,v])=>
+        `<div class="m"><span class="muted">${k}</span><b>${v}</b></div>`).join('')+`</div>`;
+    }).join('')+`<div class="card"><h3>info</h3><div class="m"><span class="muted">preguntas</span><b>${d.n}</b></div>
+      <div class="m"><span class="muted">tiempo</span><b>${d.seconds}s</b></div></div>`;
+    let h='<table><tr><th>#</th><th>dif</th>'+
+      '<th title="rank del chunk correcto usando la pregunta ORIGINAL, sin tocar">orig</th>'+
+      '<th title="rank usando SOLO la reescritura del LLM (coloquial→jurídico)">rw</th>'+
+      '<th title="multi-query: original + reescritura fusionadas por RRF">mq</th>'+
+      '<th>pregunta → reescritura</th></tr>';
+    for(const r of d.rows){ h+=`<tr><td>${r.idx}</td><td>${r.difficulty}</td>`+
+      cell(r.rank_orig)+cell(r.rank_rewrite)+cell(r.rank_mq)+
+      `<td>${r.question}<br><span class="rw">↳ ${r.rewrite}</span></td></tr>`; }
+    $('out').innerHTML=h+'</table>'; $('saverow').style.display='flex'; $('savemsg').textContent='';
+  }catch(e){ $('out').innerHTML='<p style="color:#f87171">'+e+'</p>'; }
+  finally{ b.disabled=false; s.style.display='none'; }
+}
+
+async function save(){
+  if(!lastRun) return;
+  const body={label:$('label').value||'sin nombre', ...lastRun};
+  const d=await (await fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)})).json();
+  $('savemsg').textContent='guardada #'+d.id; $('label').value=''; loadHistory();
+}
+
+async function loadHistory(){
+  const runs=await (await fetch('/runs')).json();
+  if(!runs.length){ $('history').innerHTML='<p class="muted">Sin corridas guardadas todavía.</p>'; return; }
+  let h='<table class="hist"><tr><th></th><th>#</th><th>etiqueta</th><th>fecha</th><th>test set</th><th>subset</th><th>n</th>'+
+    '<th>rec@10 (d/rw/mq)</th><th>MRR (d/rw/mq)</th><th></th></tr>';
+  for(const r of runs){ const m=r.metrics||{};
+    const g=k=>METHODS.map(x=>(m[x]&&m[x][k]!=null)?m[x][k]:'–').join(' / ');
+    h+=`<tr><td><input type="checkbox" class="pick" value="${r.id}"></td><td>${r.id}</td>
+      <td>${r.label||''}</td><td class="muted">${(r.created_at||'').slice(0,19).replace('T',' ')}</td>
+      <td>${r.golden||''}</td><td>${r.subset}</td><td>${r.n}</td><td>${g('recall@10')}</td><td>${g('MRR')}</td>
+      <td><button class="danger" onclick="del(${r.id})">✕</button></td></tr>`; }
+  $('history').innerHTML=h+'</table>';
+}
+async function del(id){ await fetch('/runs/'+id,{method:'DELETE'}); loadHistory(); }
+
+async function compare(){
+  const ids=[...document.querySelectorAll('.pick:checked')].map(c=>+c.value);
+  if(ids.length<1){ alert('Selecciona al menos una corrida'); return; }
+  const runs=await Promise.all(ids.map(id=>fetch('/runs/'+id).then(r=>r.json())));
+  drawChart(runs); drawHeatmap(runs);
+}
+
+function drawChart(runs){
+  const metric=$('metric').value;
+  const datasets=runs.map((r,i)=>({label:`#${r.id} ${r.label||''}`,
+    data:METHODS.map(m=>(r.metrics[m]&&r.metrics[m][metric]!=null)?r.metrics[m][metric]:0),
+    backgroundColor:`hsl(${i*67%360} 70% 50%)`}));
+  const c=$('chart'); c.style.display='block';
+  if(chart) chart.destroy();
+  chart=new Chart(c,{type:'bar',data:{labels:METHODS,datasets},
+    options:{plugins:{title:{display:true,text:metric+' por método',color:'#e6e6e6'},legend:{labels:{color:'#e6e6e6'}}},
+      scales:{x:{ticks:{color:'#9aa4b2'}},y:{beginAtZero:true,max:1,ticks:{color:'#9aa4b2'}}}}});
+}
+
+function drawHeatmap(runs){
+  const method=$('hmethod').value;
+  const idxs=[...new Set(runs.flatMap(r=>r.rows.map(x=>x.idx)))].sort((a,b)=>a-b);
+  const maps=runs.map(r=>Object.fromEntries(r.rows.map(x=>[x.idx,x[method]])));
+  const qtext=Object.fromEntries(runs.flatMap(r=>r.rows.map(x=>[x.idx,x.question])));
+  let h=`<p class="muted">Heatmap — rank del gold (${method}) por pregunta × corrida:</p>`+
+    '<table><tr><th>#</th>'+runs.map(r=>`<th>#${r.id} ${r.label||''}</th>`).join('')+'<th>pregunta</th></tr>';
+  for(const i of idxs){ h+=`<tr><td>${i}</td>`+
+    maps.map(mp=> (i in mp)?cell(mp[i]):'<td class="r muted">·</td>').join('')+
+    `<td class="muted">${(qtext[i]||'').slice(0,70)}</td></tr>`; }
+  $('heatmap').innerHTML=h+'</table>';
+}
+
+$('run').addEventListener('click',run);
+$('save').addEventListener('click',save);
+$('refresh').addEventListener('click',loadHistory);
+$('compare').addEventListener('click',compare);
+$('ask-run').addEventListener('click',askRun);
+$('ask-mode').addEventListener('change',askModeChange);
+$('ask-golden').addEventListener('change',loadAskQuestions);
+$('ask-prompt-reset').addEventListener('click',()=>{ $('ask-system').value=ASK_SYSTEM_DEFAULT; });
+loadConfig(); loadHistory();
+</script>
+</body>
+</html>

@@ -181,6 +181,8 @@ def write_results(out_dir, orders, golden, texts, ks, meta):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--k', type=int, nargs='+', default=[5, 10, 20])
+    ap.add_argument('--golden', default=str(GOLDEN),
+                    help='ruta al test set (JSON con q/source/answer/difficulty/type). Default: golden_penal.json')
     ap.add_argument('--out', default=str(HERE / 'results'),
                     help='directorio donde escribir results.csv / evaluation_results.csv / metrics.json / results.md')
     ap.add_argument('--rerank', action='store_true',
@@ -197,7 +199,7 @@ def main():
     if args.rerank and not args.embed_model:
         args.embed_model = 'Qwen/Qwen3-Embedding-0.6B'
 
-    golden = json.load(open(GOLDEN))
+    golden = json.load(open(args.golden))
     questions = [g['q'] for g in golden]
 
     documents = clean_corpus(read_markdown_dir(CORPUS_DIR))
@@ -229,6 +231,9 @@ def main():
             print(f'multi-query: {len(rewrites)} reescrituras generadas con {llm.model}')
         rw_vecs = tei.embed([Q_INSTRUCT + r for r in rewrites], cache_key_model=args.embed_model)
         rw_dense = [list(np.argsort(-(cvecs @ rw_vecs[i]))) for i in range(len(questions))]
+        # 'rewrite-solo' = denso SÓLO con la reescritura (mide si el rewrite cierra el
+        # gap por sí mismo); 'multi-query' = RRF(original, rewrite) (cobertura unida).
+        orders['rewrite-solo'] = rw_dense
         orders['multi-query'] = [rrf([orders['denso'][i], rw_dense[i]]) for i in range(len(questions))]
     if args.rerank:
         print(f'reranking top-{args.candidates} del híbrido con {tei.model_id} ...')
@@ -266,7 +271,7 @@ def main():
 
     # (4) Persistir a disco para analizar fuera del notebook.
     meta = {
-        'golden': GOLDEN.name, 'n_questions': len(golden), 'n_chunks': len(texts),
+        'golden': Path(args.golden).name, 'n_questions': len(golden), 'n_chunks': len(texts),
         'embed_model': args.embed_model or served, 'served': served,
         'ks': list(ks), 'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
     }

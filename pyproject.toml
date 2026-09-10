@@ -14,6 +14,8 @@ dependencies = [
     # proper sentence segmentation (Lab 03) — pure-Python, no model download
     "pysbd>=0.3.4",
     "pandas>=3.0.5",
+    "fastapi>=0.141.1",
+    "uvicorn>=0.52.4",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,224 @@
+{
+  "meta": {
+    "golden": "golden_eval1_penal.json",
+    "n_questions": 54,
+    "n_chunks": 3616,
+    "embed_model": "Qwen/Qwen3-Embedding-0.6B",
+    "served": "Qwen/Qwen3-Embedding-0.6B",
+    "ks": [
+      5,
+      10,
+      20
+    ],
+    "timestamp": "2026-09-09T20:07:22+00:00"
+  },
+  "metrics": {
+    "global": {
+      "denso": {
+        "n": 54,
+        "recall@5": 0.6852,
+        "recall@10": 0.7407,
+        "recall@20": 0.8519,
+        "MRR": 0.5326
+      },
+      "bm25": {
+        "n": 54,
+        "recall@5": 0.4259,
+        "recall@10": 0.5,
+        "recall@20": 0.5741,
+        "MRR": 0.3086
+      },
+      "híbrido": {
+        "n": 54,
+        "recall@5": 0.6111,
+        "recall@10": 0.6852,
+        "recall@20": 0.8333,
+        "MRR": 0.454
+      }
+    },
+    "difficulty:easy": {
+      "denso": {
+        "n": 8,
+        "recall@5": 0.75,
+        "recall@10": 0.875,
+        "recall@20": 0.875,
+        "MRR": 0.5121
+      },
+      "bm25": {
+        "n": 8,
+        "recall@5": 0.25,
+        "recall@10": 0.375,
+        "recall@20": 0.375,
+        "MRR": 0.1183
+      },
+      "híbrido": {
+        "n": 8,
+        "recall@5": 0.25,
+        "recall@10": 0.25,
+        "recall@20": 0.75,
+        "MRR": 0.2963
+      }
+    },
+    "difficulty:medium": {
+      "denso": {
+        "n": 35,
+        "recall@5": 0.7714,
+        "recall@10": 0.8286,
+        "recall@20": 0.9429,
+        "MRR": 0.659
+      },
+      "bm25": {
+        "n": 35,
+        "recall@5": 0.4857,
+        "recall@10": 0.5429,
+        "recall@20": 0.6286,
+        "MRR": 0.3417
+      },
+      "híbrido": {
+        "n": 35,
+        "recall@5": 0.7143,
+        "recall@10": 0.8286,
+        "recall@20": 0.9143,
+        "MRR": 0.5537
+      }
+    },
+    "difficulty:hard": {
+      "denso": {
+        "n": 11,
+        "recall@5": 0.3636,
+        "recall@10": 0.3636,
+        "recall@20": 0.5455,
+        "MRR": 0.1457
+      },
+      "bm25": {
+        "n": 11,
+        "recall@5": 0.3636,
+        "recall@10": 0.4545,
+        "recall@20": 0.5455,
+        "MRR": 0.3414
+      },
+      "híbrido": {
+        "n": 11,
+        "recall@5": 0.5455,
+        "recall@10": 0.5455,
+        "recall@20": 0.6364,
+        "MRR": 0.2517
+      }
+    },
+    "type:conceptual_distinction": {
+      "denso": {
+        "n": 1,
+        "recall@5": 1.0,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.3333
+      },
+      "bm25": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.0,
+        "MRR": 0.0213
+      },
+      "híbrido": {
+        "n": 1,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 1.0,
+        "MRR": 0.0714
+      }
+    },
+    "type:direct_concept": {
+      "denso": {
+        "n": 27,
+        "recall@5": 0.7778,
+        "recall@10": 0.8148,
+        "recall@20": 0.8889,
+        "MRR": 0.6049
+      },
+      "bm25": {
+        "n": 27,
+        "recall@5": 0.4444,
+        "recall@10": 0.4815,
+        "recall@20": 0.5926,
+        "MRR": 0.2614
+      },
+      "híbrido": {
+        "n": 27,
+        "recall@5": 0.7037,
+        "recall@10": 0.8148,
+        "recall@20": 0.963,
+        "MRR": 0.4875
+      }
+    },
+    "type:direct_fact": {
+      "denso": {
+        "n": 14,
+        "recall@5": 0.7143,
+        "recall@10": 0.7857,
+        "recall@20": 0.9286,
+        "MRR": 0.6962
+      },
+      "bm25": {
+        "n": 14,
+        "recall@5": 0.6429,
+        "recall@10": 0.7143,
+        "recall@20": 0.7857,
+        "MRR": 0.5499
+      },
+      "híbrido": {
+        "n": 14,
+        "recall@5": 0.7143,
+        "recall@10": 0.7857,
+        "recall@20": 0.8571,
+        "MRR": 0.6928
+      }
+    },
+    "type:direct_principle": {
+      "denso": {
+        "n": 3,
+        "recall@5": 0.6667,
+        "recall@10": 1.0,
+        "recall@20": 1.0,
+        "MRR": 0.1976
+      },
+      "bm25": {
+        "n": 3,
+        "recall@5": 0.0,
+        "recall@10": 0.3333,
+        "recall@20": 0.3333,
+        "MRR": 0.0614
+      },
+      "híbrido": {
+        "n": 3,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "recall@20": 0.6667,
+        "MRR": 0.067
+      }
+    },
+    "type:semantic_paraphrase": {
+      "denso": {
+        "n": 9,
+        "recall@5": 0.3333,
+        "recall@10": 0.3333,
+        "recall@20": 0.5556,
+        "MRR": 0.1951
+      },
+      "bm25": {
+        "n": 9,
+        "recall@5": 0.2222,
+        "recall@10": 0.3333,
+        "recall@20": 0.3333,
+        "MRR": 0.1889
+      },
+      "híbrido": {
+        "n": 9,
+        "recall@5": 0.4444,
+        "recall@10": 0.4444,
+        "recall@20": 0.4444,
+        "MRR": 0.154
+      }
+    }
+  }
+}

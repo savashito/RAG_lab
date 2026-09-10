@@ -1,0 +1,35 @@
+idx,difficulty,type,rank_orig,rank_rewrite,rank_mq,diagnostico,question
+0,easy,direct_principle,10,3,4,rewrite_cierra_gap,¿Se puede tratar a un acusado como culpable antes de que un juez dicte sentencia?
+1,easy,direct_concept,1,1,1,sin_cambio,¿Qué grado de certeza necesita el tribunal para poder condenar a una persona?
+11,hard,colloquial_to_legal,118,162,118,sin_cambio,"Si los policías agarran a alguien y no lo dejan ir, ¿qué límite legal existe para que eso no sea arbitrario?"
+12,hard,colloquial_to_legal,74,2,7,rewrite_cierra_gap,¿Me pueden volver a acusar por algo de lo que ya salí absuelto?
+13,hard,colloquial_to_legal,269,10,29,rewrite_cierra_gap,"Si los policías consiguieron algo importante para inculparme pero lo obtuvieron violando mis derechos, ¿todavía lo pueden usar?"
+14,hard,colloquial_to_legal,66,88,68,sin_cambio,¿Puede mi abogado pelearse legalmente con las pruebas que presenta el Ministerio Público?
+15,hard,colloquial_to_legal,47,2,7,rewrite_cierra_gap,¿Puede la persona afectada y el acusado arreglarse entre ellos para terminar el problema?
+16,hard,negative_question,7,33,4,fusion_ayuda,¿No basta con que una persona esté acusada para considerarla responsable penalmente?
+17,hard,negative_question,3,1,2,rewrite_cierra_gap,¿No puede una persona ser sometida indefinidamente a nuevos procesos por el mismo acontecimiento?
+18,hard,negative_question,60,101,76,otro,¿No toda información obtenida durante una investigación tiene automáticamente el valor de una prueba?
+19,hard,conceptual_distinction,62,26,16,rewrite_cierra_gap,"Si la fiscalía tiene información obtenida durante la investigación pero el juez todavía no la ha escuchado en juicio, ¿qué categoría tiene?"
+20,hard,conceptual_distinction,23,25,21,fusion_ayuda,¿En qué momento deja de ser solo información de investigación y adquiere formalmente valor de prueba?
+21,hard,conceptual_distinction,64,195,103,otro,¿Una declaración tomada por la policía ya es automáticamente prueba suficiente para condenar?
+22,hard,causal_reasoning,500,282,383,otro,¿Por qué una entrevista tomada durante la investigación no puede simplemente copiarse en una sentencia?
+23,hard,conceptual_distinction,11,18,12,sin_cambio,¿Todo objeto encontrado en una escena del crimen puede considerarse inmediatamente una prueba judicial?
+24,hard,conceptual_distinction,185,11,26,rewrite_cierra_gap,¿Puede algo ser útil para orientar una investigación sin haber alcanzado todavía el nivel de prueba?
+25,hard,conceptual_distinction,6,20,5,fusion_ayuda,¿Qué diferencia existe entre encontrar algo sospechoso y poder utilizarlo formalmente para demostrar un hecho ante un juez?
+26,hard,conceptual_reasoning,13,18,16,sin_cambio,¿Tener una enorme cantidad de elementos de investigación garantiza que exista evidencia suficiente?
+27,hard,conceptual_reasoning,6,47,15,otro,¿Qué importa más para determinar si los datos permiten sostener una hipótesis: cuántos hay o qué tan útiles son?
+28,hard,conceptual_distinction,16,10,8,fusion_ayuda,¿Puede una evidencia estar relacionada con el caso y aun así ser insuficiente para demostrar quién fue responsable?
+2,medium,semantic_paraphrase,27,1,8,rewrite_cierra_gap,¿Cómo se garantiza que la evidencia recogida en la escena no se altere ni se cambie?
+3,medium,semantic_paraphrase,1188,8,48,rewrite_cierra_gap,"Si la policía obtiene una prueba violando derechos, ¿esa prueba puede usarse en el juicio?"
+4,medium,semantic_paraphrase,309,1,30,rewrite_cierra_gap,¿Puede la víctima llegar a un arreglo con el acusado para resolver el asunto sin llegar a juicio?
+5,medium,semantic_paraphrase,18,12,10,fusion_ayuda,"Aunque una persona haya sido acusada, ¿la autoridad puede comportarse como si su culpabilidad ya estuviera demostrada?"
+6,medium,semantic_paraphrase,1,2,2,sin_cambio,"Si todavía existe una duda razonable sobre lo ocurrido, ¿qué impide que el tribunal declare culpable al acusado?"
+7,medium,semantic_paraphrase,2,4,2,sin_cambio,¿Qué mecanismo evita que una persona sea juzgada nuevamente por exactamente los mismos hechos?
+8,medium,semantic_paraphrase,129,3,25,rewrite_cierra_gap,¿Qué permite que la defensa cuestione la evidencia utilizada por la fiscalía?
+9,medium,legal_paraphrase,56,3,7,rewrite_cierra_gap,¿Qué resolución judicial hace que una persona pase formalmente a enfrentar un proceso penal?
+10,medium,semantic_paraphrase,227,4,12,rewrite_cierra_gap,¿Puede un juez imponer varias restricciones al imputado al mismo tiempo mientras continúa el procedimiento?
+29,very_hard,multi_concept_reasoning,26,110,47,otro,"Si existe información que apunta hacia un posible responsable, pero todavía no ha sido sometida a contradicción ante el juez, ¿qué impide tratarla como prueba definitiva?"
+30,very_hard,precise_conceptual_retrieval,575,6,50,rewrite_cierra_gap,¿Qué distingue a un elemento que solo permite orientar una inferencia de uno que puede utilizarse formalmente para acreditar un hecho en una sentencia?
+31,very_hard,causal_reasoning,94,77,70,fusion_ayuda,"Si un objeto fue correctamente localizado y asegurado, ¿eso significa por sí solo que conserva su valor y autenticidad durante todo el procedimiento?"
+32,very_hard,semantic_paraphrase,1,1,1,sin_cambio,¿Qué procedimiento permite demostrar que un objeto presentado posteriormente ante la autoridad es el mismo que originalmente fue localizado durante la investigación?
+33,very_hard,semantic_paraphrase,1,1,1,sin_cambio,"Si una evidencia pasa por varias personas y lugares antes de llegar al juicio, ¿qué sistema permite reconstruir y controlar ese recorrido?"

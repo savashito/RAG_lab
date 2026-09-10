@@ -2,18 +2,18 @@
 
 - Test set: `golden_penal.json` · preguntas: 34 · chunks: 3616
 - Embeddings (caché): `Qwen/Qwen3-Embedding-0.6B` · TEI sirve: `Qwen/Qwen3-Embedding-0.6B`
-- Métodos: denso, bm25, híbrido, multi-query · k = [5, 10, 20]
-- Generado: 2026-09-08T21:03:02+00:00
+- Métodos: denso, bm25, híbrido, rewrite-solo, multi-query · k = [5, 10, 20]
+- Generado: 2026-09-08T21:18:28+00:00
 
 ## Global (todas las preguntas)
 
-|  | denso | bm25 | híbrido | multi-query |
-| --- | --- | --- | --- | --- |
-| n | 34.0 | 34.0 | 34.0 | 34.0 |
-| recall@5 | 0.176 | 0.118 | 0.235 | 0.265 |
-| recall@10 | 0.294 | 0.176 | 0.353 | 0.441 |
-| recall@20 | 0.412 | 0.265 | 0.441 | 0.588 |
-| MRR | 0.176 | 0.075 | 0.176 | 0.196 |
+|  | denso | bm25 | híbrido | rewrite-solo | multi-query |
+| --- | --- | --- | --- | --- | --- |
+| n | 34.0 | 34.0 | 34.0 | 34.0 | 34.0 |
+| recall@5 | 0.176 | 0.118 | 0.235 | 0.412 | 0.265 |
+| recall@10 | 0.294 | 0.176 | 0.353 | 0.529 | 0.441 |
+| recall@20 | 0.412 | 0.265 | 0.441 | 0.676 | 0.588 |
+| MRR | 0.176 | 0.075 | 0.176 | 0.295 | 0.196 |
 
 ## Por dificultad — híbrido
 
