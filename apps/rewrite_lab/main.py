@@ -27,6 +27,13 @@ from fastapi.responses import FileResponse, JSONResponse
 HERE = Path(__file__).resolve().parent
 LABS = HERE.parents[1]
 sys.path.insert(0, str(LABS))
+sys.path.insert(0, str(HERE))   # para importar módulos del propio app (auth) con uvicorn o script
+
+# Config del app (auth, DB, URLs de TEI/LLM) desde apps/rewrite_lab/.env. Se carga
+# ANTES de shared.db (que carga el .env de la raíz): así este .env manda en prod.
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(HERE / '.env')
 
 from shared.db import connect
 from shared.lexical import BM25, rank_indices_by_score, rrf, tokenize
@@ -268,6 +275,17 @@ def ask(question, setting, k=5, system=None):
 load_corpus_index()   # índice BM25 en memoria para la tab de RAG (bm25 / híbrido)
 
 app = FastAPI(title='Rewrite Lab')
+
+# Puerta de autenticación con Google (primer paso de acceso). En local, si no hay
+# credenciales configuradas, no se instala y el app queda abierto como antes.
+from auth import install_auth  # noqa: E402  (import local del app, tras crear `app`)
+
+install_auth(app)
+
+
+@app.get('/healthz')
+def healthz():
+    return {'ok': True}
 
 
 @app.get('/')
