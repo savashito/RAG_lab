@@ -23,6 +23,7 @@ import os
 from authlib.integrations.starlette_client import OAuth
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 ALLOWED_EMAILS = {e.strip().lower() for e in os.environ.get('ALLOWED_EMAILS', '').split(',') if e.strip()}
@@ -77,12 +78,12 @@ def install_auth(app) -> bool:
                        https_only=True, same_site='lax')
 
     @app.get('/login')
-    async def login(request):
+    async def login(request: Request):
         redirect_uri = REDIRECT_URL or str(request.url_for('auth_callback'))
         return await oauth.google.authorize_redirect(request, redirect_uri)
 
     @app.get('/auth/callback', name='auth_callback')
-    async def auth_callback(request):
+    async def auth_callback(request: Request):
         try:
             token = await oauth.google.authorize_access_token(request)
         except Exception as e:
@@ -95,7 +96,7 @@ def install_auth(app) -> bool:
         return RedirectResponse('/')
 
     @app.get('/logout')
-    async def logout(request):
+    async def logout(request: Request):
         request.session.clear()
         return RedirectResponse('/login')
 
