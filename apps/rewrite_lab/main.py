@@ -263,7 +263,7 @@ def ask(question, setting, k=5, system=None):
         for ch in top)
     answer = llm.chat((system or ASK_SYSTEM).strip() or ASK_SYSTEM,
                       f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}',
-                      max_tokens=700, timeout=180)
+                      max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
             'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1)}
 
