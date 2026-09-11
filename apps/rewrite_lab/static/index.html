@@ -55,8 +55,8 @@
 <body>
 <header><h1>🧪 Rewrite Lab — experimenta y compara prompts de query rewriting</h1></header>
 <div class="tabs">
-  <button id="tabbtn-rewrite" class="active" onclick="showTab('rewrite')">Rewrite Lab</button>
-  <button id="tabbtn-ask" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
+  <button id="tabbtn-ask" class="active" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
+  <button id="tabbtn-rewrite"  onclick="showTab('rewrite')">Rewrite Lab</button>
 </div>
 <div id="tab-rewrite" class="wrap tabpage">
  <p class="muted">Pega un <b>system prompt</b>, elige el test set y el subset, y corre.</p>
@@ -287,6 +287,7 @@ $('ask-mode').addEventListener('change',askModeChange);
 $('ask-golden').addEventListener('change',loadAskQuestions);
 $('ask-prompt-reset').addEventListener('click',()=>{ $('ask-system').value=ASK_SYSTEM_DEFAULT; });
 loadConfig(); loadHistory();
+showTab('ask');
 </script>
 </body>
 </html>

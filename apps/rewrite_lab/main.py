@@ -176,11 +176,7 @@ def eval_prompt(system_prompt, kind, golden_name):
 # y le pide la respuesta al LLM local (Llama). Para bm25/híbrido se necesita el texto
 # de todos los chunks en memoria; se carga una vez al arrancar.
 ASK_SYSTEM = (
-    'Eres un asistente jurídico del sistema penal acusatorio mexicano. Responde la '
-    'pregunta ÚNICAMENTE con base en los fragmentos de CONTEXTO proporcionados '
-    '(extractos del Código Nacional de Procedimientos Penales y de doctrina). Si el '
-    'contexto no contiene la respuesta, dilo con claridad y no inventes. Cita la fuente '
-    'o el artículo entre corchetes cuando puedas. Fundamenta y motiva con suficiente vocabulario tus respuestas, hazlo de manera clara, veridica y suficiente.'
+    'Eres un asistente jurídico del sistema penal acusatorio mexicano. Responde la pregunta ÚNICAMENTE con base en los fragmentos de CONTEXTO proporcionados (extractos del Código Nacional de Procedimientos Penales, del Código Penal Federal, de la Constitución Política de los Estados Unidos Mexicanos y de doctrina). Si el contexto no contiene la respuesta, dilo con claridad y no inventes. Menciona en tu respuesta exactamente el articulo y ley de donde sacas la informacion, asimismo, cita al final de tu respuesta las fuentes doctrinales conforme a los lineamientos editoriales. Responde con suficiente vocabulario tus respuestas, hazlo de manera clara, veridica y oportuna.'
 )
 print(ASK_SYSTEM)
 DOC_BY_ID: dict[int, dict] = {}   # id -> {source,title,hierarchy,text}
