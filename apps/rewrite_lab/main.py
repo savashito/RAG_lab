@@ -19,9 +19,10 @@ import json
 import os
 import sys
 import time
+import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, File, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 HERE = Path(__file__).resolve().parent
@@ -40,9 +41,14 @@ from shared.lexical import BM25, rank_indices_by_score, rrf, tokenize
 from shared.llm_client import REWRITE_SYSTEM, LlamaClient
 from shared.tei_client import TEIClient
 
+from ingest_service import IngestManager
+
 EXPLO = LABS / 'exploracion_datos'
 STATIC = HERE / 'static'
 TABLE = os.environ.get('LEGAL_TABLE', 'sistema_penal__qwen06__legal')
+# Dónde persisten los .md limpios (visualizables) y dónde caen los PDFs subidos.
+CLEAN_DIR = Path(os.environ.get('CLEAN_MD_DIR', LABS / 'ingestion' / 'out_clean' / 'Sistema Penal Acusatorio'))
+UPLOAD_DIR = Path(os.environ.get('UPLOAD_DIR', LABS / 'ingestion' / '.uploads'))
 Q_INSTRUCT = 'Instruct: Recupera el pasaje del código o la doctrina que responde la pregunta.\nQuery: '
 KS = (5, 10, 20)
 N_DENSE = 1500   # profundidad del ranking denso traído de pgvector para calcular el rank
@@ -270,6 +276,13 @@ def ask(question, setting, k=5, system=None):
 
 load_corpus_index()   # índice BM25 en memoria para la tab de RAG (bm25 / híbrido)
 
+# Gestor de ingesta de PDFs (tab "Ingestar"). Comparte tabla, TEI y conexión con el
+# resto del app; al terminar recarga el índice en memoria para que los chunks nuevos
+# sean buscables de inmediato en la tab de RAG.
+ingest_mgr = IngestManager(table=TABLE, tei=tei, connect_fn=connect,
+                           clean_dir=CLEAN_DIR, upload_dir=UPLOAD_DIR,
+                           on_complete=load_corpus_index)
+
 app = FastAPI(title='Rewrite Lab')
 
 # Puerta de autenticación con Google (primer paso de acceso). En local, si no hay
@@ -303,6 +316,58 @@ def api_questions(golden: str = ''):
     ds = get_dataset(golden or DEFAULT_GOLDEN)
     return [{'i': i, 'q': g['q'], 'difficulty': g.get('difficulty', '')}
             for i, g in enumerate(ds['golden'])]
+
+
+# ── Tab "Ingestar documentos" ─────────────────────────────────────────────────────
+# Sube uno o varios PDFs → genera Markdown → limpieza (se guarda el .md limpio para
+# visualizar) → chunking por estructura (estrategia auto por documento) → embeddings
+# (TEI en rtx5090) → upsert por documento en pgvector. Corre en segundo plano; la UI
+# consulta el progreso por polling. Toda la lógica vive en `ingest_service`.
+@app.post('/ingest/upload')
+async def ingest_upload(files: list[UploadFile] = File(...)):
+    pdfs = [f for f in files if (f.filename or '').lower().endswith('.pdf')]
+    if not pdfs:
+        return JSONResponse({'error': 'Sube al menos un archivo .pdf'}, status_code=400)
+    # Guardar en un subdirectorio único por subida y con el nombre ORIGINAL: así el
+    # `source` del documento sale del nombre real del PDF (no de un nombre temporal),
+    # y a la vez se evita cualquier colisión entre subidas concurrentes.
+    job_dir = UPLOAD_DIR / uuid.uuid4().hex
+    job_dir.mkdir(parents=True, exist_ok=True)
+    saved: list[Path] = []
+    for f in pdfs:
+        dest = job_dir / Path(f.filename).name
+        dest.write_bytes(await f.read())
+        saved.append(dest)
+    try:
+        job_id = ingest_mgr.start(saved)
+    except RuntimeError as e:   # ya hay una ingesta en curso
+        for p in saved:
+            p.unlink(missing_ok=True)
+        return JSONResponse({'error': str(e)}, status_code=409)
+    return {'job_id': job_id}
+
+
+@app.get('/ingest/status/{job_id}')
+def ingest_status(job_id: str):
+    job = ingest_mgr.status(job_id)
+    if job is None:
+        return JSONResponse({'error': 'job desconocido'}, status_code=404)
+    return job
+
+
+@app.get('/ingest/documents')
+def ingest_documents():
+    """Documentos ya presentes en la tabla (source + nº de chunks)."""
+    return ingest_mgr.documents()
+
+
+@app.get('/ingest/clean')
+def ingest_clean(source: str):
+    """Markdown limpio de un documento ya procesado, para visualizarlo en la UI."""
+    try:
+        return {'source': source, 'text': ingest_mgr.read_clean(source)}
+    except FileNotFoundError as e:
+        return JSONResponse({'error': str(e)}, status_code=404)
 
 
 @app.post('/ask')

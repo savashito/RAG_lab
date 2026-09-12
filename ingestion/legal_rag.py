@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, ".")
+from ingestion.pipeline import copy_rows, ensure_index, ensure_table
 from shared.db import connect
 from shared.legal_chunking import chunk_documents, clean_corpus, read_markdown_dir
 from shared.lexical import BM25, rank_indices_by_score, rrf, tokenize
@@ -45,9 +46,6 @@ CHUNKER = "legal"
 
 # Qwen3-Embedding rinde mejor con una instrucción en la consulta (no en los documentos).
 Q_INSTRUCT = "Instruct: Recupera el pasaje del código o la doctrina que responde la pregunta.\nQuery: "
-
-# Columnas de metadata que viajan junto al vector (además de source/text/model).
-META_COLS = ["title", "hierarchy", "unit_type", "position", "part", "words"]
 
 
 def table_name(corpus: str = CORPUS, model: str = MODEL_ALIAS, chunker: str = CHUNKER) -> str:
@@ -76,26 +74,15 @@ def store_chunks(chunks, vectors, dim: int, model: str, table: str) -> None:
     `table` se interpola directo en el SQL (un nombre de tabla no puede ir como
     parámetro %s), así que debe ser un nombre de código, nunca entrada de usuario.
     """
-    columns = ["source", *META_COLS, "text", "model", "embedding"]
+    # Reconstrucción completa: se borra la tabla y se recrea desde cero. El esquema,
+    # el índice ANN y el COPY viven en `ingestion.pipeline` (única fuente de verdad),
+    # compartidos con la ingesta incremental del app/CLI. Orden deliberado —tabla →
+    # COPY → índice— para construir el HNSW una sola vez sobre la tabla ya llena.
     with connect() as connection, connection.cursor() as cursor:
         cursor.execute(f"DROP TABLE IF EXISTS {table}")
-        cursor.execute(
-            f"CREATE TABLE {table} ("
-            f"id bigserial PRIMARY KEY, source text, title text, hierarchy text, "
-            f"unit_type text, position int, part int, words int, "
-            f"text text, model text, embedding vector({dim}))"
-        )
-        with cursor.copy(f"COPY {table} ({', '.join(columns)}) FROM STDIN") as copy:
-            for row, vector in zip(chunks.itertuples(index=False), vectors):
-                copy.write_row((
-                    row.source, row.title, row.hierarchy, row.unit_type,
-                    int(row.position), int(row.part), int(row.words),
-                    row.text_for_embedding, model, vector,
-                ))
-        connection.commit()
-        # Índice ANN para búsquedas rápidas (coseno).
-        cursor.execute(
-            f"CREATE INDEX ON {table} USING hnsw (embedding vector_cosine_ops)")
+        ensure_table(cursor, table, dim)
+        copy_rows(cursor, table, chunks, vectors, model)
+        ensure_index(cursor, table)
         connection.commit()
 
 

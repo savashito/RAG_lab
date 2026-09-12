@@ -1,26 +1,38 @@
 # Rewrite Lab
 
-Laboratorio web para **experimentar prompts de query rewriting** contra los modelos
-locales (LLM en la rtx5090 + embedder TEI) y la base pgvector. Pegas un system-prompt,
-eliges un set de preguntas del golden, y ves en vivo:
+Laboratorio web con tres tabs:
 
-- la **reescritura** de cada pregunta,
-- el **rank del gold chunk** con la consulta original, con la reescrita sola, y con
-  multi-query (RRF), calculado con retrieval denso desde **pgvector**,
-- métricas agregadas (`recall@k`, `MRR`) por método.
+1. **💬 Preguntar (RAG)** — recupera chunks y responde con el LLM local.
+2. **Rewrite Lab** — **experimenta prompts de query rewriting**: pegas un
+   system-prompt, eliges un golden set, y ves en vivo la reescritura, el rank del
+   gold chunk (original / reescrita / multi-query, retrieval denso desde pgvector)
+   y métricas agregadas (`recall@k`, `MRR`).
+3. **📥 Ingestar documentos** — sube uno o varios **PDFs** legales y el app hace, en
+   segundo plano, el pipeline completo: PDF → Markdown → **limpieza** (guarda el
+   `.md` limpio para visualizarlo) → **chunking por estructura** (estrategia auto
+   por documento) → **embeddings** (TEI, rtx5090) → **upsert por documento** en
+   pgvector. Reporta, por documento, **qué estrategias se probaron y cuál ganó**
+   (como el notebook de exploración) y refresca el índice en memoria para que los
+   chunks nuevos sean buscables de inmediato en la tab de RAG.
 
 ## Estructura
 
 ```
 apps/rewrite_lab/
   main.py            # backend FastAPI (lógica + endpoints)
+  ingest_service.py  # gestor de jobs de ingesta en segundo plano (tab "Ingestar")
   static/index.html  # UI (se sirve estática; pide /api/config al cargar)
   README.md
 ```
 
 Reusa la librería del repo: `shared/llm_client.py` (rewrite), `shared/tei_client.py`
-(embeddings), `shared/lexical.py` (RRF), `shared/db.py` (pgvector). El prompt por
-defecto es `shared.llm_client.REWRITE_SYSTEM`.
+(embeddings), `shared/lexical.py` (RRF), `shared/db.py` (pgvector) y el pipeline de
+ingesta `ingestion/pipeline.py`. El prompt por defecto es
+`shared.llm_client.REWRITE_SYSTEM`.
+
+> **Dependencias del tab de ingesta:** la conversión PDF→Markdown usa el extra
+> `parse` (pymupdf4llm). Instala el entorno completo con `uv sync --all-extras`
+> (un `--extra parse` a secas REEMPLAZA el set y desinstalaría deps de otros labs).
 
 ## Correr local (dev)
 
@@ -48,7 +60,9 @@ uv run uvicorn apps.rewrite_lab.main:app --host 0.0.0.0 --port 8050
 | `LLM_URL` | `http://localhost:41499` | llama-server (query rewriting) |
 | `TEI_URL` | `http://localhost:8085` | embeddings (TEI) |
 | `RAG_DB_*` | (ver `shared/db.py`) | Postgres/pgvector |
-| `LEGAL_TABLE` | `sistema_penal__qwen06__legal` | tabla de vectores ya ingestada |
+| `LEGAL_TABLE` | `sistema_penal__qwen06__legal` | tabla de vectores (destino del upsert del tab de ingesta) |
+| `CLEAN_MD_DIR` | `ingestion/out_clean/Sistema Penal Acusatorio` | dónde persisten los `.md` limpios (visualizables) |
+| `UPLOAD_DIR` | `ingestion/.uploads` | dónde caen los PDFs subidos (temporales) |
 | `HOST` / `PORT` | `127.0.0.1` / `8050` | bind del servidor (usa `0.0.0.0` para exponerlo) |
 
 En el server, en vez de `localhost`, `LLM_URL`/`TEI_URL` apuntan a como la rtx sea

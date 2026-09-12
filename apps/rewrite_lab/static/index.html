@@ -57,6 +57,7 @@
 <div class="tabs">
   <button id="tabbtn-ask" class="active" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
   <button id="tabbtn-rewrite"  onclick="showTab('rewrite')">Rewrite Lab</button>
+  <button id="tabbtn-ingest"  onclick="showTab('ingest')">📥 Ingestar documentos</button>
 </div>
 <div id="tab-rewrite" class="wrap tabpage" hidden>
  <p class="muted">Pega un <b>system prompt</b>, elige el test set y el subset, y corre.</p>
@@ -137,6 +138,43 @@
  <div id="ask-out"></div>
 </div>
 
+<div id="tab-ingest" class="wrap tabpage" hidden>
+ <p class="muted">Sube uno o varios <b>PDFs</b> de documentos legales. Por cada uno se hace:
+   PDF → Markdown → <b>limpieza</b> (se guarda el .md limpio para verlo) →
+   <b>chunking por estructura</b> (la estrategia se elige sola por documento) →
+   <b>embeddings</b> (TEI en la rtx5090) → <b>upsert</b> en <code id="ing-table">pgvector</code>.
+   Re-subir un documento reemplaza su versión anterior; los demás quedan intactos.</p>
+
+ <div class="legend">
+   El reporte por documento muestra <b>qué estrategias se probaron</b> y <b>cuál ganó</b>
+   (igual que el notebook de exploración): <b>article</b> (leyes/códigos, un artículo = un chunk),
+   <b>heading</b> (doctrina con secciones), <b>paragraph</b> (prosa sin estructura fuerte).
+ </div>
+
+ <div class="row">
+   <input type="file" id="ing-files" accept="application/pdf,.pdf" multiple>
+   <button id="ing-run">▶ Ingestar</button>
+   <span class="spin" id="ing-spin">⏳ procesando… (puede tardar minutos con varios PDFs)</span>
+ </div>
+ <div id="ing-msg" class="muted"></div>
+ <div id="ing-progress"></div>
+
+ <h2>Corpus actual</h2>
+ <div class="row"><button id="ing-refresh" class="ghost">↻ Recargar</button>
+   <span class="muted">documentos ya insertados en la tabla</span></div>
+ <div id="ing-docs"></div>
+</div>
+
+<div id="ing-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;padding:4vh 4vw">
+ <div style="background:#171a21;border:1px solid #2a2f3a;border-radius:8px;max-width:900px;margin:0 auto;height:92vh;display:flex;flex-direction:column">
+   <div class="row" style="padding:12px 16px;border-bottom:1px solid #2a2f3a;justify-content:space-between">
+     <b id="ing-modal-title">Markdown limpio</b>
+     <button class="ghost" onclick="closeClean()">✕ Cerrar</button>
+   </div>
+   <pre id="ing-modal-body" style="overflow:auto;margin:0;padding:16px;white-space:pre-wrap;font-size:12px;color:#c7cdd6"></pre>
+ </div>
+</div>
+
 <script>
 let lastRun=null, chart=null, ASK_SYSTEM_DEFAULT='';
 const $=id=>document.getElementById(id);
@@ -147,10 +185,11 @@ const METHODS=['denso (orig)','rewrite-solo','multi-query'];
 
 const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function showTab(name){
-  for(const t of ['rewrite','ask']){
+  for(const t of ['rewrite','ask','ingest']){
     $('tab-'+t).hidden = (t!==name);
     $('tabbtn-'+t).classList.toggle('active', t===name);
   }
+  if(name==='ingest') loadDocuments();
 }
 async function loadConfig(){ try{ const c=await (await fetch('/api/config')).json();
   $('prompt').value=c.default_prompt||'';
@@ -160,6 +199,7 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
   $('ask-setting').innerHTML=(c.ask_settings||['orig']).map(s=>`<option>${s}</option>`).join('');
   ASK_SYSTEM_DEFAULT=c.ask_system||'';
   $('ask-system').value=ASK_SYSTEM_DEFAULT;
+  if(c.table) $('ing-table').textContent=c.table;
   loadAskQuestions();
   }catch(e){} }
 
@@ -279,6 +319,94 @@ function drawHeatmap(runs){
     `<td class="muted">${(qtext[i]||'').slice(0,70)}</td></tr>`; }
   $('heatmap').innerHTML=h+'</table>';
 }
+
+// ── Tab "Ingestar documentos" ──────────────────────────────────────────────────
+const STRAT_LABEL={article:'ARTICLE (leyes/códigos)',heading:'HEADING (doctrina)',paragraph:'PARAGRAPH (prosa)'};
+let ingTimer=null;
+
+async function loadDocuments(){
+  try{
+    const docs=await (await fetch('/ingest/documents')).json();
+    if(!docs.length){ $('ing-docs').innerHTML='<p class="muted">La tabla aún no tiene documentos.</p>'; return; }
+    const total=docs.reduce((a,d)=>a+d.chunks,0);
+    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th></th></tr>`;
+    for(const d of docs){ const btn=d.clean_available
+        ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
+        : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
+      h+=`<tr><td>${esc(d.source)}</td><td>${d.chunks}</td><td>${btn}</td></tr>`; }
+    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos</td><td class="muted">${total}</td><td></td></tr></table>`;
+  }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
+}
+
+async function ingestRun(){
+  const input=$('ing-files');
+  if(!input.files.length){ alert('Elige al menos un PDF'); return; }
+  const fd=new FormData();
+  for(const f of input.files) fd.append('files', f);
+  const b=$('ing-run'); b.disabled=true; $('ing-spin').style.display='inline';
+  $('ing-msg').textContent=''; $('ing-progress').innerHTML='';
+  try{
+    const d=await (await fetch('/ingest/upload',{method:'POST',body:fd})).json();
+    if(d.error){ $('ing-msg').innerHTML='<span style="color:#f87171">'+esc(d.error)+'</span>'; return; }
+    pollIngest(d.job_id);
+  }catch(e){ $('ing-msg').innerHTML='<span style="color:#f87171">'+esc(e)+'</span>'; b.disabled=false; $('ing-spin').style.display='none'; }
+}
+
+function pollIngest(jobId){
+  clearInterval(ingTimer);
+  ingTimer=setInterval(async ()=>{
+    try{
+      const job=await (await fetch('/ingest/status/'+jobId)).json();
+      renderIngest(job);
+      if(job.status!=='running'){
+        clearInterval(ingTimer);
+        $('ing-run').disabled=false; $('ing-spin').style.display='none';
+        $('ing-files').value='';
+        loadDocuments();
+      }
+    }catch(e){}
+  }, 1200);
+}
+
+function renderIngest(job){
+  const h=(job.files||[]).map(f=>{
+    const r=f.report||{};
+    let head=`<h3>${esc(f.pdf_name)} ${f.source?('→ '+esc(f.source)):''}</h3>`;
+    let status;
+    if(f.error) status=`<div class="m"><span style="color:#f87171">✗ ${esc(f.error)}</span></div>`;
+    else if(!f.done) status=`<div class="m"><span class="muted">${esc(f.stage)}</span><b>${esc(f.message)}</b></div>`;
+    else status=`<div class="m"><span class="muted">estado</span><b style="color:#4ade80">✓ ${f.replaced?'reemplazado':'insertado'} · ${f.n_chunks} chunks</b></div>`;
+    let body='';
+    if(r.strategy){
+      body+=`<div class="m"><span class="muted">estrategia</span><b>${esc(STRAT_LABEL[r.strategy]||r.strategy)}</b></div>`;
+      body+=`<div class="muted" style="margin:4px 0 8px">${esc(r.strategy_reason||'')}</div>`;
+      body+='<table style="margin:4px 0"><tr><th></th><th>estrategia</th><th>evidencia</th></tr>'+
+        (r.candidates||[]).map(c=>`<tr><td>${c.qualifies?'✓':'·'}${c.strategy===r.strategy?' ←':''}</td>
+          <td>${esc(c.strategy)}</td><td class="muted">${esc(c.evidence)}</td></tr>`).join('')+'</table>';
+      const rm=r.removed_by_reason||{};
+      if(Object.keys(rm).length) body+=`<div class="muted">🧹 limpieza: ${Object.entries(rm).map(([k,v])=>esc(k)+'='+v).join(', ')}</div>`;
+      body+=`<div class="muted">unidades: ${r.n_units} (p50 ${r.unit_words_p50}w · p90 ${r.unit_words_p90}w · max ${r.unit_words_max}w)`+
+        (r.n_chunks!=null?` → <b>${r.n_chunks} chunks</b>`:'')+`</div>`;
+    }
+    const viewBtn=f.clean_available?`<div style="margin-top:8px"><button class="ghost" onclick="viewClean('${esc(f.source)}')">👁 ver md limpio</button></div>`:'';
+    return `<div class="card" style="min-width:340px;text-align:left">${head}${status}${body}${viewBtn}</div>`;
+  }).join('');
+  $('ing-progress').innerHTML=`<div class="cards" style="margin-top:12px">${h}</div>`;
+}
+
+async function viewClean(source){
+  try{
+    const d=await (await fetch('/ingest/clean?source='+encodeURIComponent(source))).json();
+    if(d.error){ alert(d.error); return; }
+    $('ing-modal-title').textContent='Markdown limpio — '+source;
+    $('ing-modal-body').textContent=d.text;
+    $('ing-modal').style.display='block';
+  }catch(e){ alert(e); }
+}
+function closeClean(){ $('ing-modal').style.display='none'; }
+
+$('ing-run').addEventListener('click',ingestRun);
+$('ing-refresh').addEventListener('click',loadDocuments);
 
 $('run').addEventListener('click',run);
 $('save').addEventListener('click',save);

@@ -40,3 +40,5 @@ static/demo/
 # ── Ingestion lab: user PDFs and generated Markdown (do not commit) ──
 ingestion/pdfs/
 ingestion/out/
+ingestion/out_clean/    # Markdown LIMPIO generado por el pipeline (visualizable)
+ingestion/.uploads/     # PDFs subidos por el tab del app (temporales)

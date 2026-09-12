@@ -12,7 +12,7 @@ set -euo pipefail
 # leyendo el --port del proceso en el server. Si la detección falla, usa el último
 # conocido (fallback) para no tumbar el resto de túneles.
 LLAMA_PORT=$(ssh -o ConnectTimeout=8 rtx5090 'p=$(pgrep -f llama-server | head -1); tr "\0" "\n" < /proc/$p/cmdline | grep -A1 "^--port$" | tail -1' 2>/dev/null || true)
-[[ "$LLAMA_PORT" =~ ^[0-9]+$ ]] || LLAMA_PORT=58387
+[[ "$LLAMA_PORT" =~ ^[0-9]+$ ]] || LLAMA_PORT=1237
 
 echo "Tunnels (Ctrl-C to close both):"
 echo "  localhost:5433 -> srv1312754:5432   Postgres/pgvector"

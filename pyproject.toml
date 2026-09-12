@@ -20,6 +20,8 @@ dependencies = [
     "authlib>=1.3",
     "httpx>=0.27",
     "itsdangerous>=2.2",
+    # Subida de archivos (multipart) para el tab de ingesta de apps/rewrite_lab.
+    "python-multipart>=0.0.9",
 ]
 
 [project.optional-dependencies]

@@ -54,6 +54,58 @@ Convert **once, ahead of time**; store both the original PDF and the `.md` in
 MinIO so it's reproducible and inspectable. Then any lab can chunk the `.md` and
 retrieve over it — e.g. drop the `.md` files into a lab's `corpus/` folder.
 
+## Automatizado: ingerir documentos legales nuevos (incremental)
+
+`convert.py` sólo hace PDF→Markdown. Para el flujo **completo y automatizado** de
+un documento legal nuevo — convertir, **limpiar**, **chunkear con la estrategia
+correcta**, **embeber** e **insertar** — usa el pipeline reutilizable:
+
+```
+PDF ─► Markdown ─► limpieza (guarda el .md limpio) ─► chunking por estructura
+    ─► embeddings (TEI, rtx5090) ─► upsert por documento en pgvector
+```
+
+Toda la lógica vive en [`pipeline.py`](pipeline.py) (funciones de una sola
+responsabilidad, sin CLI ni HTTP): reutiliza la limpieza y el chunking validados
+en `shared/legal_chunking.py`, donde **la estrategia se elige sola por documento**
+(`article` para leyes/códigos, `heading` para doctrina, `paragraph` para prosa).
+El CLI y el tab web del app son cáscaras delgadas encima.
+
+### CLI
+
+```bash
+uv sync --all-extras                                    # necesita el extra `parse`
+
+# uno o varios PDFs (crea la tabla si falta; cada doc reemplaza sólo SUS filas)
+uv run python ingestion/ingest_documents.py "ruta/al/Documento.pdf" otro.pdf
+uv run python ingestion/ingest_documents.py --in "ingestion/pdfs/Nuevos"
+
+# sólo ver qué estrategia elige y por qué, SIN tocar la BD
+uv run python ingestion/ingest_documents.py doc.pdf --dry-run
+```
+
+Imprime, por documento, **qué estrategias se probaron y cuál ganó** (con su
+evidencia: densidad de artículos, nº de encabezados), qué se limpió, y cuántos
+chunks quedaron — el mismo razonamiento de las secciones 2–5 del notebook
+`exploracion_datos/exploracion_chunking_corpus.ipynb`, ahora por documento.
+
+### Incremental vs. reconstrucción
+
+- `ingest_documents.py` (y el tab del app) hacen **upsert por documento**: la tabla
+  se crea si no existe (nunca se borra) y cada `source` reemplaza sólo sus propias
+  filas. El corpus **crece** sin re-embeber todo.
+- `legal_rag.py ingest` **reconstruye** toda la tabla desde el corpus en disco
+  (`DROP` + recrear). Útil para un rebuild limpio; no para agregar un solo doc.
+
+Ambos comparten el mismo esquema e inserción (`pipeline.ensure_schema` /
+`pipeline.copy_rows`), así que las tablas quedan idénticas por cualquiera de las dos
+vías. El `source` canónico de un PDF es `<nombre>.md` (misma convención que el
+corpus ya ingestado), para que reconvertir un documento lo reemplace bien.
+
+> **Guarda de dimensión:** insertar en una tabla existente exige que TEI sirva el
+> **mismo embedder** con que se creó (misma dimensión de vector). Si no coincide,
+> el pipeline falla con un mensaje claro en vez de corromper la búsqueda.
+
 ## Experiment: RAG on real papers (Root Apical Meristem)
 
 `ram_rag.py` runs the full pipeline over a real corpus (10 plant-biology PDFs +
