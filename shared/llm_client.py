@@ -57,6 +57,22 @@ class LlamaClient:
         resp = json.load(urllib.request.urlopen(req, timeout=timeout))
         return resp['choices'][0]['message']['content'].strip()
 
+    def chat_messages(self, messages: list[dict], temperature: float = 0.1,
+                      max_tokens: int = 80, timeout: int = 60) -> str:
+        """Como `chat`, pero recibe la lista completa de mensajes ya armada
+        ([{role, content}, ...]) para conversaciones multi-turno."""
+        body = json.dumps({
+            'model': self.model,
+            'messages': messages,
+            'temperature': temperature,
+            'max_tokens': max_tokens,
+            'chat_template_kwargs': {'enable_thinking': False},
+        }).encode()
+        req = urllib.request.Request(self.url + '/v1/chat/completions', data=body,
+                                     headers={'Content-Type': 'application/json'})
+        resp = json.load(urllib.request.urlopen(req, timeout=timeout))
+        return resp['choices'][0]['message']['content'].strip()
+
     def rewrite_legal(self, question: str) -> str:
         """Pregunta coloquial → enunciado jurídico breve (para query rewriting)."""
         return self.chat(REWRITE_SYSTEM, question)

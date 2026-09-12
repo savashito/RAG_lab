@@ -1,8 +1,15 @@
 # Rewrite Lab
 
-Laboratorio web con tres tabs:
+Laboratorio web con cuatro tabs:
 
 1. **💬 Preguntar (RAG)** — recupera chunks y responde con el LLM local.
+1. **🗨️ Conversacional** — chat **multi-turno** con el LLM. El historial de
+   conversaciones se guarda **solo en el navegador** (IndexedDB, como la WebUI de
+   llama.cpp), nunca en el servidor. El LLM recibe los turnos previos (memoria de la
+   charla), pero el **retrieval RAG se hace únicamente sobre la última pregunta** del
+   usuario y las fuentes mostradas son las de ese turno (no se acumulan). Barra lateral
+   con lista de conversaciones (nueva / seleccionar / borrar) y selector de método +
+   top-k. Endpoint: `POST /chat` (recibe `messages`, no persiste nada).
 2. **Rewrite Lab** — **experimenta prompts de query rewriting**: pegas un
    system-prompt, eliges un golden set, y ves en vivo la reescritura, el rank del
    gold chunk (original / reescrita / multi-query, retrieval denso desde pgvector)
@@ -68,7 +75,7 @@ uv run uvicorn apps.rewrite_lab.main:app --host 0.0.0.0 --port 8050
 
 | var | default | qué es |
 |---|---|---|
-| `LLM_URL` | `http://localhost:41499` | llama-server (query rewriting) |
+| `LLM_URL` | `http://localhost:1237` | llama-server (query rewriting) |
 | `TEI_URL` | `http://localhost:8085` | embeddings (TEI) |
 | `RAG_DB_*` | (ver `shared/db.py`) | Postgres/pgvector |
 | `LEGAL_TABLE` | `sistema_penal__qwen06__legal` | tabla de vectores (destino del upsert del tab de ingesta) |
@@ -83,4 +90,4 @@ agrégale la auth de tu app.
 ## Requisitos
 
 - La tabla `LEGAL_TABLE` debe estar ingestada (`ingestion/legal_rag.py ingest`).
-- El golden set en `exploracion_datos/golden_penal.json`.
+

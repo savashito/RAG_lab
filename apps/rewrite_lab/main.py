@@ -274,6 +274,37 @@ def ask(question, setting, k=5, system=None):
             'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1)}
 
 
+# ── Tab "Conversacional" ──────────────────────────────────────────────────────────
+# Chat multi-turno: el historial completo se manda al LLM (para que entienda preguntas
+# de seguimiento), pero el retrieval RAG se hace SOLO sobre el último mensaje del
+# usuario; los chunks devueltos son los de esa última pregunta (no se acumulan). El
+# historial de conversaciones vive en el browser (IndexedDB), no en el servidor.
+def chat_answer(messages, setting, k=5, system=None):
+    if setting not in ASK_SETTINGS:
+        raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
+    msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
+    if not msgs or msgs[-1]['role'] != 'user':
+        raise ValueError('el último mensaje debe ser del usuario')
+    question = msgs[-1]['content'].strip()
+    t0 = time.time()
+    with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
+        scored, score_kind, rw = retrieve_scored(cur, question, setting)
+    top = [{'id': cid, 'rank': rank, 'score': round(score, 4), 'score_kind': score_kind,
+            **DOC_BY_ID.get(cid, {})}
+           for rank, (cid, score) in enumerate(scored[:k], 1)]
+    context = '\n\n'.join(
+        f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+        for ch in top)
+    # El contexto RAG se inyecta en el ÚLTIMO turno del usuario; los turnos previos van
+    # tal cual para dar memoria conversacional al LLM.
+    llm_msgs = [{'role': 'system', 'content': (system or ASK_SYSTEM).strip() or ASK_SYSTEM}]
+    llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1]]
+    llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
+    answer = llm.chat_messages(llm_msgs, max_tokens=4096, timeout=180)
+    return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
+            'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1)}
+
+
 load_corpus_index()   # índice BM25 en memoria para la tab de RAG (bm25 / híbrido)
 
 # Gestor de ingesta de PDFs (tab "Ingestar"). Comparte tabla, TEI y conexión con el
@@ -304,6 +335,7 @@ def healthz():
 @app.get('/consulta')
 @app.get('/lab')
 @app.get('/ingesta')
+@app.get('/conversacional')
 def index():
     # no-store: el navegador no cachea el HTML, para que los cambios se vean sin hard-refresh.
     return FileResponse(STATIC / 'index.html', headers={'Cache-Control': 'no-store'})
@@ -382,6 +414,18 @@ async def ask_route(req: Request):
     try:
         return ask(body.get('question', ''), body.get('setting', 'orig'),
                    int(body.get('k', 5)), body.get('system'))
+    except Exception as e:
+        return JSONResponse({'error': f'{type(e).__name__}: {e}'})
+
+
+@app.post('/chat')
+async def chat_route(req: Request):
+    """Turno de la tab Conversacional: recibe el historial y responde con RAG sobre la
+    última pregunta. El historial se guarda en el browser (IndexedDB), no aquí."""
+    body = await req.json()
+    try:
+        return chat_answer(body.get('messages', []), body.get('setting', 'orig'),
+                           int(body.get('k', 5)), body.get('system'))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 

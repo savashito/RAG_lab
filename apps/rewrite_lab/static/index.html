@@ -50,12 +50,39 @@
  .chunk h4{margin:0 0 4px;font-size:13px;color:#a5d6ff}
  .chunk .body{font:12px/1.5 ui-monospace,monospace;color:#c7cdd6;max-height:180px;overflow:auto;white-space:pre-wrap}
  details summary{cursor:pointer;color:#9aa4b2;margin-top:10px}
+ /* ── Tab Conversacional ── */
+ .chat-shell{display:flex;gap:14px;align-items:stretch;height:calc(100vh - 190px);min-height:420px}
+ .chat-side{width:230px;flex:0 0 230px;background:#171a21;border:1px solid #2a2f3a;border-radius:10px;
+   display:flex;flex-direction:column;overflow:hidden}
+ .chat-side .new{margin:10px;width:calc(100% - 20px)}
+ .conv-list{overflow-y:auto;flex:1;padding:0 8px 8px}
+ .conv-item{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;cursor:pointer;
+   color:#c7cdd6;margin-bottom:4px}
+ .conv-item:hover{background:#0b0d12} .conv-item.active{background:#0b0d12;border:1px solid #2a2f3a}
+ .conv-item .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+ .conv-item .x{color:#9aa4b2;background:transparent;border:0;padding:2px 4px;font-size:13px;opacity:0;cursor:pointer}
+ .conv-item:hover .x{opacity:1}
+ .chat-main{flex:1;display:flex;flex-direction:column;background:#171a21;border:1px solid #2a2f3a;
+   border-radius:10px;overflow:hidden;min-width:0}
+ .chat-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+ .msg{max-width:82%;padding:2px 14px;border-radius:12px;border:1px solid #2a2f3a}
+ .msg.user{align-self:flex-end;background:#1e3a5f;border-color:#2b5081}
+ .msg.assistant{align-self:flex-start;background:#0b0d12}
+ .msg.assistant p:first-child{margin-top:8px} .msg p{margin:8px 0}
+ .msg ul,.msg ol{margin:8px 0;padding-left:22px} .msg code{background:#171a21;padding:1px 5px;border-radius:4px;font-size:12px}
+ .msg h1,.msg h2,.msg h3{border:0;padding:0;margin:12px 0 6px;font-size:15px;color:#e6e6e6}
+ .msg.empty{align-self:center;color:#9aa4b2;background:transparent;border:0;max-width:520px;text-align:center}
+ .chat-src{margin-top:8px}
+ .chat-input{border-top:1px solid #2a2f3a;padding:10px 12px;background:#171a21}
+ .chat-input textarea{min-height:52px}
+ .chat-input .row{margin:8px 0 0}
 </style>
 </head>
 <body>
 <header><h1>🧪 Rewrite Lab — experimenta y compara prompts de query rewriting</h1></header>
 <div class="tabs">
   <button id="tabbtn-ask" class="active" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
+  <button id="tabbtn-chat"  onclick="showTab('chat')">🗨️ Conversacional</button>
   <button id="tabbtn-rewrite"  onclick="showTab('rewrite')">Rewrite Lab</button>
   <button id="tabbtn-ingest"  onclick="showTab('ingest')">📥 Ingestar documentos</button>
 </div>
@@ -138,6 +165,36 @@
  <div id="ask-out"></div>
 </div>
 
+<div id="tab-chat" class="wrap tabpage" hidden style="max-width:1200px">
+ <p class="muted">Conversación multi-turno con memoria. El historial se guarda <b>solo en tu navegador</b> (IndexedDB) — nada se manda al servidor salvo los mensajes para responder. El LLM recuerda los turnos previos, pero las <b>fuentes RAG salen únicamente de tu última pregunta</b>.</p>
+ <div class="row">
+   <label>Método: <select id="chat-setting"></select></label>
+   <label>Top-k: <select id="chat-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
+   <details id="chat-prompt-box" style="margin:0">
+     <summary>⚙️ System prompt</summary>
+     <textarea id="chat-system" style="min-height:120px;margin-top:8px"></textarea>
+     <div class="row"><button id="chat-prompt-reset" class="ghost">Restaurar</button>
+       <span class="muted">Instrucción del asistente en cada respuesta.</span></div>
+   </details>
+ </div>
+ <div class="chat-shell">
+   <aside class="chat-side">
+     <button id="chat-new" class="new">＋ Nueva conversación</button>
+     <div id="conv-list" class="conv-list"></div>
+   </aside>
+   <div class="chat-main">
+     <div id="chat-log" class="chat-log"></div>
+     <div class="chat-input">
+       <textarea id="chat-input" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)"></textarea>
+       <div class="row" style="justify-content:space-between">
+         <span class="spin" id="chat-spin">⏳ recuperando + generando…</span>
+         <button id="chat-send">Enviar ▶</button>
+       </div>
+     </div>
+   </div>
+ </div>
+</div>
+
 <div id="tab-ingest" class="wrap tabpage" hidden>
  <p class="muted">Sube uno o varios <b>PDFs</b> de documentos legales. Por cada uno se hace:
    PDF → Markdown → <b>limpieza</b> (se guarda el .md limpio para verlo) →
@@ -185,17 +242,18 @@ const METHODS=['denso (orig)','rewrite-solo','multi-query'];
 
 const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 // Cada tab tiene su propia URL, para enlaces directos y compartibles.
-const TAB_PATH={ask:'/consulta', rewrite:'/lab', ingest:'/ingesta'};
+const TAB_PATH={ask:'/consulta', chat:'/conversacional', rewrite:'/lab', ingest:'/ingesta'};
 function tabFromPath(p){
   for(const [t,path] of Object.entries(TAB_PATH)) if(p===path) return t;
   return 'ask';   // '/' y cualquier otra → Preguntar (RAG)
 }
 function showTab(name, push=true){
-  for(const t of ['rewrite','ask','ingest']){
+  for(const t of ['rewrite','ask','ingest','chat']){
     $('tab-'+t).hidden = (t!==name);
     $('tabbtn-'+t).classList.toggle('active', t===name);
   }
   if(name==='ingest') loadDocuments();
+  if(name==='chat') chatInit();
   const path=TAB_PATH[name]||'/consulta';
   if(push && location.pathname!==path) history.pushState({tab:name}, '', path);
 }
@@ -206,9 +264,12 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
   const opts=(c.goldens||[]).map(g=>`<option ${g===c.default_golden?'selected':''}>${g}</option>`).join('');
   $('golden').innerHTML=opts;
   $('ask-golden').innerHTML=opts;
-  $('ask-setting').innerHTML=(c.ask_settings||['orig']).map(s=>`<option>${s}</option>`).join('');
+  const settingOpts=(c.ask_settings||['orig']).map(s=>`<option>${s}</option>`).join('');
+  $('ask-setting').innerHTML=settingOpts;
+  $('chat-setting').innerHTML=settingOpts;
   ASK_SYSTEM_DEFAULT=c.ask_system||'';
   $('ask-system').value=ASK_SYSTEM_DEFAULT;
+  $('chat-system').value=ASK_SYSTEM_DEFAULT;
   if(c.table) $('ing-table').textContent=c.table;
   loadAskQuestions();
   }catch(e){} }
@@ -414,6 +475,148 @@ async function viewClean(source){
   }catch(e){ alert(e); }
 }
 function closeClean(){ $('ing-modal').style.display='none'; }
+
+// ── Tab "Conversacional" ─────────────────────────────────────────────────────────
+// Historial 100% local en el navegador vía IndexedDB (como la WebUI de llama.cpp:
+// conversaciones + mensajes en IndexedDB). El servidor solo recibe los mensajes para
+// generar la respuesta; el retrieval RAG se hace SOLO sobre la última pregunta.
+const CHAT_DB='rag_chat', CHAT_VER=1;
+let _chatDB=null, curConv=null, chatReady=false, chatSending=false;
+
+function openChatDB(){
+  if(_chatDB) return Promise.resolve(_chatDB);
+  return new Promise((res,rej)=>{
+    let rq;
+    try{ rq=indexedDB.open(CHAT_DB,CHAT_VER); }catch(e){ return rej(e); }
+    rq.onupgradeneeded=e=>{ const db=e.target.result;
+      if(!db.objectStoreNames.contains('conversations')) db.createObjectStore('conversations',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('messages')){
+        const s=db.createObjectStore('messages',{keyPath:'mid',autoIncrement:true});
+        s.createIndex('conv','convId',{unique:false});
+      }
+    };
+    rq.onsuccess=e=>{ _chatDB=e.target.result; res(_chatDB); };
+    rq.onerror=e=>rej(e.target.error);
+  });
+}
+function idbReq(req){ return new Promise((res,rej)=>{ req.onsuccess=()=>res(req.result); req.onerror=()=>rej(req.error); }); }
+async function dbAll(store){ const db=await openChatDB();
+  return idbReq(db.transaction(store,'readonly').objectStore(store).getAll()); }
+async function dbPut(store,val){ const db=await openChatDB();
+  return idbReq(db.transaction(store,'readwrite').objectStore(store).put(val)); }
+async function dbAdd(store,val){ const db=await openChatDB();
+  const tx=db.transaction(store,'readwrite'); const req=tx.objectStore(store).add(val);
+  return idbReq(req); }
+async function dbDelete(store,key){ const db=await openChatDB();
+  const tx=db.transaction(store,'readwrite'); tx.objectStore(store).delete(key);
+  return new Promise((res,rej)=>{ tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function msgsOf(convId){ const db=await openChatDB();
+  const idx=db.transaction('messages','readonly').objectStore('messages').index('conv');
+  const rows=await idbReq(idx.getAll(convId));
+  return rows.sort((a,b)=>a.mid-b.mid); }
+
+async function listConvs(){ const c=await dbAll('conversations');
+  return c.sort((a,b)=>b.updated-a.updated); }
+async function newConv(){
+  const id='c'+Date.now()+Math.random().toString(36).slice(2,6);
+  const now=Date.now();
+  await dbPut('conversations',{id,title:'Nueva conversación',created:now,updated:now});
+  curConv=id; await renderConvList(); await renderChatLog(); return id;
+}
+async function delConv(id){
+  const ms=await msgsOf(id);
+  for(const m of ms) await dbDelete('messages',m.mid);
+  await dbDelete('conversations',id);
+  if(curConv===id) curConv=null;
+  const list=await listConvs();
+  if(!curConv && list.length) curConv=list[0].id;
+  await renderConvList(); await renderChatLog();
+}
+async function selectConv(id){ curConv=id; await renderConvList(); await renderChatLog();
+  $('chat-input').focus(); }
+
+async function renderConvList(){
+  const list=await listConvs();
+  $('conv-list').innerHTML = list.length ? list.map(c=>
+    `<div class="conv-item ${c.id===curConv?'active':''}" onclick="selectConv('${c.id}')">
+       <span class="t">${esc(c.title||'Sin título')}</span>
+       <button class="x" title="Borrar" onclick="event.stopPropagation();delConv('${c.id}')">✕</button>
+     </div>`).join('')
+    : '<p class="muted" style="padding:6px 10px">Sin conversaciones.</p>';
+}
+function msgBubble(m,isLastAssistant){
+  if(m.role==='user') return `<div class="msg user">${marked.parse(m.content||'')}</div>`;
+  let src='';
+  if(isLastAssistant && (m.chunks||[]).length){
+    const skind=m.score_kind||'';
+    const fmt=v=>(skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2);
+    src=`<div class="chat-src"><details><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
+      (m.rewrite?` · reescritura: <span class="rw">${esc(m.rewrite)}</span>`:'')+`</summary>`+
+      m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
+        <span class="badge">${esc(skind)}: ${fmt(ch.score)}</span></h4>
+        <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details></div>`;
+  }
+  return `<div class="msg assistant">${marked.parse(m.content||'')}${src}</div>`;
+}
+async function renderChatLog(){
+  const log=$('chat-log');
+  if(!curConv){ log.innerHTML='<div class="msg empty">Empieza una conversación o crea una nueva. El historial se guarda solo en este navegador.</div>'; return; }
+  const ms=await msgsOf(curConv);
+  if(!ms.length){ log.innerHTML='<div class="msg empty">Escribe tu primera pregunta abajo. 👇</div>'; return; }
+  let lastA=-1; ms.forEach((m,i)=>{ if(m.role==='assistant') lastA=i; });
+  log.innerHTML=ms.map((m,i)=>msgBubble(m,i===lastA)).join('');
+  log.scrollTop=log.scrollHeight;
+}
+
+async function chatSend(){
+  if(chatSending) return;
+  const text=$('chat-input').value.trim();
+  if(!text) return;
+  if(!curConv) await newConv();
+  chatSending=true; $('chat-send').disabled=true; $('chat-spin').style.display='inline';
+  // Guarda y pinta el turno del usuario de inmediato.
+  await dbAdd('messages',{convId:curConv,role:'user',content:text,ts:Date.now()});
+  // Si es el primer mensaje, titula la conversación con la pregunta.
+  const conv=(await listConvs()).find(c=>c.id===curConv);
+  const priorUser=(await msgsOf(curConv)).filter(m=>m.role==='user').length;
+  if(conv && priorUser<=1){ conv.title=text.slice(0,60); conv.updated=Date.now(); await dbPut('conversations',conv); }
+  $('chat-input').value=''; await renderConvList(); await renderChatLog();
+  try{
+    const history=(await msgsOf(curConv)).map(m=>({role:m.role,content:m.content}));
+    const d=await (await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:history, setting:$('chat-setting').value, k:+$('chat-k').value,
+        system:$('chat-system').value})})).json();
+    if(d.error){
+      await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ Error: '+d.error,ts:Date.now(),chunks:[]});
+    }else{
+      await dbAdd('messages',{convId:curConv,role:'assistant',content:d.answer||'',ts:Date.now(),
+        chunks:d.chunks||[],rewrite:d.rewrite,setting:d.setting,score_kind:d.score_kind,seconds:d.seconds});
+    }
+    const c2=(await listConvs()).find(c=>c.id===curConv);
+    if(c2){ c2.updated=Date.now(); await dbPut('conversations',c2); }
+  }catch(e){
+    await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ '+e,ts:Date.now(),chunks:[]});
+  }finally{
+    chatSending=false; $('chat-send').disabled=false; $('chat-spin').style.display='none';
+    await renderConvList(); await renderChatLog(); $('chat-input').focus();
+  }
+}
+
+async function chatInit(){
+  if(chatReady) return;
+  try{ await openChatDB(); }
+  catch(e){ $('chat-log').innerHTML='<div class="msg empty">Tu navegador no permite IndexedDB, no se puede guardar el historial local.</div>'; return; }
+  const list=await listConvs();
+  if(list.length) curConv=list[0].id;
+  await renderConvList(); await renderChatLog();
+  chatReady=true;
+}
+$('chat-new').addEventListener('click',()=>newConv());
+$('chat-send').addEventListener('click',chatSend);
+$('chat-prompt-reset').addEventListener('click',()=>{ $('chat-system').value=ASK_SYSTEM_DEFAULT; });
+$('chat-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); chatSend(); }
+});
 
 $('ing-run').addEventListener('click',ingestRun);
 $('ing-refresh').addEventListener('click',loadDocuments);
