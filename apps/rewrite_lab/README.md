@@ -31,8 +31,19 @@ ingesta `ingestion/pipeline.py`. El prompt por defecto es
 `shared.llm_client.REWRITE_SYSTEM`.
 
 > **Dependencias del tab de ingesta:** la conversión PDF→Markdown usa el extra
-> `parse` (pymupdf4llm). Instala el entorno completo con `uv sync --all-extras`
-> (un `--extra parse` a secas REEMPLAZA el set y desinstalaría deps de otros labs).
+> `parse` (pymupdf4llm). El app necesita, además del core (`pandas`,
+> `python-multipart`), ese extra.
+>
+> - **En prod / para correr solo el app:** `uv sync --extra parse`. Instala core +
+>   `parse` y **evita** el extra `embed` (torch/sentence-transformers, cientos de
+>   MB) que el app no usa (embebe vía TEI remoto).
+> - **En el laptop de dev, si trabajas otros labs a la vez:** `uv sync --all-extras`
+>   (un `--extra parse` a secas reemplaza el set y desinstalaría `embed`, que esos
+>   labs sí necesitan).
+>
+> **Deploy:** tras cada `git pull` que cambie dependencias, corre
+> `uv sync --extra parse` **antes** de `systemctl restart legis-app`. Omitir el sync
+> deja el venv desactualizado y el servicio no arranca (`ModuleNotFoundError`).
 
 ## Correr local (dev)
 

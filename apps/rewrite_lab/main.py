@@ -297,7 +297,13 @@ def healthz():
     return {'ok': True}
 
 
+# Rutas "profundas" por tab: todas sirven el MISMO SPA (index.html); el front lee
+# location.pathname y abre el tab correcto. Permite enlaces directos y compartibles:
+#   /consulta → Preguntar (RAG) · /lab → Rewrite Lab · /ingesta → Ingestar
 @app.get('/')
+@app.get('/consulta')
+@app.get('/lab')
+@app.get('/ingesta')
 def index():
     # no-store: el navegador no cachea el HTML, para que los cambios se vean sin hard-refresh.
     return FileResponse(STATIC / 'index.html', headers={'Cache-Control': 'no-store'})

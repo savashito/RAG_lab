@@ -121,7 +121,7 @@
    <label>Método: <select id="ask-setting"></select></label>
    <label>Top-k: <select id="ask-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
  </div>
- <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…" style="min-height:80px"></textarea>
+ <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
  <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
  <details id="ask-prompt-box" style="margin-top:10px">
    <summary>⚙️ System prompt (editable — experimenta con distintos prompts)</summary>
@@ -184,13 +184,23 @@ function cell(r){ return `<td class="r" style="background:${color(r)}">${r==null
 const METHODS=['denso (orig)','rewrite-solo','multi-query'];
 
 const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function showTab(name){
+// Cada tab tiene su propia URL, para enlaces directos y compartibles.
+const TAB_PATH={ask:'/consulta', rewrite:'/lab', ingest:'/ingesta'};
+function tabFromPath(p){
+  for(const [t,path] of Object.entries(TAB_PATH)) if(p===path) return t;
+  return 'ask';   // '/' y cualquier otra → Preguntar (RAG)
+}
+function showTab(name, push=true){
   for(const t of ['rewrite','ask','ingest']){
     $('tab-'+t).hidden = (t!==name);
     $('tabbtn-'+t).classList.toggle('active', t===name);
   }
   if(name==='ingest') loadDocuments();
+  const path=TAB_PATH[name]||'/consulta';
+  if(push && location.pathname!==path) history.pushState({tab:name}, '', path);
 }
+// Botones atrás/adelante del navegador sincronizan el tab (sin apilar historial).
+window.addEventListener('popstate', ()=>showTab(tabFromPath(location.pathname), false));
 async function loadConfig(){ try{ const c=await (await fetch('/api/config')).json();
   $('prompt').value=c.default_prompt||'';
   const opts=(c.goldens||[]).map(g=>`<option ${g===c.default_golden?'selected':''}>${g}</option>`).join('');
@@ -416,8 +426,16 @@ $('ask-run').addEventListener('click',askRun);
 $('ask-mode').addEventListener('change',askModeChange);
 $('ask-golden').addEventListener('change',loadAskQuestions);
 $('ask-prompt-reset').addEventListener('click',()=>{ $('ask-system').value=ASK_SYSTEM_DEFAULT; });
+// Enter envía la pregunta (como picar "Responder"); Shift+Enter inserta salto de línea.
+$('ask-question').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askRun(); }
+});
+
 loadConfig(); loadHistory();
-showTab('ask');
+// Abre el tab según la URL (/consulta, /lab, /ingesta) y normaliza '/' a su ruta.
+const initTab=tabFromPath(location.pathname);
+history.replaceState({tab:initTab}, '', TAB_PATH[initTab]);
+showTab(initTab, false);
 </script>
 </body>
 </html>
