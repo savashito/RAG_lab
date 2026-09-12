@@ -20,7 +20,37 @@ Laboratorio web con cuatro tabs:
    por documento) → **embeddings** (TEI, rtx5090) → **upsert por documento** en
    pgvector. Reporta, por documento, **qué estrategias se probaron y cuál ganó**
    (como el notebook de exploración) y refresca el índice en memoria para que los
-   chunks nuevos sean buscables de inmediato en la tab de RAG.
+   chunks nuevos sean buscables de inmediato en la tab de RAG. Aquí se elige el
+   **tema** de la subida (o se crea uno nuevo); ver abajo.
+
+## Segmentación por tema (tópicos)
+
+El corpus se segmenta por **tema** para poder tener temas no relacionados en la misma
+tabla (p. ej. *Derecho Penal*, *Derecho Mercantil*, *Root Apical Meristem*) y que la
+búsqueda RAG se limite al tema que el usuario elija.
+
+- Cada chunk lleva una columna **`topic`** en la tabla de vectores (Opción A: una tabla,
+  filtro por `WHERE topic = %s`; BM25 se filtra en memoria por la misma metadata).
+- El catálogo de temas vive en la tabla **`rewrite_lab_topics`** (`topic`, `label`,
+  `instruct`). El **`instruct`** es el prefijo de consulta (antes se llamaba `Q_INSTRUCT`)
+  y se guarda **por tema**, no por chunk — así un tema en inglés puede usar
+  *"Retrieve the passage…"* y uno legal *"Recupera el pasaje del código o la doctrina…"*.
+- Los temas se **crean desde el tab de Ingesta** (botón «➕ Nuevo tema»: nombre +
+  instrucción). El id (slug) se deriva del nombre.
+- Los tabs **Preguntar** y **Conversacional** tienen un selector **Tema** y la búsqueda
+  se restringe a él.
+- **Migración automática al arrancar:** se añade la columna `topic` (idempotente), se
+  crea el catálogo, y **todo lo ya insertado se etiqueta como `Derecho Penal Mexicano`**
+  (`derecho_penal_mexicano`).
+
+Endpoints: `GET /api/topics` (catálogo + nº de chunks), `POST /api/topics`
+(`{label, instruct?}`). `POST /ask` y `POST /chat` aceptan `topic`; `POST /ingest/upload`
+recibe el `topic` como campo de formulario.
+
+> **Nota:** el tab **Rewrite Lab** (`/run`, evaluación con golden sets) **no** filtra por
+> tema todavía — busca en toda la tabla. Es correcto mientras el único tema con datos
+> sea el penal; si agregas otros temas y quieres que la evaluación se limite al penal,
+> hay que pasarle el `topic` a `eval_prompt`/`dense_ids` (cambio chico).
 
 ## Estructura
 

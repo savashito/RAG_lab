@@ -39,9 +39,10 @@ class IngestManager:
         self._lock = threading.Lock()
 
     # ── ciclo de vida del job ────────────────────────────────────────────────────
-    def start(self, pdf_paths: list[Path]) -> str:
+    def start(self, pdf_paths: list[Path], topic: str | None = None) -> str:
         """Crea un job y lanza el hilo que lo procesa. Uno a la vez: si ya hay uno
-        corriendo, lo rechaza (embeber es pesado y `on_complete` toca estado global)."""
+        corriendo, lo rechaza (embeber es pesado y `on_complete` toca estado global).
+        `topic` etiqueta los chunks resultantes (segmentación por tema)."""
         with self._lock:
             if any(j["status"] == "running" for j in self.jobs.values()):
                 raise RuntimeError("Ya hay una ingesta en curso. Espera a que termine.")
@@ -51,9 +52,10 @@ class IngestManager:
                 "status": "running",
                 "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "error": None,
+                "topic": topic,
                 "files": [self._new_file_entry(p) for p in pdf_paths],
             }
-        threading.Thread(target=self._run, args=(job_id, pdf_paths), daemon=True).start()
+        threading.Thread(target=self._run, args=(job_id, pdf_paths, topic), daemon=True).start()
         return job_id
 
     @staticmethod
@@ -63,7 +65,7 @@ class IngestManager:
                 "inserted": False, "replaced": False, "n_chunks": 0,
                 "clean_available": False, "report": {}}
 
-    def _run(self, job_id: str, pdf_paths: list[Path]) -> None:
+    def _run(self, job_id: str, pdf_paths: list[Path], topic: str | None = None) -> None:
         job = self.jobs[job_id]
         try:
             for entry, pdf in zip(job["files"], pdf_paths):
@@ -74,10 +76,17 @@ class IngestManager:
                     pdf, table=self.table, tei=self.tei, connect_fn=self.connect_fn,
                     clean_dir=self.clean_dir, progress=progress,
                 )
+                # Etiqueta con el tópico los chunks recién insertados de este documento.
+                # El pipeline compartido no conoce `topic`; se setea aquí por `source`.
+                if topic and (result.inserted or result.replaced_existing) and not result.error:
+                    with self.connect_fn() as conn, conn.cursor() as cur:
+                        cur.execute(f"UPDATE {self.table} SET topic = %s WHERE source = %s",
+                                    (topic, result.source))
+                        conn.commit()
                 entry.update(
                     source=result.source, error=result.error, inserted=result.inserted,
                     replaced=result.replaced_existing, n_chunks=result.n_chunks,
-                    clean_available=bool(result.clean_path), report=result.report, done=True,
+                    topic=topic, clean_available=bool(result.clean_path), report=result.report, done=True,
                 )
             job["status"] = "error" if any(f["error"] for f in job["files"]) else "done"
             if any(f["inserted"] for f in job["files"]) and self.on_complete:
@@ -119,10 +128,11 @@ class IngestManager:
             if cur.fetchone()[0] is None:
                 return []
             cur.execute(
-                f"SELECT source, count(*) FROM {self.table} GROUP BY source ORDER BY source")
+                f"SELECT source, max(topic), count(*) FROM {self.table} "
+                f"GROUP BY source ORDER BY source")
             rows = cur.fetchall()
         return [
-            {"source": s, "chunks": n,
+            {"source": s, "topic": t, "chunks": n,
              "clean_available": (self.clean_dir / Path(s).name).is_file()}
-            for s, n in rows
+            for s, t, n in rows
         ]

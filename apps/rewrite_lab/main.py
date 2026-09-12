@@ -22,7 +22,7 @@ import time
 import uuid
 from pathlib import Path
 
-from fastapi import FastAPI, File, Request, UploadFile
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
 HERE = Path(__file__).resolve().parent
@@ -53,6 +53,16 @@ Q_INSTRUCT = 'Instruct: Recupera el pasaje del código o la doctrina que respond
 KS = (5, 10, 20)
 N_DENSE = 1500   # profundidad del ranking denso traído de pgvector para calcular el rank
 
+# ── Tópicos ────────────────────────────────────────────────────────────────────────
+# Segmentación por tema: cada chunk lleva una columna `topic`, y la búsqueda RAG filtra
+# por el tema elegido. El `instruct` (prefijo de la consulta antes de embeber) se guarda
+# POR TÓPICO en un catálogo (tabla `rewrite_lab_topics`), no por chunk. Los documentos ya
+# insertados se asignan al tópico por defecto (Derecho Penal Mexicano).
+DEFAULT_INSTRUCT = Q_INSTRUCT
+TOPICS_TABLE = 'rewrite_lab_topics'
+DEFAULT_TOPIC = 'derecho_penal_mexicano'
+DEFAULT_TOPIC_LABEL = 'Derecho Penal Mexicano'
+
 
 def list_goldens():
     """Test sets disponibles: los golden*.json de exploracion_datos/."""
@@ -72,10 +82,14 @@ def rank_in(ids, gid) -> int | None:
     return None
 
 
-def dense_ids(cur, qvec) -> list[int]:
+def dense_ids(cur, qvec, topic=None) -> list[int]:
     """Ranking denso desde pgvector, reusando el cursor que le pasen (una conexión
-    por corrida, no una por query)."""
-    cur.execute(f"SELECT id FROM {TABLE} ORDER BY embedding <=> %s LIMIT %s", (qvec, N_DENSE))
+    por corrida, no una por query). Si `topic`, restringe la búsqueda a ese tópico."""
+    if topic:
+        cur.execute(f"SELECT id FROM {TABLE} WHERE topic = %s ORDER BY embedding <=> %s LIMIT %s",
+                    (topic, qvec, N_DENSE))
+    else:
+        cur.execute(f"SELECT id FROM {TABLE} ORDER BY embedding <=> %s LIMIT %s", (qvec, N_DENSE))
     return [r[0] for r in cur.fetchall()]
 
 
@@ -89,7 +103,45 @@ with connect() as _c, _c.cursor() as _cur:
         id serial PRIMARY KEY, created_at timestamptz DEFAULT now(),
         label text, prompt text, subset text, n int, metrics jsonb, rows jsonb)""")
     _cur.execute(f"ALTER TABLE {RUNS_TABLE} ADD COLUMN IF NOT EXISTS golden text")  # qué set se evaluó
+    # Segmentación por tópico: columna en la tabla de vectores + catálogo de tópicos.
+    _cur.execute(f"ALTER TABLE {TABLE} ADD COLUMN IF NOT EXISTS topic text")
+    _cur.execute(f"CREATE INDEX IF NOT EXISTS {TABLE}_topic ON {TABLE} (topic)")
+    _cur.execute(f"""CREATE TABLE IF NOT EXISTS {TOPICS_TABLE} (
+        topic text PRIMARY KEY, label text NOT NULL, instruct text NOT NULL,
+        created_at timestamptz DEFAULT now())""")
+    # Semilla del tópico por defecto y backfill de lo ya insertado (que tenía topic NULL).
+    _cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct) VALUES (%s, %s, %s) "
+                 f"ON CONFLICT (topic) DO NOTHING",
+                 (DEFAULT_TOPIC, DEFAULT_TOPIC_LABEL, DEFAULT_INSTRUCT))
+    _cur.execute(f"UPDATE {TABLE} SET topic = %s WHERE topic IS NULL", (DEFAULT_TOPIC,))
     _c.commit()
+
+# Catálogo de tópicos en memoria: topic -> {'label':..., 'instruct':...}. Se recarga al
+# arrancar, al crear un tópico y al terminar una ingesta.
+TOPICS: dict[str, dict] = {}
+
+
+def load_topics():
+    global TOPICS
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT topic, label, instruct FROM {TOPICS_TABLE} ORDER BY created_at")
+        TOPICS = {t: {'label': lb, 'instruct': ins} for t, lb, ins in cur.fetchall()}
+    return TOPICS
+
+
+def instruct_for(topic) -> str:
+    """Prefijo de consulta del tópico (o el default si no hay/no existe)."""
+    return (TOPICS.get(topic) or {}).get('instruct') or DEFAULT_INSTRUCT
+
+
+def slugify(text) -> str:
+    """Etiqueta legible → slug ascii para usar como id de tópico."""
+    import re
+    import unicodedata
+    s = unicodedata.normalize('NFKD', text or '').encode('ascii', 'ignore').decode()
+    s = re.sub(r'[^a-zA-Z0-9]+', '_', s).strip('_').lower()
+    return s or 'tema'
+
 
 # Datasets cargados bajo demanda: name -> {'golden': [...], 'gold_ids': [set,...]}.
 DATASETS: dict[str, dict] = {}
@@ -136,6 +188,8 @@ def orig_ids_for(cur, name, golden, i) -> list[int]:
 
 if DEFAULT_GOLDEN:
     get_dataset(DEFAULT_GOLDEN)   # precarga el default para calentar la caché
+load_topics()
+print(f'Tópicos: {list(TOPICS)}')
 print('Listo.')
 
 
@@ -194,10 +248,10 @@ def load_corpus_index():
     """Carga todos los chunks (id, metadatos, texto) y construye el índice BM25."""
     global BM25_INDEX, BM_IDS, DOC_BY_ID
     with connect() as c, c.cursor() as cur:
-        cur.execute(f'SELECT id, source, title, hierarchy, text FROM {TABLE} ORDER BY id')
+        cur.execute(f'SELECT id, source, title, hierarchy, text, topic FROM {TABLE} ORDER BY id')
         rows = cur.fetchall()
     BM_IDS = [r[0] for r in rows]
-    DOC_BY_ID = {r[0]: {'source': r[1], 'title': r[2], 'hierarchy': r[3], 'text': r[4]} for r in rows}
+    DOC_BY_ID = {r[0]: {'source': r[1], 'title': r[2], 'hierarchy': r[3], 'text': r[4], 'topic': r[5]} for r in rows}
     BM25_INDEX = BM25([tokenize(r[4]) for r in rows])
     print(f'Índice léxico BM25: {len(BM_IDS)} chunks en memoria.')
 
@@ -208,15 +262,25 @@ def load_corpus_index():
 #   dist  → distancia coseno de pgvector (menor = más cercano)
 #   bm25  → score léxico BM25 (mayor = mejor)
 #   rrf   → score de Reciprocal Rank Fusion (mayor = mejor)
-def dense_ranked(cur, qvec):
-    cur.execute(f"SELECT id, (embedding <=> %s) AS dist FROM {TABLE} ORDER BY 2 LIMIT %s",
-                (qvec, N_DENSE))
+def dense_ranked(cur, qvec, topic=None):
+    if topic:
+        cur.execute(f"SELECT id, (embedding <=> %s) AS dist FROM {TABLE} WHERE topic = %s ORDER BY 2 LIMIT %s",
+                    (qvec, topic, N_DENSE))
+    else:
+        cur.execute(f"SELECT id, (embedding <=> %s) AS dist FROM {TABLE} ORDER BY 2 LIMIT %s",
+                    (qvec, N_DENSE))
     return [(r[0], float(r[1])) for r in cur.fetchall()]
 
 
-def bm25_ranked(question):
+def bm25_ranked(question, topic=None):
     scores = BM25_INDEX.scores(tokenize(question))
-    return [(BM_IDS[i], float(scores[i])) for i in rank_indices_by_score(scores)]
+    out = []
+    for i in rank_indices_by_score(scores):
+        cid = BM_IDS[i]
+        if topic and (DOC_BY_ID.get(cid) or {}).get('topic') != topic:
+            continue   # BM25 es un índice global; filtramos por tópico con la metadata
+        out.append((cid, float(scores[i])))
+    return out
 
 
 def rrf_scored(ranked_id_lists, k=60):
@@ -232,19 +296,21 @@ def rrf_scored(ranked_id_lists, k=60):
 ASK_SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido']
 
 
-def retrieve_scored(cur, question, setting):
-    """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None)."""
+def retrieve_scored(cur, question, setting, topic=None):
+    """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Si `topic`,
+    restringe la búsqueda a ese tópico y usa su `instruct` para embeber la consulta."""
+    instruct = instruct_for(topic)
     if setting == 'bm25':
-        return bm25_ranked(question), 'bm25', None
-    d_orig = dense_ranked(cur, tei.embed([Q_INSTRUCT + question], use_cache=False)[0])
+        return bm25_ranked(question, topic), 'bm25', None
+    d_orig = dense_ranked(cur, tei.embed([instruct + question], use_cache=False)[0], topic)
     if setting == 'orig':
         return d_orig, 'dist', None
     if setting == 'híbrido':
-        fused = rrf_scored([[i for i, _ in d_orig], [i for i, _ in bm25_ranked(question)]])
+        fused = rrf_scored([[i for i, _ in d_orig], [i for i, _ in bm25_ranked(question, topic)]])
         return fused, 'rrf', None
     # reescribir / multiquery necesitan la reescritura del LLM
     rw = llm.rewrite_legal(question)
-    d_rw = dense_ranked(cur, tei.embed([Q_INSTRUCT + rw], use_cache=False)[0])
+    d_rw = dense_ranked(cur, tei.embed([instruct + rw], use_cache=False)[0], topic)
     if setting == 'reescribir':
         return d_rw, 'dist', rw
     if setting == 'multiquery':
@@ -253,14 +319,14 @@ def retrieve_scored(cur, question, setting):
     raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
 
 
-def ask(question, setting, k=5, system=None):
+def ask(question, setting, k=5, system=None, topic=None):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
     t0 = time.time()
     with connect() as c, c.cursor() as cur:
-        scored, score_kind, rw = retrieve_scored(cur, question, setting)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic)
     top = [{'id': cid, 'rank': rank, 'score': round(score, 4), 'score_kind': score_kind,
             **DOC_BY_ID.get(cid, {})}
            for rank, (cid, score) in enumerate(scored[:k], 1)]
@@ -279,7 +345,7 @@ def ask(question, setting, k=5, system=None):
 # de seguimiento), pero el retrieval RAG se hace SOLO sobre el último mensaje del
 # usuario; los chunks devueltos son los de esa última pregunta (no se acumulan). El
 # historial de conversaciones vive en el browser (IndexedDB), no en el servidor.
-def chat_answer(messages, setting, k=5, system=None):
+def chat_answer(messages, setting, k=5, system=None, topic=None):
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
     msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
@@ -288,7 +354,7 @@ def chat_answer(messages, setting, k=5, system=None):
     question = msgs[-1]['content'].strip()
     t0 = time.time()
     with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
-        scored, score_kind, rw = retrieve_scored(cur, question, setting)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic)
     top = [{'id': cid, 'rank': rank, 'score': round(score, 4), 'score_kind': score_kind,
             **DOC_BY_ID.get(cid, {})}
            for rank, (cid, score) in enumerate(scored[:k], 1)]
@@ -345,7 +411,39 @@ def index():
 def config():
     return {'default_prompt': REWRITE_SYSTEM, 'table': TABLE,
             'goldens': list_goldens(), 'default_golden': DEFAULT_GOLDEN,
-            'ask_settings': ASK_SETTINGS, 'ask_system': ASK_SYSTEM}
+            'ask_settings': ASK_SETTINGS, 'ask_system': ASK_SYSTEM,
+            'default_instruct': DEFAULT_INSTRUCT, 'default_topic': DEFAULT_TOPIC}
+
+
+@app.get('/api/topics')
+def api_topics():
+    """Catálogo de tópicos (para los selectores de tema) con el nº de chunks de cada uno."""
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT topic, count(*) FROM {TABLE} GROUP BY topic")
+        counts = {t: n for t, n in cur.fetchall()}
+    return [{'topic': t, 'label': v['label'], 'instruct': v['instruct'],
+             'chunks': counts.get(t, 0)} for t, v in TOPICS.items()]
+
+
+@app.post('/api/topics')
+async def api_topic_create(req: Request):
+    """Crea un tópico nuevo: {label, instruct?}. El id (slug) se deriva de la etiqueta.
+    El `instruct` es el prefijo de consulta de ese tema (usa el default si viene vacío)."""
+    b = await req.json()
+    label = (b.get('label') or '').strip()
+    if not label:
+        return JSONResponse({'error': 'La etiqueta del tópico no puede estar vacía'}, status_code=400)
+    topic = slugify(label)
+    instruct = (b.get('instruct') or '').strip() or DEFAULT_INSTRUCT
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT 1 FROM {TOPICS_TABLE} WHERE topic = %s", (topic,))
+        if cur.fetchone():
+            return JSONResponse({'error': f'Ya existe un tópico con id {topic!r}'}, status_code=409)
+        cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct) VALUES (%s, %s, %s)",
+                    (topic, label, instruct))
+        c.commit()
+    load_topics()
+    return {'topic': topic, 'label': label, 'instruct': instruct}
 
 
 @app.get('/api/questions')
@@ -362,10 +460,12 @@ def api_questions(golden: str = ''):
 # (TEI en rtx5090) → upsert por documento en pgvector. Corre en segundo plano; la UI
 # consulta el progreso por polling. Toda la lógica vive en `ingest_service`.
 @app.post('/ingest/upload')
-async def ingest_upload(files: list[UploadFile] = File(...)):
+async def ingest_upload(files: list[UploadFile] = File(...), topic: str = Form(DEFAULT_TOPIC)):
     pdfs = [f for f in files if (f.filename or '').lower().endswith('.pdf')]
     if not pdfs:
         return JSONResponse({'error': 'Sube al menos un archivo .pdf'}, status_code=400)
+    if topic not in TOPICS:
+        return JSONResponse({'error': f'Tópico desconocido: {topic!r}'}, status_code=400)
     # Guardar en un subdirectorio único por subida y con el nombre ORIGINAL: así el
     # `source` del documento sale del nombre real del PDF (no de un nombre temporal),
     # y a la vez se evita cualquier colisión entre subidas concurrentes.
@@ -377,7 +477,7 @@ async def ingest_upload(files: list[UploadFile] = File(...)):
         dest.write_bytes(await f.read())
         saved.append(dest)
     try:
-        job_id = ingest_mgr.start(saved)
+        job_id = ingest_mgr.start(saved, topic)
     except RuntimeError as e:   # ya hay una ingesta en curso
         for p in saved:
             p.unlink(missing_ok=True)
@@ -413,7 +513,7 @@ async def ask_route(req: Request):
     body = await req.json()
     try:
         return ask(body.get('question', ''), body.get('setting', 'orig'),
-                   int(body.get('k', 5)), body.get('system'))
+                   int(body.get('k', 5)), body.get('system'), body.get('topic'))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
@@ -425,7 +525,7 @@ async def chat_route(req: Request):
     body = await req.json()
     try:
         return chat_answer(body.get('messages', []), body.get('setting', 'orig'),
-                           int(body.get('k', 5)), body.get('system'))
+                           int(body.get('k', 5)), body.get('system'), body.get('topic'))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 

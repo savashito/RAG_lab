@@ -145,6 +145,7 @@
      </select>
    </label>
    <label id="ask-golden-wrap" style="display:none">set: <select id="ask-golden"></select></label>
+   <label>Tema: <select id="ask-topic"></select></label>
    <label>Método: <select id="ask-setting"></select></label>
    <label>Top-k: <select id="ask-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
  </div>
@@ -168,6 +169,7 @@
 <div id="tab-chat" class="wrap tabpage" hidden style="max-width:1200px">
  <p class="muted">Conversación multi-turno con memoria. El historial se guarda <b>solo en tu navegador</b> (IndexedDB) — nada se manda al servidor salvo los mensajes para responder. El LLM recuerda los turnos previos, pero las <b>fuentes RAG salen únicamente de tu última pregunta</b>.</p>
  <div class="row">
+   <label>Tema: <select id="chat-topic"></select></label>
    <label>Método: <select id="chat-setting"></select></label>
    <label>Top-k: <select id="chat-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
    <details id="chat-prompt-box" style="margin:0">
@@ -209,6 +211,21 @@
  </div>
 
  <div class="row">
+   <label>Tema: <select id="ing-topic"></select></label>
+   <button id="ing-topic-new" class="ghost" type="button">➕ Nuevo tema</button>
+   <span class="muted">los PDFs de esta subida se etiquetan con este tema</span>
+ </div>
+ <div id="ing-topic-form" class="legend" style="display:none">
+   <div class="row"><input type="text" id="ing-topic-label" placeholder="Nombre del tema (ej. Derecho Mercantil)" style="min-width:320px"></div>
+   <p class="muted" style="margin:8px 0 4px">Instrucción de recuperación (prefijo de la consulta antes de embeber). Ajústala al tema/idioma; si la dejas igual, se usa la genérica.</p>
+   <textarea id="ing-topic-instruct" style="min-height:70px"></textarea>
+   <div class="row">
+     <button id="ing-topic-create" type="button">Crear tema</button>
+     <button id="ing-topic-cancel" class="ghost" type="button">Cancelar</button>
+     <span id="ing-topic-msg" class="muted"></span>
+   </div>
+ </div>
+ <div class="row">
    <input type="file" id="ing-files" accept="application/pdf,.pdf" multiple>
    <button id="ing-run">▶ Ingestar</button>
    <span class="spin" id="ing-spin">⏳ procesando… (puede tardar minutos con varios PDFs)</span>
@@ -233,7 +250,7 @@
 </div>
 
 <script>
-let lastRun=null, chart=null, ASK_SYSTEM_DEFAULT='';
+let lastRun=null, chart=null, ASK_SYSTEM_DEFAULT='', INSTRUCT_DEFAULT='', DEFAULT_TOPIC='';
 const $=id=>document.getElementById(id);
 function color(r){ if(r==null) return '#7f1d1d'; if(r<=5) return '#166534'; if(r<=20) return '#3f6212';
   if(r<=100) return '#854d0e'; return '#7f1d1d'; }
@@ -270,9 +287,27 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
   ASK_SYSTEM_DEFAULT=c.ask_system||'';
   $('ask-system').value=ASK_SYSTEM_DEFAULT;
   $('chat-system').value=ASK_SYSTEM_DEFAULT;
+  INSTRUCT_DEFAULT=c.default_instruct||''; DEFAULT_TOPIC=c.default_topic||'';
   if(c.table) $('ing-table').textContent=c.table;
-  loadAskQuestions();
+  loadAskQuestions(); loadTopics();
   }catch(e){} }
+
+// Tópicos: puebla los selectores de tema (Preguntar, Conversacional, Ingesta),
+// conservando la selección previa de cada uno.
+async function loadTopics(){
+  try{
+    const ts=await (await fetch('/api/topics')).json();
+    window.__topics=ts;
+    const opts=ts.map(t=>`<option value="${esc(t.topic)}">${esc(t.label)} · ${t.chunks} chunks</option>`).join('');
+    for(const id of ['ask-topic','chat-topic','ing-topic']){
+      const el=$(id); if(!el) continue;
+      const prev=el.value;
+      el.innerHTML=opts;
+      if(prev && ts.some(t=>t.topic===prev)) el.value=prev;
+      else if(DEFAULT_TOPIC && ts.some(t=>t.topic===DEFAULT_TOPIC)) el.value=DEFAULT_TOPIC;
+    }
+  }catch(e){}
+}
 
 async function loadAskQuestions(){
   try{
@@ -295,7 +330,7 @@ async function askRun(){
   try{
     const d=await (await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question, setting:$('ask-setting').value, k:+$('ask-k').value,
-        system:$('ask-system').value})})).json();
+        system:$('ask-system').value, topic:$('ask-topic').value})})).json();
     if(d.error){ $('ask-out').innerHTML='<p style="color:#f87171">Error: '+esc(d.error)+'</p>'; return; }
     const skind=d.score_kind||'', fmt=v=>(skind==='dist'?v.toFixed(4):(skind==='rrf'?v.toFixed(4):v.toFixed(2)));
     let h=`<div class="row muted" style="margin-top:14px">método: <b>${esc(d.setting)}</b> · score: <b>${esc(skind||'—')}</b> · ${d.chunks.length} chunks · ${d.seconds}s</div>`;
@@ -400,12 +435,13 @@ async function loadDocuments(){
     const docs=await (await fetch('/ingest/documents')).json();
     if(!docs.length){ $('ing-docs').innerHTML='<p class="muted">La tabla aún no tiene documentos.</p>'; return; }
     const total=docs.reduce((a,d)=>a+d.chunks,0);
-    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th></th></tr>`;
+    const tlabel=t=>{ const m=(window.__topics||[]).find(x=>x.topic===t); return m?m.label:(t||'—'); };
+    let h=`<table><tr><th>documento (source)</th><th>tema</th><th>chunks</th><th></th></tr>`;
     for(const d of docs){ const btn=d.clean_available
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
-      h+=`<tr><td>${esc(d.source)}</td><td>${d.chunks}</td><td>${btn}</td></tr>`; }
-    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos</td><td class="muted">${total}</td><td></td></tr></table>`;
+      h+=`<tr><td>${esc(d.source)}</td><td class="muted">${esc(tlabel(d.topic))}</td><td>${d.chunks}</td><td>${btn}</td></tr>`; }
+    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos</td><td></td><td class="muted">${total}</td><td></td></tr></table>`;
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
 }
 
@@ -414,6 +450,7 @@ async function ingestRun(){
   if(!input.files.length){ alert('Elige al menos un PDF'); return; }
   const fd=new FormData();
   for(const f of input.files) fd.append('files', f);
+  fd.append('topic', $('ing-topic').value);
   const b=$('ing-run'); b.disabled=true; $('ing-spin').style.display='inline';
   $('ing-msg').textContent=''; $('ing-progress').innerHTML='';
   try{
@@ -433,7 +470,7 @@ function pollIngest(jobId){
         clearInterval(ingTimer);
         $('ing-run').disabled=false; $('ing-spin').style.display='none';
         $('ing-files').value='';
-        loadDocuments();
+        loadTopics(); loadDocuments();
       }
     }catch(e){}
   }, 1200);
@@ -547,10 +584,13 @@ async function renderConvList(){
 function msgBubble(m,isLastAssistant){
   if(m.role==='user') return `<div class="msg user">${marked.parse(m.content||'')}</div>`;
   let src='';
-  if(isLastAssistant && (m.chunks||[]).length){
+  // Cada respuesta guarda SUS propias fuentes (las de esa pregunta) y las muestra
+  // plegadas; solo la última queda abierta para no llenar de ruido el historial.
+  if((m.chunks||[]).length){
     const skind=m.score_kind||'';
     const fmt=v=>(skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2);
-    src=`<div class="chat-src"><details><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
+    src=`<div class="chat-src"><details ${isLastAssistant?'open':''}><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
+      (m.setting?` · <span class="muted">${esc(m.setting)}</span>`:'')+
       (m.rewrite?` · reescritura: <span class="rw">${esc(m.rewrite)}</span>`:'')+`</summary>`+
       m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
         <span class="badge">${esc(skind)}: ${fmt(ch.score)}</span></h4>
@@ -585,7 +625,7 @@ async function chatSend(){
     const history=(await msgsOf(curConv)).map(m=>({role:m.role,content:m.content}));
     const d=await (await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({messages:history, setting:$('chat-setting').value, k:+$('chat-k').value,
-        system:$('chat-system').value})})).json();
+        system:$('chat-system').value, topic:$('chat-topic').value})})).json();
     if(d.error){
       await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ Error: '+d.error,ts:Date.now(),chunks:[]});
     }else{
@@ -618,8 +658,31 @@ $('chat-input').addEventListener('keydown', e=>{
   if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); chatSend(); }
 });
 
+// ── Crear tópico nuevo (desde el tab de Ingesta) ────────────────────────────────
+function toggleTopicForm(show){
+  $('ing-topic-form').style.display=show?'block':'none';
+  if(show){ $('ing-topic-instruct').value=INSTRUCT_DEFAULT; $('ing-topic-label').value=''; $('ing-topic-msg').textContent=''; $('ing-topic-label').focus(); }
+}
+async function createTopic(){
+  const label=$('ing-topic-label').value.trim();
+  if(!label){ $('ing-topic-msg').innerHTML='<span style="color:#f87171">Ponle un nombre al tema</span>'; return; }
+  const btn=$('ing-topic-create'); btn.disabled=true; $('ing-topic-msg').textContent='creando…';
+  try{
+    const d=await (await fetch('/api/topics',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({label, instruct:$('ing-topic-instruct').value})})).json();
+    if(d.error){ $('ing-topic-msg').innerHTML='<span style="color:#f87171">'+esc(d.error)+'</span>'; return; }
+    await loadTopics();
+    $('ing-topic').value=d.topic;   // deja seleccionado el tema recién creado
+    toggleTopicForm(false);
+  }catch(e){ $('ing-topic-msg').innerHTML='<span style="color:#f87171">'+esc(e)+'</span>'; }
+  finally{ btn.disabled=false; }
+}
+$('ing-topic-new').addEventListener('click',()=>toggleTopicForm($('ing-topic-form').style.display==='none'));
+$('ing-topic-cancel').addEventListener('click',()=>toggleTopicForm(false));
+$('ing-topic-create').addEventListener('click',createTopic);
+
 $('ing-run').addEventListener('click',ingestRun);
-$('ing-refresh').addEventListener('click',loadDocuments);
+$('ing-refresh').addEventListener('click',()=>{ loadDocuments(); loadTopics(); });
 
 $('run').addEventListener('click',run);
 $('save').addEventListener('click',save);
