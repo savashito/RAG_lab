@@ -55,6 +55,7 @@
  .chat-side{width:230px;flex:0 0 230px;background:#171a21;border:1px solid #2a2f3a;border-radius:10px;
    display:flex;flex-direction:column;overflow:hidden}
  .chat-side .new{margin:10px;width:calc(100% - 20px)}
+ #chat-convs-toggle{display:none}   /* solo visible en móvil */
  .conv-list{overflow-y:auto;flex:1;padding:0 8px 8px}
  .conv-item{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;cursor:pointer;
    color:#c7cdd6;margin-bottom:4px}
@@ -76,6 +77,34 @@
  .chat-input{border-top:1px solid #2a2f3a;padding:10px 12px;background:#171a21}
  .chat-input textarea{min-height:52px}
  .chat-input .row{margin:8px 0 0}
+ /* ── Responsive / móvil ── */
+ @media (max-width:760px){
+   .wrap{padding:12px}
+   header{padding:12px 14px} h1{font-size:14px}
+   .tabs{padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+   .tabs button{padding:11px 12px;white-space:nowrap}
+   /* 16px en inputs evita el zoom automático de iOS al enfocar */
+   textarea,select,input[type=text]{font-size:16px}
+   .row{gap:8px}
+   /* Controles a ancho completo (sin hueco muerto a la derecha): cada label ocupa
+      toda la fila y su dropdown se estira para llenarla, igual que el de Tema. */
+   .row>label{flex:1 1 100%;display:flex;align-items:center;gap:6px;margin:0}
+   .row>label>select{flex:1;min-width:0;width:100%}
+   .row>details{flex:1 1 100%}
+   /* Chat: barra apilada arriba; el historial se abre con un botón (☰ Conversaciones) */
+   .chat-shell{flex-direction:column;height:auto;min-height:0;gap:10px}
+   .chat-side{width:auto;flex:none;flex-direction:column;gap:8px;padding:8px;overflow:visible}
+   .chat-side .new{margin:0;width:100%}
+   #chat-convs-toggle{display:block}
+   /* Lista plegada por defecto en móvil; se muestra al picar el botón (.open) */
+   .conv-list{display:none;flex-direction:column;gap:4px;padding:0;max-height:45vh;overflow-y:auto;flex:none}
+   .conv-list.open{display:flex}
+   .conv-item{max-width:none;margin:0}
+   .conv-item .x{opacity:1}
+   .chat-log{height:52vh;padding:12px}
+   .chat-input textarea{min-height:64px}
+   .msg{max-width:92%}
+ }
 </style>
 </head>
 <body>
@@ -182,6 +211,7 @@
  <div class="chat-shell">
    <aside class="chat-side">
      <button id="chat-new" class="new">＋ Nueva conversación</button>
+     <button id="chat-convs-toggle" class="new ghost" type="button">☰ Conversaciones</button>
      <div id="conv-list" class="conv-list"></div>
    </aside>
    <div class="chat-main">
@@ -213,13 +243,20 @@
  <div class="row">
    <label>Tema: <select id="ing-topic"></select></label>
    <button id="ing-topic-new" class="ghost" type="button">➕ Nuevo tema</button>
+   <button id="ing-topic-edit" class="ghost" type="button">✏️ Editar tema</button>
    <span class="muted">los PDFs de esta subida se etiquetan con este tema</span>
  </div>
  <div id="ing-topic-form" class="legend" style="display:none">
-   <div class="row"><input type="text" id="ing-topic-label" placeholder="Nombre del tema (ej. Derecho Mercantil)" style="min-width:320px"></div>
-   <p class="muted" style="margin:8px 0 4px">Instrucción de recuperación (prefijo de la consulta antes de embeber). Ajústala al tema/idioma; si la dejas igual, se usa la genérica.</p>
-   <textarea id="ing-topic-instruct" style="min-height:70px"></textarea>
-   <div class="row">
+   <b id="ing-topic-form-title">Nuevo tema</b>
+   <div class="row" style="margin-top:8px"><input type="text" id="ing-topic-label" placeholder="Nombre del tema (ej. Derecho Mercantil)" style="min-width:320px"></div>
+
+   <p class="muted" style="margin:12px 0 4px"><b>1 · Instrucción de recuperación (tarea).</b> Frase que describe QUÉ se busca, para orientar la <b>búsqueda</b>. El sistema la envuelve solo (formato del modelo); tú solo escribe la frase. Ej.: <i>Retrieve the passage that answers the question.</i></p>
+   <textarea id="ing-topic-instruct" style="min-height:56px" placeholder="Recupera el pasaje que responde la pregunta."></textarea>
+
+   <p class="muted" style="margin:12px 0 4px"><b>2 · System prompt.</b> Instrucción al <b>LLM</b> sobre cómo <b>redactar la respuesta</b> en este tema (tono, qué citar, en qué basarse). Es lo que carga el «⚙️ System prompt» de Preguntar/Conversacional al elegir este tema.</p>
+   <textarea id="ing-topic-system" style="min-height:100px" placeholder="Eres un asistente experto en este tema. Responde solo con base en el CONTEXTO…"></textarea>
+
+   <div class="row" style="margin-top:10px">
      <button id="ing-topic-create" type="button">Crear tema</button>
      <button id="ing-topic-cancel" class="ghost" type="button">Cancelar</button>
      <span id="ing-topic-msg" class="muted"></span>
@@ -235,7 +272,7 @@
 
  <h2>Corpus actual</h2>
  <div class="row"><button id="ing-refresh" class="ghost">↻ Recargar</button>
-   <span class="muted">documentos ya insertados en la tabla</span></div>
+   <span class="muted">documentos del tema seleccionado arriba</span></div>
  <div id="ing-docs"></div>
 </div>
 
@@ -294,6 +331,10 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
 
 // Tópicos: puebla los selectores de tema (Preguntar, Conversacional, Ingesta),
 // conservando la selección previa de cada uno.
+let firstTopicsLoad=true;
+function topicObj(selId){ return (window.__topics||[]).find(t=>t.topic===$(selId).value); }
+// Carga el system prompt del tópico elegido en el textbox editable del tab.
+function syncSystem(selId, taId){ const t=topicObj(selId); if(t && t.system_prompt!=null) $(taId).value=t.system_prompt; }
 async function loadTopics(){
   try{
     const ts=await (await fetch('/api/topics')).json();
@@ -306,6 +347,7 @@ async function loadTopics(){
       if(prev && ts.some(t=>t.topic===prev)) el.value=prev;
       else if(DEFAULT_TOPIC && ts.some(t=>t.topic===DEFAULT_TOPIC)) el.value=DEFAULT_TOPIC;
     }
+    if(firstTopicsLoad){ syncSystem('ask-topic','ask-system'); syncSystem('chat-topic','chat-system'); firstTopicsLoad=false; }
   }catch(e){}
 }
 
@@ -432,16 +474,20 @@ let ingTimer=null;
 
 async function loadDocuments(){
   try{
-    const docs=await (await fetch('/ingest/documents')).json();
-    if(!docs.length){ $('ing-docs').innerHTML='<p class="muted">La tabla aún no tiene documentos.</p>'; return; }
+    const all=await (await fetch('/ingest/documents')).json();
+    const topic=$('ing-topic') ? $('ing-topic').value : '';
+    const tobj=(window.__topics||[]).find(t=>t.topic===topic);
+    const tname=tobj?tobj.label:(topic||'—');
+    // Solo los documentos del tema seleccionado (cada source tiene un único topic).
+    const docs=topic ? all.filter(d=>d.topic===topic) : all;
+    if(!docs.length){ $('ing-docs').innerHTML=`<p class="muted">El tema <b>${esc(tname)}</b> aún no tiene documentos.</p>`; return; }
     const total=docs.reduce((a,d)=>a+d.chunks,0);
-    const tlabel=t=>{ const m=(window.__topics||[]).find(x=>x.topic===t); return m?m.label:(t||'—'); };
-    let h=`<table><tr><th>documento (source)</th><th>tema</th><th>chunks</th><th></th></tr>`;
+    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th></th></tr>`;
     for(const d of docs){ const btn=d.clean_available
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
-      h+=`<tr><td>${esc(d.source)}</td><td class="muted">${esc(tlabel(d.topic))}</td><td>${d.chunks}</td><td>${btn}</td></tr>`; }
-    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos</td><td></td><td class="muted">${total}</td><td></td></tr></table>`;
+      h+=`<tr><td>${esc(d.source)}</td><td>${d.chunks}</td><td>${btn}</td></tr>`; }
+    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td></tr></table>`;
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
 }
 
@@ -453,11 +499,20 @@ async function ingestRun(){
   fd.append('topic', $('ing-topic').value);
   const b=$('ing-run'); b.disabled=true; $('ing-spin').style.display='inline';
   $('ing-msg').textContent=''; $('ing-progress').innerHTML='';
+  const fail=msg=>{ $('ing-msg').innerHTML='<span style="color:#f87171">'+esc(msg)+'</span>';
+    b.disabled=false; $('ing-spin').style.display='none'; };
   try{
-    const d=await (await fetch('/ingest/upload',{method:'POST',body:fd})).json();
-    if(d.error){ $('ing-msg').innerHTML='<span style="color:#f87171">'+esc(d.error)+'</span>'; return; }
-    pollIngest(d.job_id);
-  }catch(e){ $('ing-msg').innerHTML='<span style="color:#f87171">'+esc(e)+'</span>'; b.disabled=false; $('ing-spin').style.display='none'; }
+    const res=await fetch('/ingest/upload',{method:'POST',body:fd});
+    let d;
+    try{ d=await res.json(); }
+    catch(_){   // respuesta no-JSON (p. ej. página HTML de error de nginx)
+      return fail(res.status===413
+        ? 'El servidor rechazó la subida por su TAMAÑO (HTTP 413). Hay que subir client_max_body_size en nginx (server legis.tlacua.cloud).'
+        : 'El servidor respondió '+res.status+' '+res.statusText+' sin JSON (revisa el proxy/servidor).');
+    }
+    if(d.error){ return fail(d.error); }
+    pollIngest(d.job_id);   // pollIngest re-habilita el botón al terminar
+  }catch(e){ fail(e); }
 }
 
 function pollIngest(jobId){
@@ -569,11 +624,12 @@ async function delConv(id){
   if(!curConv && list.length) curConv=list[0].id;
   await renderConvList(); await renderChatLog();
 }
-async function selectConv(id){ curConv=id; await renderConvList(); await renderChatLog();
-  $('chat-input').focus(); }
+async function selectConv(id){ curConv=id; $('conv-list').classList.remove('open');
+  await renderConvList(); await renderChatLog(); $('chat-input').focus(); }
 
 async function renderConvList(){
   const list=await listConvs();
+  const tg=$('chat-convs-toggle'); if(tg) tg.textContent='☰ Conversaciones ('+list.length+')';
   $('conv-list').innerHTML = list.length ? list.map(c=>
     `<div class="conv-item ${c.id===curConv?'active':''}" onclick="selectConv('${c.id}')">
        <span class="t">${esc(c.title||'Sin título')}</span>
@@ -651,35 +707,62 @@ async function chatInit(){
   await renderConvList(); await renderChatLog();
   chatReady=true;
 }
-$('chat-new').addEventListener('click',()=>newConv());
+$('chat-new').addEventListener('click',()=>{ $('conv-list').classList.remove('open'); newConv(); });
+$('chat-convs-toggle').addEventListener('click',()=>$('conv-list').classList.toggle('open'));
 $('chat-send').addEventListener('click',chatSend);
-$('chat-prompt-reset').addEventListener('click',()=>{ $('chat-system').value=ASK_SYSTEM_DEFAULT; });
+$('chat-prompt-reset').addEventListener('click',()=>syncSystem('chat-topic','chat-system'));
 $('chat-input').addEventListener('keydown', e=>{
   if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); chatSend(); }
 });
 
-// ── Crear tópico nuevo (desde el tab de Ingesta) ────────────────────────────────
-function toggleTopicForm(show){
-  $('ing-topic-form').style.display=show?'block':'none';
-  if(show){ $('ing-topic-instruct').value=INSTRUCT_DEFAULT; $('ing-topic-label').value=''; $('ing-topic-msg').textContent=''; $('ing-topic-label').focus(); }
+// ── Crear / editar tópico (desde el tab de Ingesta) ─────────────────────────────
+let topicMode='create', editingTopic=null;
+function closeTopicForm(){ $('ing-topic-form').style.display='none'; }
+function openTopicForm(mode){
+  topicMode=mode; $('ing-topic-msg').textContent='';
+  if(mode==='edit'){
+    const t=(window.__topics||[]).find(x=>x.topic===$('ing-topic').value);
+    if(!t){ alert('Elige un tema para editar'); return; }
+    editingTopic=t.topic;
+    $('ing-topic-form-title').textContent='Editar tema · '+t.topic;
+    $('ing-topic-label').value=t.label;
+    $('ing-topic-instruct').value=t.instruct||'';
+    $('ing-topic-system').value=t.system_prompt||'';
+    $('ing-topic-create').textContent='Guardar cambios';
+  }else{
+    editingTopic=null;
+    $('ing-topic-form-title').textContent='Nuevo tema';
+    $('ing-topic-label').value='';
+    $('ing-topic-instruct').value=INSTRUCT_DEFAULT;
+    $('ing-topic-system').value=ASK_SYSTEM_DEFAULT;
+    $('ing-topic-create').textContent='Crear tema';
+  }
+  $('ing-topic-form').style.display='block';
+  $('ing-topic-label').focus();
 }
-async function createTopic(){
+async function saveTopic(){
   const label=$('ing-topic-label').value.trim();
   if(!label){ $('ing-topic-msg').innerHTML='<span style="color:#f87171">Ponle un nombre al tema</span>'; return; }
-  const btn=$('ing-topic-create'); btn.disabled=true; $('ing-topic-msg').textContent='creando…';
+  const btn=$('ing-topic-create'); btn.disabled=true; $('ing-topic-msg').textContent='guardando…';
+  const url=topicMode==='edit' ? '/api/topics/'+encodeURIComponent(editingTopic) : '/api/topics';
   try{
-    const d=await (await fetch('/api/topics',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({label, instruct:$('ing-topic-instruct').value})})).json();
+    const d=await (await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({label, instruct:$('ing-topic-instruct').value,
+        system_prompt:$('ing-topic-system').value})})).json();
     if(d.error){ $('ing-topic-msg').innerHTML='<span style="color:#f87171">'+esc(d.error)+'</span>'; return; }
+    const keep=d.topic;   // deja seleccionado el tema creado/editado
     await loadTopics();
-    $('ing-topic').value=d.topic;   // deja seleccionado el tema recién creado
-    toggleTopicForm(false);
+    if(keep){ $('ing-topic').value=keep; }
+    closeTopicForm(); loadDocuments();
   }catch(e){ $('ing-topic-msg').innerHTML='<span style="color:#f87171">'+esc(e)+'</span>'; }
   finally{ btn.disabled=false; }
 }
-$('ing-topic-new').addEventListener('click',()=>toggleTopicForm($('ing-topic-form').style.display==='none'));
-$('ing-topic-cancel').addEventListener('click',()=>toggleTopicForm(false));
-$('ing-topic-create').addEventListener('click',createTopic);
+// Al cambiar el tema en Ingesta, el "Corpus actual" muestra los docs de ese tema.
+$('ing-topic').addEventListener('change',loadDocuments);
+$('ing-topic-new').addEventListener('click',()=>openTopicForm('create'));
+$('ing-topic-edit').addEventListener('click',()=>openTopicForm('edit'));
+$('ing-topic-cancel').addEventListener('click',closeTopicForm);
+$('ing-topic-create').addEventListener('click',saveTopic);
 
 $('ing-run').addEventListener('click',ingestRun);
 $('ing-refresh').addEventListener('click',()=>{ loadDocuments(); loadTopics(); });
@@ -691,7 +774,10 @@ $('compare').addEventListener('click',compare);
 $('ask-run').addEventListener('click',askRun);
 $('ask-mode').addEventListener('change',askModeChange);
 $('ask-golden').addEventListener('change',loadAskQuestions);
-$('ask-prompt-reset').addEventListener('click',()=>{ $('ask-system').value=ASK_SYSTEM_DEFAULT; });
+$('ask-prompt-reset').addEventListener('click',()=>syncSystem('ask-topic','ask-system'));
+// Al cambiar de tema, carga su system prompt en el editor (Preguntar y Conversacional).
+$('ask-topic').addEventListener('change',()=>syncSystem('ask-topic','ask-system'));
+$('chat-topic').addEventListener('change',()=>syncSystem('chat-topic','chat-system'));
 // Enter envía la pregunta (como picar "Responder"); Shift+Enter inserta salto de línea.
 $('ask-question').addEventListener('keydown', e=>{
   if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); askRun(); }

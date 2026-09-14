@@ -32,11 +32,25 @@ búsqueda RAG se limite al tema que el usuario elija.
 - Cada chunk lleva una columna **`topic`** en la tabla de vectores (Opción A: una tabla,
   filtro por `WHERE topic = %s`; BM25 se filtra en memoria por la misma metadata).
 - El catálogo de temas vive en la tabla **`rewrite_lab_topics`** (`topic`, `label`,
-  `instruct`). El **`instruct`** es el prefijo de consulta (antes se llamaba `Q_INSTRUCT`)
-  y se guarda **por tema**, no por chunk — así un tema en inglés puede usar
-  *"Retrieve the passage…"* y uno legal *"Recupera el pasaje del código o la doctrina…"*.
-- Los temas se **crean desde el tab de Ingesta** (botón «➕ Nuevo tema»: nombre +
-  instrucción). El id (slug) se deriva del nombre.
+  `instruct`). El **`instruct`** guarda **solo la TAREA** (la frase que describe qué se
+  busca), por tema. El formato del modelo instruct-aware
+  (`Instruct: <tarea>\nQuery: <pregunta>`) es una **plantilla fija en código**
+  (`INSTRUCT_TEMPLATE` en `main.py`), igual para todos los temas — no se guarda ni se
+  edita por tema. Así un tema en inglés usa la tarea *"Retrieve the passage…"* y uno legal
+  *"Recupera el pasaje del código o la doctrina…"*, pero ambos se envuelven en el mismo
+  `Instruct:/Query:`. Editar la tarea afecta solo consultas futuras; **no** re-embebe
+  documentos (los documentos se embeben sin instrucción).
+- Cada tema tiene además un **`system_prompt`** propio (columna en `rewrite_lab_topics`):
+  la instrucción al **LLM** sobre cómo **redactar la respuesta** en ese tema (distinta del
+  `instruct`, que es para la búsqueda). Al elegir un tema en Preguntar/Conversacional, su
+  `system_prompt` se carga en el editor «⚙️ System prompt» (editable en vivo por sesión;
+  el botón «Restaurar» vuelve al del tema). Si un tema no define uno, cae al `ASK_SYSTEM`
+  global. Los tres conceptos son independientes: **instruct** (búsqueda) y **system
+  prompt** (respuesta) viven por-tema en la tabla; **`Instruct:/Query:`** es plantilla fija
+  en código; la **pregunta** la escribe el usuario en vivo.
+- Los temas se **crean y editan desde el tab de Ingesta** («➕ Nuevo tema» / «✏️ Editar
+  tema»: nombre + tarea de recuperación + system prompt). El id (slug) se deriva del nombre
+  al crear y **no cambia** al editar.
 - Los tabs **Preguntar** y **Conversacional** tienen un selector **Tema** y la búsqueda
   se restringe a él.
 - **Migración automática al arrancar:** se añade la columna `topic` (idempotente), se
@@ -44,8 +58,9 @@ búsqueda RAG se limite al tema que el usuario elija.
   (`derecho_penal_mexicano`).
 
 Endpoints: `GET /api/topics` (catálogo + nº de chunks), `POST /api/topics`
-(`{label, instruct?}`). `POST /ask` y `POST /chat` aceptan `topic`; `POST /ingest/upload`
-recibe el `topic` como campo de formulario.
+(`{label, instruct?}` — crea; el `instruct` es la tarea), `POST /api/topics/{topic}`
+(`{label?, instruct?}` — edita; el slug no cambia). `POST /ask` y `POST /chat` aceptan
+`topic`; `POST /ingest/upload` recibe el `topic` como campo de formulario.
 
 > **Nota:** el tab **Rewrite Lab** (`/run`, evaluación con golden sets) **no** filtra por
 > tema todavía — busca en toda la tabla. Es correcto mientras el único tema con datos

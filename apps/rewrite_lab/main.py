@@ -49,7 +49,30 @@ TABLE = os.environ.get('LEGAL_TABLE', 'sistema_penal__qwen06__legal')
 # Dónde persisten los .md limpios (visualizables) y dónde caen los PDFs subidos.
 CLEAN_DIR = Path(os.environ.get('CLEAN_MD_DIR', LABS / 'ingestion' / 'out_clean' / 'Sistema Penal Acusatorio'))
 UPLOAD_DIR = Path(os.environ.get('UPLOAD_DIR', LABS / 'ingestion' / '.uploads'))
-Q_INSTRUCT = 'Instruct: Recupera el pasaje del código o la doctrina que responde la pregunta.\nQuery: '
+# Modelos de embeddings instruction-aware: la consulta se embebe como
+# "Instruct: <tarea>\nQuery: <pregunta>". La PLANTILLA es fija (convención del modelo,
+# igual para todos los temas); lo único que cambia por tópico es la TAREA (la frase).
+# Por eso la tabla de tópicos guarda solo la tarea, no el prefijo completo.
+INSTRUCT_TEMPLATE = 'Instruct: {task}\nQuery: '
+DEFAULT_TASK = 'Recupera el pasaje del código o la doctrina que responde la pregunta.'
+Q_INSTRUCT = INSTRUCT_TEMPLATE.format(task=DEFAULT_TASK)   # prefijo completo (lo usa el eval)
+
+
+def query_prefix(task: str) -> str:
+    """Prefijo completo de consulta a partir de la tarea del tópico."""
+    return INSTRUCT_TEMPLATE.format(task=(task or DEFAULT_TASK).strip())
+
+
+def _task_only(instruct: str) -> str:
+    """Normaliza valores legacy: si guardaban el prefijo completo
+    'Instruct: <tarea>\\nQuery:', devuelve solo <tarea>. Si ya es la tarea, no toca nada."""
+    s = (instruct or '').strip()
+    if s.startswith('Instruct:'):
+        s = s[len('Instruct:'):]
+        i = s.rfind('Query:')
+        if i != -1:
+            s = s[:i]
+    return s.strip()
 KS = (5, 10, 20)
 N_DENSE = 1500   # profundidad del ranking denso traído de pgvector para calcular el rank
 
@@ -58,7 +81,7 @@ N_DENSE = 1500   # profundidad del ranking denso traído de pgvector para calcul
 # por el tema elegido. El `instruct` (prefijo de la consulta antes de embeber) se guarda
 # POR TÓPICO en un catálogo (tabla `rewrite_lab_topics`), no por chunk. Los documentos ya
 # insertados se asignan al tópico por defecto (Derecho Penal Mexicano).
-DEFAULT_INSTRUCT = Q_INSTRUCT
+DEFAULT_INSTRUCT = DEFAULT_TASK   # la tabla guarda la TAREA; este es su valor por defecto
 TOPICS_TABLE = 'rewrite_lab_topics'
 DEFAULT_TOPIC = 'derecho_penal_mexicano'
 DEFAULT_TOPIC_LABEL = 'Derecho Penal Mexicano'
@@ -109,11 +132,20 @@ with connect() as _c, _c.cursor() as _cur:
     _cur.execute(f"""CREATE TABLE IF NOT EXISTS {TOPICS_TABLE} (
         topic text PRIMARY KEY, label text NOT NULL, instruct text NOT NULL,
         created_at timestamptz DEFAULT now())""")
+    # system_prompt por tópico (instrucción del LLM al RESPONDER; distinta del instruct
+    # de búsqueda). Se rellena con el default global más abajo, cuando ASK_SYSTEM existe.
+    _cur.execute(f"ALTER TABLE {TOPICS_TABLE} ADD COLUMN IF NOT EXISTS system_prompt text")
     # Semilla del tópico por defecto y backfill de lo ya insertado (que tenía topic NULL).
     _cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct) VALUES (%s, %s, %s) "
                  f"ON CONFLICT (topic) DO NOTHING",
                  (DEFAULT_TOPIC, DEFAULT_TOPIC_LABEL, DEFAULT_INSTRUCT))
     _cur.execute(f"UPDATE {TABLE} SET topic = %s WHERE topic IS NULL", (DEFAULT_TOPIC,))
+    # Normaliza a "solo tarea" cualquier `instruct` legacy que guardara el prefijo completo.
+    _cur.execute(f"SELECT topic, instruct FROM {TOPICS_TABLE}")
+    for _t, _ins in _cur.fetchall():
+        _clean = _task_only(_ins)
+        if _clean != _ins:
+            _cur.execute(f"UPDATE {TOPICS_TABLE} SET instruct = %s WHERE topic = %s", (_clean, _t))
     _c.commit()
 
 # Catálogo de tópicos en memoria: topic -> {'label':..., 'instruct':...}. Se recarga al
@@ -124,14 +156,22 @@ TOPICS: dict[str, dict] = {}
 def load_topics():
     global TOPICS
     with connect() as c, c.cursor() as cur:
-        cur.execute(f"SELECT topic, label, instruct FROM {TOPICS_TABLE} ORDER BY created_at")
-        TOPICS = {t: {'label': lb, 'instruct': ins} for t, lb, ins in cur.fetchall()}
+        cur.execute(f"SELECT topic, label, instruct, system_prompt FROM {TOPICS_TABLE} ORDER BY created_at")
+        TOPICS = {t: {'label': lb, 'instruct': ins, 'system_prompt': sp}
+                  for t, lb, ins, sp in cur.fetchall()}
     return TOPICS
 
 
 def instruct_for(topic) -> str:
-    """Prefijo de consulta del tópico (o el default si no hay/no existe)."""
+    """Tarea de recuperación del tópico (frase para el 'Instruct:'), o el default si no
+    existe. El prefijo completo se arma con `query_prefix`."""
     return (TOPICS.get(topic) or {}).get('instruct') or DEFAULT_INSTRUCT
+
+
+def system_for(topic) -> str:
+    """System prompt del tópico (instrucción al LLM al responder), o el default global
+    ASK_SYSTEM si el tópico no tiene uno."""
+    return (TOPICS.get(topic) or {}).get('system_prompt') or ASK_SYSTEM
 
 
 def slugify(text) -> str:
@@ -239,6 +279,13 @@ ASK_SYSTEM = (
     'Eres un asistente jurídico del sistema penal acusatorio mexicano. Responde la pregunta ÚNICAMENTE con base en los fragmentos de CONTEXTO proporcionados (extractos del Código Nacional de Procedimientos Penales, del Código Penal Federal, de la Constitución Política de los Estados Unidos Mexicanos y de doctrina). Si el contexto no contiene la respuesta, dilo con claridad y no inventes. Menciona en tu respuesta exactamente el articulo y ley de donde sacas la informacion, asimismo, cita al final de tu respuesta las fuentes doctrinales conforme a los lineamientos editoriales. Responde con suficiente vocabulario tus respuestas, hazlo de manera clara, veridica y oportuna.'
 )
 print(ASK_SYSTEM)
+# Rellena el system_prompt de los tópicos que no tengan uno (incl. el default penal, que
+# se creó antes de que ASK_SYSTEM estuviera disponible en el arranque) y recarga la caché.
+with connect() as _c, _c.cursor() as _cur:
+    _cur.execute(f"UPDATE {TOPICS_TABLE} SET system_prompt = %s WHERE system_prompt IS NULL",
+                 (ASK_SYSTEM,))
+    _c.commit()
+load_topics()
 DOC_BY_ID: dict[int, dict] = {}   # id -> {source,title,hierarchy,text}
 BM_IDS: list[int] = []            # índice del corpus -> id de la BD (para mapear BM25)
 BM25_INDEX: BM25 | None = None
@@ -299,10 +346,10 @@ ASK_SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido']
 def retrieve_scored(cur, question, setting, topic=None):
     """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Si `topic`,
     restringe la búsqueda a ese tópico y usa su `instruct` para embeber la consulta."""
-    instruct = instruct_for(topic)
+    prefix = query_prefix(instruct_for(topic))   # "Instruct: <tarea del tópico>\nQuery: "
     if setting == 'bm25':
         return bm25_ranked(question, topic), 'bm25', None
-    d_orig = dense_ranked(cur, tei.embed([instruct + question], use_cache=False)[0], topic)
+    d_orig = dense_ranked(cur, tei.embed([prefix + question], use_cache=False)[0], topic)
     if setting == 'orig':
         return d_orig, 'dist', None
     if setting == 'híbrido':
@@ -310,7 +357,7 @@ def retrieve_scored(cur, question, setting, topic=None):
         return fused, 'rrf', None
     # reescribir / multiquery necesitan la reescritura del LLM
     rw = llm.rewrite_legal(question)
-    d_rw = dense_ranked(cur, tei.embed([instruct + rw], use_cache=False)[0], topic)
+    d_rw = dense_ranked(cur, tei.embed([prefix + rw], use_cache=False)[0], topic)
     if setting == 'reescribir':
         return d_rw, 'dist', rw
     if setting == 'multiquery':
@@ -333,7 +380,7 @@ def ask(question, setting, k=5, system=None, topic=None):
     context = '\n\n'.join(
         f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
         for ch in top)
-    answer = llm.chat((system or ASK_SYSTEM).strip() or ASK_SYSTEM,
+    answer = llm.chat((system or '').strip() or system_for(topic),
                       f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}',
                       max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
@@ -363,7 +410,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None):
         for ch in top)
     # El contexto RAG se inyecta en el ÚLTIMO turno del usuario; los turnos previos van
     # tal cual para dar memoria conversacional al LLM.
-    llm_msgs = [{'role': 'system', 'content': (system or ASK_SYSTEM).strip() or ASK_SYSTEM}]
+    llm_msgs = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)}]
     llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1]]
     llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
     answer = llm.chat_messages(llm_msgs, max_tokens=4096, timeout=180)
@@ -422,6 +469,7 @@ def api_topics():
         cur.execute(f"SELECT topic, count(*) FROM {TABLE} GROUP BY topic")
         counts = {t: n for t, n in cur.fetchall()}
     return [{'topic': t, 'label': v['label'], 'instruct': v['instruct'],
+             'system_prompt': v.get('system_prompt') or ASK_SYSTEM,
              'chunks': counts.get(t, 0)} for t, v in TOPICS.items()]
 
 
@@ -435,15 +483,43 @@ async def api_topic_create(req: Request):
         return JSONResponse({'error': 'La etiqueta del tópico no puede estar vacía'}, status_code=400)
     topic = slugify(label)
     instruct = (b.get('instruct') or '').strip() or DEFAULT_INSTRUCT
+    system_prompt = (b.get('system_prompt') or '').strip() or ASK_SYSTEM
     with connect() as c, c.cursor() as cur:
         cur.execute(f"SELECT 1 FROM {TOPICS_TABLE} WHERE topic = %s", (topic,))
         if cur.fetchone():
             return JSONResponse({'error': f'Ya existe un tópico con id {topic!r}'}, status_code=409)
-        cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct) VALUES (%s, %s, %s)",
-                    (topic, label, instruct))
+        cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct, system_prompt) "
+                    f"VALUES (%s, %s, %s, %s)", (topic, label, instruct, system_prompt))
         c.commit()
     load_topics()
-    return {'topic': topic, 'label': label, 'instruct': instruct}
+    return {'topic': topic, 'label': label, 'instruct': instruct, 'system_prompt': system_prompt}
+
+
+@app.post('/api/topics/{topic}')
+async def api_topic_update(topic: str, req: Request):
+    """Edita un tópico existente: {label?, instruct?}. El id (slug) NO cambia. Editar la
+    tarea (`instruct`) afecta solo a consultas futuras; no re-embebe documentos (los
+    documentos se embeben sin instrucción)."""
+    b = await req.json()
+    sets, vals = [], []
+    label = (b.get('label') or '').strip()
+    if label:
+        sets.append('label = %s'); vals.append(label)
+    if 'instruct' in b:
+        sets.append('instruct = %s'); vals.append((b.get('instruct') or '').strip() or DEFAULT_INSTRUCT)
+    if 'system_prompt' in b:
+        sets.append('system_prompt = %s'); vals.append((b.get('system_prompt') or '').strip() or ASK_SYSTEM)
+    if not sets:
+        return JSONResponse({'error': 'nada que actualizar'}, status_code=400)
+    vals.append(topic)
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT 1 FROM {TOPICS_TABLE} WHERE topic = %s", (topic,))
+        if not cur.fetchone():
+            return JSONResponse({'error': f'tópico desconocido: {topic!r}'}, status_code=404)
+        cur.execute(f"UPDATE {TOPICS_TABLE} SET {', '.join(sets)} WHERE topic = %s", vals)
+        c.commit()
+    load_topics()
+    return {'topic': topic, **TOPICS.get(topic, {})}
 
 
 @app.get('/api/questions')
