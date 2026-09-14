@@ -65,7 +65,7 @@
  .conv-item:hover .x{opacity:1}
  .chat-main{flex:1;display:flex;flex-direction:column;background:#171a21;border:1px solid #2a2f3a;
    border-radius:10px;overflow:hidden;min-width:0}
- .chat-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+ .chat-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;position:relative}
  .msg{max-width:82%;padding:2px 14px;border-radius:12px;border:1px solid #2a2f3a}
  .msg.user{align-self:flex-end;background:#1e3a5f;border-color:#2b5081}
  .msg.assistant{align-self:flex-start;background:#0b0d12}
@@ -645,7 +645,7 @@ function msgBubble(m,isLastAssistant){
   if((m.chunks||[]).length){
     const skind=m.score_kind||'';
     const fmt=v=>(skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2);
-    src=`<div class="chat-src"><details ${isLastAssistant?'open':''}><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
+    src=`<div class="chat-src"><details><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
       (m.setting?` · <span class="muted">${esc(m.setting)}</span>`:'')+
       (m.rewrite?` · reescritura: <span class="rw">${esc(m.rewrite)}</span>`:'')+`</summary>`+
       m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
@@ -654,14 +654,20 @@ function msgBubble(m,isLastAssistant){
   }
   return `<div class="msg assistant">${marked.parse(m.content||'')}${src}</div>`;
 }
-async function renderChatLog(){
+async function renderChatLog(scroll='bottom'){
   const log=$('chat-log');
   if(!curConv){ log.innerHTML='<div class="msg empty">Empieza una conversación o crea una nueva. El historial se guarda solo en este navegador.</div>'; return; }
   const ms=await msgsOf(curConv);
   if(!ms.length){ log.innerHTML='<div class="msg empty">Escribe tu primera pregunta abajo. 👇</div>'; return; }
-  let lastA=-1; ms.forEach((m,i)=>{ if(m.role==='assistant') lastA=i; });
+  let lastA=-1, lastU=-1; ms.forEach((m,i)=>{ if(m.role==='assistant') lastA=i; if(m.role==='user') lastU=i; });
   log.innerHTML=ms.map((m,i)=>msgBubble(m,i===lastA)).join('');
-  log.scrollTop=log.scrollHeight;
+  // Tras responder ('lastq'): posiciona en la última pregunta, para que se vea la pregunta
+  // y el inicio de la respuesta. En los demás casos, al fondo (último mensaje).
+  if(scroll==='lastq' && lastU>=0 && log.children[lastU]){
+    log.scrollTop=Math.max(0, log.children[lastU].offsetTop - 8);
+  }else{
+    log.scrollTop=log.scrollHeight;
+  }
 }
 
 async function chatSend(){
@@ -694,7 +700,7 @@ async function chatSend(){
     await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ '+e,ts:Date.now(),chunks:[]});
   }finally{
     chatSending=false; $('chat-send').disabled=false; $('chat-spin').style.display='none';
-    await renderConvList(); await renderChatLog(); $('chat-input').focus();
+    await renderConvList(); await renderChatLog('lastq'); $('chat-input').focus();
   }
 }
 
