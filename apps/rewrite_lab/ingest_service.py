@@ -39,17 +39,20 @@ class IngestManager:
         self._lock = threading.Lock()
 
     # ── ciclo de vida del job ────────────────────────────────────────────────────
-    def start(self, pdf_paths: list[Path], topic: str | None = None) -> str:
+    def start(self, pdf_paths: list[Path], topic: str | None = None,
+              jurisdiction: str | None = None) -> str:
         """Job de ingesta de PDFs subidos (rutas temporales que se borran al terminar)."""
         items = [{"kind": "pdf", "ref": p, "name": p.name} for p in pdf_paths]
-        return self._start(items, topic)
+        return self._start(items, topic, jurisdiction)
 
-    def start_urls(self, urls: list[str], topic: str | None = None) -> str:
+    def start_urls(self, urls: list[str], topic: str | None = None,
+                   jurisdiction: str | None = None) -> str:
         """Job de ingesta de URLs (HTML o PDF en línea). No hay archivos temporales."""
         items = [{"kind": "url", "ref": u, "name": u} for u in urls]
-        return self._start(items, topic)
+        return self._start(items, topic, jurisdiction)
 
-    def _start(self, items: list[dict], topic: str | None) -> str:
+    def _start(self, items: list[dict], topic: str | None,
+               jurisdiction: str | None = None) -> str:
         """Crea un job y lanza el hilo que lo procesa. Uno a la vez: si ya hay uno
         corriendo, lo rechaza (embeber es pesado y `on_complete` toca estado global).
         `topic` etiqueta los chunks resultantes (segmentación por tema)."""
@@ -63,9 +66,10 @@ class IngestManager:
                 "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "error": None,
                 "topic": topic,
+                "jurisdiction": jurisdiction,
                 "files": [self._new_file_entry(it["name"]) for it in items],
             }
-        threading.Thread(target=self._run, args=(job_id, items, topic), daemon=True).start()
+        threading.Thread(target=self._run, args=(job_id, items, topic, jurisdiction), daemon=True).start()
         return job_id
 
     @staticmethod
@@ -75,7 +79,8 @@ class IngestManager:
                 "inserted": False, "replaced": False, "n_chunks": 0,
                 "clean_available": False, "report": {}}
 
-    def _run(self, job_id: str, items: list[dict], topic: str | None = None) -> None:
+    def _run(self, job_id: str, items: list[dict], topic: str | None = None,
+             jurisdiction: str | None = None) -> None:
         job = self.jobs[job_id]
         try:
             for entry, item in zip(job["files"], items):
@@ -92,13 +97,20 @@ class IngestManager:
                         item["ref"], table=self.table, tei=self.tei, connect_fn=self.connect_fn,
                         clean_dir=self.clean_dir, progress=progress,
                     )
-                # Etiqueta con el tópico los chunks recién insertados de este documento.
-                # El pipeline compartido no conoce `topic`; se setea aquí por `source`.
-                if topic and (result.inserted or result.replaced_existing) and not result.error:
-                    with self.connect_fn() as conn, conn.cursor() as cur:
-                        cur.execute(f"UPDATE {self.table} SET topic = %s WHERE source = %s",
-                                    (topic, result.source))
-                        conn.commit()
+                # Etiqueta con el tópico y la jurisdicción los chunks recién insertados de
+                # este documento. El pipeline compartido no los conoce; se setean aquí por
+                # `source` (upsert por documento).
+                if (result.inserted or result.replaced_existing) and not result.error:
+                    sets, vals = [], []
+                    if topic:
+                        sets.append("topic = %s"); vals.append(topic)
+                    if jurisdiction:
+                        sets.append("jurisdiction = %s"); vals.append(jurisdiction)
+                    if sets:
+                        vals.append(result.source)
+                        with self.connect_fn() as conn, conn.cursor() as cur:
+                            cur.execute(f"UPDATE {self.table} SET {', '.join(sets)} WHERE source = %s", vals)
+                            conn.commit()
                 entry.update(
                     source=result.source, error=result.error, inserted=result.inserted,
                     replaced=result.replaced_existing, n_chunks=result.n_chunks,

@@ -187,6 +187,9 @@ _ARTICLE_LABEL = (
 ARTICLE_RE = re.compile(
     r'(?im)^[ \t#>*_]*(?:<u>[ \t#>*_]*)?art[íi]culo[ \t]+' + _ARTICLE_LABEL,
 )
+# Igual que ARTICLE_RE pero SIN anclar a inicio de línea: para detectar en una PREGUNTA
+# ("¿qué dice el artículo 167 de…?") a qué artículo se refiere y hacer búsqueda directa.
+ARTICLE_QUERY_RE = re.compile(r'(?i)art[íi]culo[ \t]+' + _ARTICLE_LABEL)
 
 
 def _article_label_parts(raw: str) -> tuple[str, str]:
@@ -251,6 +254,19 @@ def article_label_issues(units) -> list[dict]:
             issues.append({'type': 'duplicate', 'title': title,
                            'positions': sorted(u['position'] for u in us)})
     return issues
+
+
+def find_article_ref(question: str) -> str | None:
+    """Si la PREGUNTA cita un artículo ('¿qué dice el artículo 167?'), devuelve su etiqueta
+    canónica ('Artículo 167') para hacer una búsqueda directa por metadata; si no, None.
+    Las búsquedas por número exacto no son semánticas: el denso las falla, así que conviene
+    resolverlas por `title`. Ignora coincidencias que sean parte de un rango ('del 10 al 20')."""
+    m = ARTICLE_QUERY_RE.search(question or '')
+    if not m:
+        return None
+    return 'Artículo ' + _article_label(m.group(1))
+
+
 # Un código está HECHO de artículos (densos, seguidos); un libro de doctrina sólo
 # los CITA de pasada. Contar artículos no basta —una obra que discute 30 artículos
 # no es un código—: se exige además densidad (artículos por cada 1000 palabras).

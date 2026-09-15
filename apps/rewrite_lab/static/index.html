@@ -48,6 +48,19 @@
  @keyframes pstripes{from{background-position:0 0}to{background-position:34px 0}}
  .phead{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#9aa4b2;margin-top:8px}
  .phead b{color:#e6e6e6}
+ /* ── Selector múltiple de Lugar (jurisdicción) ── */
+ details.jur{position:relative;display:inline-block}
+ details.jur>summary{list-style:none;cursor:pointer;background:#0b0d12;border:1px solid #2a2f3a;
+   border-radius:8px;padding:8px 10px;white-space:nowrap}
+ details.jur>summary::-webkit-details-marker{display:none}
+ details.jur>summary::after{content:' ▾';color:#9aa4b2}
+ details.jur .jl{color:#a5d6ff}
+ details.jur .jm{position:absolute;z-index:30;margin-top:4px;background:#171a21;border:1px solid #2a2f3a;
+   border-radius:8px;padding:8px;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+ details.jur .jm label{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;
+   font-size:13px;cursor:pointer;white-space:nowrap}
+ details.jur .jm label:hover{background:#0b0d12}
+ details.jur .jm input{width:auto;min-width:0}
  .tabs{display:flex;gap:4px;padding:0 20px;background:#171a21;border-bottom:1px solid #2a2f3a}
  .tabs button{background:transparent;color:#9aa4b2;border:0;border-bottom:2px solid transparent;
    border-radius:0;padding:11px 16px;font-weight:600}
@@ -194,6 +207,7 @@
    </label>
    <label id="ask-golden-wrap" style="display:none">set: <select id="ask-golden"></select></label>
    <label>Tema: <select id="ask-topic"></select></label>
+   <details class="jur" id="ask-jur"><summary>Lugar: <span class="jl">Todos</span></summary><div class="jm"></div></details>
    <label>Método: <select id="ask-setting"></select></label>
    <label>Top-k: <select id="ask-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
  </div>
@@ -218,6 +232,7 @@
  <p class="muted">Conversación multi-turno con memoria. El historial se guarda <b>solo en tu navegador</b> (IndexedDB) — nada se manda al servidor salvo los mensajes para responder. El LLM recuerda los turnos previos, pero las <b>fuentes RAG salen únicamente de tu última pregunta</b>.</p>
  <div class="row">
    <label>Tema: <select id="chat-topic"></select></label>
+   <details class="jur" id="chat-jur"><summary>Lugar: <span class="jl">Todos</span></summary><div class="jm"></div></details>
    <label>Método: <select id="chat-setting"></select></label>
    <label>Top-k: <select id="chat-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
    <details id="chat-prompt-box" style="margin:0">
@@ -263,7 +278,8 @@
    <label>Tema: <select id="ing-topic"></select></label>
    <button id="ing-topic-new" class="ghost" type="button">➕ Nuevo tema</button>
    <button id="ing-topic-edit" class="ghost" type="button">✏️ Editar tema</button>
-   <span class="muted">los PDFs de esta subida se etiquetan con este tema</span>
+   <label>Lugar: <select id="ing-jur"></select></label>
+   <span class="muted">los documentos de esta subida se etiquetan con este tema y lugar</span>
  </div>
  <div id="ing-topic-form" class="legend" style="display:none">
    <b id="ing-topic-form-title">Nuevo tema</b>
@@ -389,9 +405,52 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
   $('ask-system').value=ASK_SYSTEM_DEFAULT;
   $('chat-system').value=ASK_SYSTEM_DEFAULT;
   INSTRUCT_DEFAULT=c.default_instruct||''; DEFAULT_TOPIC=c.default_topic||'';
+  // Lugar (jurisdicción): en Preguntar/Conversacional es MULTI-select con checkboxes y
+  // pre-selección; en Ingesta es un solo lugar (un documento pertenece a uno).
+  const jurs=c.jurisdictions||[]; const dj=c.default_jurisdiction||'general';
+  window.__jurs=jurs;
+  buildJurPicker('ask-jur', jurs);
+  buildJurPicker('chat-jur', jurs);
+  $('ing-jur').innerHTML=jurs.map(j=>`<option value="${esc(j.id)}">${esc(j.label)}</option>`).join('');
+  $('ing-jur').value=dj;
   if(c.table) $('ing-table').textContent=c.table;
   loadAskQuestions(); loadTopics();
   }catch(e){} }
+
+// ── Selector múltiple de Lugar ──────────────────────────────────────────────────
+// Al marcar un régimen sustantivo (un estado o federal) se PRE-marcan sus acompañantes
+// (el CNPP nacional rige el proceso en todo el país + doctrina). El usuario puede
+// desmarcar lo que no quiera. Sin nada marcado = "Todos" (sin filtro).
+const JUR_COMPANIONS={
+  queretaro:['federal','nacional','general'], cdmx:['federal','nacional','general'],
+  edomex:['federal','nacional','general'], federal:['nacional','general'],
+  nacional:['general'], general:[],
+};
+function buildJurPicker(id, jurs){
+  const box=$(id); if(!box) return;
+  box.querySelector('.jm').innerHTML=jurs.map(j=>
+    `<label><input type="checkbox" value="${esc(j.id)}"> ${esc(j.label)}</label>`).join('');
+  box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.addEventListener('change',()=>{
+    if(cb.checked){   // pre-marca acompañantes al activar
+      for(const comp of (JUR_COMPANIONS[cb.value]||[])){
+        const c2=box.querySelector(`input[value="${comp}"]`); if(c2) c2.checked=true;
+      }
+    }
+    updateJurLabel(id);
+  }));
+  updateJurLabel(id);
+}
+function readJur(id){   // ids marcados; [] = todos
+  const box=$(id); if(!box) return [];
+  return [...box.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value);
+}
+function updateJurLabel(id){
+  const box=$(id), sel=readJur(id), jurs=window.__jurs||[];
+  const label=box.querySelector('.jl');
+  if(!sel.length){ label.textContent='Todos'; return; }
+  const names=sel.map(v=>(jurs.find(j=>j.id===v)||{}).label||v);
+  label.textContent = names.length<=2 ? names.join(', ') : `${names.length} lugares`;
+}
 
 // Identidad + permisos del usuario: decide qué tabs se ven y a qué tópicos puede subir.
 const ROLE_LABEL={reader:'lector', admin:'admin', superadmin:'superadmin'};
@@ -456,7 +515,8 @@ async function askRun(){
   try{
     const d=await (await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question, setting:$('ask-setting').value, k:+$('ask-k').value,
-        system:$('ask-system').value, topic:$('ask-topic').value})})).json();
+        system:$('ask-system').value, topic:$('ask-topic').value,
+        jurisdictions:readJur('ask-jur')})})).json();
     if(d.error){ $('ask-out').innerHTML='<p style="color:#f87171">Error: '+esc(d.error)+'</p>'; return; }
     const skind=d.score_kind||'', fmt=v=>(skind==='dist'?v.toFixed(4):(skind==='rrf'?v.toFixed(4):v.toFixed(2)));
     let h=`<div class="row muted" style="margin-top:14px">método: <b>${esc(d.setting)}</b> · score: <b>${esc(skind||'—')}</b> · ${d.chunks.length} chunks · ${d.seconds}s</div>`;
@@ -582,6 +642,7 @@ function ingestRun(){
   const names=[...input.files].map(f=>f.name);
   for(const f of input.files) fd.append('files', f);
   fd.append('topic', $('ing-topic').value);
+  fd.append('jurisdiction', $('ing-jur').value);
   const b=$('ing-run'); b.disabled=true; $('ing-spin').style.display='inline';
   $('ing-msg').textContent='';
   const fail=msg=>{ $('ing-msg').innerHTML='<span style="color:#f87171">'+esc(msg)+'</span>';
@@ -619,7 +680,7 @@ function ingestUrls(){
     b.disabled=false; bp.disabled=false; $('ing-spin').style.display='none'; $('ing-progress').innerHTML=''; };
   renderUpload(100, urls, true);   // sin fase de subida: directo a "procesando" (indeterminado)
   fetch('/ingest/url',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({urls, topic:$('ing-topic').value})})
+    body:JSON.stringify({urls, topic:$('ing-topic').value, jurisdiction:$('ing-jur').value})})
     .then(r=>r.json())
     .then(d=>{ if(d.error) return fail(d.error); pollIngest(d.job_id); })
     .catch(e=>fail(e));
@@ -849,7 +910,8 @@ async function chatSend(){
     const history=(await msgsOf(curConv)).map(m=>({role:m.role,content:m.content}));
     const d=await (await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({messages:history, setting:$('chat-setting').value, k:+$('chat-k').value,
-        system:$('chat-system').value, topic:$('chat-topic').value})})).json();
+        system:$('chat-system').value, topic:$('chat-topic').value,
+        jurisdictions:readJur('chat-jur')})})).json();
     if(d.error){
       await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ Error: '+d.error,ts:Date.now(),chunks:[]});
     }else{
@@ -1021,6 +1083,10 @@ $('run').addEventListener('click',run);
 $('save').addEventListener('click',save);
 $('refresh').addEventListener('click',loadHistory);
 $('compare').addEventListener('click',compare);
+// Cierra los dropdowns de Lugar al hacer clic fuera de ellos.
+document.addEventListener('click',e=>{
+  document.querySelectorAll('details.jur[open]').forEach(d=>{ if(!d.contains(e.target)) d.open=false; });
+});
 $('ask-run').addEventListener('click',askRun);
 $('ask-mode').addEventListener('change',askModeChange);
 $('ask-golden').addEventListener('change',loadAskQuestions);

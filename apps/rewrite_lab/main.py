@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import time
 import uuid
@@ -37,6 +38,7 @@ from dotenv import load_dotenv  # noqa: E402
 load_dotenv(HERE / '.env')
 
 from shared.db import connect
+from shared.legal_chunking import find_article_ref
 from shared.lexical import BM25, rank_indices_by_score, rrf, tokenize
 from shared.llm_client import REWRITE_SYSTEM, LlamaClient
 from shared.tei_client import TEIClient
@@ -85,6 +87,61 @@ DEFAULT_INSTRUCT = DEFAULT_TASK   # la tabla guarda la TAREA; este es su valor p
 TOPICS_TABLE = 'rewrite_lab_topics'
 DEFAULT_TOPIC = 'derecho_penal_mexicano'
 DEFAULT_TOPIC_LABEL = 'Derecho Penal Mexicano'
+
+# ── Jurisdicción ("lugar") ───────────────────────────────────────────────────────
+# Dimensión ORTOGONAL al tópico: el tópico es la materia (penal, familiar…), la
+# jurisdicción es el lugar/ámbito del documento. El mismo nº de artículo existe en
+# varios códigos; sin este filtro el retrieval compite entre todos. Cada chunk lleva la
+# columna `jurisdiction`. 'general' = doctrina sin jurisdicción (se incluye siempre).
+JURISDICTIONS = {
+    'federal': 'Federal',
+    'queretaro': 'Querétaro',
+    'cdmx': 'Ciudad de México',
+    'edomex': 'Estado de México',
+    'nacional': 'Nacional (procedimientos)',
+    'general': 'General / Doctrina',
+}
+DEFAULT_JURISDICTION = 'general'
+# Backfill de los documentos ya ingeridos: se deriva el lugar del nombre del archivo.
+# El orden importa (lo más específico primero). Lo no reconocido queda 'general'.
+JURISDICTION_BY_SOURCE = [
+    ('Quer', 'queretaro'), ('Ciudad de M', 'cdmx'), ('Estado de M', 'edomex'),
+    ('Nacional de Proced', 'nacional'), ('Federal', 'federal'),
+]
+
+
+def jurisdiction_for_source(source: str) -> str:
+    for needle, code in JURISDICTION_BY_SOURCE:
+        if needle.lower() in (source or '').lower():
+            return code
+    return 'general'
+
+
+def _jur_set(jurisdictions):
+    """Normaliza la selección de lugares (lista de ids, o un str suelto) a un `set`, o None
+    (= sin filtro, todo el corpus). La búsqueda filtra EXACTAMENTE por lo seleccionado; la
+    'inteligencia' de qué acompaña a qué (estado → +federal +CNPP +doctrina) vive en la
+    pre-selección de la UI, para que el usuario pueda ajustarla. 'todos' o vacío = None."""
+    if isinstance(jurisdictions, str):
+        jurisdictions = [jurisdictions]
+    if not jurisdictions or 'todos' in jurisdictions:
+        return None
+    vals = {j for j in jurisdictions if j in JURISDICTIONS}
+    return vals or None
+
+
+def _jur_sql(jset):
+    """Fragmento WHERE + params para el `set` de lugares (incluye NULL = sin etiquetar)."""
+    if not jset:
+        return '', []
+    inc = sorted(jset)
+    return f"(jurisdiction IN ({','.join(['%s'] * len(inc))}) OR jurisdiction IS NULL)", inc
+
+
+def _jur_match(jset, chunk_jur) -> bool:
+    """Versión en memoria de `_jur_sql`, para filtrar BM25 por metadata."""
+    return not jset or chunk_jur is None or chunk_jur in jset
+
 
 # ── Usuarios y roles ─────────────────────────────────────────────────────────────
 # La lista blanca vive en la tabla `rewrite_lab_users` (antes en ALLOWED_EMAILS del
@@ -144,6 +201,14 @@ with connect() as _c, _c.cursor() as _cur:
     # Segmentación por tópico: columna en la tabla de vectores + catálogo de tópicos.
     _cur.execute(f"ALTER TABLE {TABLE} ADD COLUMN IF NOT EXISTS topic text")
     _cur.execute(f"CREATE INDEX IF NOT EXISTS {TABLE}_topic ON {TABLE} (topic)")
+    # Jurisdicción ("lugar"): columna + índice + backfill por nombre de archivo (una vez;
+    # no pisa lo ya asignado). Los documentos sin regla reconocida quedan 'general'.
+    _cur.execute(f"ALTER TABLE {TABLE} ADD COLUMN IF NOT EXISTS jurisdiction text")
+    _cur.execute(f"CREATE INDEX IF NOT EXISTS {TABLE}_jurisdiction ON {TABLE} (jurisdiction)")
+    _cur.execute(f"SELECT DISTINCT source FROM {TABLE} WHERE jurisdiction IS NULL")
+    for (_src,) in _cur.fetchall():
+        _cur.execute(f"UPDATE {TABLE} SET jurisdiction = %s WHERE source = %s AND jurisdiction IS NULL",
+                     (jurisdiction_for_source(_src), _src))
     _cur.execute(f"""CREATE TABLE IF NOT EXISTS {TOPICS_TABLE} (
         topic text PRIMARY KEY, label text NOT NULL, instruct text NOT NULL,
         created_at timestamptz DEFAULT now())""")
@@ -398,10 +463,11 @@ def load_corpus_index():
     """Carga todos los chunks (id, metadatos, texto) y construye el índice BM25."""
     global BM25_INDEX, BM_IDS, DOC_BY_ID
     with connect() as c, c.cursor() as cur:
-        cur.execute(f'SELECT id, source, title, hierarchy, text, topic FROM {TABLE} ORDER BY id')
+        cur.execute(f'SELECT id, source, title, hierarchy, text, topic, jurisdiction FROM {TABLE} ORDER BY id')
         rows = cur.fetchall()
     BM_IDS = [r[0] for r in rows]
-    DOC_BY_ID = {r[0]: {'source': r[1], 'title': r[2], 'hierarchy': r[3], 'text': r[4], 'topic': r[5]} for r in rows}
+    DOC_BY_ID = {r[0]: {'source': r[1], 'title': r[2], 'hierarchy': r[3], 'text': r[4],
+                        'topic': r[5], 'jurisdiction': r[6]} for r in rows}
     BM25_INDEX = BM25([tokenize(r[4]) for r in rows])
     print(f'Índice léxico BM25: {len(BM_IDS)} chunks en memoria.')
 
@@ -412,23 +478,34 @@ def load_corpus_index():
 #   dist  → distancia coseno de pgvector (menor = más cercano)
 #   bm25  → score léxico BM25 (mayor = mejor)
 #   rrf   → score de Reciprocal Rank Fusion (mayor = mejor)
-def dense_ranked(cur, qvec, topic=None):
+def _scope_sql(topic, jset):
+    """WHERE + params combinando tópico y el set de lugares (ambos opcionales)."""
+    clauses, params = [], []
     if topic:
-        cur.execute(f"SELECT id, (embedding <=> %s) AS dist FROM {TABLE} WHERE topic = %s ORDER BY 2 LIMIT %s",
-                    (qvec, topic, N_DENSE))
-    else:
-        cur.execute(f"SELECT id, (embedding <=> %s) AS dist FROM {TABLE} ORDER BY 2 LIMIT %s",
-                    (qvec, N_DENSE))
+        clauses.append("topic = %s"); params.append(topic)
+    frag, p = _jur_sql(jset)
+    if frag:
+        clauses.append(frag); params += p
+    return (" WHERE " + " AND ".join(clauses)) if clauses else "", params
+
+
+def dense_ranked(cur, qvec, topic=None, jset=None):
+    where, params = _scope_sql(topic, jset)
+    cur.execute(f"SELECT id, (embedding <=> %s) AS dist FROM {TABLE}{where} ORDER BY 2 LIMIT %s",
+                [qvec, *params, N_DENSE])
     return [(r[0], float(r[1])) for r in cur.fetchall()]
 
 
-def bm25_ranked(question, topic=None):
+def bm25_ranked(question, topic=None, jset=None):
     scores = BM25_INDEX.scores(tokenize(question))
     out = []
     for i in rank_indices_by_score(scores):
         cid = BM_IDS[i]
-        if topic and (DOC_BY_ID.get(cid) or {}).get('topic') != topic:
-            continue   # BM25 es un índice global; filtramos por tópico con la metadata
+        meta = DOC_BY_ID.get(cid) or {}
+        if topic and meta.get('topic') != topic:
+            continue   # BM25 es un índice global; filtramos por tópico/lugar con la metadata
+        if not _jur_match(jset, meta.get('jurisdiction')):
+            continue
         out.append((cid, float(scores[i])))
     return out
 
@@ -446,37 +523,130 @@ def rrf_scored(ranked_id_lists, k=60):
 ASK_SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido']
 
 
-def retrieve_scored(cur, question, setting, topic=None):
-    """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Si `topic`,
-    restringe la búsqueda a ese tópico y usa su `instruct` para embeber la consulta."""
+# Pistas de código en la pregunta → patrón ILIKE del `source`, para desambiguar cuando el
+# mismo número de artículo existe en varios códigos del tópico ("artículo 167 de Querétaro").
+CODE_HINTS = [
+    ('quer', '%Quer%'), ('cdmx', '%Ciudad de M%'), ('ciudad de m', '%Ciudad de M%'),
+    ('estado de m', '%Estado de M%'), ('edomex', '%Estado de M%'),
+    ('nacional de proced', '%Nacional de Proced%'), ('procedimientos', '%Nacional de Proced%'),
+    ('cnpp', '%Nacional de Proced%'), ('federal', '%Federal%'),
+]
+
+
+def article_lookup(cur, question, topic, jset=None):
+    """IDs de los chunks cuyo `title` coincide EXACTO con el artículo citado en la pregunta
+    ('artículo 167' → title='Artículo 167'). Se acota por los lugares SELECCIONADOS si los
+    hay; si no, por el código MENCIONADO en el texto (Querétaro, Federal…). Vacío si la
+    pregunta no cita un artículo. Resuelve las consultas de referencia exacta que el denso falla."""
+    label = find_article_ref(question)
+    if not label:
+        return []
+    clauses, params = ["title = %s"], [label]
+    if topic:
+        clauses.append("topic = %s"); params.append(topic)
+    if jset:
+        frag, p = _jur_sql(jset)
+        clauses.append(frag); params += p
+    else:   # sin lugar seleccionado: intenta deducir el código del texto de la pregunta
+        ql = (question or '').lower()
+        src_like = next((v for k, v in CODE_HINTS if k in ql), None)
+        if src_like:
+            clauses.append("source ILIKE %s"); params.append(src_like)
+    cur.execute(f"SELECT id FROM {TABLE} WHERE " + " AND ".join(clauses) + " ORDER BY source, position", params)
+    return [r[0] for r in cur.fetchall()]
+
+
+_ARTICLE_BASE_RE = re.compile(r'Art[íi]culo\s+(\d+)')
+
+
+def expand_article_context(cur, exact_ids, topic, jset, around=2):
+    """Expande cada match exacto de artículo a su CONTEXTO de lectura, en orden:
+      · la familia completa del número (bis/ter/adendums: 127, 127 BIS, 127 BIS-1…), y
+      · `around` artículos arriba y abajo (suelen traer materia relacionada).
+    Devuelve ids en orden de lectura, sin duplicar. Respeta el mismo alcance (tópico/lugar)."""
+    if not exact_ids:
+        return []
+    cur.execute(f"SELECT id, source, title, position FROM {TABLE} WHERE id = ANY(%s)", (list(exact_ids),))
+    matches = cur.fetchall()
+    out: list[int] = []
+    done_windows: set = set()
+    for _id, source, title, position in matches:
+        m = _ARTICLE_BASE_RE.search(title or '')
+        if m:   # extensión de la familia (mismo número base) en ese documento
+            cur.execute(f"SELECT min(position), max(position) FROM {TABLE} WHERE source = %s AND title ~ %s",
+                        (source, r'^Art[íi]culo ' + m.group(1) + r'($|[ ])'))
+            lo, hi = cur.fetchone()
+            lo, hi = (lo if lo is not None else position), (hi if hi is not None else position)
+        else:
+            lo = hi = position
+        lo, hi = lo - around, hi + around            # ±2 artículos vecinos
+        if (source, lo, hi) in done_windows:
+            continue
+        done_windows.add((source, lo, hi))
+        clauses = ["source = %s", "position BETWEEN %s AND %s"]
+        params = [source, lo, hi]
+        if topic:
+            clauses.append("topic = %s"); params.append(topic)
+        frag, p = _jur_sql(jset)
+        if frag:
+            clauses.append(frag); params += p
+        cur.execute(f"SELECT id FROM {TABLE} WHERE " + " AND ".join(clauses) + " ORDER BY position, part", params)
+        for (cid,) in cur.fetchall():
+            if cid not in out:
+                out.append(cid)
+    return out
+
+
+def _prepend_exact(scored, exact_ids):
+    """Coloca los chunks de match EXACTO por número de artículo al principio (sin duplicar),
+    conservando su score si ya venían en la lista. El resto queda igual, como contexto."""
+    if not exact_ids:
+        return scored
+    score_map = dict(scored)
+    exact = set(exact_ids)
+    head = [(i, score_map.get(i, 0.0)) for i in exact_ids]
+    return head + [(i, s) for i, s in scored if i not in exact]
+
+
+def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None):
+    """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Filtra por
+    `topic` y por el conjunto de lugares `jurisdictions` (lista; vacío/'todos' = todo). Usa
+    el `instruct` del tópico para embeber. Si la pregunta cita un artículo por número, ese
+    chunk se ancla al principio (búsqueda directa por metadata)."""
     prefix = query_prefix(instruct_for(topic))   # "Instruct: <tarea del tópico>\nQuery: "
+    jset = _jur_set(jurisdictions)               # set de lugares (o None = todos)
+    exact = article_lookup(cur, question, topic, jset)   # match exacto por número
+    # Consolida la familia (bis/adendums) y trae ±2 artículos vecinos como contexto.
+    exact = expand_article_context(cur, exact, topic, jset)
     if setting == 'bm25':
-        return bm25_ranked(question, topic), 'bm25', None
-    d_orig = dense_ranked(cur, tei.embed([prefix + question], use_cache=False)[0], topic)
+        return _prepend_exact(bm25_ranked(question, topic, jset), exact), 'bm25', None
+    d_orig = dense_ranked(cur, tei.embed([prefix + question], use_cache=False)[0], topic, jset)
     if setting == 'orig':
-        return d_orig, 'dist', None
+        return _prepend_exact(d_orig, exact), 'dist', None
     if setting == 'híbrido':
-        fused = rrf_scored([[i for i, _ in d_orig], [i for i, _ in bm25_ranked(question, topic)]])
-        return fused, 'rrf', None
+        fused = rrf_scored([[i for i, _ in d_orig], [i for i, _ in bm25_ranked(question, topic, jset)]])
+        return _prepend_exact(fused, exact), 'rrf', None
     # reescribir / multiquery necesitan la reescritura del LLM
     rw = llm.rewrite_legal(question)
-    d_rw = dense_ranked(cur, tei.embed([prefix + rw], use_cache=False)[0], topic)
+    d_rw = dense_ranked(cur, tei.embed([prefix + rw], use_cache=False)[0], topic, jset)
     if setting == 'reescribir':
-        return d_rw, 'dist', rw
+        return _prepend_exact(d_rw, exact), 'dist', rw
     if setting == 'multiquery':
         fused = rrf_scored([[i for i, _ in d_orig], [i for i, _ in d_rw]])
-        return fused, 'rrf', rw
+        return _prepend_exact(fused, exact), 'rrf', rw
     raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
 
 
-def ask(question, setting, k=5, system=None, topic=None):
+def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
+    if find_article_ref(question):
+        k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
     with connect() as c, c.cursor() as cur:
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions)
     top = [{'id': cid, 'rank': rank, 'score': round(score, 4), 'score_kind': score_kind,
             **DOC_BY_ID.get(cid, {})}
            for rank, (cid, score) in enumerate(scored[:k], 1)]
@@ -495,16 +665,18 @@ def ask(question, setting, k=5, system=None, topic=None):
 # de seguimiento), pero el retrieval RAG se hace SOLO sobre el último mensaje del
 # usuario; los chunks devueltos son los de esa última pregunta (no se acumulan). El
 # historial de conversaciones vive en el browser (IndexedDB), no en el servidor.
-def chat_answer(messages, setting, k=5, system=None, topic=None):
+def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=None):
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
     msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
     if not msgs or msgs[-1]['role'] != 'user':
         raise ValueError('el último mensaje debe ser del usuario')
     question = msgs[-1]['content'].strip()
+    if find_article_ref(question):
+        k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
     with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions)
     top = [{'id': cid, 'rank': rank, 'score': round(score, 4), 'score_kind': score_kind,
             **DOC_BY_ID.get(cid, {})}
            for rank, (cid, score) in enumerate(scored[:k], 1)]
@@ -577,7 +749,9 @@ def config():
     return {'default_prompt': REWRITE_SYSTEM, 'table': TABLE,
             'goldens': list_goldens(), 'default_golden': DEFAULT_GOLDEN,
             'ask_settings': ASK_SETTINGS, 'ask_system': ASK_SYSTEM,
-            'default_instruct': DEFAULT_INSTRUCT, 'default_topic': DEFAULT_TOPIC}
+            'default_instruct': DEFAULT_INSTRUCT, 'default_topic': DEFAULT_TOPIC,
+            'jurisdictions': [{'id': k, 'label': v} for k, v in JURISDICTIONS.items()],
+            'default_jurisdiction': DEFAULT_JURISDICTION}
 
 
 @app.get('/api/topics')
@@ -659,7 +833,8 @@ def api_questions(golden: str = ''):
 # consulta el progreso por polling. Toda la lógica vive en `ingest_service`.
 @app.post('/ingest/upload')
 async def ingest_upload(request: Request, files: list[UploadFile] = File(...),
-                        topic: str = Form(DEFAULT_TOPIC)):
+                        topic: str = Form(DEFAULT_TOPIC),
+                        jurisdiction: str = Form(DEFAULT_JURISDICTION)):
     email = current_email(request)
     if not can_ingest(email):
         return JSONResponse({'error': 'No tienes permiso para subir documentos.'}, status_code=403)
@@ -668,6 +843,8 @@ async def ingest_upload(request: Request, files: list[UploadFile] = File(...),
         return JSONResponse({'error': 'Sube al menos un archivo .pdf'}, status_code=400)
     if topic not in TOPICS:
         return JSONResponse({'error': f'Tópico desconocido: {topic!r}'}, status_code=400)
+    if jurisdiction not in JURISDICTIONS:
+        return JSONResponse({'error': f'Lugar desconocido: {jurisdiction!r}'}, status_code=400)
     if not can_upload_topic(email, topic):
         return JSONResponse({'error': f'No tienes permiso para subir al tópico {topic!r}. '
                              f'Pídele acceso al superadmin o sube a un tópico que hayas creado.'},
@@ -683,7 +860,7 @@ async def ingest_upload(request: Request, files: list[UploadFile] = File(...),
         dest.write_bytes(await f.read())
         saved.append(dest)
     try:
-        job_id = ingest_mgr.start(saved, topic)
+        job_id = ingest_mgr.start(saved, topic, jurisdiction)
     except RuntimeError as e:   # ya hay una ingesta en curso
         for p in saved:
             p.unlink(missing_ok=True)
@@ -712,12 +889,15 @@ async def ingest_url_route(request: Request):
     topic = (b.get('topic') or DEFAULT_TOPIC)
     if topic not in TOPICS:
         return JSONResponse({'error': f'Tópico desconocido: {topic!r}'}, status_code=400)
+    jurisdiction = (b.get('jurisdiction') or DEFAULT_JURISDICTION)
+    if jurisdiction not in JURISDICTIONS:
+        return JSONResponse({'error': f'Lugar desconocido: {jurisdiction!r}'}, status_code=400)
     if not can_upload_topic(email, topic):
         return JSONResponse({'error': f'No tienes permiso para subir al tópico {topic!r}. '
                              f'Pídele acceso al superadmin o sube a un tópico que hayas creado.'},
                             status_code=403)
     try:
-        job_id = ingest_mgr.start_urls(urls, topic)
+        job_id = ingest_mgr.start_urls(urls, topic, jurisdiction)
     except RuntimeError as e:   # ya hay una ingesta en curso
         return JSONResponse({'error': str(e)}, status_code=409)
     return {'job_id': job_id}
@@ -751,7 +931,8 @@ async def ask_route(req: Request):
     body = await req.json()
     try:
         return ask(body.get('question', ''), body.get('setting', 'orig'),
-                   int(body.get('k', 5)), body.get('system'), body.get('topic'))
+                   int(body.get('k', 5)), body.get('system'), body.get('topic'),
+                   body.get('jurisdictions') or body.get('jurisdiction'))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
@@ -763,7 +944,8 @@ async def chat_route(req: Request):
     body = await req.json()
     try:
         return chat_answer(body.get('messages', []), body.get('setting', 'orig'),
-                           int(body.get('k', 5)), body.get('system'), body.get('topic'))
+                           int(body.get('k', 5)), body.get('system'), body.get('topic'),
+                           body.get('jurisdictions') or body.get('jurisdiction'))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
