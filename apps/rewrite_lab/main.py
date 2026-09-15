@@ -588,29 +588,45 @@ def _source_families(cur, source, topic, jset):
     return fams
 
 
-def expand_article_context(cur, exact_ids, topic, jset, around=2):
-    """Expande cada artículo ancla a su CONTEXTO de lectura, en orden: su familia completa
-    (bis/ter/adendums) + `around` FAMILIAS de artículo arriba y abajo. Contar familias (no
-    posiciones) garantiza traer el artículo BASE de los vecinos aunque tengan muchos bis en
-    medio. Devuelve ids en orden de lectura, sin duplicar. Respeta el alcance topic/lugar."""
-    if not exact_ids:
+def _neighbor_groups(cur, anchor_ids, topic, jset, around=2):
+    """Por cada ancla (en el ORDEN dado = ranking), devuelve su lista de ids vecinos ordenada
+    por CERCANíA: primero su propia familia (bis/adendums), luego la familia de arriba y la de
+    abajo (dist 1), después dist 2… Así, si hay que recortar, se conserva lo más cercano/relevante
+    (para el 168, la familia 167 va antes que la 166). Alineada con `anchor_ids`."""
+    if not anchor_ids:
         return []
-    cur.execute(f"SELECT id, source, position FROM {TABLE} WHERE id = ANY(%s)", (list(exact_ids),))
-    anchors = cur.fetchall()
+    cur.execute(f"SELECT id, source, position FROM {TABLE} WHERE id = ANY(%s)", (list(anchor_ids),))
+    info = {r[0]: (r[1], r[2]) for r in cur.fetchall()}   # el ANY() no respeta orden: reindexamos
     fams_cache: dict[str, list] = {}
-    out: list[int] = []
-    seen: set = set()
-    for _id, source, position in anchors:
+    groups = []
+    for aid in anchor_ids:                                 # preserva el orden del ranking
+        if aid not in info:
+            groups.append([]); continue
+        source, position = info[aid]
         if source not in fams_cache:
             fams_cache[source] = _source_families(cur, source, topic, jset)
         fams = fams_cache[source]
         idx = next((i for i, f in enumerate(fams) if f['pmin'] <= position <= f['pmax']), None)
         if idx is None:
-            continue
-        for f in fams[max(0, idx - around): idx + around + 1]:
-            for cid in f['ids']:
-                if cid not in seen:
-                    seen.add(cid); out.append(cid)
+            groups.append([]); continue
+        order = [idx]                                      # familia propia primero (sus bis)
+        for d in range(1, around + 1):                     # luego, de cerca a lejos: arriba y abajo
+            if idx - d >= 0:
+                order.append(idx - d)
+            if idx + d < len(fams):
+                order.append(idx + d)
+        groups.append([cid for fi in order for cid in fams[fi]['ids']])
+    return groups
+
+
+def expand_article_context(cur, exact_ids, topic, jset, around=2):
+    """Familia + ±`around` familias de cada ancla, aplanado y sin duplicar (para la búsqueda
+    directa por 'artículo N', donde queremos todo el contexto de la referencia)."""
+    out, seen = [], set()
+    for grp in _neighbor_groups(cur, exact_ids, topic, jset, around):
+        for cid in grp:
+            if cid not in seen:
+                seen.add(cid); out.append(cid)
     return out
 
 
@@ -630,18 +646,41 @@ NEIGHBOR_EXTRA_CAP = 8   # máx. chunks vecinos añadidos como contexto en pregu
 
 def select_context_ids(cur, scored, k, question, topic, jurisdictions):
     """Ids finales para el contexto: el top-k + (en preguntas TEMáTICAS, sin cita de artículo)
-    la familia + ±2 vecinos de los artículos del top como contexto ADICIONAL, sin desplazar
-    la cobertura. Devuelve (ids_ordenados, set_de_vecinos_extra)."""
+    la familia + ±2 familias vecinas de los artículos del top como contexto ADICIONAL, sin
+    desplazar la cobertura. El tope se REPARTE entre las anclas (para no perder amplitud entre
+    entidades) y se prioriza lo más cercano de cada una. Devuelve (ids_ordenados, set_extra)."""
     base = [cid for cid, _ in scored[:k]]
     if find_article_ref(question):
         return base, set()   # ya se expandió dentro de retrieve_scored
     art_ids = [cid for cid in base if (DOC_BY_ID.get(cid) or {}).get('title', '').startswith('Artículo ')]
     if not art_ids:
         return base, set()
-    neigh = expand_article_context(cur, art_ids, topic, _jur_set(jurisdictions))
-    baseset = set(base)
-    extra = [cid for cid in neigh if cid not in baseset][:NEIGHBOR_EXTRA_CAP]
-    return base + extra, set(extra)
+    groups = _neighbor_groups(cur, art_ids, topic, _jur_set(jurisdictions))
+    queues = [[cid for cid in grp if cid not in set(base)] for grp in groups]
+    seen: set = set(base)
+    chosen: list[int] = []
+    share = max(2, NEIGHBOR_EXTRA_CAP // max(1, len([q for q in queues if q])))
+    # Pasada 1: hasta `share` cercanos por ancla, en orden de ranking (reparte amplitud).
+    for q in queues:
+        taken = 0
+        for cid in q:
+            if len(chosen) >= NEIGHBOR_EXTRA_CAP or taken >= share:
+                break
+            if cid not in seen:
+                seen.add(cid); chosen.append(cid); taken += 1
+    # Pasada 2: rellena el tope con lo que quede (siempre por cercanía).
+    for q in queues:
+        for cid in q:
+            if len(chosen) >= NEIGHBOR_EXTRA_CAP:
+                break
+            if cid not in seen:
+                seen.add(cid); chosen.append(cid)
+    # Ordena los vecinos elegidos por lectura (source, position) para un contexto legible.
+    if chosen:
+        cur.execute(f"SELECT id, source, position FROM {TABLE} WHERE id = ANY(%s)", (chosen,))
+        pos = {r[0]: (r[1], r[2]) for r in cur.fetchall()}
+        chosen.sort(key=lambda cid: pos.get(cid, ('', 0)))
+    return base + chosen, set(chosen)
 
 
 def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None):
