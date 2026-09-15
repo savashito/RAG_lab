@@ -42,6 +42,7 @@ from shared.legal_chunking import (
     HEADING_RE,
     MAX_WORDS,
     article_density,
+    article_label_issues,
     chunk_documents,
     clean_document,
     document_strategy,
@@ -154,6 +155,30 @@ def pdf_to_markdown(pdf_path: str | Path) -> str:
     return pymupdf4llm.to_markdown(str(pdf_path))
 
 
+def url_to_markdown(url: str, *, timeout: float = 60.0) -> str:
+    """Descarga una URL y la convierte a Markdown con el MISMO motor que los PDFs
+    (PyMuPDF + pymupdf4llm). Sirve para páginas HTML y también para links directos a
+    PDF (PyMuPDF abre ambos). Así todo lo de aguas abajo (limpieza, chunking, embeddings)
+    es idéntico sea cual sea el formato de origen. Imports perezosos."""
+    import httpx
+    import pymupdf
+    import pymupdf4llm
+
+    headers = {"User-Agent": "Mozilla/5.0 (RAG-lab ingest)"}
+    r = httpx.get(url, follow_redirects=True, timeout=timeout, headers=headers)
+    r.raise_for_status()
+    ctype = (r.headers.get("content-type") or "").lower()
+    # PyMuPDF necesita saber el formato del stream. PDF por content-type o extensión;
+    # cualquier otra cosa se trata como HTML (Gutenberg, doctrina en web, etc.).
+    is_pdf = "application/pdf" in ctype or url.split("?")[0].lower().endswith(".pdf")
+    filetype = "pdf" if is_pdf else "html"
+    doc = pymupdf.open(stream=r.content, filetype=filetype)
+    try:
+        return pymupdf4llm.to_markdown(doc)
+    finally:
+        doc.close()
+
+
 def clean_markdown(raw_md: str) -> dict:
     """Limpieza conservadora (paratexto editorial, folios, índices…). Devuelve
     {'clean_text', 'removed_by_reason'}. Envuelve `legal_chunking.clean_document`."""
@@ -196,6 +221,9 @@ def analyze_document(source: str, clean_text: str) -> dict:
         "unit_words_p90": pct(90),
         "unit_words_max": max(unit_words),
         "oversized_units": sum(1 for w in unit_words if w > MAX_WORDS),
+        # Aviso de calidad del tagueo: etiquetas con OCR sin resolver o duplicados no
+        # explicados por transitorios. Vacío = tagueo sano. La UI lo muestra al ingerir.
+        "label_warnings": article_label_issues(units),
     }
 
 
@@ -266,6 +294,17 @@ def source_name(pdf_path: str | Path) -> str:
     return Path(pdf_path).stem + ".md"
 
 
+def source_name_from_url(url: str) -> str:
+    """`source` canónico de una URL: el último segmento con sentido → `<stem>.md`. Así
+    re-ingerir la misma URL reemplaza su versión previa (upsert por `source`). Si la URL
+    no da un nombre útil, usa el host."""
+    from urllib.parse import urlparse
+
+    p = urlparse(url)
+    stem = Path(p.path).stem or (p.netloc.replace(".", "_") if p.netloc else "documento")
+    return stem + ".md"
+
+
 def save_clean_markdown(clean_dir: str | Path, source: str, clean_text: str) -> Path:
     """Guarda el Markdown limpio para poder visualizarlo. Devuelve la ruta escrita."""
     clean_dir = Path(clean_dir)
@@ -289,21 +328,13 @@ def assert_model_compatible(cursor, table: str, tei: TEIClient, vectors: np.ndar
         )
 
 
-def ingest_pdf(pdf_path: str | Path, *, table: str, tei: TEIClient, connect_fn,
-               clean_dir: str | Path, save_clean: bool = True,
-               dry_run: bool = False, progress: Progress = _noop) -> IngestResult:
-    """Encadena todas las etapas para UN PDF, reportando progreso por `progress`.
-
-    `connect_fn` es una fábrica de conexiones (p. ej. `shared.db.connect`) — se
-    inyecta para poder testear y para que el app comparta su propia config. En
-    `dry_run` se hace todo menos tocar la BD (útil para ver el reporte sin insertar)."""
-    pdf_path = Path(pdf_path)
-    source = source_name(pdf_path)
-    result = IngestResult(source=source, pdf_name=pdf_path.name, model=None)
+def _ingest_markdown(result: IngestResult, raw_md: str, *, table: str, tei: TEIClient,
+                     connect_fn, clean_dir: str | Path, save_clean: bool,
+                     dry_run: bool, progress: Progress) -> IngestResult:
+    """Etapas comunes a cualquier origen (PDF, URL, …) a partir del Markdown crudo:
+    limpieza → análisis → chunking → embeddings → upsert. `result` ya trae `source`."""
+    source = result.source
     try:
-        progress("convert", f"Convirtiendo {pdf_path.name} a Markdown…")
-        raw_md = pdf_to_markdown(pdf_path)
-
         progress("clean", "Limpiando (folios, paratexto editorial, índices)…")
         cleaned = clean_markdown(raw_md)
         clean_text = cleaned["clean_text"]
@@ -346,3 +377,44 @@ def ingest_pdf(pdf_path: str | Path, *, table: str, tei: TEIClient, connect_fn,
         result.error = f"{type(exc).__name__}: {exc}"
         progress("error", result.error)
     return result
+
+
+def ingest_pdf(pdf_path: str | Path, *, table: str, tei: TEIClient, connect_fn,
+               clean_dir: str | Path, save_clean: bool = True,
+               dry_run: bool = False, progress: Progress = _noop) -> IngestResult:
+    """Encadena todas las etapas para UN PDF, reportando progreso por `progress`.
+
+    `connect_fn` es una fábrica de conexiones (p. ej. `shared.db.connect`) — se
+    inyecta para poder testear y para que el app comparta su propia config. En
+    `dry_run` se hace todo menos tocar la BD (útil para ver el reporte sin insertar)."""
+    pdf_path = Path(pdf_path)
+    result = IngestResult(source=source_name(pdf_path), pdf_name=pdf_path.name, model=None)
+    try:
+        progress("convert", f"Convirtiendo {pdf_path.name} a Markdown…")
+        raw_md = pdf_to_markdown(pdf_path)
+    except Exception as exc:   # noqa: BLE001
+        result.error = f"{type(exc).__name__}: {exc}"
+        progress("error", result.error)
+        return result
+    return _ingest_markdown(result, raw_md, table=table, tei=tei, connect_fn=connect_fn,
+                            clean_dir=clean_dir, save_clean=save_clean, dry_run=dry_run,
+                            progress=progress)
+
+
+def ingest_url(url: str, *, table: str, tei: TEIClient, connect_fn,
+               clean_dir: str | Path, save_clean: bool = True,
+               dry_run: bool = False, progress: Progress = _noop) -> IngestResult:
+    """Igual que `ingest_pdf` pero desde una URL: descarga + convierte a Markdown
+    (HTML o PDF) y sigue el mismo camino. El `source` sale del último segmento de la URL,
+    así re-ingerir la misma URL reemplaza su versión previa."""
+    result = IngestResult(source=source_name_from_url(url), pdf_name=url, model=None)
+    try:
+        progress("convert", f"Descargando y convirtiendo {url} …")
+        raw_md = url_to_markdown(url)
+    except Exception as exc:   # noqa: BLE001
+        result.error = f"{type(exc).__name__}: {exc}"
+        progress("error", result.error)
+        return result
+    return _ingest_markdown(result, raw_md, table=table, tei=tei, connect_fn=connect_fn,
+                            clean_dir=clean_dir, save_clean=save_clean, dry_run=dry_run,
+                            progress=progress)

@@ -144,11 +144,113 @@ HEADING_RE = re.compile(r'(?m)^(#{1,6})[ \t]+(.+?)[ \t]*$')
 # encabezado Markdown: casi siempre es negrita en línea (**Artículo 1o** .-). Exigir
 # un DÍGITO tras "Artículo" descarta las referencias en prosa ("del artículo Cuarto
 # Transitorio") y las notas de reforma ("Artículo reformado DOF 1999"), que no lo
-# llevan. Captura la etiqueta (número + o/º + Bis/Ter…) para el título.
-ARTICLE_RE = re.compile(
-    r'(?im)^[ \t#>*_]*(?:<u>[ \t#>*_]*)?art[íi]culo[ \t]+'
-    r'(\d+[ \t]*[ºo]?(?:[ \t]+(?:bis|ter|qu[áa]ter|quinquies|sexies|septies))?)',
+# llevan. Se captura la ETIQUETA completa (número + ordinal + sufijos) para el título.
+#
+# Los códigos mexicanos numeran las adiciones de tres formas, a veces mezcladas en el
+# mismo código: (a) adverbios latinos —bis, ter, quáter, quinquies… decies…—; (b)
+# ordinales latinos —quintus, sextus, septimus…—; (c) sufijo con guion —215-A, 246-D—.
+# Un artículo "246-A" es una norma DISTINTA del "246"; si no se captura el sufijo, todos
+# colapsan al mismo número y el tagueo/recuperación se confunde. `_ARTICLE_SUFFIX` lista
+# los latinos; el guion+letra/número cubre (c). Cada token exige separador propio para no
+# tragarse palabras del cuerpo ("Artículo 5 bis Del homicidio" → etiqueta "5 bis").
+_ARTICLE_LATIN = (
+    r'bis|ter|qu[aá]ter|quinquies|quintus|sexies|sextus|septies|septimus|octies|octavus|'
+    r'nonies|nonus|decies|decimus|undecies|duodecies|terdecies|quaterdecies|quindecies|'
+    r'sexdecies|septendecies|octodecies|novodecies|vicies'
 )
+# Subíndice OPCIONAL tras un latino: número ("211 bis 1", "127 bis-1"), palabra española
+# ("150 BIS UNO") o una sola letra ("221 bis-A"). Separado por espacio, punto o guion.
+_ARTICLE_SUBINDEX = (
+    r'(?:[ \t.\-]+(?:\d+|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|'
+    r'[A-Za-z](?![A-Za-z])))?'
+)
+# El TOKEN-NÚMERO tolera letras que el OCR confunde con dígitos cuando van PEGADAS a
+# dígitos (sin separador): I l | → 1, O → 0, S → 5, Z → 2. Así "22I" (mala lectura de
+# "221") se captura entero y se corrige en `_article_label`. Se exige ≥1 dígito real y se
+# desactiva ignorecase con (?-i:…) para NO tragarse la "o" ordinal ("1o") ni minúsculas.
+_ARTICLE_NUM = r'(?-i:[\dIl|OSZ]*\d[\dIl|OSZ]*)'
+_OCR_TO_DIGIT = str.maketrans({'I': '1', 'l': '1', '|': '1', 'O': '0', 'S': '5', 'Z': '2'})
+# Etiqueta = número + ordinal + cadena de sufijos (cada uno con su separador propio):
+#   · latino (+ subíndice):  bis · ter · quintus · "bis 1" · "bis uno" · "bis-A"
+#   · guion + letra:         -A · -B
+#   · guion + número:        -1 · -2
+_ARTICLE_LABEL = (
+    r'(' + _ARTICLE_NUM
+    + r'(?:[ \t]*[ºo°])?'
+    + r'(?:'
+    + r'[ \t.\-]+(?:' + _ARTICLE_LATIN + r')' + _ARTICLE_SUBINDEX
+    + r'|-[A-Za-z](?![A-Za-z])'
+    + r'|-\d+'
+    + r')*'
+    + r')'
+)
+ARTICLE_RE = re.compile(
+    r'(?im)^[ \t#>*_]*(?:<u>[ \t#>*_]*)?art[íi]culo[ \t]+' + _ARTICLE_LABEL,
+)
+
+
+def _article_label_parts(raw: str) -> tuple[str, str]:
+    """(etiqueta_final, ocr_fix). `ocr_fix` es '' salvo que la autocorrección OCR cambiara
+    el token-número, en cuyo caso trae 'antes→después' para poder AVISAR y que un humano lo
+    revise. Normaliza markup y separadores (puntos/guiones → espacio) para etiquetas únicas
+    y legibles: '246-A'→'246 A', '127 BIS-1'→'127 BIS 1', '22I BIS'→'221 BIS' (ocr_fix='22I→221')."""
+    s = normalize_line(raw)
+    s = re.sub(r'[.\-]+', ' ', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    head, sep, rest = s.partition(' ')
+    ocr_fix = ''
+    # Corrige OCR solo en el token-número (dígitos + confusiones + posible ordinal o/º/°).
+    if re.fullmatch(r'[\dIl|OSZ]+[ºo°]?', head):
+        fixed = head.translate(_OCR_TO_DIGIT)
+        if fixed != head:
+            ocr_fix = f'{head}→{fixed}'
+        head = fixed
+    return (head + sep + rest).strip(), ocr_fix
+
+
+def _article_label(raw: str) -> str:
+    """Etiqueta canónica del artículo (sin el detalle de autocorrección). Ver `_article_label_parts`."""
+    return _article_label_parts(raw)[0]
+
+
+# Palabras que delatan un artículo TRANSITORIO (de un decreto de reforma): su número se
+# reinicia por decreto, así que "Artículo 2" puede repetirse legítimamente. Se usa para no
+# marcar esos como duplicados sospechosos en `article_label_issues`.
+_TRANSITORIO_HINT = re.compile(
+    r'entrar[áa] en vigor|se reforma|se deroga|se adiciona|public|decreto|vigencia|'
+    r'transitori|iniciar[áa] su vigencia|abrogad|d[ií]a siguiente', re.I)
+
+
+def article_label_issues(units) -> list[dict]:
+    """Chequeo de calidad del tagueo para AVISAR al ingerir (no corrige, solo reporta):
+      · 'ocr_autofixed': el número tenía una letra OCR pegada y se corrigió sola
+                         (antes→después). Se muestra para que un humano confirme que estuvo bien.
+      · 'ocr_suspect':   el token-número aún tiene una letra tras normalizar (OCR no resuelto).
+      · 'duplicate':     misma etiqueta en >1 artículo del CUERPO (no explicado por transitorios),
+                         señal de que el regex colapsó designadores distintos o hay basura.
+    Devuelve lista de dicts con {type, title, positions, [detail]}."""
+    arts = [u for u in units if u.get('unit_type') == 'article']
+    issues: list[dict] = []
+    for u in arts:
+        if u.get('ocr_fix'):
+            issues.append({'type': 'ocr_autofixed', 'title': u['title'],
+                           'positions': [u['position']], 'detail': u['ocr_fix']})
+    for u in arts:
+        num = re.sub(r'[ºo°]$', '', u['title'].replace('Artículo', '').strip().split(' ')[0])
+        if re.search(r'[A-Za-z]', num):
+            issues.append({'type': 'ocr_suspect', 'title': u['title'], 'positions': [u['position']]})
+    by: dict[str, list] = {}
+    for u in arts:
+        by.setdefault(u['title'], []).append(u)
+    n = len(arts) or 1
+    for title, us in by.items():
+        if len(us) < 2:
+            continue
+        body = [u for u in us if not _TRANSITORIO_HINT.search(u['text'][:220]) and u['position'] <= 0.7 * n]
+        if len(body) > 1:
+            issues.append({'type': 'duplicate', 'title': title,
+                           'positions': sorted(u['position'] for u in us)})
+    return issues
 # Un código está HECHO de artículos (densos, seguidos); un libro de doctrina sólo
 # los CITA de pasada. Contar artículos no basta —una obra que discute 30 artículos
 # no es un código—: se exige además densidad (artículos por cada 1000 palabras).
@@ -179,12 +281,14 @@ def article_units(text: str):
     matches = list(ARTICLE_RE.finditer(text))
     for i, match in enumerate(matches):
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        label, ocr_fix = _article_label_parts(match.group(1))
         yield {
             'unit_type': 'article',
-            'title': 'Artículo ' + normalize_line(match.group(1)),
+            'title': 'Artículo ' + label,
             'level': 2,
             'text': text[match.start():end].strip(),
             'hierarchy': '',
+            'ocr_fix': ocr_fix,   # '' o 'antes→después' si se autocorrigió el número (OCR)
         }
 
 

@@ -47,8 +47,13 @@ def _email(request) -> str | None:
     return (request.session.get('user') or {}).get('email')
 
 
-def install_auth(app) -> bool:
-    """Instala la puerta OAuth en la app FastAPI. Devuelve True si quedó activa."""
+def install_auth(app, is_allowed=None) -> bool:
+    """Instala la puerta OAuth en la app FastAPI. Devuelve True si quedó activa.
+
+    `is_allowed(email) -> bool` decide si un correo está en la lista blanca. Se inyecta
+    desde `main.py` (respaldado por la tabla de usuarios). Si no se pasa, cae al env
+    ALLOWED_EMAILS (compatibilidad)."""
+    allowed = is_allowed or (lambda e: not ALLOWED_EMAILS or (e or '').lower() in ALLOWED_EMAILS)
     if not (CLIENT_ID and CLIENT_SECRET and SESSION_SECRET):
         print('AUTH: desactivada (faltan GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / SESSION_SECRET).')
         return False
@@ -64,8 +69,15 @@ def install_auth(app) -> bool:
 
     async def gate(request, call_next):
         path = request.url.path
-        if path in PUBLIC_PATHS or _email(request):
+        # Revalida contra la lista blanca en cada request: si a alguien le quitan el
+        # acceso, su sesión activa deja de servir de inmediato (no espera al logout).
+        if path in PUBLIC_PATHS:
             return await call_next(request)
+        email = _email(request)
+        if email and allowed(email):
+            return await call_next(request)
+        if email and not allowed(email):
+            request.session.clear()   # sesión de alguien ya revocado
         # Sin sesión: las peticiones de API (POST/JSON) reciben 401; la navegación, redirect.
         if request.method != 'GET' or 'text/html' not in request.headers.get('accept', ''):
             return JSONResponse({'error': 'no autenticado'}, status_code=401)
@@ -90,7 +102,7 @@ def install_auth(app) -> bool:
             return HTMLResponse(f'<p>Error de OAuth: {e}</p><a href="/login">reintentar</a>', status_code=400)
         info = token.get('userinfo') or {}
         email = (info.get('email') or '').lower()
-        if not info.get('email_verified', False) or (ALLOWED_EMAILS and email not in ALLOWED_EMAILS):
+        if not info.get('email_verified', False) or not allowed(email):
             return HTMLResponse(_DENIED.format(email=email or '(sin correo)'), status_code=403)
         request.session['user'] = {'email': email, 'name': info.get('name', '')}
         return RedirectResponse('/')
@@ -100,5 +112,5 @@ def install_auth(app) -> bool:
         request.session.clear()
         return RedirectResponse('/login')
 
-    print(f'AUTH: activa · {len(ALLOWED_EMAILS)} correo(s) en la lista blanca.')
+    print('AUTH: activa · lista blanca en la tabla de usuarios (DB).')
     return True

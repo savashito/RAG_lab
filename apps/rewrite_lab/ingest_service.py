@@ -22,7 +22,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Callable
 
-from ingestion.pipeline import ingest_pdf
+from ingestion.pipeline import ingest_pdf, ingest_url
 
 
 class IngestManager:
@@ -40,6 +40,16 @@ class IngestManager:
 
     # ── ciclo de vida del job ────────────────────────────────────────────────────
     def start(self, pdf_paths: list[Path], topic: str | None = None) -> str:
+        """Job de ingesta de PDFs subidos (rutas temporales que se borran al terminar)."""
+        items = [{"kind": "pdf", "ref": p, "name": p.name} for p in pdf_paths]
+        return self._start(items, topic)
+
+    def start_urls(self, urls: list[str], topic: str | None = None) -> str:
+        """Job de ingesta de URLs (HTML o PDF en línea). No hay archivos temporales."""
+        items = [{"kind": "url", "ref": u, "name": u} for u in urls]
+        return self._start(items, topic)
+
+    def _start(self, items: list[dict], topic: str | None) -> str:
         """Crea un job y lanza el hilo que lo procesa. Uno a la vez: si ya hay uno
         corriendo, lo rechaza (embeber es pesado y `on_complete` toca estado global).
         `topic` etiqueta los chunks resultantes (segmentación por tema)."""
@@ -53,29 +63,35 @@ class IngestManager:
                 "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "error": None,
                 "topic": topic,
-                "files": [self._new_file_entry(p) for p in pdf_paths],
+                "files": [self._new_file_entry(it["name"]) for it in items],
             }
-        threading.Thread(target=self._run, args=(job_id, pdf_paths, topic), daemon=True).start()
+        threading.Thread(target=self._run, args=(job_id, items, topic), daemon=True).start()
         return job_id
 
     @staticmethod
-    def _new_file_entry(pdf_path: Path) -> dict:
-        return {"pdf_name": pdf_path.name, "source": None, "stage": "queued",
+    def _new_file_entry(name: str) -> dict:
+        return {"pdf_name": name, "source": None, "stage": "queued",
                 "message": "En cola…", "done": False, "error": None,
                 "inserted": False, "replaced": False, "n_chunks": 0,
                 "clean_available": False, "report": {}}
 
-    def _run(self, job_id: str, pdf_paths: list[Path], topic: str | None = None) -> None:
+    def _run(self, job_id: str, items: list[dict], topic: str | None = None) -> None:
         job = self.jobs[job_id]
         try:
-            for entry, pdf in zip(job["files"], pdf_paths):
+            for entry, item in zip(job["files"], items):
                 def progress(stage: str, message: str, _e=entry) -> None:
                     _e["stage"], _e["message"] = stage, message
 
-                result = ingest_pdf(
-                    pdf, table=self.table, tei=self.tei, connect_fn=self.connect_fn,
-                    clean_dir=self.clean_dir, progress=progress,
-                )
+                if item["kind"] == "url":
+                    result = ingest_url(
+                        item["ref"], table=self.table, tei=self.tei, connect_fn=self.connect_fn,
+                        clean_dir=self.clean_dir, progress=progress,
+                    )
+                else:
+                    result = ingest_pdf(
+                        item["ref"], table=self.table, tei=self.tei, connect_fn=self.connect_fn,
+                        clean_dir=self.clean_dir, progress=progress,
+                    )
                 # Etiqueta con el tópico los chunks recién insertados de este documento.
                 # El pipeline compartido no conoce `topic`; se setea aquí por `source`.
                 if topic and (result.inserted or result.replaced_existing) and not result.error:
@@ -96,11 +112,14 @@ class IngestManager:
             job["error"] = f"{type(exc).__name__}: {exc}"
         finally:
             # Los PDFs subidos son temporales (el .md limpio sí persiste). Se borran y
-            # se retira el subdirectorio único de la subida si queda vacío.
+            # se retira el subdirectorio único de la subida si queda vacío. Las URLs no
+            # dejan archivos que limpiar.
             parents: set[Path] = set()
-            for pdf in pdf_paths:
-                pdf.unlink(missing_ok=True)
-                parents.add(pdf.parent)
+            for it in items:
+                if it["kind"] == "pdf":
+                    pdf = it["ref"]
+                    pdf.unlink(missing_ok=True)
+                    parents.add(pdf.parent)
             for d in parents:
                 if d != self.upload_dir and d.exists() and not any(d.iterdir()):
                     d.rmdir()

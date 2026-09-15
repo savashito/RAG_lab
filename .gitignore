@@ -27,6 +27,8 @@ data.zip
 *.zip
 *.joblib
 *.png
+*.md
+*.pdf
 scratch/
 # runtime work dir — staged canonical CSVs (patient PII) + geometry; never commit
 var/

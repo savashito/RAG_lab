@@ -86,6 +86,21 @@ TOPICS_TABLE = 'rewrite_lab_topics'
 DEFAULT_TOPIC = 'derecho_penal_mexicano'
 DEFAULT_TOPIC_LABEL = 'Derecho Penal Mexicano'
 
+# ── Usuarios y roles ─────────────────────────────────────────────────────────────
+# La lista blanca vive en la tabla `rewrite_lab_users` (antes en ALLOWED_EMAILS del
+# .env). Cada usuario tiene un rol:
+#   reader     — solo lee/pregunta (no ve el tab de ingesta).
+#   admin      — además sube documentos: a los tópicos que él creó (owner) y a los que
+#                el superadmin le asigne (tabla de grants).
+#   superadmin — todo, incluida la gestión de usuarios (tab exclusivo). Se re-siembra
+#                al arrancar para no quedar nunca fuera aunque borren su fila.
+USERS_TABLE = 'rewrite_lab_users'
+TOPIC_GRANTS_TABLE = 'rewrite_lab_topic_grants'
+SUPERADMIN_EMAIL = os.environ.get('SUPERADMIN_EMAIL', 'rodrigosavagerower@gmail.com').strip().lower()
+# Correos del .env: solo para SEMBRAR la tabla la 1a vez (como lectores). Después manda la DB.
+ALLOWED_EMAILS_SEED = {e.strip().lower() for e in os.environ.get('ALLOWED_EMAILS', '').split(',') if e.strip()}
+ROLES = ('reader', 'admin', 'superadmin')
+
 
 def list_goldens():
     """Test sets disponibles: los golden*.json de exploracion_datos/."""
@@ -146,6 +161,28 @@ with connect() as _c, _c.cursor() as _cur:
         _clean = _task_only(_ins)
         if _clean != _ins:
             _cur.execute(f"UPDATE {TOPICS_TABLE} SET instruct = %s WHERE topic = %s", (_clean, _t))
+
+    # ── Usuarios / roles / permisos de subida por tópico ────────────────────────────
+    _cur.execute(f"""CREATE TABLE IF NOT EXISTS {USERS_TABLE} (
+        email text PRIMARY KEY, role text NOT NULL DEFAULT 'reader',
+        name text, created_at timestamptz DEFAULT now())""")
+    # Dueño del tópico: un admin puede subir a los tópicos que él creó.
+    _cur.execute(f"ALTER TABLE {TOPICS_TABLE} ADD COLUMN IF NOT EXISTS owner_email text")
+    # Permisos extra: el superadmin asigna a un admin tópicos que NO creó pero puede subir.
+    _cur.execute(f"""CREATE TABLE IF NOT EXISTS {TOPIC_GRANTS_TABLE} (
+        email text NOT NULL, topic text NOT NULL,
+        created_at timestamptz DEFAULT now(), PRIMARY KEY (email, topic))""")
+    # Superadmin siempre existe (aunque borren su fila) y el tópico por defecto es suyo.
+    _cur.execute(f"INSERT INTO {USERS_TABLE} (email, role, name) VALUES (%s, 'superadmin', %s) "
+                 f"ON CONFLICT (email) DO UPDATE SET role = 'superadmin'",
+                 (SUPERADMIN_EMAIL, 'Super Admin'))
+    _cur.execute(f"UPDATE {TOPICS_TABLE} SET owner_email = %s WHERE owner_email IS NULL",
+                 (SUPERADMIN_EMAIL,))
+    # Siembra 1a-vez: los correos que estaban en ALLOWED_EMAILS entran como lectores.
+    for _e in ALLOWED_EMAILS_SEED:
+        if _e != SUPERADMIN_EMAIL:
+            _cur.execute(f"INSERT INTO {USERS_TABLE} (email, role) VALUES (%s, 'reader') "
+                         f"ON CONFLICT (email) DO NOTHING", (_e,))
     _c.commit()
 
 # Catálogo de tópicos en memoria: topic -> {'label':..., 'instruct':...}. Se recarga al
@@ -160,6 +197,72 @@ def load_topics():
         TOPICS = {t: {'label': lb, 'instruct': ins, 'system_prompt': sp}
                   for t, lb, ins, sp in cur.fetchall()}
     return TOPICS
+
+
+# ── Usuarios en memoria + permisos ──────────────────────────────────────────────────
+# Caché email -> {'role','name'}. Se recarga al arrancar y tras cualquier cambio de
+# usuarios/roles, para que la puerta de auth y los permisos reflejen los cambios sin
+# reiniciar. El superadmin se fuerza aunque falte la fila.
+USERS: dict[str, dict] = {}
+
+
+def load_users():
+    global USERS
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT email, role, name FROM {USERS_TABLE}")
+        USERS = {e.lower(): {'role': r, 'name': n} for e, r, n in cur.fetchall()}
+    USERS.setdefault(SUPERADMIN_EMAIL, {'role': 'superadmin', 'name': 'Super Admin'})
+    USERS[SUPERADMIN_EMAIL]['role'] = 'superadmin'   # nunca se degrada
+    return USERS
+
+
+def is_allowed(email) -> bool:
+    """¿El correo está en la lista blanca (o es el superadmin)? Lo usa la puerta de auth."""
+    e = (email or '').lower()
+    return e == SUPERADMIN_EMAIL or e in USERS
+
+
+def role_of(email) -> str:
+    e = (email or '').lower()
+    if e == SUPERADMIN_EMAIL:
+        return 'superadmin'
+    return (USERS.get(e) or {}).get('role', 'reader')
+
+
+def can_ingest(email) -> bool:
+    return role_of(email) in ('admin', 'superadmin')
+
+
+def is_superadmin(email) -> bool:
+    return role_of(email) == 'superadmin'
+
+
+def allowed_topics_for(email) -> list[str]:
+    """Tópicos a los que este usuario puede SUBIR: superadmin=todos; admin=los que creó
+    (owner) + los que el superadmin le asignó; reader=ninguno."""
+    e = (email or '').lower()
+    if is_superadmin(e):
+        return list(TOPICS.keys())
+    if role_of(e) != 'admin':
+        return []
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT topic FROM {TOPICS_TABLE} WHERE lower(owner_email) = %s", (e,))
+        owned = {t for (t,) in cur.fetchall()}
+        cur.execute(f"SELECT topic FROM {TOPIC_GRANTS_TABLE} WHERE lower(email) = %s", (e,))
+        granted = {t for (t,) in cur.fetchall()}
+    return [t for t in TOPICS if t in (owned | granted)]
+
+
+def can_upload_topic(email, topic) -> bool:
+    return is_superadmin(email) or topic in allowed_topics_for(email)
+
+
+def current_email(request) -> str | None:
+    """Correo del usuario logueado. Si el auth está desactivado (dev local sin
+    credenciales), se actúa como superadmin para no bloquear el desarrollo."""
+    if not AUTH_ON:
+        return SUPERADMIN_EMAIL
+    return ((request.session.get('user') or {}).get('email') or '').lower() or None
 
 
 def instruct_for(topic) -> str:
@@ -429,11 +532,14 @@ ingest_mgr = IngestManager(table=TABLE, tei=tei, connect_fn=connect,
 
 app = FastAPI(title='Rewrite Lab')
 
-# Puerta de autenticación con Google (primer paso de acceso). En local, si no hay
-# credenciales configuradas, no se instala y el app queda abierto como antes.
+load_users()   # lista blanca + roles en memoria (la usa la puerta de auth y los permisos)
+
+# Puerta de autenticación con Google (primer paso de acceso). La lista blanca es la
+# tabla de usuarios (`is_allowed`). En local, si no hay credenciales, no se instala y
+# el app queda abierto (`AUTH_ON=False` → todo mundo actúa como superadmin).
 from auth import install_auth  # noqa: E402  (import local del app, tras crear `app`)
 
-install_auth(app)
+AUTH_ON = install_auth(app, is_allowed=is_allowed)
 
 
 @app.get('/healthz')
@@ -449,9 +555,21 @@ def healthz():
 @app.get('/lab')
 @app.get('/ingesta')
 @app.get('/conversacional')
+@app.get('/admin')
 def index():
     # no-store: el navegador no cachea el HTML, para que los cambios se vean sin hard-refresh.
     return FileResponse(STATIC / 'index.html', headers={'Cache-Control': 'no-store'})
+
+
+@app.get('/api/me')
+def api_me(request: Request):
+    """Identidad y permisos del usuario logueado. El front lo usa para decidir qué tabs
+    mostrar (ingesta solo admins, gestión de usuarios solo superadmin) y a qué tópicos
+    permitir subir."""
+    email = current_email(request)
+    return {'email': email, 'role': role_of(email), 'name': (USERS.get(email) or {}).get('name', ''),
+            'can_ingest': can_ingest(email), 'is_superadmin': is_superadmin(email),
+            'allowed_topics': allowed_topics_for(email)}
 
 
 @app.get('/api/config')
@@ -476,7 +594,11 @@ def api_topics():
 @app.post('/api/topics')
 async def api_topic_create(req: Request):
     """Crea un tópico nuevo: {label, instruct?}. El id (slug) se deriva de la etiqueta.
-    El `instruct` es el prefijo de consulta de ese tema (usa el default si viene vacío)."""
+    El `instruct` es el prefijo de consulta de ese tema (usa el default si viene vacío).
+    Solo admins/superadmin; el creador queda como `owner_email` (podrá subir a su tópico)."""
+    email = current_email(req)
+    if not can_ingest(email):
+        return JSONResponse({'error': 'Solo los administradores pueden crear tópicos.'}, status_code=403)
     b = await req.json()
     label = (b.get('label') or '').strip()
     if not label:
@@ -488,8 +610,8 @@ async def api_topic_create(req: Request):
         cur.execute(f"SELECT 1 FROM {TOPICS_TABLE} WHERE topic = %s", (topic,))
         if cur.fetchone():
             return JSONResponse({'error': f'Ya existe un tópico con id {topic!r}'}, status_code=409)
-        cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct, system_prompt) "
-                    f"VALUES (%s, %s, %s, %s)", (topic, label, instruct, system_prompt))
+        cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct, system_prompt, owner_email) "
+                    f"VALUES (%s, %s, %s, %s, %s)", (topic, label, instruct, system_prompt, email))
         c.commit()
     load_topics()
     return {'topic': topic, 'label': label, 'instruct': instruct, 'system_prompt': system_prompt}
@@ -536,12 +658,20 @@ def api_questions(golden: str = ''):
 # (TEI en rtx5090) → upsert por documento en pgvector. Corre en segundo plano; la UI
 # consulta el progreso por polling. Toda la lógica vive en `ingest_service`.
 @app.post('/ingest/upload')
-async def ingest_upload(files: list[UploadFile] = File(...), topic: str = Form(DEFAULT_TOPIC)):
+async def ingest_upload(request: Request, files: list[UploadFile] = File(...),
+                        topic: str = Form(DEFAULT_TOPIC)):
+    email = current_email(request)
+    if not can_ingest(email):
+        return JSONResponse({'error': 'No tienes permiso para subir documentos.'}, status_code=403)
     pdfs = [f for f in files if (f.filename or '').lower().endswith('.pdf')]
     if not pdfs:
         return JSONResponse({'error': 'Sube al menos un archivo .pdf'}, status_code=400)
     if topic not in TOPICS:
         return JSONResponse({'error': f'Tópico desconocido: {topic!r}'}, status_code=400)
+    if not can_upload_topic(email, topic):
+        return JSONResponse({'error': f'No tienes permiso para subir al tópico {topic!r}. '
+                             f'Pídele acceso al superadmin o sube a un tópico que hayas creado.'},
+                            status_code=403)
     # Guardar en un subdirectorio único por subida y con el nombre ORIGINAL: así el
     # `source` del documento sale del nombre real del PDF (no de un nombre temporal),
     # y a la vez se evita cualquier colisión entre subidas concurrentes.
@@ -557,6 +687,38 @@ async def ingest_upload(files: list[UploadFile] = File(...), topic: str = Form(D
     except RuntimeError as e:   # ya hay una ingesta en curso
         for p in saved:
             p.unlink(missing_ok=True)
+        return JSONResponse({'error': str(e)}, status_code=409)
+    return {'job_id': job_id}
+
+
+@app.post('/ingest/url')
+async def ingest_url_route(request: Request):
+    """Ingesta uno o varios LINKS: {urls: [...], topic}. Descarga y convierte a Markdown
+    (HTML o PDF en línea) con el mismo pipeline que los PDFs. Mismas guardas de permiso."""
+    email = current_email(request)
+    if not can_ingest(email):
+        return JSONResponse({'error': 'No tienes permiso para ingerir documentos.'}, status_code=403)
+    b = await request.json()
+    raw = b.get('urls') or b.get('url') or []
+    if isinstance(raw, str):
+        raw = raw.split()   # acepta URLs separadas por espacios/saltos de línea
+    urls = [u.strip() for u in raw if u and u.strip()]
+    bad = [u for u in urls if not (u.startswith('http://') or u.startswith('https://'))]
+    if not urls:
+        return JSONResponse({'error': 'Pega al menos un link (http/https).'}, status_code=400)
+    if bad:
+        return JSONResponse({'error': f'Links inválidos (deben empezar con http/https): {bad}'},
+                            status_code=400)
+    topic = (b.get('topic') or DEFAULT_TOPIC)
+    if topic not in TOPICS:
+        return JSONResponse({'error': f'Tópico desconocido: {topic!r}'}, status_code=400)
+    if not can_upload_topic(email, topic):
+        return JSONResponse({'error': f'No tienes permiso para subir al tópico {topic!r}. '
+                             f'Pídele acceso al superadmin o sube a un tópico que hayas creado.'},
+                            status_code=403)
+    try:
+        job_id = ingest_mgr.start_urls(urls, topic)
+    except RuntimeError as e:   # ya hay una ingesta en curso
         return JSONResponse({'error': str(e)}, status_code=409)
     return {'job_id': job_id}
 
@@ -662,6 +824,97 @@ def run_delete(rid: int):
         cur.execute(f"DELETE FROM {RUNS_TABLE} WHERE id = %s", (rid,))
         c.commit()
     return {'deleted': rid}
+
+
+# ── Tab "Usuarios" (solo superadmin) ──────────────────────────────────────────────────
+# Gestión de la lista blanca: alta/baja de usuarios, cambio de rol y asignación de
+# tópicos a los que un admin puede subir (además de los que él mismo crea).
+def _require_superadmin(request):
+    """Devuelve None si es superadmin, o un JSONResponse 403 si no. (Guardia común.)"""
+    if not is_superadmin(current_email(request)):
+        return JSONResponse({'error': 'Solo el superadmin puede gestionar usuarios.'}, status_code=403)
+    return None
+
+
+@app.get('/api/admin/users')
+def api_admin_users(request: Request):
+    """Lista de usuarios con su rol, tópicos que crearon (owner) y tópicos asignados."""
+    if (deny := _require_superadmin(request)) is not None:
+        return deny
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT email, role, name, created_at::text FROM {USERS_TABLE} ORDER BY role, email")
+        users = cur.fetchall()
+        cur.execute(f"SELECT lower(owner_email), topic FROM {TOPICS_TABLE} WHERE owner_email IS NOT NULL")
+        owned: dict[str, list] = {}
+        for oe, t in cur.fetchall():
+            owned.setdefault(oe, []).append(t)
+        cur.execute(f"SELECT lower(email), topic FROM {TOPIC_GRANTS_TABLE}")
+        granted: dict[str, list] = {}
+        for ge, t in cur.fetchall():
+            granted.setdefault(ge, []).append(t)
+    return [{'email': e, 'role': r, 'name': n or '', 'created_at': ca,
+             'owned': owned.get(e.lower(), []), 'granted': granted.get(e.lower(), []),
+             'is_superadmin': e.lower() == SUPERADMIN_EMAIL}
+            for e, r, n, ca in users]
+
+
+@app.post('/api/admin/users')
+async def api_admin_user_upsert(request: Request):
+    """Alta o cambio de rol de un usuario: {email, role, name?}. El superadmin no se degrada."""
+    if (deny := _require_superadmin(request)) is not None:
+        return deny
+    b = await request.json()
+    email = (b.get('email') or '').strip().lower()
+    role = (b.get('role') or 'reader').strip()
+    name = (b.get('name') or '').strip()
+    if '@' not in email:
+        return JSONResponse({'error': 'Correo inválido.'}, status_code=400)
+    if role not in ROLES:
+        return JSONResponse({'error': f'Rol inválido: {role!r} (usa {ROLES}).'}, status_code=400)
+    if email == SUPERADMIN_EMAIL and role != 'superadmin':
+        return JSONResponse({'error': 'No puedes cambiar el rol del superadmin.'}, status_code=400)
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"INSERT INTO {USERS_TABLE} (email, role, name) VALUES (%s, %s, %s) "
+                    f"ON CONFLICT (email) DO UPDATE SET role = EXCLUDED.role, "
+                    f"name = COALESCE(NULLIF(EXCLUDED.name, ''), {USERS_TABLE}.name)",
+                    (email, role, name))
+        c.commit()
+    load_users()
+    return {'email': email, 'role': role, 'name': name}
+
+
+@app.delete('/api/admin/users/{email}')
+def api_admin_user_delete(email: str, request: Request):
+    """Quita a un usuario de la lista blanca (pierde el acceso). El superadmin no se borra."""
+    if (deny := _require_superadmin(request)) is not None:
+        return deny
+    email = email.strip().lower()
+    if email == SUPERADMIN_EMAIL:
+        return JSONResponse({'error': 'No puedes borrar al superadmin.'}, status_code=400)
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"DELETE FROM {USERS_TABLE} WHERE lower(email) = %s", (email,))
+        cur.execute(f"DELETE FROM {TOPIC_GRANTS_TABLE} WHERE lower(email) = %s", (email,))
+        c.commit()
+    load_users()
+    return {'deleted': email}
+
+
+@app.post('/api/admin/users/{email}/grants')
+async def api_admin_user_grants(email: str, request: Request):
+    """Reemplaza los tópicos asignados a un admin: {topics: [...]}. Son tópicos a los que
+    podrá subir además de los que él mismo cree (owner)."""
+    if (deny := _require_superadmin(request)) is not None:
+        return deny
+    email = email.strip().lower()
+    b = await request.json()
+    topics = [t for t in (b.get('topics') or []) if t in TOPICS]
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"DELETE FROM {TOPIC_GRANTS_TABLE} WHERE lower(email) = %s", (email,))
+        for t in topics:
+            cur.execute(f"INSERT INTO {TOPIC_GRANTS_TABLE} (email, topic) VALUES (%s, %s) "
+                        f"ON CONFLICT DO NOTHING", (email, t))
+        c.commit()
+    return {'email': email, 'granted': topics}
 
 
 if __name__ == '__main__':
