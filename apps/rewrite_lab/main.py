@@ -608,6 +608,25 @@ def _prepend_exact(scored, exact_ids):
     return head + [(i, s) for i, s in scored if i not in exact]
 
 
+NEIGHBOR_EXTRA_CAP = 8   # máx. chunks vecinos añadidos como contexto en preguntas temáticas
+
+
+def select_context_ids(cur, scored, k, question, topic, jurisdictions):
+    """Ids finales para el contexto: el top-k + (en preguntas TEMáTICAS, sin cita de artículo)
+    la familia + ±2 vecinos de los artículos del top como contexto ADICIONAL, sin desplazar
+    la cobertura. Devuelve (ids_ordenados, set_de_vecinos_extra)."""
+    base = [cid for cid, _ in scored[:k]]
+    if find_article_ref(question):
+        return base, set()   # ya se expandió dentro de retrieve_scored
+    art_ids = [cid for cid in base if (DOC_BY_ID.get(cid) or {}).get('title', '').startswith('Artículo ')]
+    if not art_ids:
+        return base, set()
+    neigh = expand_article_context(cur, art_ids, topic, _jur_set(jurisdictions))
+    baseset = set(base)
+    extra = [cid for cid in neigh if cid not in baseset][:NEIGHBOR_EXTRA_CAP]
+    return base + extra, set(extra)
+
+
 def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None):
     """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Filtra por
     `topic` y por el conjunto de lugares `jurisdictions` (lista; vacío/'todos' = todo). Usa
@@ -647,9 +666,11 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None):
     t0 = time.time()
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions)
-    top = [{'id': cid, 'rank': rank, 'score': round(score, 4), 'score_kind': score_kind,
-            **DOC_BY_ID.get(cid, {})}
-           for rank, (cid, score) in enumerate(scored[:k], 1)]
+        ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions)
+    score_map = dict(scored)
+    top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
+            'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
+           for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
         f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
         for ch in top)
@@ -677,9 +698,11 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     t0 = time.time()
     with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
         scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions)
-    top = [{'id': cid, 'rank': rank, 'score': round(score, 4), 'score_kind': score_kind,
-            **DOC_BY_ID.get(cid, {})}
-           for rank, (cid, score) in enumerate(scored[:k], 1)]
+        ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions)
+    score_map = dict(scored)
+    top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
+            'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
+           for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
         f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
         for ch in top)

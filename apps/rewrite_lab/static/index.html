@@ -518,13 +518,13 @@ async function askRun(){
         system:$('ask-system').value, topic:$('ask-topic').value,
         jurisdictions:readJur('ask-jur')})})).json();
     if(d.error){ $('ask-out').innerHTML='<p style="color:#f87171">Error: '+esc(d.error)+'</p>'; return; }
-    const skind=d.score_kind||'', fmt=v=>(skind==='dist'?v.toFixed(4):(skind==='rrf'?v.toFixed(4):v.toFixed(2)));
+    const skind=d.score_kind||'', fmt=v=>v==null?'vecino':((skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2));
     let h=`<div class="row muted" style="margin-top:14px">método: <b>${esc(d.setting)}</b> · score: <b>${esc(skind||'—')}</b> · ${d.chunks.length} chunks · ${d.seconds}s</div>`;
     if(d.rewrite) h+=`<div class="muted">↳ reescritura: <span class="rw">${esc(d.rewrite)}</span></div>`;
     h+=`<div class="ans">${marked.parse(d.answer||'')}</div>`;
     h+=`<details open><summary>📄 ${d.chunks.length} chunks usados como contexto (score = ${esc(skind)})</summary>`+
       d.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
-        <span class="badge">${esc(skind)}: ${fmt(ch.score)}</span></h4>
+        <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
         <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details>`;
     $('ask-out').innerHTML=h;
   }catch(e){ $('ask-out').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
@@ -867,12 +867,12 @@ function msgBubble(m,isLastAssistant){
   // plegadas; solo la última queda abierta para no llenar de ruido el historial.
   if((m.chunks||[]).length){
     const skind=m.score_kind||'';
-    const fmt=v=>(skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2);
+    const fmt=v=>v==null?'vecino':((skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2));
     src=`<div class="chat-src"><details><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
       (m.setting?` · <span class="muted">${esc(m.setting)}</span>`:'')+
       (m.rewrite?` · reescritura: <span class="rw">${esc(m.rewrite)}</span>`:'')+`</summary>`+
       m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
-        <span class="badge">${esc(skind)}: ${fmt(ch.score)}</span></h4>
+        <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
         <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details></div>`;
   }
   return `<div class="msg assistant">${marked.parse(m.content||'')}${src}</div>`;
