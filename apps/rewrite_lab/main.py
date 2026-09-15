@@ -559,41 +559,58 @@ def article_lookup(cur, question, topic, jset=None):
 _ARTICLE_BASE_RE = re.compile(r'Art[íi]culo\s+(\d+)')
 
 
+def _article_base(title):
+    m = _ARTICLE_BASE_RE.search(title or '')
+    return m.group(1) if m else None
+
+
+def _source_families(cur, source, topic, jset):
+    """Familias del documento en ORDEN DE LECTURA. Una familia = corrida contigua de
+    unidades con el mismo número base (167, 167 BIS, 167 BIS 1, … SEPTIMUS = UNA familia;
+    luego 168 = la siguiente). Agrupar por corrida —no solo por número— evita mezclar el
+    artículo del cuerpo con un transitorio del mismo número (que aparece mucho después).
+    Cada familia: {'base', 'pmin', 'pmax', 'ids': [...]}. Respeta el alcance topic/lugar."""
+    clauses, params = ["source = %s"], [source]
+    if topic:
+        clauses.append("topic = %s"); params.append(topic)
+    frag, p = _jur_sql(jset)
+    if frag:
+        clauses.append(frag); params += p
+    cur.execute(f"SELECT id, position, title FROM {TABLE} WHERE " + " AND ".join(clauses)
+                + " ORDER BY position, part", params)
+    fams: list[dict] = []
+    for cid, pos, title in cur.fetchall():
+        base = _article_base(title)
+        if fams and fams[-1]['base'] == base:
+            fams[-1]['ids'].append(cid); fams[-1]['pmax'] = pos
+        else:
+            fams.append({'base': base, 'pmin': pos, 'pmax': pos, 'ids': [cid]})
+    return fams
+
+
 def expand_article_context(cur, exact_ids, topic, jset, around=2):
-    """Expande cada match exacto de artículo a su CONTEXTO de lectura, en orden:
-      · la familia completa del número (bis/ter/adendums: 127, 127 BIS, 127 BIS-1…), y
-      · `around` artículos arriba y abajo (suelen traer materia relacionada).
-    Devuelve ids en orden de lectura, sin duplicar. Respeta el mismo alcance (tópico/lugar)."""
+    """Expande cada artículo ancla a su CONTEXTO de lectura, en orden: su familia completa
+    (bis/ter/adendums) + `around` FAMILIAS de artículo arriba y abajo. Contar familias (no
+    posiciones) garantiza traer el artículo BASE de los vecinos aunque tengan muchos bis en
+    medio. Devuelve ids en orden de lectura, sin duplicar. Respeta el alcance topic/lugar."""
     if not exact_ids:
         return []
-    cur.execute(f"SELECT id, source, title, position FROM {TABLE} WHERE id = ANY(%s)", (list(exact_ids),))
-    matches = cur.fetchall()
+    cur.execute(f"SELECT id, source, position FROM {TABLE} WHERE id = ANY(%s)", (list(exact_ids),))
+    anchors = cur.fetchall()
+    fams_cache: dict[str, list] = {}
     out: list[int] = []
-    done_windows: set = set()
-    for _id, source, title, position in matches:
-        m = _ARTICLE_BASE_RE.search(title or '')
-        if m:   # extensión de la familia (mismo número base) en ese documento
-            cur.execute(f"SELECT min(position), max(position) FROM {TABLE} WHERE source = %s AND title ~ %s",
-                        (source, r'^Art[íi]culo ' + m.group(1) + r'($|[ ])'))
-            lo, hi = cur.fetchone()
-            lo, hi = (lo if lo is not None else position), (hi if hi is not None else position)
-        else:
-            lo = hi = position
-        lo, hi = lo - around, hi + around            # ±2 artículos vecinos
-        if (source, lo, hi) in done_windows:
+    seen: set = set()
+    for _id, source, position in anchors:
+        if source not in fams_cache:
+            fams_cache[source] = _source_families(cur, source, topic, jset)
+        fams = fams_cache[source]
+        idx = next((i for i, f in enumerate(fams) if f['pmin'] <= position <= f['pmax']), None)
+        if idx is None:
             continue
-        done_windows.add((source, lo, hi))
-        clauses = ["source = %s", "position BETWEEN %s AND %s"]
-        params = [source, lo, hi]
-        if topic:
-            clauses.append("topic = %s"); params.append(topic)
-        frag, p = _jur_sql(jset)
-        if frag:
-            clauses.append(frag); params += p
-        cur.execute(f"SELECT id FROM {TABLE} WHERE " + " AND ".join(clauses) + " ORDER BY position, part", params)
-        for (cid,) in cur.fetchall():
-            if cid not in out:
-                out.append(cid)
+        for f in fams[max(0, idx - around): idx + around + 1]:
+            for cid in f['ids']:
+                if cid not in seen:
+                    seen.add(cid); out.append(cid)
     return out
 
 
