@@ -423,20 +423,31 @@ def eval_prompt(system_prompt, kind, golden_name):
     t0 = time.time()
     rewrites = [llm.chat(system_prompt, golden[i]['q']) for i in idx]   # llama-server secuencial
     rw_vecs = tei.embed([Q_INSTRUCT + r for r in rewrites], use_cache=False)
-    rows, r_orig, r_rw, r_mq = [], [], [], []
+    # HyDE: un borrador por pregunta; se embebe pregunta + borrador (como en producción).
+    passages = [llm.hyde_passage(golden[i]['q']) for i in idx]
+    hy_vecs = tei.embed([Q_INSTRUCT + golden[i]['q'] + ('\n\n' + p if p else '')
+                         for i, p in zip(idx, passages)], use_cache=False)
+    rows, r_orig, r_rw, r_mq, r_hy, r_hb = [], [], [], [], [], []
     with connect() as conn, conn.cursor() as cur:   # UNA conexión para toda la corrida
         for k, i in enumerate(idx):
             o_ids = orig_ids_for(cur, golden_name, golden, i)   # cacheado tras la 1a vez
             rw_ids = dense_ids(cur, rw_vecs[k])
+            hy_ids = dense_ids(cur, hy_vecs[k])
+            bm_ids = [cid for cid, _ in bm25_ranked(golden[i]['q'])]
             mq_ids = rrf([o_ids, rw_ids])
+            hb_ids = rrf([o_ids, bm_ids])   # híbrido: denso original + léxico (BM25)
             ro = rank_in(o_ids, gold_ids[i])
             rr, rm = rank_in(rw_ids, gold_ids[i]), rank_in(mq_ids, gold_ids[i])
-            r_orig.append(ro); r_rw.append(rr); r_mq.append(rm)
+            rh, rb = rank_in(hy_ids, gold_ids[i]), rank_in(hb_ids, gold_ids[i])
+            r_orig.append(ro); r_rw.append(rr); r_mq.append(rm); r_hy.append(rh); r_hb.append(rb)
             rows.append({'idx': i, 'difficulty': golden[i].get('difficulty', ''), 'type': golden[i].get('type', ''),
                          'question': golden[i]['q'], 'rewrite': rewrites[k],
-                         'rank_orig': ro, 'rank_rewrite': rr, 'rank_mq': rm})
+                         'rank_orig': ro, 'rank_rewrite': rr, 'rank_mq': rm,
+                         'rank_hyde': rh, 'rank_hibrido': rb})
     return {'rows': rows, 'n': len(idx), 'golden': golden_name, 'seconds': round(time.time() - t0, 1),
-            'agg': {'denso (orig)': metrics(r_orig), 'rewrite-solo': metrics(r_rw), 'multi-query': metrics(r_mq)}}
+            'agg': {'denso (orig)': metrics(r_orig), 'rewrite-solo': metrics(r_rw),
+                    'multi-query': metrics(r_mq), 'HyDE (denso)': metrics(r_hy),
+                    'híbrido (orig+bm25)': metrics(r_hb)}}
 
 
 # ── Tab "Preguntar (RAG)" ────────────────────────────────────────────────────────

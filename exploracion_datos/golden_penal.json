@@ -236,5 +236,12 @@
     "answer": "cadena de custodia",
     "difficulty": "very_hard",
     "type": "semantic_paraphrase"
+  },
+  {
+    "q": "¿Cómo se configura el delito de estupro y qué pena tiene en el Código Penal de Querétaro?",
+    "source": "Código Penal de Querétaro.md",
+    "answer": "obteniendo su consentimiento por medio de seducción o engaño",
+    "difficulty": "hard",
+    "type": "vocabulary_mismatch"
   }
 ]
