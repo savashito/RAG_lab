@@ -26,6 +26,25 @@ REWRITE_SYSTEM = (
     "Devuelve SOLO el enunciado, una sola línea."
 )
 
+# ── HyDE (Hypothetical Document Embeddings) ───────────────────────────────────────
+# El problema: la pregunta usa el NOMBRE del delito ("estupro") pero el artículo que lo
+# define no repite esa palabra (habla de "cópula con menor de 18 mediante engaño"), así
+# que el embedding de la pregunta no lo encuentra. HyDE lo resuelve: el LLM redacta un
+# borrador de cómo LUCIRÍA el artículo buscado (con el vocabulario jurídico de la
+# conducta), y se embebe ESO en vez de —o además de— la pregunta. El borrador puede
+# tener imprecisiones; no importa, solo se usa para acercar el vector a los pasajes
+# correctos, nunca se le muestra al usuario ni al LLM final.
+HYDE_SYSTEM = (
+    "Eres jurista penal mexicano. Redacta en 2 a 4 oraciones cómo luciría el TEXTO del "
+    "artículo o pasaje doctrinal que responde la pregunta, con el vocabulario técnico de "
+    "la CONDUCTA descrita: verbos rectores, sujeto activo y pasivo, medios comisivos y "
+    "circunstancias (edades, consentimiento, engaño, parentesco, etc.). "
+    "NO uses el nombre coloquial del delito. NO presumas violencia, fuerza ni coacción a "
+    "menos que la pregunta lo diga: describe con precisión los medios que la ley señala "
+    "(p. ej. seducción o engaño) sin inventarlos. NO inventes números de artículo ni "
+    "entidades. Devuelve solo el pasaje, sin preámbulo."
+)
+
 
 class LlamaClient:
     def __init__(self, url: str | None = None, model: str | None = None):
@@ -42,8 +61,8 @@ class LlamaClient:
         return self._model
 
     def chat(self, system: str, user: str, temperature: float = 0.1,
-             max_tokens: int = 80, timeout: int = 60) -> str:
-        body = json.dumps({
+             max_tokens: int = 80, timeout: int = 60, extra: dict | None = None) -> str:
+        payload = {
             'model': self.model,
             'messages': [{'role': 'system', 'content': system},
                          {'role': 'user', 'content': user}],
@@ -51,7 +70,10 @@ class LlamaClient:
             'max_tokens': max_tokens,
             # llama.cpp con modelos Qwen3: apaga el modo "thinking" para respuesta directa.
             'chat_template_kwargs': {'enable_thinking': False},
-        }).encode()
+        }
+        if extra:
+            payload.update(extra)
+        body = json.dumps(payload).encode()
         req = urllib.request.Request(self.url + '/v1/chat/completions', data=body,
                                      headers={'Content-Type': 'application/json'})
         resp = json.load(urllib.request.urlopen(req, timeout=timeout))
@@ -76,3 +98,11 @@ class LlamaClient:
     def rewrite_legal(self, question: str) -> str:
         """Pregunta coloquial → enunciado jurídico breve (para query rewriting)."""
         return self.chat(REWRITE_SYSTEM, question)
+
+    def hyde_passage(self, question: str) -> str:
+        """Pregunta → borrador hipotético del pasaje buscado (para HyDE). Da margen de
+        tokens porque queremos vocabulario de la conducta, no una frase telegráfica.
+        `reasoning_effort=low`: en modelos de razonamiento (GPT-OSS) el 'thinking' se
+        come el presupuesto y deja `content` vacío; con esfuerzo bajo redacta directo."""
+        return self.chat(HYDE_SYSTEM, question, max_tokens=512, timeout=120,
+                         extra={'reasoning_effort': 'low'})

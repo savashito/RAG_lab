@@ -61,6 +61,9 @@
    font-size:13px;cursor:pointer;white-space:nowrap}
  details.jur .jm label:hover{background:#0b0d12}
  details.jur .jm input{width:auto;min-width:0}
+ label.chk{display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;
+   background:#0b0d12;border:1px solid #2a2f3a;border-radius:8px;padding:5px 9px}
+ label.chk input{width:auto;min-width:0;margin:0}
  .tabs{display:flex;gap:4px;padding:0 20px;background:#171a21;border-bottom:1px solid #2a2f3a}
  .tabs button{background:transparent;color:#9aa4b2;border:0;border-bottom:2px solid transparent;
    border-radius:0;padding:11px 16px;font-weight:600}
@@ -210,6 +213,8 @@
    <details class="jur" id="ask-jur"><summary>Lugar: <span class="jl">Todos</span></summary><div class="jm"></div></details>
    <label>Método: <select id="ask-setting"></select></label>
    <label>Top-k: <select id="ask-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
+   <label class="chk" title="Además del artículo encontrado, incluye su familia (bis) y ±2 artículos vecinos como contexto."><input type="checkbox" id="ask-neighbors" checked> vecinos ↕</label>
+   <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="ask-hyde"> HyDE 🧪</label>
  </div>
  <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
  <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
@@ -235,6 +240,8 @@
    <details class="jur" id="chat-jur"><summary>Lugar: <span class="jl">Todos</span></summary><div class="jm"></div></details>
    <label>Método: <select id="chat-setting"></select></label>
    <label>Top-k: <select id="chat-k"><option>3</option><option selected>5</option><option>8</option><option>10</option></select></label>
+   <label class="chk" title="Además del artículo encontrado, incluye su familia (bis) y ±2 artículos vecinos como contexto."><input type="checkbox" id="chat-neighbors" checked> vecinos ↕</label>
+   <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="chat-hyde"> HyDE 🧪</label>
    <details id="chat-prompt-box" style="margin:0">
      <summary>⚙️ System prompt</summary>
      <textarea id="chat-system" style="min-height:120px;margin-top:8px"></textarea>
@@ -516,7 +523,8 @@ async function askRun(){
     const d=await (await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question, setting:$('ask-setting').value, k:+$('ask-k').value,
         system:$('ask-system').value, topic:$('ask-topic').value,
-        jurisdictions:readJur('ask-jur')})})).json();
+        jurisdictions:readJur('ask-jur'),
+        neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked})})).json();
     if(d.error){ $('ask-out').innerHTML='<p style="color:#f87171">Error: '+esc(d.error)+'</p>'; return; }
     const skind=d.score_kind||'', fmt=v=>v==null?'vecino':((skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2));
     let h=`<div class="row muted" style="margin-top:14px">método: <b>${esc(d.setting)}</b> · score: <b>${esc(skind||'—')}</b> · ${d.chunks.length} chunks · ${d.seconds}s</div>`;
@@ -911,7 +919,8 @@ async function chatSend(){
     const d=await (await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({messages:history, setting:$('chat-setting').value, k:+$('chat-k').value,
         system:$('chat-system').value, topic:$('chat-topic').value,
-        jurisdictions:readJur('chat-jur')})})).json();
+        jurisdictions:readJur('chat-jur'),
+        neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked})})).json();
     if(d.error){
       await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ Error: '+d.error,ts:Date.now(),chunks:[]});
     }else{

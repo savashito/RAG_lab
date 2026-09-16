@@ -644,14 +644,15 @@ def _prepend_exact(scored, exact_ids):
 NEIGHBOR_EXTRA_CAP = 8   # máx. chunks vecinos añadidos como contexto en preguntas temáticas
 
 
-def select_context_ids(cur, scored, k, question, topic, jurisdictions):
+def select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors=True):
     """Ids finales para el contexto: el top-k + (en preguntas TEMáTICAS, sin cita de artículo)
     la familia + ±2 familias vecinas de los artículos del top como contexto ADICIONAL, sin
     desplazar la cobertura. El tope se REPARTE entre las anclas (para no perder amplitud entre
-    entidades) y se prioriza lo más cercano de cada una. Devuelve (ids_ordenados, set_extra)."""
+    entidades) y se prioriza lo más cercano de cada una. Con `neighbors=False` devuelve solo
+    el top-k. Devuelve (ids_ordenados, set_extra)."""
     base = [cid for cid, _ in scored[:k]]
-    if find_article_ref(question):
-        return base, set()   # ya se expandió dentro de retrieve_scored
+    if not neighbors or find_article_ref(question):
+        return base, set()   # sin vecinos, o ya se expandió dentro de retrieve_scored
     art_ids = [cid for cid in base if (DOC_BY_ID.get(cid) or {}).get('title', '').startswith('Artículo ')]
     if not art_ids:
         return base, set()
@@ -683,19 +684,33 @@ def select_context_ids(cur, scored, k, question, topic, jurisdictions):
     return base + chosen, set(chosen)
 
 
-def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None):
+def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
+                    neighbors=True, hyde=False):
     """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Filtra por
     `topic` y por el conjunto de lugares `jurisdictions` (lista; vacío/'todos' = todo). Usa
     el `instruct` del tópico para embeber. Si la pregunta cita un artículo por número, ese
-    chunk se ancla al principio (búsqueda directa por metadata)."""
+    chunk se ancla al principio (búsqueda directa por metadata).
+    `neighbors`: consolidar familia + ±2 vecinos (togglea el padding, no el match exacto).
+    `hyde`: enriquece el vector denso con un borrador hipotético del pasaje (arregla el
+    desajuste de vocabulario: la pregunta nombra el delito, el artículo lo define)."""
     prefix = query_prefix(instruct_for(topic))   # "Instruct: <tarea del tópico>\nQuery: "
     jset = _jur_set(jurisdictions)               # set de lugares (o None = todos)
     exact = article_lookup(cur, question, topic, jset)   # match exacto por número
-    # Consolida la familia (bis/adendums) y trae ±2 artículos vecinos como contexto.
-    exact = expand_article_context(cur, exact, topic, jset)
+    # Consolida la familia (bis/adendums) y —si `neighbors`— trae ±2 artículos vecinos.
+    exact = expand_article_context(cur, exact, topic, jset, around=2 if neighbors else 0)
     if setting == 'bm25':
         return _prepend_exact(bm25_ranked(question, topic, jset), exact), 'bm25', None
-    d_orig = dense_ranked(cur, tei.embed([prefix + question], use_cache=False)[0], topic, jset)
+    # HyDE: embebe pregunta + borrador del pasaje. El léxico (BM25) sigue con la pregunta
+    # real; el borrador solo mueve el vector denso hacia la conducta descrita.
+    dense_text = question
+    if hyde:
+        try:
+            passage = llm.hyde_passage(question)
+            if passage:
+                dense_text = f'{question}\n\n{passage}'
+        except Exception:   # noqa: BLE001 — si el LLM falla, degradamos a denso normal
+            pass
+    d_orig = dense_ranked(cur, tei.embed([prefix + dense_text], use_cache=False)[0], topic, jset)
     if setting == 'orig':
         return _prepend_exact(d_orig, exact), 'dist', None
     if setting == 'híbrido':
@@ -712,7 +727,8 @@ def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None):
     raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
 
 
-def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None):
+def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
+        neighbors=True, hyde=False):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -721,8 +737,8 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None):
         k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
     with connect() as c, c.cursor() as cur:
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions)
-        ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde)
+        ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
             'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
@@ -742,7 +758,8 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None):
 # de seguimiento), pero el retrieval RAG se hace SOLO sobre el último mensaje del
 # usuario; los chunks devueltos son los de esa última pregunta (no se acumulan). El
 # historial de conversaciones vive en el browser (IndexedDB), no en el servidor.
-def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=None):
+def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=None,
+                neighbors=True, hyde=False):
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
     msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
@@ -753,8 +770,8 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
         k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
     with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions)
-        ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde)
+        ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
             'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
@@ -1011,7 +1028,8 @@ async def ask_route(req: Request):
     try:
         return ask(body.get('question', ''), body.get('setting', 'orig'),
                    int(body.get('k', 5)), body.get('system'), body.get('topic'),
-                   body.get('jurisdictions') or body.get('jurisdiction'))
+                   body.get('jurisdictions') or body.get('jurisdiction'),
+                   bool(body.get('neighbors', True)), bool(body.get('hyde', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
@@ -1024,7 +1042,8 @@ async def chat_route(req: Request):
     try:
         return chat_answer(body.get('messages', []), body.get('setting', 'orig'),
                            int(body.get('k', 5)), body.get('system'), body.get('topic'),
-                           body.get('jurisdictions') or body.get('jurisdiction'))
+                           body.get('jurisdictions') or body.get('jurisdiction'),
+                           bool(body.get('neighbors', True)), bool(body.get('hyde', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
