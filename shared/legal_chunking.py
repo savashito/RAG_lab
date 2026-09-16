@@ -293,17 +293,67 @@ def document_strategy(text: str) -> str:
 
 
 # ── Extracción de unidades semánticas ────────────────────────────────────────────
+# Encabezados estructurales de un código: LIBRO ⊃ TÍTULO ⊃ CAPÍTULO ⊃ SECCIÓN. En el
+# Markdown salido del PDF casi todos son "# ..." (mismo nivel Markdown), así que NO se
+# puede anidar por número de '#'; se clasifican por su palabra clave y se anidan por ese
+# rango. Un encabezado sin palabra clave (p. ej. el nombre de un delito suelto) se ignora
+# para la jerarquía (no queremos ruido), pero sí sirve para cortar el header colgante.
+_STRUCT_RANK = [
+    (re.compile(r'(?i)\bLIBRO\b'), 0),
+    (re.compile(r'(?i)\bT[ÍI]TULO\b'), 1),
+    (re.compile(r'(?i)\bCAP[ÍI]TULO\b'), 2),
+    (re.compile(r'(?i)\bSECCI[ÓO]N\b'), 3),
+]
+
+
+def _heading_rank(title: str):
+    for rx, rank in _STRUCT_RANK:
+        if rx.search(title):
+            return rank
+    return None
+
+
+def _strip_trailing_headings(body: str) -> str:
+    """Quita del FINAL del chunk las líneas de encabezado Markdown (y blancos): un header
+    al final de un artículo siempre introduce la SIGUIENTE sección, no la actual (así el
+    '# CAPÍTULO III ESTUPRO' deja de contaminar el chunk del 166 BIS)."""
+    lines = body.rstrip().split('\n')
+    while lines and (not lines[-1].strip() or HEADING_RE.match(lines[-1])):
+        lines.pop()
+    return '\n'.join(lines).strip()
+
+
 def article_units(text: str):
     matches = list(ARTICLE_RE.finditer(text))
+    heads = list(HEADING_RE.finditer(text))
+    stack: dict[int, str] = {}   # rango estructural → título vigente (LIBRO/TÍTULO/CAPÍTULO/SECCIÓN)
+    hi = 0                       # cursor sobre `heads`, avanza en orden de lectura
     for i, match in enumerate(matches):
+        # Consume los encabezados que aparecen ANTES del inicio de este artículo, para
+        # dejar la pila con la sección en vigor. Un rango nuevo descarta los más profundos.
+        while hi < len(heads) and heads[hi].start() < match.start():
+            htitle = normalize_line(heads[hi].group(2))
+            # Quita la nota de reforma que a veces cierra el título ("CAPÍTULO IV … (Ref. P.O…)").
+            htitle = re.sub(r'\s*\((?:ref|adici|reforma|derog|p\.?\s*o\.?|dof|decreto)[^)]*\)\s*$',
+                            '', htitle, flags=re.I).strip()
+            rank = _heading_rank(htitle)
+            if rank is not None:
+                for deeper in [r for r in stack if r >= rank]:
+                    del stack[deeper]
+                stack[rank] = htitle
+            hi += 1
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         label, ocr_fix = _article_label_parts(match.group(1))
+        title = 'Artículo ' + label
+        path = [stack[r] for r in sorted(stack)]
         yield {
             'unit_type': 'article',
-            'title': 'Artículo ' + label,
+            'title': title,
             'level': 2,
-            'text': text[match.start():end].strip(),
-            'hierarchy': '',
+            'text': _strip_trailing_headings(text[match.start():end]),
+            # Ruta legible que TERMINA en el artículo; se antepone al texto embebido
+            # (make_chunks), así el capítulo —p. ej. "ESTUPRO"— se vuelve buscable.
+            'hierarchy': ' > '.join(path + [title]) if path else '',
             'ocr_fix': ocr_fix,   # '' o 'antes→después' si se autocorrigió el número (OCR)
         }
 
