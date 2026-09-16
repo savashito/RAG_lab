@@ -24,7 +24,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 HERE = Path(__file__).resolve().parent
 LABS = HERE.parents[1]
@@ -685,14 +685,16 @@ def select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors
 
 
 def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
-                    neighbors=True, hyde=False):
+                    neighbors=True, hyde=False, debug=None):
     """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Filtra por
     `topic` y por el conjunto de lugares `jurisdictions` (lista; vacío/'todos' = todo). Usa
     el `instruct` del tópico para embeber. Si la pregunta cita un artículo por número, ese
     chunk se ancla al principio (búsqueda directa por metadata).
     `neighbors`: consolidar familia + ±2 vecinos (togglea el padding, no el match exacto).
     `hyde`: enriquece el vector denso con un borrador hipotético del pasaje (arregla el
-    desajuste de vocabulario: la pregunta nombra el delito, el artículo lo define)."""
+    desajuste de vocabulario: la pregunta nombra el delito, el artículo lo define).
+    `debug`: si es un dict, se rellena con {hyde_passage, embed_text} para exponer el
+    proceso en la UI (qué se generó y qué se envió a embeber)."""
     prefix = query_prefix(instruct_for(topic))   # "Instruct: <tarea del tópico>\nQuery: "
     jset = _jur_set(jurisdictions)               # set de lugares (o None = todos)
     exact = article_lookup(cur, question, topic, jset)   # match exacto por número
@@ -708,8 +710,12 @@ def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
             passage = llm.hyde_passage(question)
             if passage:
                 dense_text = f'{question}\n\n{passage}'
+                if debug is not None:
+                    debug['hyde_passage'] = passage
         except Exception:   # noqa: BLE001 — si el LLM falla, degradamos a denso normal
             pass
+    if debug is not None:
+        debug['embed_text'] = prefix + dense_text
     d_orig = dense_ranked(cur, tei.embed([prefix + dense_text], use_cache=False)[0], topic, jset)
     if setting == 'orig':
         return _prepend_exact(d_orig, exact), 'dist', None
@@ -736,8 +742,9 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     if find_article_ref(question):
         k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
+    dbg: dict = {}
     with connect() as c, c.cursor() as cur:
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -750,7 +757,8 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
                       f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}',
                       max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
-            'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1)}
+            'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
+            'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', '')}
 
 
 # ── Tab "Conversacional" ──────────────────────────────────────────────────────────
@@ -769,8 +777,9 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     if find_article_ref(question):
         k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
+    dbg: dict = {}
     with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde)
+        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -786,7 +795,8 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
     answer = llm.chat_messages(llm_msgs, max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
-            'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1)}
+            'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
+            'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', '')}
 
 
 load_corpus_index()   # índice BM25 en memoria para la tab de RAG (bm25 / híbrido)
@@ -1032,6 +1042,62 @@ async def ask_route(req: Request):
                    bool(body.get('neighbors', True)), bool(body.get('hyde', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
+
+
+def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde):
+    """Generador SSE que transparenta el PROCESO paso a paso en lugar de esperar al final:
+    1) 'hyde' (borrador hipotético + texto exacto que se embebe),
+    2) 'context' (las referencias recuperadas, ya con su jerarquía),
+    3) 'token'* (la respuesta del LLM en streaming),
+    4) 'done' (tiempo total). Cada evento es una línea 'data: {json}\\n\\n'."""
+    def sse(obj):
+        return f'data: {json.dumps(obj, ensure_ascii=False)}\n\n'
+    try:
+        if not (question or '').strip():
+            raise ValueError('pregunta vacía')
+        if setting not in ASK_SETTINGS:
+            raise ValueError(f'setting desconocido: {setting!r}')
+        if find_article_ref(question):
+            k = max(k, 8)
+        t0 = time.time()
+        yield sse({'stage': 'retrieving', 'hyde': hyde})
+        dbg: dict = {}
+        with connect() as c, c.cursor() as cur:
+            scored, score_kind, rw = retrieve_scored(cur, question, setting, topic,
+                                                     jurisdictions, neighbors, hyde, debug=dbg)
+            ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
+        score_map = dict(scored)
+        top = [{'id': cid, 'rank': rank,
+                'score': (round(score_map[cid], 4) if cid in score_map else None),
+                'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
+               for rank, cid in enumerate(ids, 1)]
+        if hyde:
+            yield sse({'stage': 'hyde', 'passage': dbg.get('hyde_passage', ''),
+                       'embed_text': dbg.get('embed_text', '')})
+        yield sse({'stage': 'context', 'chunks': top, 'rewrite': rw, 'score_kind': score_kind})
+        context = '\n\n'.join(
+            f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+            for ch in top)
+        messages = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)},
+                    {'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'}]
+        for piece in llm.chat_stream(messages, max_tokens=4096, timeout=180):
+            yield sse({'stage': 'token', 'text': piece})
+        yield sse({'stage': 'done', 'seconds': round(time.time() - t0, 1)})
+    except Exception as e:   # noqa: BLE001 — el error viaja como evento para mostrarlo en la UI
+        yield sse({'stage': 'error', 'error': f'{type(e).__name__}: {e}'})
+
+
+@app.post('/ask/stream')
+async def ask_stream_route(req: Request):
+    """Igual que /ask pero en streaming (SSE): la UI puede ir mostrando el borrador HyDE,
+    las referencias y la respuesta conforme se generan, sin esperar al final."""
+    body = await req.json()
+    gen = _ask_events(body.get('question', ''), body.get('setting', 'orig'),
+                      int(body.get('k', 5)), body.get('system'), body.get('topic'),
+                      body.get('jurisdictions') or body.get('jurisdiction'),
+                      bool(body.get('neighbors', True)), bool(body.get('hyde', False)))
+    return StreamingResponse(gen, media_type='text/event-stream',
+                             headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
 
 @app.post('/chat')

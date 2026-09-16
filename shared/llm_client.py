@@ -95,6 +95,37 @@ class LlamaClient:
         resp = json.load(urllib.request.urlopen(req, timeout=timeout))
         return resp['choices'][0]['message']['content'].strip()
 
+    def chat_stream(self, messages: list[dict], temperature: float = 0.1,
+                    max_tokens: int = 4096, timeout: int = 180):
+        """Como `chat_messages` pero en STREAMING: itera los deltas de texto conforme el
+        LLM los produce (SSE de llama.cpp con stream=true). Ignora los deltas de
+        `reasoning_content` (thinking): solo se emite el `content` visible."""
+        body = json.dumps({
+            'model': self.model,
+            'messages': messages,
+            'temperature': temperature,
+            'max_tokens': max_tokens,
+            'stream': True,
+            'chat_template_kwargs': {'enable_thinking': False},
+        }).encode()
+        req = urllib.request.Request(self.url + '/v1/chat/completions', data=body,
+                                     headers={'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            for raw in resp:
+                line = raw.decode('utf-8', 'replace').strip()
+                if not line.startswith('data:'):
+                    continue
+                data = line[5:].strip()
+                if data == '[DONE]':
+                    break
+                try:
+                    delta = json.loads(data)['choices'][0].get('delta', {})
+                except (json.JSONDecodeError, KeyError, IndexError):
+                    continue
+                piece = delta.get('content')
+                if piece:
+                    yield piece
+
     def rewrite_legal(self, question: str) -> str:
         """Pregunta coloquial → enunciado jurídico breve (para query rewriting)."""
         return self.chat(REWRITE_SYSTEM, question)

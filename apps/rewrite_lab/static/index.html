@@ -64,6 +64,10 @@
  label.chk{display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;
    background:#0b0d12;border:1px solid #2a2f3a;border-radius:8px;padding:5px 9px}
  label.chk input{width:auto;min-width:0;margin:0}
+ .hyde-box{margin:12px 0;border:1px solid #2a2f3a;border-radius:8px;padding:8px 10px;background:#0b0d12}
+ .hyde-box>summary{cursor:pointer;color:#a5d6ff}
+ .hyde-p{white-space:pre-wrap;background:#0e1117;border:1px solid #222733;border-radius:6px;
+   padding:8px 10px;font-size:13px;line-height:1.5;color:#c9d3e0}
  .tabs{display:flex;gap:4px;padding:0 20px;background:#171a21;border-bottom:1px solid #2a2f3a}
  .tabs button{background:transparent;color:#9aa4b2;border:0;border-bottom:2px solid transparent;
    border-radius:0;padding:11px 16px;font-weight:600}
@@ -516,25 +520,66 @@ function askModeChange(){
   $('ask-question').style.display=golden?'none':'block';
 }
 
+// Renderiza los chunks recuperados (reutilizado por el evento 'context').
+function renderChunks(chunks, skind){
+  const fmt=v=>v==null?'vecino':((skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2));
+  return `<details open><summary>📄 ${chunks.length} chunks usados como contexto (score = ${esc(skind)})</summary>`+
+    chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
+      <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
+      <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details>`;
+}
+
+// Lee un cuerpo SSE (fetch + ReadableStream) y llama onEvent por cada 'data: {json}'.
+async function readSSE(resp, onEvent){
+  const reader=resp.body.getReader(), dec=new TextDecoder(); let buf='';
+  for(;;){
+    const {value,done}=await reader.read(); if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    let i;
+    while((i=buf.indexOf('\n\n'))>=0){
+      const raw=buf.slice(0,i); buf=buf.slice(i+2);
+      const line=raw.split('\n').find(l=>l.startsWith('data:'));
+      if(line){ try{ onEvent(JSON.parse(line.slice(5).trim())); }catch(e){} }
+    }
+  }
+}
+
 async function askRun(){
-  const b=$('ask-run'), s=$('ask-spin'); b.disabled=true; s.style.display='inline'; $('ask-out').innerHTML='';
+  const b=$('ask-run'), s=$('ask-spin'); b.disabled=true; s.style.display='inline';
   const question=$('ask-mode').value==='golden' ? $('ask-golden-q').value : $('ask-question').value;
+  // Andamiaje: paneles que se van llenando conforme llegan los eventos del proceso.
+  $('ask-out').innerHTML=`<div id="ax-status" class="row muted" style="margin-top:14px">⏳ recuperando…</div>
+    <div id="ax-hyde"></div><div id="ax-answer" class="ans"></div><div id="ax-refs"></div>`;
+  const setStatus=t=>{const el=$('ax-status'); if(el) el.innerHTML=t;};
+  let answer='', skind='', started=performance.now();
   try{
-    const d=await (await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch('/ask/stream',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({question, setting:$('ask-setting').value, k:+$('ask-k').value,
         system:$('ask-system').value, topic:$('ask-topic').value,
         jurisdictions:readJur('ask-jur'),
-        neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked})})).json();
-    if(d.error){ $('ask-out').innerHTML='<p style="color:#f87171">Error: '+esc(d.error)+'</p>'; return; }
-    const skind=d.score_kind||'', fmt=v=>v==null?'vecino':((skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2));
-    let h=`<div class="row muted" style="margin-top:14px">método: <b>${esc(d.setting)}</b> · score: <b>${esc(skind||'—')}</b> · ${d.chunks.length} chunks · ${d.seconds}s</div>`;
-    if(d.rewrite) h+=`<div class="muted">↳ reescritura: <span class="rw">${esc(d.rewrite)}</span></div>`;
-    h+=`<div class="ans">${marked.parse(d.answer||'')}</div>`;
-    h+=`<details open><summary>📄 ${d.chunks.length} chunks usados como contexto (score = ${esc(skind)})</summary>`+
-      d.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
-        <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
-        <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details>`;
-    $('ask-out').innerHTML=h;
+        neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked})});
+    await readSSE(resp, ev=>{
+      if(ev.stage==='retrieving'){
+        setStatus(ev.hyde?'🧪 generando respuesta hipotética (HyDE) + recuperando…':'⏳ recuperando…');
+      }else if(ev.stage==='hyde'){
+        $('ax-hyde').innerHTML=`<details open class="hyde-box"><summary>🧪 HyDE — respuesta hipotética y texto embebido</summary>
+          <div class="muted" style="margin:6px 0 2px">Borrador generado por el LLM (no se muestra al usuario final; solo mueve el vector de búsqueda):</div>
+          <div class="hyde-p">${esc(ev.passage||'(vacío)')}</div>
+          <div class="muted" style="margin:8px 0 2px">Texto EXACTO enviado a embeber para recuperar las referencias:</div>
+          <div class="hyde-p">${esc(ev.embed_text||'')}</div></details>`;
+      }else if(ev.stage==='context'){
+        skind=ev.score_kind||'';
+        setStatus(`método: <b>${esc($('ask-setting').value)}</b> · score: <b>${esc(skind||'—')}</b> · ${ev.chunks.length} chunks · generando respuesta…`);
+        if(ev.rewrite) $('ax-hyde').insertAdjacentHTML('beforeend',`<div class="muted">↳ reescritura: <span class="rw">${esc(ev.rewrite)}</span></div>`);
+        $('ax-refs').innerHTML=renderChunks(ev.chunks, skind);
+      }else if(ev.stage==='token'){
+        answer+=ev.text; $('ax-answer').innerHTML=marked.parse(answer);
+      }else if(ev.stage==='done'){
+        setStatus(`método: <b>${esc($('ask-setting').value)}</b> · score: <b>${esc(skind||'—')}</b> · ${ev.seconds}s ✓`);
+      }else if(ev.stage==='error'){
+        $('ax-answer').innerHTML='<p style="color:#f87171">Error: '+esc(ev.error)+'</p>';
+      }
+    });
   }catch(e){ $('ask-out').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
   finally{ b.disabled=false; s.style.display='none'; }
 }
