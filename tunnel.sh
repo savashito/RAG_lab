@@ -17,13 +17,16 @@ LLAMA_PORT=$(ssh -o ConnectTimeout=8 rtx5090 'p=$(pgrep -f llama-server | head -
 echo "Tunnels (Ctrl-C to close both):"
 echo "  localhost:5433 -> srv1312754:5432   Postgres/pgvector"
 echo "  localhost:8085 -> rtx5090:8085      TEI embeddings (GPU)"
+echo "  localhost:8086 -> rtx5090:8086      TEI reranker (GPU, cross-encoder)"
 echo "  localhost:41499 -> rtx5090:$LLAMA_PORT      llama.cpp server (GPU, puerto autodetectado)"
 
 ssh -N -o ServerAliveInterval=20 -L 5433:localhost:5432 tlacua-hstgr &
 PG=$!
 ssh -N -o ServerAliveInterval=20 -L 8085:localhost:8085 rtx5090 &
 TEI=$!
+ssh -N -o ServerAliveInterval=20 -L 8086:localhost:8086 rtx5090 &
+RERANK=$!
 ssh -N -o ServerAliveInterval=20 -L 41499:localhost:$LLAMA_PORT rtx5090 &
 LLAMA=$!
-trap 'kill $PG $TEI $LLAMA 2>/dev/null' INT TERM EXIT
+trap 'kill $PG $TEI $RERANK $LLAMA 2>/dev/null' INT TERM EXIT
 wait
