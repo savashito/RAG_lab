@@ -41,6 +41,7 @@ from shared.db import connect
 from shared.legal_chunking import find_article_ref
 from shared.lexical import BM25, rank_indices_by_score, rrf, tokenize
 from shared.llm_client import REWRITE_SYSTEM, LlamaClient
+from shared.rerank_client import RerankClient
 from shared.tei_client import TEIClient
 
 from ingest_service import IngestManager
@@ -166,8 +167,9 @@ def list_goldens():
 
 DEFAULT_GOLDEN = 'golden_penal.json' if (EXPLO / 'golden_penal.json').exists() else (list_goldens() or [''])[0]
 
-tei = TEIClient()     # embebe en vivo (sin caché); TEI_URL por env
-llm = LlamaClient()   # LLM_URL por env, modelo auto-detectado
+tei = TEIClient()          # embebe en vivo (sin caché); TEI_URL por env
+llm = LlamaClient()        # LLM_URL por env, modelo auto-detectado
+reranker = RerankClient()  # cross-encoder (TEI /rerank); desactivado si no hay RERANK_URL
 
 
 def rank_in(ids, gid) -> int | None:
@@ -427,7 +429,7 @@ def eval_prompt(system_prompt, kind, golden_name):
     passages = [llm.hyde_passage(golden[i]['q']) for i in idx]
     hy_vecs = tei.embed([Q_INSTRUCT + golden[i]['q'] + ('\n\n' + p if p else '')
                          for i, p in zip(idx, passages)], use_cache=False)
-    rows, r_orig, r_rw, r_mq, r_hy, r_hb = [], [], [], [], [], []
+    rows, r_orig, r_rw, r_mq, r_hy, r_hb, r_rk = [], [], [], [], [], [], []
     with connect() as conn, conn.cursor() as cur:   # UNA conexión para toda la corrida
         for k, i in enumerate(idx):
             o_ids = orig_ids_for(cur, golden_name, golden, i)   # cacheado tras la 1a vez
@@ -436,18 +438,23 @@ def eval_prompt(system_prompt, kind, golden_name):
             bm_ids = [cid for cid, _ in bm25_ranked(golden[i]['q'])]
             mq_ids = rrf([o_ids, rw_ids])
             hb_ids = rrf([o_ids, bm_ids])   # híbrido: denso original + léxico (BM25)
+            rk_ids = _rerank_ids(golden[i]['q'], hy_ids)[0]   # rerank sobre la base HyDE
             ro = rank_in(o_ids, gold_ids[i])
             rr, rm = rank_in(rw_ids, gold_ids[i]), rank_in(mq_ids, gold_ids[i])
             rh, rb = rank_in(hy_ids, gold_ids[i]), rank_in(hb_ids, gold_ids[i])
-            r_orig.append(ro); r_rw.append(rr); r_mq.append(rm); r_hy.append(rh); r_hb.append(rb)
+            rk = rank_in(rk_ids, gold_ids[i])
+            r_orig.append(ro); r_rw.append(rr); r_mq.append(rm); r_hy.append(rh); r_hb.append(rb); r_rk.append(rk)
             rows.append({'idx': i, 'difficulty': golden[i].get('difficulty', ''), 'type': golden[i].get('type', ''),
                          'question': golden[i]['q'], 'rewrite': rewrites[k],
                          'rank_orig': ro, 'rank_rewrite': rr, 'rank_mq': rm,
-                         'rank_hyde': rh, 'rank_hibrido': rb})
-    return {'rows': rows, 'n': len(idx), 'golden': golden_name, 'seconds': round(time.time() - t0, 1),
-            'agg': {'denso (orig)': metrics(r_orig), 'rewrite-solo': metrics(r_rw),
-                    'multi-query': metrics(r_mq), 'HyDE (denso)': metrics(r_hy),
-                    'híbrido (orig+bm25)': metrics(r_hb)}}
+                         'rank_hyde': rh, 'rank_hibrido': rb, 'rank_rerank': rk})
+    agg = {'denso (orig)': metrics(r_orig), 'rewrite-solo': metrics(r_rw),
+           'multi-query': metrics(r_mq), 'HyDE (denso)': metrics(r_hy),
+           'híbrido (orig+bm25)': metrics(r_hb)}
+    if reranker.enabled:
+        agg['HyDE+rerank'] = metrics(r_rk)   # solo si el cross-encoder está levantado
+    return {'rows': rows, 'n': len(idx), 'golden': golden_name,
+            'seconds': round(time.time() - t0, 1), 'agg': agg}
 
 
 # ── Tab "Preguntar (RAG)" ────────────────────────────────────────────────────────
@@ -744,8 +751,37 @@ def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
     raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
 
 
+RERANK_TOP_N = 30   # cuántos candidatos del ranking base pasa el cross-encoder a reordenar
+
+
+def _rerank_ids(question, ids, top_n=RERANK_TOP_N):
+    """Reordena los primeros `top_n` ids por el cross-encoder (query+pasaje juntos) y
+    deja la cola intacta. Trunca el texto para acelerar. No-op si el reranker está
+    apagado o falla (degradación elegante). Devuelve (ids_reordenados, se_reordenó)."""
+    if not reranker.enabled or len(ids) < 2:
+        return ids, False
+    head = ids[:top_n]
+    texts = [((DOC_BY_ID.get(cid) or {}).get('text') or '')[:900] for cid in head]
+    try:
+        order = reranker.rerank(question, texts)
+    except Exception:   # noqa: BLE001 — si el reranker cae, seguimos con el orden base
+        return ids, False
+    reordered = [head[li] for li, _ in order]
+    return reordered + ids[top_n:], True
+
+
+def _rerank_scored(question, scored, top_n=RERANK_TOP_N):
+    """Como `_rerank_ids` pero sobre [(id, score)]; conserva el score original de cada id."""
+    ids = [cid for cid, _ in scored]
+    new_ids, did = _rerank_ids(question, ids, top_n)
+    if not did:
+        return scored, False
+    smap = dict(scored)
+    return [(cid, smap.get(cid, 0.0)) for cid in new_ids], True
+
+
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
-        neighbors=True, hyde=False):
+        neighbors=True, hyde=False, rerank=False):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -756,6 +792,10 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     dbg: dict = {}
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
+        if rerank and not find_article_ref(question):
+            scored, did = _rerank_scored(question, scored)
+            if did:
+                score_kind = 'rerank'
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -778,7 +818,7 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
 # usuario; los chunks devueltos son los de esa última pregunta (no se acumulan). El
 # historial de conversaciones vive en el browser (IndexedDB), no en el servidor.
 def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=None,
-                neighbors=True, hyde=False):
+                neighbors=True, hyde=False, rerank=False):
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
     msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
@@ -791,6 +831,10 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     dbg: dict = {}
     with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
         scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
+        if rerank and not find_article_ref(question):
+            scored, did = _rerank_scored(question, scored)
+            if did:
+                score_kind = 'rerank'
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -1050,12 +1094,13 @@ async def ask_route(req: Request):
         return ask(body.get('question', ''), body.get('setting', 'orig'),
                    int(body.get('k', 5)), body.get('system'), body.get('topic'),
                    body.get('jurisdictions') or body.get('jurisdiction'),
-                   bool(body.get('neighbors', True)), bool(body.get('hyde', False)))
+                   bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
+                   bool(body.get('rerank', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
 
-def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde):
+def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False):
     """Generador SSE que transparenta el PROCESO paso a paso en lugar de esperar al final:
     1) 'hyde' (borrador hipotético + texto exacto que se embebe),
     2) 'context' (las referencias recuperadas, ya con su jerarquía),
@@ -1076,6 +1121,11 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         with connect() as c, c.cursor() as cur:
             scored, score_kind, rw = retrieve_scored(cur, question, setting, topic,
                                                      jurisdictions, neighbors, hyde, debug=dbg)
+            if rerank and not find_article_ref(question):
+                yield sse({'stage': 'reranking'})
+                scored, did = _rerank_scored(question, scored)
+                if did:
+                    score_kind = 'rerank'
             ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
@@ -1106,7 +1156,8 @@ async def ask_stream_route(req: Request):
     gen = _ask_events(body.get('question', ''), body.get('setting', 'orig'),
                       int(body.get('k', 5)), body.get('system'), body.get('topic'),
                       body.get('jurisdictions') or body.get('jurisdiction'),
-                      bool(body.get('neighbors', True)), bool(body.get('hyde', False)))
+                      bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
+                      bool(body.get('rerank', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
@@ -1120,7 +1171,8 @@ async def chat_route(req: Request):
         return chat_answer(body.get('messages', []), body.get('setting', 'orig'),
                            int(body.get('k', 5)), body.get('system'), body.get('topic'),
                            body.get('jurisdictions') or body.get('jurisdiction'),
-                           bool(body.get('neighbors', True)), bool(body.get('hyde', False)))
+                           bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
+                           bool(body.get('rerank', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 

@@ -193,6 +193,7 @@
    </select></label>
    <label>Heatmap método: <select id="hmethod">
      <option value="rank_hyde" selected>HyDE</option>
+     <option value="rank_rerank">HyDE+rerank</option>
      <option value="rank_hibrido">híbrido</option>
      <option value="rank_mq">multi-query</option>
      <option value="rank_rewrite">rewrite-solo</option>
@@ -221,6 +222,7 @@
    <label>Top-k: <select id="ask-k"><option>3</option><option>5</option><option>8</option><option selected>10</option></select></label>
    <label class="chk" title="Además del artículo encontrado, incluye su familia (bis) y ±2 artículos vecinos como contexto."><input type="checkbox" id="ask-neighbors" checked> vecinos ↕</label>
    <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="ask-hyde" checked> HyDE 🧪</label>
+   <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="ask-rerank"> rerank 🎯</label>
  </div>
  <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
  <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
@@ -248,6 +250,7 @@
    <label>Top-k: <select id="chat-k"><option>3</option><option>5</option><option>8</option><option selected>10</option></select></label>
    <label class="chk" title="Además del artículo encontrado, incluye su familia (bis) y ±2 artículos vecinos como contexto."><input type="checkbox" id="chat-neighbors" checked> vecinos ↕</label>
    <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="chat-hyde"> HyDE 🧪</label>
+   <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="chat-rerank"> rerank 🎯</label>
    <details id="chat-prompt-box" style="margin:0">
      <summary>⚙️ System prompt</summary>
      <textarea id="chat-system" style="min-height:120px;margin-top:8px"></textarea>
@@ -376,7 +379,7 @@ const $=id=>document.getElementById(id);
 function color(r){ if(r==null) return '#7f1d1d'; if(r<=5) return '#166534'; if(r<=20) return '#3f6212';
   if(r<=100) return '#854d0e'; return '#7f1d1d'; }
 function cell(r){ return `<td class="r" style="background:${color(r)}">${r==null?'∞':r}</td>`; }
-const METHODS=['denso (orig)','rewrite-solo','multi-query','HyDE (denso)','híbrido (orig+bm25)'];
+const METHODS=['denso (orig)','rewrite-solo','multi-query','HyDE (denso)','híbrido (orig+bm25)','HyDE+rerank'];
 
 const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 // Cada tab tiene su propia URL, para enlaces directos y compartibles.
@@ -559,10 +562,12 @@ async function askRun(){
       body:JSON.stringify({question, setting:$('ask-setting').value, k:+$('ask-k').value,
         system:$('ask-system').value, topic:$('ask-topic').value,
         jurisdictions:readJur('ask-jur'),
-        neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked})});
+        neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked, rerank:$('ask-rerank').checked})});
     await readSSE(resp, ev=>{
       if(ev.stage==='retrieving'){
         setStatus(ev.hyde?'🧪 generando respuesta hipotética (HyDE) + recuperando…':'⏳ recuperando…');
+      }else if(ev.stage==='reranking'){
+        setStatus('🎯 reordenando candidatos con el reranker…');
       }else if(ev.stage==='hyde'){
         $('ax-hyde').innerHTML=`<details class="hyde-box"><summary>🧪 HyDE — respuesta hipotética y texto embebido</summary>
           <div class="muted" style="margin:6px 0 2px">Borrador generado por el LLM (no se muestra al usuario final; solo mueve el vector de búsqueda):</div>
@@ -594,7 +599,7 @@ async function run(){
       body:JSON.stringify({prompt:$('prompt').value, subset:$('subset').value, golden:$('golden').value})})).json();
     if(d.error){ $('out').innerHTML='<p style="color:#f87171">Error: '+d.error+'</p>'; return; }
     lastRun={prompt:$('prompt').value, subset:$('subset').value, golden:$('golden').value, result:d};
-    $('cards').innerHTML=METHODS.map(name=>{ const m=d.agg[name];
+    $('cards').innerHTML=METHODS.filter(name=>d.agg[name]).map(name=>{ const m=d.agg[name];
       return `<div class="card"><h3>${name}</h3>`+Object.entries(m).map(([k,v])=>
         `<div class="m"><span class="muted">${k}</span><b>${v}</b></div>`).join('')+`</div>`;
     }).join('')+`<div class="card"><h3>info</h3><div class="m"><span class="muted">preguntas</span><b>${d.n}</b></div>
@@ -605,9 +610,10 @@ async function run(){
       '<th title="multi-query: original + reescritura fusionadas por RRF">mq</th>'+
       '<th title="HyDE: pregunta + borrador hipotético del pasaje, embebido">hyde</th>'+
       '<th title="híbrido: denso original + léxico BM25 fusionados por RRF">híb</th>'+
+      '<th title="rerank: cross-encoder reordenando los candidatos de HyDE">rrk</th>'+
       '<th>pregunta → reescritura</th></tr>';
     for(const r of d.rows){ h+=`<tr><td>${r.idx}</td><td>${r.difficulty}</td>`+
-      cell(r.rank_orig)+cell(r.rank_rewrite)+cell(r.rank_mq)+cell(r.rank_hyde)+cell(r.rank_hibrido)+
+      cell(r.rank_orig)+cell(r.rank_rewrite)+cell(r.rank_mq)+cell(r.rank_hyde)+cell(r.rank_hibrido)+cell(r.rank_rerank)+
       `<td>${r.question}<br><span class="rw">↳ ${r.rewrite}</span></td></tr>`; }
     $('out').innerHTML=h+'</table>'; $('saverow').style.display='flex'; $('savemsg').textContent='';
   }catch(e){ $('out').innerHTML='<p style="color:#f87171">'+e+'</p>'; }
@@ -969,7 +975,7 @@ async function chatSend(){
       body:JSON.stringify({messages:history, setting:$('chat-setting').value, k:+$('chat-k').value,
         system:$('chat-system').value, topic:$('chat-topic').value,
         jurisdictions:readJur('chat-jur'),
-        neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked})})).json();
+        neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked, rerank:$('chat-rerank').checked})})).json();
     if(d.error){
       await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ Error: '+d.error,ts:Date.now(),chunks:[]});
     }else{
