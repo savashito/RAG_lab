@@ -27,14 +27,21 @@ class RerankClient:
         return bool(self.url)
 
     def rerank(self, query: str, texts: list[str], timeout: int = 60) -> list[tuple[int, float]]:
-        """Devuelve [(indice_en_texts, score)] ordenado por relevancia desc. TEI ya lo
-        regresa ordenado; se normaliza a tuplas. Si el reranker no está configurado,
-        devuelve el orden original con score 0 (no-op) para que el llamador no falle."""
+        """Devuelve [(indice_en_texts, score)] ordenado por relevancia desc. Si el reranker
+        no está configurado, devuelve el orden original con score 0 (no-op) para que el
+        llamador no falle.
+
+        Tolera dos APIs de /rerank:
+          · vLLM (Qwen3-Reranker): body {query, documents}; resp {results:[{index, relevance_score}]}.
+          · TEI (cross-encoder):   body {query, texts};     resp [{index, score}].
+        Se manda `documents` (vLLM) y se parsea cualquiera de las dos formas."""
         if not self.enabled or not texts:
             return [(i, 0.0) for i in range(len(texts))]
-        body = json.dumps({'query': query, 'texts': texts}).encode()
+        body = json.dumps({'query': query, 'documents': texts}).encode()
         req = urllib.request.Request(self.url + '/rerank', data=body,
                                      headers={'Content-Type': 'application/json'})
         resp = json.load(urllib.request.urlopen(req, timeout=timeout))
-        # TEI: [{"index": i, "score": s}, ...] ya ordenado por score desc.
-        return [(int(r['index']), float(r['score'])) for r in resp]
+        items = resp['results'] if isinstance(resp, dict) else resp
+        out = [(int(r['index']), float(r.get('relevance_score', r.get('score', 0.0)))) for r in items]
+        out.sort(key=lambda t: -t[1])   # asegura orden desc aunque el server no lo garantice
+        return out
