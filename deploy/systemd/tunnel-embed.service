@@ -1,0 +1,18 @@
+[Unit]
+# Reverse tunnel del embedder TEI (rtx5090:8085 → tlacua-hstgr:8085).
+# Corre EN el rtx5090. Independiente de los otros para aislar fallas.
+Description=Reverse tunnel: TEI embedder -> tlacua-hstgr:8085
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Usuario dueño de las llaves/ssh-config hacia tlacua-hstgr (el mismo que ya corre
+# el autossh de 1237). Cámbialo si aplica.
+User=CHANGEME
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/usr/lib/autossh/autossh -M 0 -N -T -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 8085:localhost:8085 tlacua-hstgr
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+[Unit]
+# Reverse tunnel del reranker TEI (rtx5090:8086 → tlacua-hstgr:8086).
+# Servicio EXPERIMENTAL: va en su propio unit para que su caída no toque al
+# embedder ni a llama. El túnel se mantiene aunque el contenedor reranker esté
+# abajo (el bind es del lado remoto); las conexiones simplemente rebotan.
+Description=Reverse tunnel: TEI reranker -> tlacua-hstgr:8086
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=CHANGEME
+Environment=AUTOSSH_GATETIME=0
+ExecStart=/usr/lib/autossh/autossh -M 0 -N -T -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 8086:localhost:8086 tlacua-hstgr
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

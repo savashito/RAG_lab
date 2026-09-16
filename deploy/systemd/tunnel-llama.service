@@ -1,0 +1,19 @@
+[Unit]
+# Reverse tunnel de llama.cpp (rtx5090:<detectado> → tlacua-hstgr:1237).
+# Usa el wrapper porque el puerto local de llama-server cambia en cada relanzamiento;
+# el lado remoto queda FIJO en 1237. Si relanzas llama en otro puerto, reinicia este
+# unit:  sudo systemctl restart tunnel-llama
+Description=Reverse tunnel: llama.cpp -> tlacua-hstgr:1237
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=CHANGEME
+Environment=AUTOSSH_GATETIME=0
+# Ajusta la ruta a donde dejes el wrapper en la RTX.
+ExecStart=/opt/rtx-tunnels/rtx-tunnel-llama.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
