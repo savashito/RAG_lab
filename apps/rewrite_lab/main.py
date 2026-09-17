@@ -999,9 +999,12 @@ async def ingest_upload(request: Request, files: list[UploadFile] = File(...),
     email = current_email(request)
     if not can_ingest(email):
         return JSONResponse({'error': 'No tienes permiso para subir documentos.'}, status_code=403)
-    pdfs = [f for f in files if (f.filename or '').lower().endswith('.pdf')]
-    if not pdfs:
-        return JSONResponse({'error': 'Sube al menos un archivo .pdf'}, status_code=400)
+    # Se aceptan PDFs y Markdown ya listo (.md/.markdown); el pipeline salta la
+    # conversión cuando el origen ya es Markdown.
+    accepted = ('.pdf', '.md', '.markdown')
+    docs = [f for f in files if (f.filename or '').lower().endswith(accepted)]
+    if not docs:
+        return JSONResponse({'error': 'Sube al menos un archivo .pdf o .md'}, status_code=400)
     if topic not in TOPICS:
         return JSONResponse({'error': f'Tópico desconocido: {topic!r}'}, status_code=400)
     if jurisdiction not in JURISDICTIONS:
@@ -1016,7 +1019,7 @@ async def ingest_upload(request: Request, files: list[UploadFile] = File(...),
     job_dir = UPLOAD_DIR / uuid.uuid4().hex
     job_dir.mkdir(parents=True, exist_ok=True)
     saved: list[Path] = []
-    for f in pdfs:
+    for f in docs:
         dest = job_dir / Path(f.filename).name
         dest.write_bytes(await f.read())
         saved.append(dest)

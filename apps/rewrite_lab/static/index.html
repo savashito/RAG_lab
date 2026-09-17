@@ -278,8 +278,8 @@
 </div>
 
 <div id="tab-ingest" class="wrap tabpage" hidden>
- <p class="muted">Sube uno o varios <b>PDFs</b> de documentos legales. Por cada uno se hace:
-   PDF → Markdown → <b>limpieza</b> (se guarda el .md limpio para verlo) →
+ <p class="muted">Sube uno o varios <b>PDFs</b> o archivos <b>Markdown (.md)</b> de documentos legales. Por cada uno se hace:
+   PDF/MD → Markdown → <b>limpieza</b> (se guarda el .md limpio para verlo) →
    <b>chunking por estructura</b> (la estrategia se elige sola por documento) →
    <b>embeddings</b> (TEI en la rtx5090) → <b>upsert</b> en <code id="ing-table">pgvector</code>.
    Re-subir un documento reemplaza su versión anterior; los demás quedan intactos.</p>
@@ -313,11 +313,11 @@
      <span id="ing-topic-msg" class="muted"></span>
    </div>
  </div>
- <p class="muted" style="margin:14px 0 4px"><b>Opción A · Subir archivos PDF</b></p>
+ <p class="muted" style="margin:14px 0 4px"><b>Opción A · Subir archivos PDF o Markdown</b></p>
  <div class="row">
-   <input type="file" id="ing-files" accept="application/pdf,.pdf" multiple>
-   <button id="ing-run">▶ Ingestar PDFs</button>
-   <span class="spin" id="ing-spin">⏳ procesando… (puede tardar minutos con varios PDFs)</span>
+   <input type="file" id="ing-files" accept="application/pdf,.pdf,text/markdown,.md,.markdown" multiple>
+   <button id="ing-run">▶ Ingestar archivos</button>
+   <span class="spin" id="ing-spin">⏳ procesando… (puede tardar minutos con varios archivos)</span>
  </div>
 
  <p class="muted" style="margin:16px 0 4px"><b>Opción B · Ingerir por link</b> —
@@ -700,7 +700,7 @@ async function loadDocuments(){
 
 function ingestRun(){
   const input=$('ing-files');
-  if(!input.files.length){ alert('Elige al menos un PDF'); return; }
+  if(!input.files.length){ alert('Elige al menos un archivo PDF o .md'); return; }
   const fd=new FormData();
   const names=[...input.files].map(f=>f.name);
   for(const f of input.files) fd.append('files', f);

@@ -401,6 +401,27 @@ def ingest_pdf(pdf_path: str | Path, *, table: str, tei: TEIClient, connect_fn,
                             progress=progress)
 
 
+def ingest_md(md_path: str | Path, *, table: str, tei: TEIClient, connect_fn,
+              clean_dir: str | Path, save_clean: bool = True,
+              dry_run: bool = False, progress: Progress = _noop) -> IngestResult:
+    """Igual que `ingest_pdf` pero desde un archivo Markdown ya existente: como el
+    origen YA es Markdown, se salta la conversión y se lee tal cual, siguiendo el mismo
+    camino aguas abajo (limpieza → chunking → embeddings → upsert). El `source` sale del
+    nombre del archivo, así re-subir el mismo `.md` reemplaza su versión previa."""
+    md_path = Path(md_path)
+    result = IngestResult(source=source_name(md_path), pdf_name=md_path.name, model=None)
+    try:
+        progress("convert", f"Leyendo {md_path.name} (ya es Markdown)…")
+        raw_md = md_path.read_text(encoding="utf-8")
+    except Exception as exc:   # noqa: BLE001
+        result.error = f"{type(exc).__name__}: {exc}"
+        progress("error", result.error)
+        return result
+    return _ingest_markdown(result, raw_md, table=table, tei=tei, connect_fn=connect_fn,
+                            clean_dir=clean_dir, save_clean=save_clean, dry_run=dry_run,
+                            progress=progress)
+
+
 def ingest_url(url: str, *, table: str, tei: TEIClient, connect_fn,
                clean_dir: str | Path, save_clean: bool = True,
                dry_run: bool = False, progress: Progress = _noop) -> IngestResult:

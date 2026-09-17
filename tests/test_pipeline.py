@@ -72,6 +72,22 @@ def test_source_name_uses_pdf_stem():
     assert P.source_name("doc.PDF") == "doc.md"
 
 
+def test_ingest_md_reads_file_and_skips_conversion(tmp_path):
+    """`ingest_md` toma un .md ya listo: lo lee tal cual (sin conversión) y corre las
+    etapas puras. En dry_run no toca BD ni TEI. El `source` sale del nombre del archivo."""
+    md = tmp_path / "Código Penal.md"
+    md.write_text(LAW, encoding="utf-8")
+    result = P.ingest_md(md, table="t", tei=None, connect_fn=None,
+                         clean_dir=tmp_path / "clean", dry_run=True)
+    assert result.error is None
+    assert result.source == "Código Penal.md"
+    assert result.report["strategy"] == "article"   # LAW clasifica como ley/código
+    assert result.n_chunks > 0
+    assert not result.inserted   # dry_run: nada se inserta
+    # El .md limpio sí se guarda para poder visualizarlo.
+    assert (tmp_path / "clean" / "Código Penal.md").is_file()
+
+
 def test_create_table_sql_is_idempotent_and_has_dim():
     sql = P.create_table_sql("mi_tabla", 1024)
     assert "CREATE TABLE IF NOT EXISTS mi_tabla" in sql

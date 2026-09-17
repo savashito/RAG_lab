@@ -22,7 +22,15 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Callable
 
-from ingestion.pipeline import ingest_pdf, ingest_url
+from ingestion.pipeline import ingest_md, ingest_pdf, ingest_url
+
+# Archivos subidos que no son PDF pero ya vienen en Markdown: se ingieren tal cual.
+MD_EXTS = {".md", ".markdown"}
+
+
+def _kind_of(path: Path) -> str:
+    """Clasifica un archivo subido por su extensión: `md` (Markdown ya listo) o `pdf`."""
+    return "md" if path.suffix.lower() in MD_EXTS else "pdf"
 
 
 class IngestManager:
@@ -39,10 +47,12 @@ class IngestManager:
         self._lock = threading.Lock()
 
     # ── ciclo de vida del job ────────────────────────────────────────────────────
-    def start(self, pdf_paths: list[Path], topic: str | None = None,
+    def start(self, file_paths: list[Path], topic: str | None = None,
               jurisdiction: str | None = None) -> str:
-        """Job de ingesta de PDFs subidos (rutas temporales que se borran al terminar)."""
-        items = [{"kind": "pdf", "ref": p, "name": p.name} for p in pdf_paths]
+        """Job de ingesta de archivos subidos (rutas temporales que se borran al
+        terminar). Admite PDFs y Markdown (`.md`/`.markdown`): el `.md` ya es Markdown,
+        así que salta la conversión y sigue el mismo camino aguas abajo."""
+        items = [{"kind": _kind_of(p), "ref": p, "name": p.name} for p in file_paths]
         return self._start(items, topic, jurisdiction)
 
     def start_urls(self, urls: list[str], topic: str | None = None,
@@ -92,6 +102,11 @@ class IngestManager:
                         item["ref"], table=self.table, tei=self.tei, connect_fn=self.connect_fn,
                         clean_dir=self.clean_dir, progress=progress,
                     )
+                elif item["kind"] == "md":
+                    result = ingest_md(
+                        item["ref"], table=self.table, tei=self.tei, connect_fn=self.connect_fn,
+                        clean_dir=self.clean_dir, progress=progress,
+                    )
                 else:
                     result = ingest_pdf(
                         item["ref"], table=self.table, tei=self.tei, connect_fn=self.connect_fn,
@@ -123,15 +138,15 @@ class IngestManager:
             job["status"] = "error"
             job["error"] = f"{type(exc).__name__}: {exc}"
         finally:
-            # Los PDFs subidos son temporales (el .md limpio sí persiste). Se borran y
-            # se retira el subdirectorio único de la subida si queda vacío. Las URLs no
-            # dejan archivos que limpiar.
+            # Los archivos subidos (PDF o .md) son temporales (el .md limpio sí
+            # persiste en clean_dir). Se borran y se retira el subdirectorio único de la
+            # subida si queda vacío. Las URLs no dejan archivos que limpiar.
             parents: set[Path] = set()
             for it in items:
-                if it["kind"] == "pdf":
-                    pdf = it["ref"]
-                    pdf.unlink(missing_ok=True)
-                    parents.add(pdf.parent)
+                if it["kind"] in ("pdf", "md"):
+                    up = it["ref"]
+                    up.unlink(missing_ok=True)
+                    parents.add(up.parent)
             for d in parents:
                 if d != self.upload_dir and d.exists() and not any(d.iterdir()):
                     d.rmdir()
