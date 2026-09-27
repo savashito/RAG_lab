@@ -904,6 +904,14 @@ def index():
     return FileResponse(STATIC / 'index.html', headers={'Cache-Control': 'no-store'})
 
 
+# Página simplificada para usuarios finales: solo campo de pregunta + respuesta. Sin
+# controles (tema/vecinos/HyDE/método). Los defaults salen de la URL, p. ej.
+#   /preguntar?tema=psicologia_conductual&vecinos=true&HyDE=true
+@app.get('/preguntar')
+def preguntar():
+    return FileResponse(STATIC / 'preguntar.html', headers={'Cache-Control': 'no-store'})
+
+
 @app.get('/api/me')
 def api_me(request: Request):
     """Identidad y permisos del usuario logueado. El front lo usa para decidir qué tabs
