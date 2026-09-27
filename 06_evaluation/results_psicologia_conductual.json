@@ -1,0 +1,31 @@
+{
+  "topic": "psicologia_conductual",
+  "n_questions": 25,
+  "model": "Qwen/Qwen3-Embedding-0.6B",
+  "results": {
+    "dense": {
+      "recall@1": 0.96,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0,
+      "mrr": 0.98,
+      "ndcg@10": 0.9852
+    },
+    "bm25": {
+      "recall@1": 0.96,
+      "recall@3": 0.96,
+      "recall@5": 1.0,
+      "recall@10": 1.0,
+      "mrr": 0.97,
+      "ndcg@10": 0.9772
+    },
+    "hybrid": {
+      "recall@1": 0.96,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0,
+      "mrr": 0.9733,
+      "ndcg@10": 0.98
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "_comment": "Golden set de retrieval para el tópico 'psicologia_conductual' (28 docs). Cada pregunta apunta al/los documento(s) que la responden (gold a nivel documento). `gold` es una LISTA porque el corpus tiene duplicados/solapamientos: 'Los hechos internos...' está triplicado (docs 4/13/36) y la familia de reestructuración solapa (27/28). Acierta si el retrieval trae CUALQUIERA de los gold en el top-k. Preguntas redactadas leyendo abstracts/intros reales del corpus.",
+  "topic": "psicologia_conductual",
+  "questions": [
+    {"q": "¿Qué teoría biocomportamental de Epling y Pierce explica la anorexia por actividad?", "gold": ["1. La anorexia por actividad.md"]},
+    {"q": "¿Qué modelos de explicación científica se revisan en psicología, incluido el modelo de cobertura legal del positivismo?", "gold": ["2. La explicacion científica de la psicología.md"]},
+    {"q": "Según el conductismo radical, ¿cómo se conciben los eventos privados como hechos internos en una ciencia natural?", "gold": ["4. Los hechos internos.md", "13. Los hechos internos en una ciencia natural.md", "36. Hechos internos.md"]},
+    {"q": "¿Qué criterios propone Lilienfeld para que los estudiantes distingan entre ciencia y pseudociencia en psicología?", "gold": ["6. Los 10 Mandamientos.md"]},
+    {"q": "¿Qué perspectiva funcional del condicionamiento pavloviano describe Domjan?", "gold": ["7.Aprende a condicionar como Pavlov.md"]},
+    {"q": "¿Qué resumen biográfico de Pavlov y sus 100 años de investigación del aprendizaje asociativo se presenta?", "gold": ["8. 100 años de investigacion de aprendizaje asociativo.md"]},
+    {"q": "¿Qué papel juega el condicionamiento clásico en las drogodependencias y adicciones?", "gold": ["9. Cuando la adiccion aprende por reflejo.md"]},
+    {"q": "¿Qué manual de Andrés García García se usa para la asignatura de aprendizaje complejo?", "gold": ["12. Aprendizaje complejo.md"]},
+    {"q": "¿Qué efecto tienen las señales en los programas de reforzamiento demorado?", "gold": ["14. El efecto de las señales en los programas de reforzamiento demorado.md"]},
+    {"q": "Según Freixa i Baqué, ¿cómo define el conductismo a la conducta como objeto de la psicología?", "gold": ["17. Que Es conducta.md"]},
+    {"q": "¿Cuál es el uso correcto de los términos reforzador y reforzamiento y sus traducciones del inglés?", "gold": ["20. Reforzador y reforzamiento.md"]},
+    {"q": "¿Qué es la terapia de conducta y qué principios del aprendizaje emplea para tratar la conducta desadaptada?", "gold": ["21. Terapia de conducta-Cap1.md"]},
+    {"q": "Según Watson, ¿cuál es el objetivo teórico de la psicología desde el punto de vista conductista?", "gold": ["23. Watson psicologia Conductista.md"]},
+    {"q": "¿Qué procesos de aprendizaje subyacen a las técnicas de reestructuración semántica observadas en sesiones de tratamiento grabadas?", "gold": ["27. Restructuración semántica.md", "28. Restructuracion cognitiva y aprendizaje.md"]},
+    {"q": "¿Cómo se transita del conductismo metodológico al interconductismo en el tratamiento de los eventos privados?", "gold": ["30. Eventos privados.md"]},
+    {"q": "¿Cuáles son algunas señales de peligro para reconocer terapias pseudocientíficas?", "gold": ["31. Pseudocientificas.md"]},
+    {"q": "¿Qué crítica se hace a buscar explicaciones psicológicas en las neurociencias, como quien busca la llave donde hay luz?", "gold": ["32. Psicologia y neurociencias.md"]},
+    {"q": "¿Cuáles son los procesos que explican por qué funcionan los tratamientos psicológicos y el cambio en terapia?", "gold": ["33. Por que funciona los tratamientos psicologícos.md"]},
+    {"q": "¿Cómo se usa la reestructuración cognitiva como un procedimiento de moldeamiento?", "gold": ["35. Resructuracion cognitiva.md"]},
+    {"q": "Según Marino Pérez Álvarez, ¿qué noción de sujeto psicológico corresponde al análisis aplicado de la conducta?", "gold": ["39. El sujeto en el modificación de la conducta.md"]},
+    {"q": "¿Qué consideraciones se plantean sobre el dualismo en psicología y su debate en la filosofía de la ciencia?", "gold": ["38. Dualismo en psicología.md"]},
+    {"q": "En la obra 'Sobre el conductismo' (About behaviorism, 1974), ¿cómo revisa Skinner los principios del conductismo radical?", "gold": ["43. Sobre conductismo.md"]},
+    {"q": "¿Cómo se analizan las reglas verbales en el contexto clínico de la terapia?", "gold": ["44. Reglas en el contexto clinico.md"]},
+    {"q": "¿Qué metodología emplea el estudio preliminar sobre por qué la gente cambia en terapia?", "gold": ["46. Por qué la gente cambia en terapia.md"]},
+    {"q": "En el caso clínico de Sofía, ¿cómo se hace el análisis funcional del miedo?", "gold": ["47. Caso de Sofía.md"]}
+  ]
+}
