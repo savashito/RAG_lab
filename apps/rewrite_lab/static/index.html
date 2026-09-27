@@ -615,7 +615,8 @@ async function run(){
     for(const r of d.rows){ h+=`<tr><td>${r.idx}</td><td>${r.difficulty}</td>`+
       cell(r.rank_orig)+cell(r.rank_rewrite)+cell(r.rank_mq)+cell(r.rank_hyde)+cell(r.rank_hibrido)+cell(r.rank_rerank)+
       `<td>${r.question}<br><span class="rw">↳ ${r.rewrite}</span></td></tr>`; }
-    $('out').innerHTML=h+'</table>'; $('saverow').style.display='flex'; $('savemsg').textContent='';
+    // Guardar corrida es solo para admins (el /save del server también lo exige).
+    $('out').innerHTML=h+'</table>'; $('saverow').style.display=(window.__me||{}).can_ingest?'flex':'none'; $('savemsg').textContent='';
   }catch(e){ $('out').innerHTML='<p style="color:#f87171">'+e+'</p>'; }
   finally{ b.disabled=false; s.style.display='none'; }
 }
@@ -638,7 +639,7 @@ async function loadHistory(){
     h+=`<tr><td><input type="checkbox" class="pick" value="${r.id}"></td><td>${r.id}</td>
       <td>${r.label||''}</td><td class="muted">${(r.created_at||'').slice(0,19).replace('T',' ')}</td>
       <td>${r.golden||''}</td><td>${r.subset}</td><td>${r.n}</td><td>${g('recall@10')}</td><td>${g('MRR')}</td>
-      <td><button class="danger" onclick="del(${r.id})">✕</button></td></tr>`; }
+      <td>${(window.__me||{}).can_ingest?`<button class="danger" onclick="del(${r.id})">✕</button>`:''}</td></tr>`; }
   $('history').innerHTML=h+'</table>';
 }
 async function del(id){ await fetch('/runs/'+id,{method:'DELETE'}); loadHistory(); }
@@ -689,13 +690,24 @@ async function loadDocuments(){
     const docs=topic ? all.filter(d=>d.topic===topic) : all;
     if(!docs.length){ $('ing-docs').innerHTML=`<p class="muted">El tema <b>${esc(tname)}</b> aún no tiene documentos.</p>`; return; }
     const total=docs.reduce((a,d)=>a+d.chunks,0);
-    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th></th></tr>`;
+    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th></th><th></th></tr>`;
     for(const d of docs){ const btn=d.clean_available
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
-      h+=`<tr><td>${esc(d.source)}</td><td>${d.chunks}</td><td>${btn}</td></tr>`; }
-    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td></tr></table>`;
+      const del=`<button class="ghost" title="Elimina el documento de la base: sus chunks y su md limpio. No se volverá a recuperar." onclick="deleteDocument('${esc(d.source)}',${d.chunks})">🗑 eliminar</button>`;
+      h+=`<tr><td>${esc(d.source)}</td><td>${d.chunks}</td><td>${btn}</td><td>${del}</td></tr>`; }
+    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td></tr></table>`;
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
+}
+
+async function deleteDocument(source, chunks){
+  if(!confirm(`¿Eliminar por completo «${source}»?\n\nSe borrarán sus ${chunks} chunks de la base y su Markdown limpio. Dejará de recuperarse en las consultas. Esta acción no se puede deshacer.`)) return;
+  try{
+    const r=await fetch('/ingest/documents?source='+encodeURIComponent(source),{method:'DELETE'});
+    const d=await r.json();
+    if(!r.ok){ alert('No se pudo eliminar: '+(d.error||r.status)); return; }
+    await loadDocuments();
+  }catch(e){ alert('Error de red al eliminar: '+e); }
 }
 
 function ingestRun(){

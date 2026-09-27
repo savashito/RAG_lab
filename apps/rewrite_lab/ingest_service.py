@@ -163,6 +163,30 @@ class IngestManager:
             raise FileNotFoundError(f"No hay Markdown limpio para {source!r}")
         return path.read_text(encoding="utf-8")
 
+    def topic_of(self, source: str) -> str | None:
+        """Tópico con el que está etiquetado un documento (por `source`). Sirve para
+        comprobar permisos antes de borrar. `None` si el documento no existe."""
+        with self.connect_fn() as conn, conn.cursor() as cur:
+            cur.execute(f"SELECT max(topic) FROM {self.table} WHERE source = %s", (source,))
+            row = cur.fetchone()
+        return row[0] if row else None
+
+    def delete(self, source: str) -> dict:
+        """Borra TODO el registro de un documento: sus chunks en la tabla (para que no se
+        recuperen más) y su Markdown limpio en disco si existe. Devuelve cuántas filas se
+        eliminaron. Tras esto conviene recargar el índice en memoria (`on_complete`) para
+        que el BM25 deje de ver los chunks borrados."""
+        with self.connect_fn() as conn, conn.cursor() as cur:
+            cur.execute(f"DELETE FROM {self.table} WHERE source = %s", (source,))
+            deleted = cur.rowcount
+            conn.commit()
+        clean = (self.clean_dir / Path(source).name)
+        if clean.is_file():
+            clean.unlink(missing_ok=True)
+        if deleted and self.on_complete:
+            self.on_complete()   # el índice en memoria deja de ver los chunks borrados
+        return {"source": source, "deleted": deleted}
+
     def documents(self) -> list[dict]:
         """Documentos ya presentes en la tabla (source + nº de chunks + si hay .md
         limpio guardado para visualizar), para el estado del corpus en la UI. Tolera

@@ -158,6 +158,11 @@ SUPERADMIN_EMAIL = os.environ.get('SUPERADMIN_EMAIL', 'rodrigosavagerower@gmail.
 # Correos del .env: solo para SEMBRAR la tabla la 1a vez (como lectores). Después manda la DB.
 ALLOWED_EMAILS_SEED = {e.strip().lower() for e in os.environ.get('ALLOWED_EMAILS', '').split(',') if e.strip()}
 ROLES = ('reader', 'admin', 'superadmin')
+# Acceso público de solo-lectura: si PUBLIC_READ está activo, CUALQUIER cuenta Google
+# verificada entra como `reader` (leer + preguntar) sin estar en la lista blanca. Los
+# permisos de escritura (ingerir, crear/editar tópicos, gestionar usuarios) siguen
+# atados al rol en la tabla, así que un visitante público nunca podrá subir documentos.
+PUBLIC_READ = os.environ.get('PUBLIC_READ', '').strip().lower() in ('1', 'true', 'yes', 'on')
 
 
 def list_goldens():
@@ -284,8 +289,13 @@ def load_users():
 
 
 def is_allowed(email) -> bool:
-    """¿El correo está en la lista blanca (o es el superadmin)? Lo usa la puerta de auth."""
+    """¿El correo puede pasar la puerta de auth? Es el superadmin, está en la lista blanca
+    o —si PUBLIC_READ está activo— cualquier cuenta Google verificada (entra como lector).
+    Ser admitido NO otorga permisos de escritura: el rol lo decide `role_of` (default
+    'reader'), así que un visitante público solo lee y pregunta."""
     e = (email or '').lower()
+    if PUBLIC_READ and e:
+        return True
     return e == SUPERADMIN_EMAIL or e in USERS
 
 
@@ -956,7 +966,9 @@ async def api_topic_create(req: Request):
 async def api_topic_update(topic: str, req: Request):
     """Edita un tópico existente: {label?, instruct?}. El id (slug) NO cambia. Editar la
     tarea (`instruct`) afecta solo a consultas futuras; no re-embebe documentos (los
-    documentos se embeben sin instrucción)."""
+    documentos se embeben sin instrucción). Solo admins/superadmin."""
+    if not can_ingest(current_email(req)):
+        return JSONResponse({'error': 'Solo los administradores pueden editar tópicos.'}, status_code=403)
     b = await req.json()
     sets, vals = [], []
     label = (b.get('label') or '').strip()
@@ -1081,6 +1093,22 @@ def ingest_documents():
     return ingest_mgr.documents()
 
 
+@app.delete('/ingest/documents')
+def ingest_delete(request: Request, source: str):
+    """Borra por completo un documento ya ingerido: sus chunks (para que no se recuperen
+    más) y su Markdown limpio en disco. Requiere permiso de subida al tópico del documento
+    (mismo criterio que para ingerir): así un admin sólo puede borrar de sus propios temas."""
+    email = current_email(request)
+    if not can_ingest(email):
+        return JSONResponse({'error': 'No tienes permiso para eliminar documentos.'}, status_code=403)
+    topic = ingest_mgr.topic_of(source)
+    if topic is None:
+        return JSONResponse({'error': f'No existe el documento {source!r}.'}, status_code=404)
+    if not can_upload_topic(email, topic):
+        return JSONResponse({'error': f'No tienes permiso sobre el tópico {topic!r}.'}, status_code=403)
+    return ingest_mgr.delete(source)
+
+
 @app.get('/ingest/clean')
 def ingest_clean(source: str):
     """Markdown limpio de un documento ya procesado, para visualizarlo en la UI."""
@@ -1193,7 +1221,10 @@ async def run(req: Request):
 
 @app.post('/save')
 async def save(req: Request):
-    """Guarda una corrida (con su prompt) para poder compararla después."""
+    """Guarda una corrida (con su prompt) para poder compararla después. Solo admins:
+    las corridas son estado compartido del lab, no algo que un visitante público escriba."""
+    if not can_ingest(current_email(req)):
+        return JSONResponse({'error': 'Solo los administradores pueden guardar corridas.'}, status_code=403)
     b = await req.json()
     r = b.get('result') or {}
     with connect() as c, c.cursor() as cur:
@@ -1231,7 +1262,9 @@ def run_detail(rid: int):
 
 
 @app.delete('/runs/{rid}')
-def run_delete(rid: int):
+def run_delete(rid: int, request: Request):
+    if not can_ingest(current_email(request)):
+        return JSONResponse({'error': 'Solo los administradores pueden borrar corridas.'}, status_code=403)
     with connect() as c, c.cursor() as cur:
         cur.execute(f"DELETE FROM {RUNS_TABLE} WHERE id = %s", (rid,))
         c.commit()
