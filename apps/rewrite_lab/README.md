@@ -48,24 +48,93 @@ búsqueda RAG se limite al tema que el usuario elija.
   global. Los tres conceptos son independientes: **instruct** (búsqueda) y **system
   prompt** (respuesta) viven por-tema en la tabla; **`Instruct:/Query:`** es plantilla fija
   en código; la **pregunta** la escribe el usuario en vivo.
+- Cada tema tiene también un **`hyde_prompt`** propio (columna en `rewrite_lab_topics`):
+  la instrucción para que el LLM redacte el **borrador hipotético** del pasaje buscado
+  cuando **HyDE** está activo. `hyde_for(topic)` lo usa; si el tema no define uno, cae al
+  `HYDE_SYSTEM` global, que es **jurídico penal** — por eso en temas no jurídicos (p. ej.
+  psicología) **hay que cambiarlo** o los borradores salen con vocabulario legal. Editable
+  en el editor de temas (campo «3 · Prompt de HyDE»). Migración: al arrancar se añade la
+  columna y se rellena con el HyDE penal para no cambiar lo existente.
 - Los temas se **crean y editan desde el tab de Ingesta** («➕ Nuevo tema» / «✏️ Editar
-  tema»: nombre + tarea de recuperación + system prompt). El id (slug) se deriva del nombre
-  al crear y **no cambia** al editar.
+  tema»: nombre + tarea de recuperación + system prompt + prompt de HyDE). El id (slug) se
+  deriva del nombre al crear y **no cambia** al editar.
 - Los tabs **Preguntar** y **Conversacional** tienen un selector **Tema** y la búsqueda
   se restringe a él.
 - **Migración automática al arrancar:** se añade la columna `topic` (idempotente), se
   crea el catálogo, y **todo lo ya insertado se etiqueta como `Derecho Penal Mexicano`**
   (`derecho_penal_mexicano`).
 
-Endpoints: `GET /api/topics` (catálogo + nº de chunks), `POST /api/topics`
-(`{label, instruct?}` — crea; el `instruct` es la tarea), `POST /api/topics/{topic}`
-(`{label?, instruct?}` — edita; el slug no cambia). `POST /ask` y `POST /chat` aceptan
-`topic`; `POST /ingest/upload` recibe el `topic` como campo de formulario.
+Endpoints: `GET /api/topics` (catálogo + nº de chunks + `system_prompt`/`hyde_prompt`),
+`POST /api/topics` (`{label, instruct?, system_prompt?, hyde_prompt?}` — crea),
+`POST /api/topics/{topic}` (`{label?, instruct?, system_prompt?, hyde_prompt?}` — edita;
+el slug no cambia). `POST /ask` y `POST /chat` aceptan `topic`; `POST /ingest/upload`
+recibe el `topic` como campo de formulario.
 
 > **Nota:** el tab **Rewrite Lab** (`/run`, evaluación con golden sets) **no** filtra por
 > tema todavía — busca en toda la tabla. Es correcto mientras el único tema con datos
 > sea el penal; si agregas otros temas y quieres que la evaluación se limite al penal,
 > hay que pasarle el `topic` a `eval_prompt`/`dense_ids` (cambio chico).
+
+## Página simple para usuarios finales (`/preguntar`)
+
+Además de la UI completa (`/consulta`, con todos los controles), hay una **página
+minimalista** en `/preguntar` (`static/preguntar.html`): solo un campo de pregunta, la
+respuesta en streaming, un bloque **Referencias** (APA, ver abajo) y los **Fragmentos
+consultados** (colapsado). **Sin dropdowns ni checkboxes** — toda la configuración va en
+la **URL**, para armar una liga por caso de uso y compartirla. Está detrás del mismo login.
+
+| Parámetro | Qué hace | Default | Valores |
+|---|---|---|---|
+| `tema` | tópico (slug) | `psicologia_conductual` | cualquier slug de `rewrite_lab_topics` |
+| `k` | nº de fragmentos base | `5` | entero 1–20 (se acota) |
+| `metodo` | método de recuperación | `orig` | `orig`, `reescribir`, `multiquery`, `bm25`, `híbrido` (o `hibrido`); inválido → `orig` |
+| `jurisdiccion` | filtro de lugar | (todas) | coma-separado, ej. `federal,cdmx` |
+| `vecinos` | incluir chunks vecinos | `true` | `true`/`false` |
+| `HyDE` | borrador hipotético | `true` | `true`/`false` |
+| `rerank` | reordenar (cross-encoder) | `false` | `true`/`false` (sin efecto si `RERANK_URL` vacío) |
+
+Ejemplos:
+`/preguntar?tema=derecho_penal_mexicano&k=10&jurisdiccion=federal` ·
+`/preguntar?tema=psicologia_conductual&k=8&metodo=híbrido`
+
+Usa `POST /ask/stream` (SSE). Para cambiar los defaults, edita el objeto `CFG` en
+`static/preguntar.html`.
+
+## Citas por documento (`rewrite_lab_citations`)
+
+Tabla curada `source` → cadena **APA**, para que la bibliografía no dependa del OCR
+(que a menudo pierde año/revista del machote). La página `/preguntar` la muestra como
+bloque **Referencias** (deduplicado por documento) y el contexto que va al LLM usa la
+cita en vez del nombre de archivo, así la respuesta cita mejor. Si un documento no tiene
+cita, cae a su nombre `.md`.
+
+- Esquema: `source text PK, apa text, needs_review bool, note text, updated_at`.
+- La app la **lee a memoria al arrancar** (`load_citations`, `CITATIONS`) y crea la tabla
+  si falta (`CREATE TABLE IF NOT EXISTS`). Se **administra por SQL** (no hay UI aún);
+  editar una cita es un `UPDATE` y **requiere reiniciar** el servicio para recargar
+  `CITATIONS` (o exponer un endpoint de reload — pendiente).
+- Agregar/editar una cita:
+  ```sql
+  INSERT INTO rewrite_lab_citations (source, apa) VALUES ('<archivo>.md', '<cita APA>')
+  ON CONFLICT (source) DO UPDATE SET apa = EXCLUDED.apa, updated_at = now();
+  ```
+- `needs_review = true` marca citas incompletas (falta año/revista que el PDF no traía).
+
+## OCR de PDFs escaneados
+
+El pipeline de ingesta (prod) convierte con **pymupdf4llm**, que **no OCRea**: un PDF
+**escaneado** produce texto vacío → 0 chunks → `KeyError: 'document'` en el chunker.
+Los PDFs de **texto digital** entran normal. Para escaneados el flujo es **OCR local** y
+luego insertar el Markdown ya OCR'd:
+
+1. OCR con Docling + macOS Vision (mejor que RapidOCR en español), ver
+   `ingestion/ocr_cag.py` / `ingestion/ocr_psicologia.py`.
+2. Insertar el `.md` con `ingestion.pipeline.ingest_md` (misma limpieza → chunking →
+   embeddings → upsert que un PDF, saltando la conversión), y etiquetar
+   `topic`/`jurisdiction` por `source` como hace el tab de ingesta.
+
+Arreglo de fondo pendiente: agregar `rapidocr` al extra `parse` para que el tab OCRee
+escaneados directamente; ver `FUTURE_WORK.md`.
 
 ## Estructura
 
@@ -73,7 +142,8 @@ Endpoints: `GET /api/topics` (catálogo + nº de chunks), `POST /api/topics`
 apps/rewrite_lab/
   main.py            # backend FastAPI (lógica + endpoints)
   ingest_service.py  # gestor de jobs de ingesta en segundo plano (tab "Ingestar")
-  static/index.html  # UI (se sirve estática; pide /api/config al cargar)
+  static/index.html  # UI completa (se sirve estática; pide /api/config al cargar)
+  static/preguntar.html  # página simple para usuarios finales (config por URL)
   README.md
 ```
 
