@@ -55,6 +55,28 @@ CLEANING_CASES = [
     ('no confunde una referencia en prosa con título-corredor',
      '# Sección\n\nEl artículo 5o. del código se cita muchas veces: art. 5o, art. 5o, art. 5o.\n\nTexto.',
      ['El artículo 5o. del código', 'Sección', 'Texto'], []),
+    ('elimina el encabezado de Diputados en su propia línea',
+     'CÁMARA DE DIPUTADOS DEL H. CONGRESO DE LA UNIÓN Secretaría General Secretaría de Servicios Parlamentarios\n\n'
+     '**Artículo 1o.-** Texto del artículo.',
+     ['Artículo 1o.', 'Texto del artículo'], ['CÁMARA DE DIPUTADOS', 'Servicios Parlamentarios']),
+    # Regresión: un párrafo que MENCIONA a la Secretaría General es cuerpo, no encabezado.
+    # Antes se borraba entero (así se perdieron las págs. 11–14 de un acuerdo OCReado).
+    ('conserva un párrafo que menciona a la Secretaría General',
+     'Comuníquese el contenido del presente acuerdo a las y los integrantes de la Comisión, '
+     'por conducto de la Secretaría General de este Consejo, para los efectos de su '
+     'respectiva competencia, y publíquese en el Boletín Judicial.',
+     ['Comuníquese el contenido', 'Boletín Judicial'], []),
+    ('conserva una cláusula convencional que cita a la Secretaría General de la OEA',
+     'Los instrumentos de ratificación y adhesión se depositarán en la Secretaría General de '
+     'la Organización de los Estados Americanos.',
+     ['Los instrumentos de ratificación'], []),
+    ('recorta el encabezado de Diputados pegado a un párrafo y conserva el resto',
+     'CÁMARA DE DIPUTADOS DEL H. CONGRESO DE LA UNIÓN Última Reforma DOF 13-03-2026 Secretaría General '
+     'Secretaría de Servicios Parlamentarios Artículo 352.- (Se deroga). ' + 'texto del artículo ' * 20,
+     ['Artículo 352.- (Se deroga)', 'texto del artículo'], ['CÁMARA DE DIPUTADOS', 'Servicios Parlamentarios']),
+    ('no borra un párrafo largo por citar la Biblioteca Jurídica Virtual',
+     'Como explica el autor en la obra disponible en la Biblioteca Jurídica Virtual, ' + 'el debido proceso exige ' * 12,
+     ['Como explica el autor', 'el debido proceso exige'], []),
 ]
 
 

@@ -64,11 +64,28 @@ LINE_NOISE_PATTERNS = {
     'institutional_header': INSTITUTIONAL_RE,
     'editorial_watermark': EDITORIAL_RE,
 }
+# Tope de palabras para que una línea cuente como ruido. El mobiliario de página es
+# corto (el encabezado de Diputados tiene 15 palabras; la marca de agua de la BJV más
+# larga, 35), pero un conversor puede entregar un párrafo entero como UNA línea, y el
+# cuerpo también menciona "la Secretaría General de la OEA / de Gobierno / del Consejo".
+# Sin tope, una sola mención borraba el párrafo completo (medido: desde 19 palabras
+# hasta páginas enteras de un acuerdo OCReado).
+NOISE_MAX_WORDS = {'institutional_header': 16, 'editorial_watermark': 40}
+# Encabezado de Diputados PEGADO al inicio de un párrafo largo (pasa cuando el conversor
+# une el corredor de página con el cuerpo): se recorta el encabezado y el resto se queda.
+DIPUTADOS_HEADER_PREFIX_RE = re.compile(
+    r'^C[ÁA]MARA DE DIPUTADOS DEL H\. CONGRESO DE LA UNI[ÓO]N\s+'
+    r'(?:[ÚU]ltima Reforma DOF [\d-]+\s+)?'
+    r'Secretar[ií]a General\s+Secretar[ií]a de Servicios Parlamentarios\s*'
+    r'(?:[ÚU]ltima Reforma DOF [\d-]+\s*)?',
+    re.I,
+)
 
 
 def line_noise_reason(plain: str) -> str | None:
+    n_words = len(plain.split())
     for reason, pattern in LINE_NOISE_PATTERNS.items():
-        if pattern.search(plain):
+        if n_words <= NOISE_MAX_WORDS.get(reason, n_words) and pattern.search(plain):
             return reason
     return None
 
@@ -127,8 +144,13 @@ def clean_document(text: str, min_heading_repeats: int = 6) -> dict:
         noise_reason = line_noise_reason(plain)
         if noise_reason:
             discard(line, noise_reason)
-        else:
-            kept.append(line)
+            continue
+        header = DIPUTADOS_HEADER_PREFIX_RE.match(plain)
+        if header:
+            removed_by_reason['institutional_header'] += 1
+            removed.append(header.group(0))
+            line = plain[header.end():]
+        kept.append(line)
     text = '\n'.join(kept)
     text = re.sub(r'\n{3,}', '\n\n', text)
     return {
