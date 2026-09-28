@@ -339,6 +339,7 @@
  <h2>Corpus actual</h2>
  <div class="row"><button id="ing-refresh" class="ghost">↻ Recargar</button>
    <span class="muted">documentos del tema seleccionado arriba</span></div>
+ <div id="ing-docs-msg" role="status" aria-live="polite"></div>
  <div id="ing-docs"></div>
 </div>
 
@@ -697,7 +698,7 @@ async function loadDocuments(){
     for(const d of docs){ const btn=d.clean_available
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
-      const del=`<button class="ghost" title="Elimina el documento de la base: sus chunks y su md limpio. No se volverá a recuperar." onclick="deleteDocument('${esc(d.source)}',${d.chunks})">🗑 eliminar</button>`;
+      const del=`<button class="ghost" title="Elimina el documento de la base: sus chunks y su md limpio. No se volverá a recuperar." onclick="deleteDocument('${esc(d.source)}',${d.chunks},this)">🗑 eliminar</button>`;
       const c=d.conversion;
       // Dónde se procesó: línea chica bajo el nombre (una columna más desborda en móvil).
       const conv=c ? `<span style="white-space:nowrap" title="${esc([c.where==='mac_mini'?'OCR Docling + Vision':c.engine, c.reason, c.at].filter(Boolean).join(' · '))}">${c.where==='mac_mini'?'🍎 Mac mini':'🖥️ VPS'}</span>`
@@ -707,14 +708,30 @@ async function loadDocuments(){
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
 }
 
-async function deleteDocument(source, chunks){
+// Aviso bajo "Corpus actual" (éxito o error de un borrado). Se va solo a los 12 s.
+let docsMsgTimer=null;
+function docsMsg(html, ok){
+  const el=$('ing-docs-msg'); clearTimeout(docsMsgTimer);
+  el.innerHTML=html?`<div class="legend" style="border-color:${ok?'#166534':'#991b1b'};margin:8px 0">${html}</div>`:'';
+  if(html) docsMsgTimer=setTimeout(()=>{ el.innerHTML=''; }, 12000);
+}
+
+async function deleteDocument(source, chunks, btn){
   if(!confirm(`¿Eliminar por completo «${source}»?\n\nSe borrarán sus ${chunks} chunks de la base y su Markdown limpio. Dejará de recuperarse en las consultas. Esta acción no se puede deshacer.`)) return;
+  // Feedback inmediato: la fila queda en "eliminando…" hasta que responda el servidor.
+  const row=btn&&btn.closest('tr'), label=btn?btn.innerHTML:'';
+  const busy=on=>{ if(!btn) return; btn.disabled=on; btn.innerHTML=on?'⏳ eliminando…':label;
+    if(row) row.style.opacity=on?'.5':''; };
+  busy(true); docsMsg('');
   try{
     const r=await fetch('/ingest/documents?source='+encodeURIComponent(source),{method:'DELETE'});
-    const d=await r.json();
-    if(!r.ok){ alert('No se pudo eliminar: '+(d.error||r.status)); return; }
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ busy(false); docsMsg(`✗ No se pudo eliminar «${esc(source)}»: ${esc(d.error||('HTTP '+r.status))}`, false); return; }
+    if(row) row.remove();
+    docsMsg(`✓ «<b>${esc(source)}</b>» eliminado (${d.deleted??chunks} chunks).`+
+      (d.index_reloading?' <span class="muted">El buscador termina de actualizarse en unos segundos.</span>':''), true);
     await loadDocuments();
-  }catch(e){ alert('Error de red al eliminar: '+e); }
+  }catch(e){ busy(false); docsMsg(`✗ Error de red al eliminar «${esc(source)}»: ${esc(e)}`, false); }
 }
 
 function ingestRun(){

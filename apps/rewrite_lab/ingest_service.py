@@ -183,7 +183,7 @@ class IngestManager:
     def delete(self, source: str) -> dict:
         """Borra TODO el registro de un documento: sus chunks en la tabla (para que no se
         recuperen más) y su Markdown limpio en disco si existe. Devuelve cuántas filas se
-        eliminaron. Tras esto conviene recargar el índice en memoria (`on_complete`) para
+        eliminaron. El índice en memoria (`on_complete`) se recarga en segundo plano para
         que el BM25 deje de ver los chunks borrados."""
         with self.connect_fn() as conn, conn.cursor() as cur:
             cur.execute(f"DELETE FROM {self.table} WHERE source = %s", (source,))
@@ -194,8 +194,11 @@ class IngestManager:
             clean.unlink(missing_ok=True)
         self._log_conversion(source, None)
         if deleted and self.on_complete:
-            self.on_complete()   # el índice en memoria deja de ver los chunks borrados
-        return {"source": source, "deleted": deleted}
+            # Recargar el índice en memoria tarda ~20 s con el corpus completo: se hace en
+            # segundo plano para que la UI reciba la respuesta ya (los chunks ya no están
+            # en la BD, así que la búsqueda densa deja de verlos al instante).
+            threading.Thread(target=self.on_complete, daemon=True).start()
+        return {"source": source, "deleted": deleted, "index_reloading": bool(deleted)}
 
     def documents(self) -> list[dict]:
         """Documentos ya presentes en la tabla (source + nº de chunks + si hay .md

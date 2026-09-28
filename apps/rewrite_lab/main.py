@@ -19,6 +19,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -518,21 +519,30 @@ with connect() as _c, _c.cursor() as _cur:
     _c.commit()
 load_topics()
 DOC_BY_ID: dict[int, dict] = {}   # id -> {source,title,hierarchy,text}
-BM_IDS: list[int] = []            # índice del corpus -> id de la BD (para mapear BM25)
-BM25_INDEX: BM25 | None = None
+# (índice BM25, ids de la BD en el mismo orden). Un solo objeto a propósito: la
+# recarga corre en otro hilo y `bm25_ranked` debe ver índice e ids de la MISMA versión.
+BM25_CORPUS: tuple[BM25, list[int]] | None = None
+_index_lock = threading.Lock()   # dos recargas a la vez (ingesta + borrado) no se pisan
 
 
 def load_corpus_index():
-    """Carga todos los chunks (id, metadatos, texto) y construye el índice BM25."""
-    global BM25_INDEX, BM_IDS, DOC_BY_ID
-    with connect() as c, c.cursor() as cur:
-        cur.execute(f'SELECT id, source, title, hierarchy, text, topic, jurisdiction FROM {TABLE} ORDER BY id')
-        rows = cur.fetchall()
-    BM_IDS = [r[0] for r in rows]
-    DOC_BY_ID = {r[0]: {'source': r[1], 'title': r[2], 'hierarchy': r[3], 'text': r[4],
-                        'topic': r[5], 'jurisdiction': r[6]} for r in rows}
-    BM25_INDEX = BM25([tokenize(r[4]) for r in rows])
-    print(f'Índice léxico BM25: {len(BM_IDS)} chunks en memoria.')
+    """Carga todos los chunks (id, metadatos, texto) y construye el índice BM25.
+
+    Tarda ~20 s con ~15k chunks. Se construye todo aparte y se publica al final, así
+    las búsquedas en curso siguen usando la versión anterior hasta el cambio."""
+    global BM25_CORPUS, DOC_BY_ID
+    with _index_lock:
+        with connect() as c, c.cursor() as cur:
+            cur.execute(f'SELECT id, source, title, hierarchy, text, topic, jurisdiction FROM {TABLE} ORDER BY id')
+            rows = cur.fetchall()
+        ids = [r[0] for r in rows]
+        docs = {r[0]: {'source': r[1], 'title': r[2], 'hierarchy': r[3], 'text': r[4],
+                       'topic': r[5], 'jurisdiction': r[6]} for r in rows}
+        index = BM25([tokenize(r[4]) for r in rows])
+        DOC_BY_ID = {**DOC_BY_ID, **docs}   # los ids viejos siguen resolviendo mientras
+        BM25_CORPUS = (index, ids)          # ← la búsqueda BM25 ya no los devuelve
+        DOC_BY_ID = docs
+    print(f'Índice léxico BM25: {len(ids)} chunks en memoria.')
 
 
 # ── Recuperación con score por chunk ─────────────────────────────────────────────
@@ -560,10 +570,11 @@ def dense_ranked(cur, qvec, topic=None, jset=None):
 
 
 def bm25_ranked(question, topic=None, jset=None):
-    scores = BM25_INDEX.scores(tokenize(question))
+    index, ids = BM25_CORPUS
+    scores = index.scores(tokenize(question))
     out = []
     for i in rank_indices_by_score(scores):
-        cid = BM_IDS[i]
+        cid = ids[i]
         meta = DOC_BY_ID.get(cid) or {}
         if topic and meta.get('topic') != topic:
             continue   # BM25 es un índice global; filtramos por tópico/lugar con la metadata
