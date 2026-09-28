@@ -271,6 +271,30 @@ def load_topics():
     return TOPICS
 
 
+# ── Citas curadas por documento ────────────────────────────────────────────────────
+# `source` (nombre .md del documento) -> cadena APA. Se administra en la tabla
+# `rewrite_lab_citations` (editable sin redeploy); aquí solo se lee para renderizar la
+# bibliografía y para que el LLM cite bien. Un documento sin cita cae al nombre de archivo.
+CITATIONS_TABLE = 'rewrite_lab_citations'
+CITATIONS: dict[str, str] = {}
+
+
+def load_citations():
+    global CITATIONS
+    try:
+        with connect() as c, c.cursor() as cur:
+            cur.execute(f"CREATE TABLE IF NOT EXISTS {CITATIONS_TABLE} ("
+                        "source text PRIMARY KEY, apa text NOT NULL, "
+                        "needs_review boolean NOT NULL DEFAULT false, note text, "
+                        "updated_at timestamptz NOT NULL DEFAULT now())")
+            c.commit()
+            cur.execute(f"SELECT source, apa FROM {CITATIONS_TABLE}")
+            CITATIONS = {s: a for s, a in cur.fetchall()}
+    except Exception as e:  # noqa: BLE001 — sin citas, la UI cae al nombre de archivo
+        print(f'aviso: no pude cargar {CITATIONS_TABLE}: {e}')
+    return CITATIONS
+
+
 # ── Usuarios en memoria + permisos ──────────────────────────────────────────────────
 # Caché email -> {'role','name'}. Se recarga al arrancar y tras cualquier cambio de
 # usuarios/roles, para que la puerta de auth y los permisos reflejen los cambios sin
@@ -809,10 +833,10 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
-            'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
+            'score_kind': score_kind, 'neighbor': cid in extra, 'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
            for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
-        f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+        f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
         for ch in top)
     answer = llm.chat((system or '').strip() or system_for(topic),
                       f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}',
@@ -848,10 +872,10 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
-            'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
+            'score_kind': score_kind, 'neighbor': cid in extra, 'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
            for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
-        f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+        f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
         for ch in top)
     # El contexto RAG se inyecta en el ÚLTIMO turno del usuario; los turnos previos van
     # tal cual para dar memoria conversacional al LLM.
@@ -865,6 +889,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
 
 
 load_corpus_index()   # índice BM25 en memoria para la tab de RAG (bm25 / híbrido)
+load_citations()      # citas curadas por documento (source -> APA)
 
 # Gestor de ingesta de PDFs (tab "Ingestar"). Comparte tabla, TEI y conexión con el
 # resto del app; al terminar recarga el índice en memoria para que los chunks nuevos
@@ -1169,14 +1194,14 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
-                'score_kind': score_kind, 'neighbor': cid in extra, **DOC_BY_ID.get(cid, {})}
+                'score_kind': score_kind, 'neighbor': cid in extra, 'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
                for rank, cid in enumerate(ids, 1)]
         if hyde:
             yield sse({'stage': 'hyde', 'passage': dbg.get('hyde_passage', ''),
                        'embed_text': dbg.get('embed_text', '')})
         yield sse({'stage': 'context', 'chunks': top, 'rewrite': rw, 'score_kind': score_kind})
         context = '\n\n'.join(
-            f"[{ch['rank']}] Fuente: {ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+            f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
             for ch in top)
         messages = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)},
                     {'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'}]

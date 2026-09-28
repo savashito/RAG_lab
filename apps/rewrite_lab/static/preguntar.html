@@ -41,6 +41,8 @@
   .frag .tag{font-weight:400;color:var(--muted)}
   .frag .passage{font-size:13.5px;line-height:1.55;color:var(--ink);white-space:pre-wrap;
     max-height:220px;overflow:auto}
+  ol.refs{margin:8px 0 0;padding-left:22px;font-size:13.5px;line-height:1.5}
+  ol.refs li{margin:5px 0;color:var(--ink)}
   .err{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-top:12px}
   @media (prefers-color-scheme: dark){ .err{background:#2a1416;border-color:#4c1d1d;color:#fca5a5} }
   a{color:var(--accent)}
@@ -134,6 +136,14 @@ form.addEventListener('submit', async e => {
           $('status').textContent = '✍️ Redactando respuesta…';
           const chunks = ev.chunks || [];
           if (chunks.length){
+            // Referencias (APA) deduplicadas por documento
+            const seen = new Set(), refs = [];
+            for (const c of chunks){
+              const key = c.source || '';
+              if (key && !seen.has(key)){ seen.add(key); refs.push(c.citation || key.replace(/\.md$/, '')); }
+            }
+            const refList = '<ol class="refs">' + refs.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>';
+            // Fragmentos con su texto
             const cards = chunks.map(c => {
               const src = (c.source || '').replace(/\.md$/, '');
               const sec = c.hierarchy || c.title || '';
@@ -143,8 +153,9 @@ form.addEventListener('submit', async e => {
               return '<div class="frag"><h5>' + head + '</h5>'
                    + '<div class="passage">' + esc(passage(c.text)) + '</div></div>';
             }).join('');
-            $('extra').innerHTML = '<details class="src" open><summary>Fuentes consultadas ('
-              + chunks.length + ' fragmentos)</summary>' + cards + '</details>';
+            $('extra').innerHTML =
+              '<details class="src" open><summary>Referencias (' + refs.length + ')</summary>' + refList + '</details>'
+            + '<details class="src"><summary>Fragmentos consultados (' + chunks.length + ')</summary>' + cards + '</details>';
           }
         }
         else if (ev.stage === 'token'){
