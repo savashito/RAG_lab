@@ -68,11 +68,22 @@
 <script>
 const P = new URLSearchParams(location.search);
 const bool = (v, def) => v == null ? def : String(v).toLowerCase() !== 'false';
+// Método de recuperación: acepta 'hibrido' sin acento y cae a 'orig' si no es válido.
+const SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido'];
+let metodo = (P.get('metodo') || P.get('setting') || 'orig').toLowerCase();
+if (metodo === 'hibrido') metodo = 'híbrido';
+// k: entero acotado a [1, 20].
+const k = Math.min(Math.max(parseInt(P.get('k'), 10) || 5, 1), 20);
+// jurisdicción(es): coma-separadas, p. ej. ?jurisdiccion=federal,cdmx  (vacío = todas).
+const jur = (P.get('jurisdiccion') || P.get('jurisdiction') || '')
+  .split(',').map(s => s.trim()).filter(Boolean);
 const CFG = {
   topic: P.get('tema') || 'psicologia_conductual',
   neighbors: bool(P.get('vecinos'), true),
   hyde: bool(P.get('HyDE') ?? P.get('hyde'), true),
-  setting: 'orig', k: 5, rerank: false,
+  rerank: bool(P.get('rerank'), false),
+  setting: SETTINGS.includes(metodo) ? metodo : 'orig',
+  k, jurisdictions: jur,
 };
 
 const $ = id => document.getElementById(id);
@@ -112,6 +123,7 @@ form.addEventListener('submit', async e => {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         question, setting: CFG.setting, k: CFG.k, topic: CFG.topic,
+        jurisdictions: CFG.jurisdictions,
         neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank,
       }),
     });
