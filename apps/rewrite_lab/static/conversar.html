@@ -100,7 +100,7 @@ const bool = (v, def) => v == null ? def : String(v).toLowerCase() !== 'false';
 const SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido'];
 let metodo = (P.get('metodo') || P.get('setting') || 'orig').toLowerCase();
 if (metodo === 'hibrido') metodo = 'híbrido';
-const kParam = Math.min(Math.max(parseInt(P.get('k'), 10) || 5, 1), 20);
+const kParam = Math.min(Math.max(parseInt(P.get('k'), 10) || 10, 1), 20);
 const jur = (P.get('jurisdiccion') || P.get('jurisdiction') || '').split(',').map(s => s.trim()).filter(Boolean);
 const CFG = {
   topic: P.get('tema') || 'psicologia_conductual',
