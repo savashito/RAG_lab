@@ -74,6 +74,12 @@ CLEANING_CASES = [
      'CÁMARA DE DIPUTADOS DEL H. CONGRESO DE LA UNIÓN Última Reforma DOF 13-03-2026 Secretaría General '
      'Secretaría de Servicios Parlamentarios Artículo 352.- (Se deroga). ' + 'texto del artículo ' * 20,
      ['Artículo 352.- (Se deroga)', 'texto del artículo'], ['CÁMARA DE DIPUTADOS', 'Servicios Parlamentarios']),
+    ('elimina folio de página con formato N/M',
+     'Texto del acuerdo.\n\n13/15\n\nMás texto del acuerdo.',
+     ['Texto del acuerdo', 'Más texto del acuerdo'], ['13/15']),
+    ('no borra una fracción dentro de una línea de cuerpo',
+     'Se aprobó por 3/4 partes del pleno.',
+     ['3/4 partes'], []),
     ('no borra un párrafo largo por citar la Biblioteca Jurídica Virtual',
      'Como explica el autor en la obra disponible en la Biblioteca Jurídica Virtual, ' + 'el debido proceso exige ' * 12,
      ['Como explica el autor', 'el debido proceso exige'], []),

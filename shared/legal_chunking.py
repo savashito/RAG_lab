@@ -31,7 +31,7 @@ MIN_WORDS = 80
 OVERLAP_WORDS = 80
 
 # ── Limpieza conservadora ────────────────────────────────────────────────────────
-PAGE_RE = re.compile(r'^(?:\d+|[IVXLCDM]+|\d+\s+de\s+\d+)$', re.I)
+PAGE_RE = re.compile(r'^(?:\d+|[IVXLCDM]+|\d+\s+de\s+\d+|\d+\s*/\s*\d+)$', re.I)  # 12 · XII · 12 de 15 · 12/15
 INSTITUTIONAL_RE = re.compile(
     r'(CÁMARA DE DIPUTADOS DEL H\. CONGRESO|SECRETAR[IÍ]A GENERAL|SECRETAR[IÍ]A DE SERVICIOS PARLAMENTARIOS)',
     re.I,
