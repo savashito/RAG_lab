@@ -698,7 +698,11 @@ async function loadDocuments(){
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
       const del=`<button class="ghost" title="Elimina el documento de la base: sus chunks y su md limpio. No se volverá a recuperar." onclick="deleteDocument('${esc(d.source)}',${d.chunks})">🗑 eliminar</button>`;
-      h+=`<tr><td>${esc(d.source)}</td><td>${d.chunks}</td><td>${btn}</td><td>${del}</td></tr>`; }
+      const c=d.conversion;
+      // Dónde se procesó: línea chica bajo el nombre (una columna más desborda en móvil).
+      const conv=c ? `<span style="white-space:nowrap" title="${esc([c.where==='mac_mini'?'OCR Docling + Vision':c.engine, c.reason, c.at].filter(Boolean).join(' · '))}">${c.where==='mac_mini'?'🍎 Mac mini':'🖥️ VPS'}</span>`
+                   : `<span title="ingerido antes de que se registrara dónde se procesó">procesado en: —</span>`;
+      h+=`<tr><td>${esc(d.source)}<div class="muted" style="font-size:.85em">${conv}</div></td><td>${d.chunks}</td><td>${btn}</td><td>${del}</td></tr>`; }
     $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td></tr></table>`;
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
 }
@@ -800,6 +804,26 @@ const STAGE_PCT={queued:3,convert:16,clean:32,analyze:46,chunk:60,embed:82,inser
 const STAGE_LABEL={queued:'En cola',convert:'Convirtiendo a Markdown',clean:'Limpieza',
   analyze:'Estrategia de chunking',chunk:'Chunking',embed:'Embeddings',insert:'Insertando',done:'Listo'};
 
+// Dónde se convirtió cada documento: en el VPS (pymupdf4llm, PDFs digitales) o con OCR
+// en la Mac mini (Docling + Vision, PDFs escaneados). Lo decide pdf_triage en el server.
+function fmtSecs(s){ if(s==null) return ''; s=Math.round(s); return s<60?`${s} s`:`${Math.floor(s/60)} min ${s%60} s`; }
+function convLabel(c){
+  if(!c||!c.where) return '';
+  return c.where==='mac_mini' ? '🍎 Mac mini · OCR (Docling + Vision)' : `🖥️ VPS · ${esc(c.engine||'pymupdf4llm')}`;
+}
+function convBlock(c, failed){
+  if(!c||!c.where) return '';
+  const nums=[c.pages!=null?`${c.pages} págs`:'', c.seconds!=null?fmtSecs(c.seconds):''].filter(Boolean).join(' · ');
+  let h=`<div class="m"><span class="muted">${failed?'se intentó en':'procesado en'}</span><b>${convLabel(c)}</b></div>`;
+  h+=`<div class="muted" style="margin:2px 0 6px">${nums?esc(nums)+' — ':''}${esc(c.reason||'')}</div>`;
+  if(c.skipped_pages&&c.skipped_pages.length){
+    const ps=c.skipped_pages; const list=ps.slice(0,15).join(', ')+(ps.length>15?`… (+${ps.length-15})`:'');
+    h+=`<div class="legend" style="border-color:#854d0e;margin:4px 0 8px">⚠️ <b>${ps.length} página(s) sin texto útil no se incluyeron</b>`+
+       `<div class="muted">Escaneadas o con texto ilegible, pero muy pocas para mandar el PDF entero a OCR: p. ${esc(list)}</div></div>`;
+  }
+  return h;
+}
+
 function renderIngest(job){
   const h=(job.files||[]).map(f=>{
     const r=f.report||{};
@@ -818,7 +842,7 @@ function renderIngest(job){
     if(f.error) status=`<div class="m"><span style="color:#f87171">✗ ${esc(f.error)}</span></div>`;
     else if(!f.done) status=`<div class="m"><span class="muted">${esc(f.stage)}</span><b>${esc(f.message)}</b></div>`;
     else status=`<div class="m"><span class="muted">estado</span><b style="color:#4ade80">✓ ${f.replaced?'reemplazado':'insertado'} · ${f.n_chunks} chunks</b></div>`;
-    let body='';
+    let body=convBlock(f.conversion, !!f.error);
     if(r.strategy){
       body+=`<div class="m"><span class="muted">estrategia</span><b>${esc(STRAT_LABEL[r.strategy]||r.strategy)}</b></div>`;
       body+=`<div class="muted" style="margin:4px 0 8px">${esc(r.strategy_reason||'')}</div>`;

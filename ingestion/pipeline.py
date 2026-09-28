@@ -7,7 +7,8 @@ chunking POR ESTRUCTURA de `shared.legal_chunking` (la estrategia se elige sola 
 documento: `article` / `heading` / `paragraph`) y embebe con el mismo TEI de la
 rtx5090 que usa el resto del repo.
 
-    PDF ──pdf_to_markdown──▶ md crudo
+    PDF ──convert_pdf───────▶ md crudo  (VPS con pymupdf4llm, u OCR en la Mac mini
+                                         si el PDF es escaneado — ver pdf_triage)
         ──clean_markdown────▶ md limpio (+ razones de descarte)   [se guarda a disco]
         ──analyze_document──▶ reporte: estrategia elegida + evidencia (§2–5 notebook)
         ──chunk_document────▶ chunks (con su metadata estructural)
@@ -30,6 +31,7 @@ Nada de esto es específico del app: el CLI (`ingest_documents.py`), el app
 from __future__ import annotations
 
 import re
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -149,34 +151,105 @@ def replace_document(cursor, table: str, source: str,
 def pdf_to_markdown(pdf_path: str | Path) -> str:
     """PDF → Markdown con pymupdf4llm (mantiene encabezados/tablas, que el chunker
     usa para hallar fronteras). Import perezoso: sólo la conversión necesita el extra
-    `parse`, no el resto del pipeline."""
+    `parse`, no el resto del pipeline. NO hace OCR: para elegir entre esto y el OCR de
+    la Mac mini usa `convert_pdf`."""
     import pymupdf4llm
 
     return pymupdf4llm.to_markdown(str(pdf_path))
 
 
-def url_to_markdown(url: str, *, timeout: float = 60.0) -> str:
-    """Descarga una URL y la convierte a Markdown con el MISMO motor que los PDFs
-    (PyMuPDF + pymupdf4llm). Sirve para páginas HTML y también para links directos a
-    PDF (PyMuPDF abre ambos). Así todo lo de aguas abajo (limpieza, chunking, embeddings)
-    es idéntico sea cual sea el formato de origen. Imports perezosos."""
-    import httpx
+# Dónde se convirtió cada documento; la UI se lo muestra al admin.
+WHERE_VPS, WHERE_MAC = "vps", "mac_mini"
+MIN_WORDS_PER_PAGE = 5   # debajo de esto la conversión en el VPS "salió vacía" → OCR
+
+
+def convert_pdf(pdf: bytes, *, name: str, info: dict, progress: Progress = None) -> str:
+    """PDF (bytes) → Markdown, eligiendo DÓNDE convertir:
+
+      * digital         → pymupdf4llm en el VPS (segundos, sin OCR).
+      * escaneado/roto  → OCR en la Mac mini (Docling + Vision) vía `ocr_client`.
+      * red de seguridad: si el VPS produce un Markdown casi vacío o ilegible, se
+        reintenta con OCR aunque el triage no lo haya pedido.
+
+    `info` (dict del llamador) se va llenando con la decisión — `where`, `engine`,
+    `reason`, páginas, segundos — incluso si la conversión falla, para que el reporte
+    diga qué se intentó."""
     import pymupdf
     import pymupdf4llm
+
+    from ingestion import ocr_client
+    from ingestion.pdf_triage import MAX_BAD_RATIO, bad_char_ratio, triage_pdf
+
+    progress = progress or _noop
+    doc = pymupdf.open(stream=pdf, filetype="pdf")
+    try:
+        triage = triage_pdf(doc)
+        info.update(pages=triage["pages"], triage=triage["reason"])
+
+        md = None
+        if not triage["needs_ocr"]:
+            info.update(where=WHERE_VPS, engine="pymupdf4llm", reason=triage["reason"])
+            t0 = time.monotonic()
+            md = pymupdf4llm.to_markdown(doc)
+            info["seconds"] = round(time.monotonic() - t0, 1)
+            skipped = triage["scanned_pages"] + triage["broken_pages"]
+            if skipped:
+                info["skipped_pages"] = sorted(skipped)
+            content_pages = max(1, triage["pages"] - len(triage["blank_pages"]))
+            if words(md) < MIN_WORDS_PER_PAGE * content_pages or bad_char_ratio(md) > MAX_BAD_RATIO:
+                info["vps_fallback"] = (f"La conversión en el VPS salió vacía o ilegible "
+                                        f"({words(md)} palabras en {content_pages} páginas).")
+                md = None
+    finally:
+        doc.close()
+
+    if md is not None:
+        return md
+
+    # ── OCR en la Mac mini ──
+    info.update(where=WHERE_MAC, engine="docling+vision",
+                reason=info.get("vps_fallback") or triage["reason"])
+    info.pop("skipped_pages", None)
+    progress("convert", f"PDF escaneado → OCR en la Mac mini (Docling + Vision), "
+                        f"{info['pages']} págs; puede tardar varios minutos…")
+    res = ocr_client.ocr_pdf(pdf, filename=name, pages=info["pages"],
+                             progress=lambda m: progress("convert", m))
+    info.update(seconds=res.get("seconds"), engine=res.get("engine", "docling+vision"))
+    return res["markdown"]
+
+
+def fetch_url(url: str, *, timeout: float = 60.0) -> tuple[bytes, bool]:
+    """Descarga una URL → (contenido, es_pdf). PDF por content-type o extensión;
+    cualquier otra cosa se trata como HTML (Gutenberg, doctrina en web, etc.)."""
+    import httpx
 
     headers = {"User-Agent": "Mozilla/5.0 (RAG-lab ingest)"}
     r = httpx.get(url, follow_redirects=True, timeout=timeout, headers=headers)
     r.raise_for_status()
     ctype = (r.headers.get("content-type") or "").lower()
-    # PyMuPDF necesita saber el formato del stream. PDF por content-type o extensión;
-    # cualquier otra cosa se trata como HTML (Gutenberg, doctrina en web, etc.).
-    is_pdf = "application/pdf" in ctype or url.split("?")[0].lower().endswith(".pdf")
-    filetype = "pdf" if is_pdf else "html"
-    doc = pymupdf.open(stream=r.content, filetype=filetype)
+    return r.content, "application/pdf" in ctype or url.split("?")[0].lower().endswith(".pdf")
+
+
+def html_to_markdown(content: bytes) -> str:
+    """HTML → Markdown con el MISMO motor que los PDFs digitales (PyMuPDF +
+    pymupdf4llm), así lo de aguas abajo es idéntico sea cual sea el origen."""
+    import pymupdf
+    import pymupdf4llm
+
+    doc = pymupdf.open(stream=content, filetype="html")
     try:
         return pymupdf4llm.to_markdown(doc)
     finally:
         doc.close()
+
+
+def url_to_markdown(url: str, *, timeout: float = 60.0) -> str:
+    """Descarga una URL (HTML o PDF) y la convierte a Markdown. Un PDF pasa por
+    `convert_pdf`, así que un link a un escaneado también se OCRea en la Mac."""
+    content, is_pdf = fetch_url(url, timeout=timeout)
+    if is_pdf:
+        return convert_pdf(content, name=Path(url.split("?")[0]).name or "documento.pdf", info={})
+    return html_to_markdown(content)
 
 
 def clean_markdown(raw_md: str) -> dict:
@@ -285,6 +358,8 @@ class IngestResult:
     model: str | None = None
     report: dict = field(default_factory=dict)
     error: str | None = None
+    # Dónde/cómo se convirtió a Markdown (VPS vs OCR en la Mac mini); ver `convert_pdf`.
+    conversion: dict = field(default_factory=dict)
 
 
 def source_name(pdf_path: str | Path) -> str:
@@ -338,6 +413,9 @@ def _ingest_markdown(result: IngestResult, raw_md: str, *, table: str, tei: TEIC
         progress("clean", "Limpiando (folios, paratexto editorial, índices)…")
         cleaned = clean_markdown(raw_md)
         clean_text = cleaned["clean_text"]
+        if words(clean_text) == 0:
+            raise ValueError("El documento no tiene texto extraíble después de convertirlo "
+                             "(¿PDF escaneado sin OCR?).")
         if save_clean:
             result.clean_path = str(save_clean_markdown(clean_dir, source, clean_text))
 
@@ -390,8 +468,9 @@ def ingest_pdf(pdf_path: str | Path, *, table: str, tei: TEIClient, connect_fn,
     pdf_path = Path(pdf_path)
     result = IngestResult(source=source_name(pdf_path), pdf_name=pdf_path.name, model=None)
     try:
-        progress("convert", f"Convirtiendo {pdf_path.name} a Markdown…")
-        raw_md = pdf_to_markdown(pdf_path)
+        progress("convert", f"Revisando {pdf_path.name} y convirtiendo a Markdown…")
+        raw_md = convert_pdf(pdf_path.read_bytes(), name=pdf_path.name,
+                             info=result.conversion, progress=progress)
     except Exception as exc:   # noqa: BLE001
         result.error = f"{type(exc).__name__}: {exc}"
         progress("error", result.error)
@@ -413,6 +492,8 @@ def ingest_md(md_path: str | Path, *, table: str, tei: TEIClient, connect_fn,
     try:
         progress("convert", f"Leyendo {md_path.name} (ya es Markdown)…")
         raw_md = md_path.read_text(encoding="utf-8")
+        result.conversion.update(where=WHERE_VPS, engine="markdown",
+                                 reason="Ya venía en Markdown: no hubo conversión.")
     except Exception as exc:   # noqa: BLE001
         result.error = f"{type(exc).__name__}: {exc}"
         progress("error", result.error)
@@ -430,8 +511,17 @@ def ingest_url(url: str, *, table: str, tei: TEIClient, connect_fn,
     así re-ingerir la misma URL reemplaza su versión previa."""
     result = IngestResult(source=source_name_from_url(url), pdf_name=url, model=None)
     try:
-        progress("convert", f"Descargando y convirtiendo {url} …")
-        raw_md = url_to_markdown(url)
+        progress("convert", f"Descargando {url} …")
+        content, is_pdf = fetch_url(url)
+        if is_pdf:
+            raw_md = convert_pdf(content, name=Path(url.split("?")[0]).name or "documento.pdf",
+                                 info=result.conversion, progress=progress)
+        else:
+            t0 = time.monotonic()
+            raw_md = html_to_markdown(content)
+            result.conversion.update(where=WHERE_VPS, engine="pymupdf4llm (HTML)",
+                                     reason="Página web: se convierte en el VPS.",
+                                     seconds=round(time.monotonic() - t0, 1))
     except Exception as exc:   # noqa: BLE001
         result.error = f"{type(exc).__name__}: {exc}"
         progress("error", result.error)

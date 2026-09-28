@@ -15,6 +15,7 @@ buscables sin reiniciar el servidor.
 
 from __future__ import annotations
 
+import json
 import threading
 import time
 import uuid
@@ -26,6 +27,10 @@ from ingestion.pipeline import ingest_md, ingest_pdf, ingest_url
 
 # Archivos subidos que no son PDF pero ya vienen en Markdown: se ingieren tal cual.
 MD_EXTS = {".md", ".markdown"}
+# Registro persistente de DÓNDE se convirtió cada documento (VPS o OCR en la Mac mini),
+# para que la lista del corpus lo siga mostrando después de reiniciar. Vive junto a los
+# .md limpios; `read_clean` sólo sirve .md, así que no se expone por esa ruta.
+CONVERSION_LOG = "_conversion.json"
 
 
 def _kind_of(path: Path) -> str:
@@ -87,7 +92,7 @@ class IngestManager:
         return {"pdf_name": name, "source": None, "stage": "queued",
                 "message": "En cola…", "done": False, "error": None,
                 "inserted": False, "replaced": False, "n_chunks": 0,
-                "clean_available": False, "report": {}}
+                "clean_available": False, "report": {}, "conversion": {}}
 
     def _run(self, job_id: str, items: list[dict], topic: str | None = None,
              jurisdiction: str | None = None) -> None:
@@ -126,10 +131,13 @@ class IngestManager:
                         with self.connect_fn() as conn, conn.cursor() as cur:
                             cur.execute(f"UPDATE {self.table} SET {', '.join(sets)} WHERE source = %s", vals)
                             conn.commit()
+                if result.inserted and result.conversion:
+                    self._log_conversion(result.source, result.conversion)
                 entry.update(
                     source=result.source, error=result.error, inserted=result.inserted,
                     replaced=result.replaced_existing, n_chunks=result.n_chunks,
-                    topic=topic, clean_available=bool(result.clean_path), report=result.report, done=True,
+                    topic=topic, clean_available=bool(result.clean_path), report=result.report,
+                    conversion=result.conversion, done=True,
                 )
             job["status"] = "error" if any(f["error"] for f in job["files"]) else "done"
             if any(f["inserted"] for f in job["files"]) and self.on_complete:
@@ -159,7 +167,8 @@ class IngestManager:
         """Texto del Markdown limpio guardado, para visualizarlo. Blinda contra
         path-traversal: sólo se sirve un archivo directo dentro de `clean_dir`."""
         path = (self.clean_dir / Path(source).name).resolve()
-        if self.clean_dir.resolve() not in path.parents or not path.is_file():
+        if (self.clean_dir.resolve() not in path.parents or not path.is_file()
+                or path.suffix.lower() not in MD_EXTS):
             raise FileNotFoundError(f"No hay Markdown limpio para {source!r}")
         return path.read_text(encoding="utf-8")
 
@@ -183,6 +192,7 @@ class IngestManager:
         clean = (self.clean_dir / Path(source).name)
         if clean.is_file():
             clean.unlink(missing_ok=True)
+        self._log_conversion(source, None)
         if deleted and self.on_complete:
             self.on_complete()   # el índice en memoria deja de ver los chunks borrados
         return {"source": source, "deleted": deleted}
@@ -201,8 +211,31 @@ class IngestManager:
                 f"SELECT source, max(topic), count(*) FROM {self.table} "
                 f"GROUP BY source ORDER BY source")
             rows = cur.fetchall()
+        log = self._read_conversion_log()
         return [
             {"source": s, "topic": t, "chunks": n,
-             "clean_available": (self.clean_dir / Path(s).name).is_file()}
+             "clean_available": (self.clean_dir / Path(s).name).is_file(),
+             "conversion": log.get(s)}   # None = ingerido antes de registrar esto
             for s, t, n in rows
         ]
+
+    # ── registro de conversión (VPS vs Mac mini) ─────────────────────────────────
+    def _read_conversion_log(self) -> dict:
+        try:
+            return json.loads((self.clean_dir / CONVERSION_LOG).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {}
+
+    def _log_conversion(self, source: str, conversion: dict | None) -> None:
+        """Guarda (o borra, con None) la conversión de un documento. Escritura atómica."""
+        with self._lock:
+            log = self._read_conversion_log()
+            if conversion is None:
+                if log.pop(source, None) is None:
+                    return
+            else:
+                log[source] = {**conversion, "at": time.strftime("%Y-%m-%d %H:%M")}
+            self.clean_dir.mkdir(parents=True, exist_ok=True)
+            tmp = self.clean_dir / (CONVERSION_LOG + ".tmp")
+            tmp.write_text(json.dumps(log, ensure_ascii=False, indent=1), encoding="utf-8")
+            tmp.replace(self.clean_dir / CONVERSION_LOG)
