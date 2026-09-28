@@ -868,6 +868,11 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
 # último mensaje como una consulta AUTÓNOMA usando el historial. La generación sigue
 # recibiendo todos los turnos; solo la BÚSQUEDA usa la consulta condensada (y HyDE, si
 # está activo, se monta sobre ella).
+# Cuántos mensajes recientes del historial se mandan a la GENERACIÓN (distinto del
+# retrieval, que se condensa aparte). Acota la ventana para no saturar el contexto del
+# LLM en conversaciones largas. Configurable por env; un número PAR conserva la
+# alternancia usuario/asistente (el historial previo termina en 'assistant').
+CHAT_HISTORY_MESSAGES = int(os.environ.get('CHAT_HISTORY_MESSAGES', '6'))
 CONDENSE_SYSTEM = (
     "Reescribe el ÚLTIMO mensaje del usuario como una consulta de búsqueda AUTÓNOMA en "
     "español, resolviendo pronombres y referencias con el historial de la conversación "
@@ -930,7 +935,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     # El contexto RAG se inyecta en el ÚLTIMO turno del usuario; los turnos previos van
     # tal cual para dar memoria conversacional al LLM.
     llm_msgs = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)}]
-    llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1]]
+    llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1][-CHAT_HISTORY_MESSAGES:]]
     llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
     answer = llm.chat_messages(llm_msgs, max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
@@ -1350,7 +1355,7 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
             f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
             for ch in top)
         llm_msgs = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)}]
-        llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1]]
+        llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1][-CHAT_HISTORY_MESSAGES:]]
         llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
         for piece in llm.chat_stream(llm_msgs, max_tokens=4096, timeout=180):
             yield sse({'stage': 'token', 'text': piece})

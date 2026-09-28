@@ -196,6 +196,7 @@ uv run uvicorn apps.rewrite_lab.main:app --host 0.0.0.0 --port 8050
 | `LEGAL_TABLE` | `sistema_penal__qwen06__legal` | tabla de vectores (destino del upsert del tab de ingesta) |
 | `CLEAN_MD_DIR` | `ingestion/out_clean/Sistema Penal Acusatorio` | dónde persisten los `.md` limpios (visualizables) |
 | `UPLOAD_DIR` | `ingestion/.uploads` | dónde caen los PDFs subidos (temporales) |
+| `CHAT_HISTORY_MESSAGES` | `6` | mensajes recientes del historial que van a la GENERACIÓN en Conversacional (acota el contexto; el retrieval se condensa aparte) |
 | `HOST` / `PORT` | `127.0.0.1` / `8050` | bind del servidor (usa `0.0.0.0` para exponerlo) |
 
 En el server, en vez de `localhost`, `LLM_URL`/`TEI_URL` apuntan a como la rtx sea
