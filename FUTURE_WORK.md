@@ -6,15 +6,46 @@ DB `rag_lab`, TEI/LLM en rtx5090).
 
 ## Ingesta y OCR
 
-### 1. Que el tab de ingesta OCRee escaneados (arreglo de fondo)
-Hoy prod **no tiene backend de OCR**: el extra `parse` solo trae `pymupdf4llm`+`minio`.
-Un PDF escaneado subido por el tab → texto vacío → `KeyError: 'document'` en
-`merge_small_siblings` (DataFrame de unidades vacío). Actualmente se resuelve OCReando
-en local (Docling+macOS Vision) e insertando por fuera con `ingest_md`.
-- **Acción:** agregar `rapidocr` (u onnxruntime + rapidocr) al extra `parse`, redeploy
-  (`git pull && uv sync --extra parse && sudo systemctl restart legis-app`).
-- **Trade-off:** RapidOCR (fallback de pymupdf4llm) es más ruidoso que Docling+Vision.
-  Para docs escaneados de alto valor, preferir el flujo local Docling+Vision.
+### 1. Automatizar la ingesta de PDFs escaneados
+
+**Estado actual (manual, solo Mac):** prod convierte con `pymupdf4llm`, que **no OCRea**.
+Un PDF escaneado → texto vacío → `KeyError: 'document'` en `merge_small_siblings`. Hoy se
+resuelve OCReando **en local** con Docling + macOS Vision (`ingestion/ocr_*.py`) e
+insertando el `.md` con `ingestion.pipeline.ingest_md`. Requiere una Mac + los scripts →
+no lo puede hacer cualquier admin.
+
+**Requisito:** que **cualquier admin, desde cualquier OS (Win/Mac/Linux) y desde el
+teléfono**, suba un escaneado por el tab y se ingiera solo.
+
+**Consecuencia de diseño:** el teléfono y el "cualquier OS" implican que **el OCR NO puede
+correr en el dispositivo del usuario**. El cliente solo sube; el OCR es **server-side o en
+la nube**. Esto descarta la opción de "preprocesar con una app local" (no aplica a móvil;
+instalación por-OS; calidad dispareja).
+
+**Opciones (todas: subir el PDF por el tab; el OCR ocurre server-side):**
+
+| # | Solución | Esfuerzo | Pros | Contras |
+|---|---|---|---|---|
+| **A** | **OCR en el server de la app** (agregar `rapidocr`; pymupdf4llm lo usa solo) | **Mínimo** | Sin infra nueva; funciona desde cualquier device y móvil; uniforme | Carga de CPU en el VPS con libros grandes (minutos, RAM); calidad RapidOCR (más ruidosa que Vision) |
+| **B** | **Offload a rtx5090** (microservicio OCR HTTP, como TEI/LLM/reranker) | Medio | Encaja con la arquitectura (cómputo pesado ya vive en rtx5090 vía túneles); GPU-rápido; alta calidad; VPS ligero; móvil ok | Un servicio nuevo que mantener en rtx5090 |
+| **C** | **API de OCR en la nube** (Mistral OCR / Google Document AI / Azure DI) | Bajo | Cero infra; mejor calidad; funciona en todo incl. móvil; barato (~$1/1000 págs) | Los datos salen a un tercero (privacidad); API key; costo por página |
+| **D** | **Offload a una Mac mini vía SSH** (macOS Vision) | Medio-alto | Calidad de Vision; VPS ligero; móvil ok | Un box nuevo, **menos integrado que rtx5090** (que ya está en el stack); orquestación SSH; peor que B salvo que se necesite Vision específicamente |
+| ~~E~~ | ~~Preprocesar con app local~~ (la opción 1 planteada) | — | — | **Rechazada:** no corre en teléfono; instalación por-OS; calidad dispareja |
+
+**Recomendación (por fases):**
+- **Fase 1 (MVP, ya):** **Opción A** — agregar `rapidocr` al extra `parse` + redeploy
+  (`uv sync --extra parse && sudo systemctl restart legis-app`). Satisface el requisito
+  completo (cualquier admin/OS/móvil) con cambio mínimo y reusa el job async ya probado.
+  Guardarraíles: límite de páginas/tamaño por subida, y mantenerlo de a uno (ya lo es).
+  Los libros de alto valor pueden seguir usando el flujo local Docling+Vision cuando la
+  precisión importe.
+- **Fase 2 (si la carga o la calidad lo exigen):** **Opción B** (rtx5090, consistente con
+  la arquitectura y privado) o **C** (nube, menos esfuerzo y mejor calidad). La **D**
+  (Mac mini) solo si se requiere específicamente la calidad de macOS Vision y el OCR de
+  rtx5090 no basta — pero B usa un box ya integrado, así que domina a D.
+
+**En todos los casos** shipear también el fix defensivo del `KeyError` (ítem 2): un OCR
+que salga vacío debe dar un error claro, no un crash.
 
 ### 2. Fix defensivo del `KeyError: 'document'`
 `shared/legal_chunking.py` → `merge_small_siblings`: si `units` viene vacío, lanzar un
