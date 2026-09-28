@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Consulta</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <style>
   :root{
     --bg:#f6f7f9; --card:#ffffff; --ink:#1a1d24; --muted:#6b7280;
@@ -34,6 +35,12 @@
   #answer.on{display:block}
   #answer p{margin:0 0 12px} #answer p:last-child{margin-bottom:0}
   #answer strong{font-weight:650}
+  #answer h1,#answer h2,#answer h3,#answer h4{font-size:16px;margin:14px 0 6px;font-weight:650}
+  #answer ul,#answer ol{margin:8px 0;padding-left:22px} #answer li{margin:3px 0}
+  #answer code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:.9em}
+  #answer pre{background:var(--soft);padding:10px 12px;border-radius:8px;overflow:auto}
+  #answer pre code{background:none;padding:0}
+  #answer blockquote{margin:8px 0;padding-left:12px;border-left:3px solid var(--line);color:var(--muted)}
   details.src{margin-top:18px}
   details.src>summary{cursor:pointer;user-select:none;color:var(--muted);font-size:14px;margin-bottom:6px}
   .frag{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:11px 14px;margin:8px 0}
@@ -94,6 +101,8 @@ function fmt(t){
     '<p>' + esc(p).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>') + '</p>'
   ).join('');
 }
+// Markdown completo con marked (headings, listas, código…); fmt es respaldo si el CDN falla.
+const md = t => window.marked ? marked.parse(String(t || '')) : fmt(t);
 // El texto del chunk trae un prefijo "Fuente: …\nSección: …\n\n"; lo quitamos (ya va en el título).
 function passage(t){
   return (t||'').replace(/^Fuente:[^\n]*\n(?:Secci[oó]n:[^\n]*\n)?\n?/, '').trim() || (t||'');
@@ -171,7 +180,7 @@ form.addEventListener('submit', async e => {
           }
         }
         else if (ev.stage === 'token'){
-          answer += ev.text || ''; $('answer').className = 'on'; $('answer').innerHTML = fmt(answer);
+          answer += ev.text || ''; $('answer').className = 'on'; $('answer').innerHTML = md(answer);
         }
         else if (ev.stage === 'done'){ $('status').textContent = ''; }
         else if (ev.stage === 'error'){ throw new Error(ev.error || 'error'); }

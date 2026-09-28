@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Conversar</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <style>
   :root{
     --bg:#f6f7f9; --card:#ffffff; --ink:#1a1d24; --muted:#6b7280;
@@ -43,6 +44,11 @@
   .turn.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:13px 16px}
   .turn.bot p{margin:0 0 10px} .turn.bot p:last-child{margin-bottom:0} .turn.bot strong{font-weight:650}
   .turn.bot ul,.turn.bot ol{margin:6px 0;padding-left:20px}
+  .turn.bot h1,.turn.bot h2,.turn.bot h3,.turn.bot h4{font-size:15px;margin:10px 0 6px;font-weight:650}
+  .turn.bot code{background:var(--soft);padding:1px 5px;border-radius:5px;font-size:.9em}
+  .turn.bot pre{background:var(--soft);padding:10px 12px;border-radius:8px;overflow:auto}
+  .turn.bot pre code{background:none;padding:0}
+  .turn.bot blockquote{margin:6px 0;padding-left:12px;border-left:3px solid var(--line);color:var(--muted)}
   .srchq{color:var(--muted);font-size:12px;margin:2px 0 8px}
   details.src{margin-top:10px;font-size:13px}
   details.src>summary{cursor:pointer;color:var(--muted);user-select:none}
@@ -122,6 +128,8 @@ function fmt(t){
     return '<p>' + inline(b).replace(/\n/g, '<br>') + '</p>';
   }).join('');
 }
+// Markdown completo con marked (headings, listas, código…); fmt es respaldo si el CDN falla.
+const md = t => window.marked ? marked.parse(String(t || '')) : fmt(t);
 function passage(t){ return (t || '').replace(/^Fuente:[^\n]*\n(?:Secci[oó]n:[^\n]*\n)?\n?/, '').trim() || (t || ''); }
 function sourcesHTML(chunks, searchq){
   if (!chunks || !chunks.length) return '';
@@ -199,7 +207,7 @@ async function renderLog(){
   const msgs = curConv ? await msgsOf(curConv) : [];
   $('logc').innerHTML = msgs.length ? msgs.map(m => m.role === 'user'
     ? '<div class="turn user">' + esc(m.content) + '</div>'
-    : '<div class="turn bot">' + fmt(m.content) + sourcesHTML(m.chunks, m.search_query) + '</div>'
+    : '<div class="turn bot">' + md(m.content) + sourcesHTML(m.chunks, m.search_query) + '</div>'
   ).join('') : '<div class="empty">Escribe tu primera pregunta abajo.</div>';
   const l = $('log'); l.scrollTop = l.scrollHeight;
 }
@@ -260,7 +268,7 @@ form.addEventListener('submit', async e => {
       else if (ev.stage === 'retrieving'){ if (!answer) live.innerHTML = '<span class="muted">⏳ recuperando…</span>'; }
       else if (ev.stage === 'context'){ meta.chunks = ev.chunks || []; meta.search_query = ev.search_query || '';
         if (!answer) live.innerHTML = '<span class="muted">✍️ redactando…</span>'; }
-      else if (ev.stage === 'token'){ answer += ev.text || ''; live.innerHTML = fmt(answer); toBottom(); }
+      else if (ev.stage === 'token'){ answer += ev.text || ''; live.innerHTML = md(answer); toBottom(); }
       else if (ev.stage === 'error'){ errMsg = ev.error || 'error'; }
     });
     if (errMsg) throw new Error(errMsg);
