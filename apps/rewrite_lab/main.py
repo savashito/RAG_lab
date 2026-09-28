@@ -989,6 +989,14 @@ def preguntar():
     return FileResponse(STATIC / 'preguntar.html', headers={'Cache-Control': 'no-store'})
 
 
+# Página simple CONVERSACIONAL (multi-turno) para usuarios finales. Mismos parámetros por
+# URL que /preguntar; historial en memoria del navegador (se pierde al recargar). Usa
+# /chat/stream (streaming + condensación).
+@app.get('/conversar')
+def conversar():
+    return FileResponse(STATIC / 'conversar.html', headers={'Cache-Control': 'no-store'})
+
+
 @app.get('/api/me')
 def api_me(request: Request):
     """Identidad y permisos del usuario logueado. El front lo usa para decidir qué tabs

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conversar</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#ffffff; --ink:#1a1d24; --muted:#6b7280;
+    --line:#e5e7eb; --accent:#2563eb; --accent-ink:#ffffff; --soft:#f0f4ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b0d12; --card:#12151c; --ink:#e8eaed; --muted:#9aa0ac;
+           --line:#232833; --accent:#3b82f6; --accent-ink:#ffffff; --soft:#141a2b; }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 16px;min-height:100%;display:flex;flex-direction:column}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+  h1{font-size:19px;margin:0;font-weight:650}
+  .reset{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+  .log{flex:1;display:flex;flex-direction:column;gap:14px}
+  .turn{max-width:88%;white-space:normal}
+  .turn.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-radius:14px 14px 4px 14px;padding:9px 14px}
+  .turn.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:13px 16px}
+  .turn.bot p{margin:0 0 10px} .turn.bot p:last-child{margin-bottom:0} .turn.bot strong{font-weight:650}
+  .turn.bot ul,.turn.bot ol{margin:6px 0;padding-left:20px}
+  .srchq{color:var(--muted);font-size:12px;margin:2px 0 8px}
+  details.src{margin-top:10px;font-size:13px}
+  details.src>summary{cursor:pointer;color:var(--muted);user-select:none}
+  ol.refs{margin:8px 0 0;padding-left:20px} ol.refs li{margin:4px 0}
+  .frag{border:1px solid var(--line);border-radius:9px;background:var(--soft);padding:9px 12px;margin:7px 0}
+  .frag h5{margin:0 0 5px;font-size:12.5px;font-weight:600;color:var(--accent)}
+  .frag .tag{font-weight:400;color:var(--muted)}
+  .frag .passage{font-size:13px;line-height:1.5;color:var(--ink);white-space:pre-wrap;max-height:200px;overflow:auto}
+  .composer{position:sticky;bottom:0;background:var(--bg);padding:12px 0 4px;margin-top:14px}
+  .composer form{display:flex;gap:8px;align-items:flex-end}
+  textarea{flex:1;min-height:46px;max-height:180px;resize:vertical;padding:11px 14px;border-radius:12px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;outline:none}
+  textarea:focus{border-color:var(--accent)}
+  button.send{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;
+    padding:11px 20px;font:inherit;font-weight:600;cursor:pointer}
+  button.send:disabled{opacity:.5;cursor:progress}
+  .muted{color:var(--muted)}
+  .err{color:#dc2626} a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="title">Conversar</h1>
+    <button class="reset" id="reset" type="button" title="Empezar de nuevo">nueva conversación</button>
+  </header>
+
+  <div class="log" id="log"></div>
+
+  <div class="composer">
+    <form id="form">
+      <textarea id="q" placeholder="Escribe tu mensaje…" autofocus></textarea>
+      <button class="send" id="send" type="submit">Enviar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const P = new URLSearchParams(location.search);
+const bool = (v, def) => v == null ? def : String(v).toLowerCase() !== 'false';
+const SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido'];
+let metodo = (P.get('metodo') || P.get('setting') || 'orig').toLowerCase();
+if (metodo === 'hibrido') metodo = 'híbrido';
+const k = Math.min(Math.max(parseInt(P.get('k'), 10) || 5, 1), 20);
+const jur = (P.get('jurisdiccion') || P.get('jurisdiction') || '').split(',').map(s => s.trim()).filter(Boolean);
+const CFG = {
+  topic: P.get('tema') || 'psicologia_conductual',
+  neighbors: bool(P.get('vecinos'), true),
+  hyde: bool(P.get('HyDE') ?? P.get('hyde'), true),
+  rerank: bool(P.get('rerank'), false),
+  setting: SETTINGS.includes(metodo) ? metodo : 'orig',
+  k, jurisdictions: jur,
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => (s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function fmt(t){ // markdown mínimo: **negrita**, viñetas, párrafos
+  const blocks = (t || '').split(/\n{2,}/).map(b => {
+    const lines = b.split('\n');
+    if (lines.every(l => /^\s*[-*]\s+/.test(l))) {
+      return '<ul>' + lines.map(l => '<li>' + inline(l.replace(/^\s*[-*]\s+/, '')) + '</li>').join('') + '</ul>';
+    }
+    return '<p>' + inline(esc(b)).replace(/\n/g, '<br>') + '</p>';
+  });
+  return blocks.join('');
+}
+const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+function passage(t){ return (t || '').replace(/^Fuente:[^\n]*\n(?:Secci[oó]n:[^\n]*\n)?\n?/, '').trim() || (t || ''); }
+
+// Referencias (APA, deduplicadas) + fragmentos con texto, para un turno del asistente.
+function sourcesHTML(chunks, searchq){
+  if (!chunks || !chunks.length) return '';
+  const seen = new Set(), refs = [];
+  for (const c of chunks){ const key = c.source || ''; if (key && !seen.has(key)){ seen.add(key); refs.push(c.citation || key.replace(/\.md$/, '')); } }
+  const refList = '<ol class="refs">' + refs.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>';
+  const cards = chunks.map(c => {
+    const src = (c.source || '').replace(/\.md$/, ''), sec = c.hierarchy || c.title || '';
+    let head = esc(src);
+    if (sec) head += ' <span class="tag">· ' + esc(sec) + '</span>';
+    if (c.neighbor) head += ' <span class="tag">· vecino</span>';
+    return '<div class="frag"><h5>' + head + '</h5><div class="passage">' + esc(passage(c.text)) + '</div></div>';
+  }).join('');
+  return (searchq ? '<div class="srchq">🔎 búsqueda: ' + esc(searchq) + '</div>' : '')
+    + '<details class="src" open><summary>Referencias (' + refs.length + ')</summary>' + refList + '</details>'
+    + '<details class="src"><summary>Fragmentos (' + chunks.length + ')</summary>' + cards + '</details>';
+}
+
+const messages = [];  // {role, content, chunks?, search_query?}
+let busy = false;
+
+function render(){
+  $('log').innerHTML = messages.map(m => m.role === 'user'
+    ? '<div class="turn user">' + esc(m.content) + '</div>'
+    : '<div class="turn bot">' + fmt(m.content) + sourcesHTML(m.chunks, m.search_query) + '</div>'
+  ).join('');
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+// Título con el label del tópico (requiere sesión).
+fetch('/api/topics').then(r => r.ok ? r.json() : []).then(ts => {
+  const t = (ts || []).find(x => x.topic === CFG.topic);
+  if (t && t.label){ $('title').textContent = t.label; document.title = t.label; }
+}).catch(() => {});
+
+async function readSSE(resp, onEvent){
+  const reader = resp.body.getReader(), dec = new TextDecoder(); let buf = '';
+  for(;;){
+    const { value, done } = await reader.read(); if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0){
+      const raw = buf.slice(0, i); buf = buf.slice(i + 2);
+      const line = raw.split('\n').find(l => l.startsWith('data:'));
+      if (line){ try { onEvent(JSON.parse(line.slice(5).trim())); } catch(e){} }
+    }
+  }
+}
+
+const form = $('form');
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = $('q').value.trim();
+  if (!text || busy) return;
+  busy = true; $('send').disabled = true; $('q').value = '';
+  messages.push({ role: 'user', content: text });
+  render();
+
+  // Burbuja en vivo
+  const live = document.createElement('div'); live.className = 'turn bot';
+  live.innerHTML = '<span class="muted">⏳ …</span>'; $('log').appendChild(live);
+  window.scrollTo(0, document.body.scrollHeight);
+
+  let answer = '', errMsg = null, meta = { chunks: [], search_query: '' };
+  try{
+    const resp = await fetch('/chat/stream', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: messages.map(m => ({ role: m.role, content: m.content })),
+        setting: CFG.setting, k: CFG.k, topic: CFG.topic, jurisdictions: CFG.jurisdictions,
+        neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank,
+      }),
+    });
+    if (resp.status === 401) throw new Error('Sesión expirada. <a href="/login">Inicia sesión</a>.');
+    if (!resp.ok || !resp.body) throw new Error('HTTP ' + resp.status);
+    await readSSE(resp, ev => {
+      if (ev.stage === 'search'){ if (!answer) live.innerHTML = '<span class="muted">🔎 buscando: ' + esc(ev.query || '') + '</span>'; }
+      else if (ev.stage === 'retrieving'){ if (!answer) live.innerHTML = '<span class="muted">⏳ recuperando…</span>'; }
+      else if (ev.stage === 'context'){ meta.chunks = ev.chunks || []; meta.search_query = ev.search_query || '';
+        if (!answer) live.innerHTML = '<span class="muted">✍️ redactando…</span>'; }
+      else if (ev.stage === 'token'){ answer += ev.text || ''; live.innerHTML = fmt(answer); window.scrollTo(0, document.body.scrollHeight); }
+      else if (ev.stage === 'error'){ errMsg = ev.error || 'error'; }
+    });
+    if (errMsg) throw new Error(errMsg);
+    messages.push({ role: 'assistant', content: answer || '(sin respuesta)', chunks: meta.chunks, search_query: meta.search_query });
+  }catch(err){
+    messages.push({ role: 'assistant', content: '⚠️ ' + (err.message || err) });
+  }finally{
+    live.remove(); render();
+    busy = false; $('send').disabled = false; $('q').focus();
+  }
+});
+
+$('q').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
+});
+$('reset').addEventListener('click', () => { messages.length = 0; render(); $('q').focus(); });
+</script>
+</body>
+</html>
