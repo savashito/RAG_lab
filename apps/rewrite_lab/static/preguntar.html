@@ -34,9 +34,13 @@
   #answer.on{display:block}
   #answer p{margin:0 0 12px} #answer p:last-child{margin-bottom:0}
   #answer strong{font-weight:650}
-  details.src{margin-top:14px;font-size:14px;color:var(--muted)}
-  details.src summary{cursor:pointer;user-select:none}
-  details.src ul{margin:8px 0 0;padding-left:18px} details.src li{margin:2px 0}
+  details.src{margin-top:18px}
+  details.src>summary{cursor:pointer;user-select:none;color:var(--muted);font-size:14px;margin-bottom:6px}
+  .frag{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:11px 14px;margin:8px 0}
+  .frag h5{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--accent)}
+  .frag .tag{font-weight:400;color:var(--muted)}
+  .frag .passage{font-size:13.5px;line-height:1.55;color:var(--ink);white-space:pre-wrap;
+    max-height:220px;overflow:auto}
   .err{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-top:12px}
   @media (prefers-color-scheme: dark){ .err{background:#2a1416;border-color:#4c1d1d;color:#fca5a5} }
   a{color:var(--accent)}
@@ -76,6 +80,10 @@ function fmt(t){
   return t.split(/\n{2,}/).map(p =>
     '<p>' + esc(p).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>') + '</p>'
   ).join('');
+}
+// El texto del chunk trae un prefijo "Fuente: …\nSección: …\n\n"; lo quitamos (ya va en el título).
+function passage(t){
+  return (t||'').replace(/^Fuente:[^\n]*\n(?:Secci[oó]n:[^\n]*\n)?\n?/, '').trim() || (t||'');
 }
 
 // Título bonito con el label del tópico (si se puede; requiere sesión).
@@ -124,13 +132,19 @@ form.addEventListener('submit', async e => {
         if (ev.stage === 'retrieving'){ $('status').textContent = '⏳ Buscando en los documentos…'; }
         else if (ev.stage === 'context'){
           $('status').textContent = '✍️ Redactando respuesta…';
-          const seen = new Set(), items = [];
-          for (const c of (ev.chunks||[])){
-            const s = c.source || ''; if (s && !seen.has(s)){ seen.add(s); items.push(s.replace(/\.md$/,'')); }
-          }
-          if (items.length){
-            $('extra').innerHTML = '<details class="src"><summary>Fuentes ('+items.length+')</summary><ul>'
-              + items.map(s => '<li>'+esc(s)+'</li>').join('') + '</ul></details>';
+          const chunks = ev.chunks || [];
+          if (chunks.length){
+            const cards = chunks.map(c => {
+              const src = (c.source || '').replace(/\.md$/, '');
+              const sec = c.hierarchy || c.title || '';
+              let head = esc(src);
+              if (sec) head += ' <span class="tag">· ' + esc(sec) + '</span>';
+              if (c.neighbor) head += ' <span class="tag">· contexto vecino</span>';
+              return '<div class="frag"><h5>' + head + '</h5>'
+                   + '<div class="passage">' + esc(passage(c.text)) + '</div></div>';
+            }).join('');
+            $('extra').innerHTML = '<details class="src" open><summary>Fuentes consultadas ('
+              + chunks.length + ' fragmentos)</summary>' + cards + '</details>';
           }
         }
         else if (ev.stage === 'token'){
