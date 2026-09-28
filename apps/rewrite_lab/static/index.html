@@ -985,24 +985,38 @@ async function chatSend(){
   const priorUser=(await msgsOf(curConv)).filter(m=>m.role==='user').length;
   if(conv && priorUser<=1){ conv.title=text.slice(0,60); conv.updated=Date.now(); await dbPut('conversations',conv); }
   $('chat-input').value=''; await renderConvList(); await renderChatLog();
+  // Burbuja "en vivo": crece con los tokens; al terminar se persiste y re-renderiza.
+  const live=document.createElement('div'); live.className='msg assistant';
+  live.innerHTML='<span class="muted">⏳ …</span>'; $('chat-log').appendChild(live);
+  const toBottom=()=>{ const l=$('chat-log'); l.scrollTop=l.scrollHeight; }; toBottom();
+  let answer='', errMsg=null, meta={chunks:[],rewrite:'',score_kind:'',search_query:'',seconds:0};
   try{
     const history=(await msgsOf(curConv)).map(m=>({role:m.role,content:m.content}));
-    const d=await (await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+    const resp=await fetch('/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({messages:history, setting:$('chat-setting').value, k:+$('chat-k').value,
         system:$('chat-system').value, topic:$('chat-topic').value,
         jurisdictions:readJur('chat-jur'),
-        neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked, rerank:$('chat-rerank').checked})})).json();
-    if(d.error){
-      await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ Error: '+d.error,ts:Date.now(),chunks:[]});
-    }else{
-      await dbAdd('messages',{convId:curConv,role:'assistant',content:d.answer||'',ts:Date.now(),
-        chunks:d.chunks||[],rewrite:d.rewrite,setting:d.setting,score_kind:d.score_kind,seconds:d.seconds,search_query:d.search_query});
-    }
+        neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked, rerank:$('chat-rerank').checked})});
+    if(resp.status===401){ throw new Error('Sesión expirada. Recarga la página.'); }
+    if(!resp.ok||!resp.body){ throw new Error('HTTP '+resp.status); }
+    await readSSE(resp, ev=>{
+      if(ev.stage==='search'){ if(!answer) live.innerHTML='<span class="muted">🔎 buscando: '+esc(ev.query||'')+'</span>'; }
+      else if(ev.stage==='retrieving'){ if(!answer) live.innerHTML='<span class="muted">⏳ recuperando…</span>'; }
+      else if(ev.stage==='context'){ meta.chunks=ev.chunks||[]; meta.rewrite=ev.rewrite; meta.score_kind=ev.score_kind; meta.search_query=ev.search_query;
+        if(!answer) live.innerHTML='<span class="muted">✍️ redactando…</span>'; }
+      else if(ev.stage==='token'){ answer+=ev.text||''; live.innerHTML=marked.parse(answer); toBottom(); }
+      else if(ev.stage==='done'){ meta.seconds=ev.seconds; }
+      else if(ev.stage==='error'){ errMsg=ev.error||'error'; }
+    });
+    if(errMsg) throw new Error(errMsg);
+    await dbAdd('messages',{convId:curConv,role:'assistant',content:answer||'(sin respuesta)',ts:Date.now(),
+      chunks:meta.chunks,rewrite:meta.rewrite,setting:$('chat-setting').value,score_kind:meta.score_kind,seconds:meta.seconds,search_query:meta.search_query});
     const c2=(await listConvs()).find(c=>c.id===curConv);
     if(c2){ c2.updated=Date.now(); await dbPut('conversations',c2); }
   }catch(e){
-    await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ '+e,ts:Date.now(),chunks:[]});
+    await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ '+(e.message||e),ts:Date.now(),chunks:[]});
   }finally{
+    live.remove();
     chatSending=false; $('chat-send').disabled=false; $('chat-spin').style.display='none';
     await renderConvList(); await renderChatLog('lastq'); $('chat-input').focus();
   }

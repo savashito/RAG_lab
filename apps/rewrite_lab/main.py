@@ -1297,6 +1297,73 @@ async def chat_route(req: Request):
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
 
+def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False):
+    """Igual que `chat_answer` pero en streaming (SSE): condensa la consulta, transparenta
+    el proceso (search → retrieving → hyde → context → token* → done) y streamea la
+    respuesta. La generación recibe todos los turnos; la búsqueda usa la consulta condensada."""
+    def sse(obj):
+        return f'data: {json.dumps(obj, ensure_ascii=False)}\n\n'
+    try:
+        msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
+        if not msgs or msgs[-1]['role'] != 'user':
+            raise ValueError('el último mensaje debe ser del usuario')
+        if setting not in ASK_SETTINGS:
+            raise ValueError(f'setting desconocido: {setting!r}')
+        question = msgs[-1]['content'].strip()
+        search_q = condense_question(msgs)
+        if find_article_ref(search_q):
+            k = max(k, 8)
+        t0 = time.time()
+        if search_q != question:
+            yield sse({'stage': 'search', 'query': search_q})
+        yield sse({'stage': 'retrieving', 'hyde': hyde})
+        dbg: dict = {}
+        with connect() as c, c.cursor() as cur:
+            scored, score_kind, rw = retrieve_scored(cur, search_q, setting, topic,
+                                                     jurisdictions, neighbors, hyde, debug=dbg)
+            if rerank and not find_article_ref(search_q):
+                yield sse({'stage': 'reranking'})
+                scored, did = _rerank_scored(search_q, scored)
+                if did:
+                    score_kind = 'rerank'
+            ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
+        score_map = dict(scored)
+        top = [{'id': cid, 'rank': rank,
+                'score': (round(score_map[cid], 4) if cid in score_map else None),
+                'score_kind': score_kind, 'neighbor': cid in extra,
+                'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
+               for rank, cid in enumerate(ids, 1)]
+        if hyde:
+            yield sse({'stage': 'hyde', 'passage': dbg.get('hyde_passage', ''),
+                       'embed_text': dbg.get('embed_text', '')})
+        yield sse({'stage': 'context', 'chunks': top, 'rewrite': rw, 'score_kind': score_kind,
+                   'search_query': search_q if search_q != question else ''})
+        context = '\n\n'.join(
+            f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+            for ch in top)
+        llm_msgs = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)}]
+        llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1]]
+        llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
+        for piece in llm.chat_stream(llm_msgs, max_tokens=4096, timeout=180):
+            yield sse({'stage': 'token', 'text': piece})
+        yield sse({'stage': 'done', 'seconds': round(time.time() - t0, 1)})
+    except Exception as e:   # noqa: BLE001 — el error viaja como evento para mostrarlo en la UI
+        yield sse({'stage': 'error', 'error': f'{type(e).__name__}: {e}'})
+
+
+@app.post('/chat/stream')
+async def chat_stream_route(req: Request):
+    """Igual que /chat pero en streaming (SSE)."""
+    body = await req.json()
+    gen = _chat_events(body.get('messages', []), body.get('setting', 'orig'),
+                       int(body.get('k', 5)), body.get('system'), body.get('topic'),
+                       body.get('jurisdictions') or body.get('jurisdiction'),
+                       bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
+                       bool(body.get('rerank', False)))
+    return StreamingResponse(gen, media_type='text/event-stream',
+                             headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
+
+
 @app.post('/run')
 async def run(req: Request):
     body = await req.json()
