@@ -17,11 +17,27 @@
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--ink);
     font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
-  .wrap{max-width:760px;margin:0 auto;padding:24px 16px;min-height:100%;display:flex;flex-direction:column}
-  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
-  h1{font-size:19px;margin:0;font-weight:650}
-  .reset{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
-  .log{flex:1;display:flex;flex-direction:column;gap:14px}
+  .app{display:flex;height:100%}
+  /* Sidebar */
+  .side{width:250px;flex:none;border-right:1px solid var(--line);background:var(--card);
+    display:flex;flex-direction:column;min-height:0}
+  .side .top{padding:12px;border-bottom:1px solid var(--line)}
+  .newbtn{width:100%;background:var(--accent);color:var(--accent-ink);border:0;border-radius:9px;
+    padding:9px 12px;font:inherit;font-weight:600;cursor:pointer}
+  .convs{flex:1;overflow:auto;padding:6px}
+  .conv{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px}
+  .conv:hover{background:var(--soft)} .conv.active{background:var(--soft);font-weight:600}
+  .conv .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .conv .x{color:var(--muted);border:0;background:none;cursor:pointer;font-size:15px;opacity:0;padding:0 2px}
+  .conv:hover .x{opacity:1}
+  .empty{color:var(--muted);font-size:13px;padding:14px;text-align:center}
+  /* Main */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .bar .menu{display:none;border:0;background:none;color:var(--ink);font-size:20px;cursor:pointer}
+  h1{font-size:17px;margin:0;font-weight:650;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .log{flex:1;overflow:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px}
+  .log .center{max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px}
   .turn{max-width:88%;white-space:normal}
   .turn.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-radius:14px 14px 4px 14px;padding:9px 14px}
   .turn.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:13px 16px}
@@ -35,32 +51,46 @@
   .frag h5{margin:0 0 5px;font-size:12.5px;font-weight:600;color:var(--accent)}
   .frag .tag{font-weight:400;color:var(--muted)}
   .frag .passage{font-size:13px;line-height:1.5;color:var(--ink);white-space:pre-wrap;max-height:200px;overflow:auto}
-  .composer{position:sticky;bottom:0;background:var(--bg);padding:12px 0 4px;margin-top:14px}
-  .composer form{display:flex;gap:8px;align-items:flex-end}
+  .composer{border-top:1px solid var(--line);padding:12px 16px}
+  .composer .center{max-width:760px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
   textarea{flex:1;min-height:46px;max-height:180px;resize:vertical;padding:11px 14px;border-radius:12px;
     border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;outline:none}
   textarea:focus{border-color:var(--accent)}
   button.send{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;
     padding:11px 20px;font:inherit;font-weight:600;cursor:pointer}
   button.send:disabled{opacity:.5;cursor:progress}
-  .muted{color:var(--muted)}
-  .err{color:#dc2626} a{color:var(--accent)}
+  .muted{color:var(--muted)} .err{color:#dc2626} a{color:var(--accent)}
+  @media (max-width:720px){
+    .side{position:fixed;z-index:20;top:0;bottom:0;left:0;transform:translateX(-100%);transition:transform .2s}
+    .side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.35)}
+    .bar .menu{display:block}
+    .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:15}
+    .backdrop.on{display:block}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1 id="title">Conversar</h1>
-    <button class="reset" id="reset" type="button" title="Empezar de nuevo">nueva conversación</button>
-  </header>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="top"><button class="newbtn" id="new" type="button">＋ Nueva conversación</button></div>
+    <div class="convs" id="convs"></div>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
 
-  <div class="log" id="log"></div>
-
-  <div class="composer">
-    <form id="form">
-      <textarea id="q" placeholder="Escribe tu mensaje…" autofocus></textarea>
-      <button class="send" id="send" type="submit">Enviar</button>
-    </form>
+  <div class="main">
+    <div class="bar">
+      <button class="menu" id="menu" type="button" title="Conversaciones">☰</button>
+      <h1 id="title">Conversar</h1>
+    </div>
+    <div class="log" id="log"><div class="center" id="logc"></div></div>
+    <div class="composer">
+      <div class="center">
+        <form id="form" style="display:flex;gap:8px;align-items:flex-end;width:100%">
+          <textarea id="q" placeholder="Escribe tu mensaje…" autofocus></textarea>
+          <button class="send" id="send" type="submit">Enviar</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -70,7 +100,7 @@ const bool = (v, def) => v == null ? def : String(v).toLowerCase() !== 'false';
 const SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido'];
 let metodo = (P.get('metodo') || P.get('setting') || 'orig').toLowerCase();
 if (metodo === 'hibrido') metodo = 'híbrido';
-const k = Math.min(Math.max(parseInt(P.get('k'), 10) || 5, 1), 20);
+const kParam = Math.min(Math.max(parseInt(P.get('k'), 10) || 5, 1), 20);
 const jur = (P.get('jurisdiccion') || P.get('jurisdiction') || '').split(',').map(s => s.trim()).filter(Boolean);
 const CFG = {
   topic: P.get('tema') || 'psicologia_conductual',
@@ -78,25 +108,21 @@ const CFG = {
   hyde: bool(P.get('HyDE') ?? P.get('hyde'), true),
   rerank: bool(P.get('rerank'), false),
   setting: SETTINGS.includes(metodo) ? metodo : 'orig',
-  k, jurisdictions: jur,
+  k: kParam, jurisdictions: jur,
 };
 
 const $ = id => document.getElementById(id);
 const esc = s => (s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function fmt(t){ // markdown mínimo: **negrita**, viñetas, párrafos
-  const blocks = (t || '').split(/\n{2,}/).map(b => {
-    const lines = b.split('\n');
-    if (lines.every(l => /^\s*[-*]\s+/.test(l))) {
-      return '<ul>' + lines.map(l => '<li>' + inline(l.replace(/^\s*[-*]\s+/, '')) + '</li>').join('') + '</ul>';
-    }
-    return '<p>' + inline(esc(b)).replace(/\n/g, '<br>') + '</p>';
-  });
-  return blocks.join('');
-}
 const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+function fmt(t){
+  return (t || '').split(/\n{2,}/).map(b => {
+    const lines = b.split('\n');
+    if (lines.every(l => /^\s*[-*]\s+/.test(l)))
+      return '<ul>' + lines.map(l => '<li>' + inline(l.replace(/^\s*[-*]\s+/, '')) + '</li>').join('') + '</ul>';
+    return '<p>' + inline(b).replace(/\n/g, '<br>') + '</p>';
+  }).join('');
+}
 function passage(t){ return (t || '').replace(/^Fuente:[^\n]*\n(?:Secci[oó]n:[^\n]*\n)?\n?/, '').trim() || (t || ''); }
-
-// Referencias (APA, deduplicadas) + fragmentos con texto, para un turno del asistente.
 function sourcesHTML(chunks, searchq){
   if (!chunks || !chunks.length) return '';
   const seen = new Set(), refs = [];
@@ -114,18 +140,71 @@ function sourcesHTML(chunks, searchq){
     + '<details class="src"><summary>Fragmentos (' + chunks.length + ')</summary>' + cards + '</details>';
 }
 
-const messages = [];  // {role, content, chunks?, search_query?}
-let busy = false;
+// ── Persistencia (IndexedDB), scopeada por tema ────────────────────────────────
+const DB_NAME = 'rag_conversar', DB_VER = 1;
+let _db = null, curConv = null, busy = false;
+function openDB(){
+  if (_db) return Promise.resolve(_db);
+  return new Promise((res, rej) => {
+    let rq; try { rq = indexedDB.open(DB_NAME, DB_VER); } catch(e){ return rej(e); }
+    rq.onupgradeneeded = e => { const db = e.target.result;
+      if (!db.objectStoreNames.contains('conversations')) db.createObjectStore('conversations', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('messages')){
+        const s = db.createObjectStore('messages', { keyPath: 'mid', autoIncrement: true });
+        s.createIndex('conv', 'convId', { unique: false });
+      }
+    };
+    rq.onsuccess = e => { _db = e.target.result; res(_db); };
+    rq.onerror = e => rej(e.target.error);
+  });
+}
+const idbReq = req => new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); });
+async function dbAll(store){ const db = await openDB(); return idbReq(db.transaction(store, 'readonly').objectStore(store).getAll()); }
+async function dbPut(store, val){ const db = await openDB(); return idbReq(db.transaction(store, 'readwrite').objectStore(store).put(val)); }
+async function dbAdd(store, val){ const db = await openDB(); return idbReq(db.transaction(store, 'readwrite').objectStore(store).add(val)); }
+async function dbDelete(store, key){ const db = await openDB();
+  const tx = db.transaction(store, 'readwrite'); tx.objectStore(store).delete(key);
+  return new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
+async function msgsOf(convId){ const db = await openDB();
+  const idx = db.transaction('messages', 'readonly').objectStore('messages').index('conv');
+  return (await idbReq(idx.getAll(convId))).sort((a, b) => a.mid - b.mid); }
+async function listConvs(){ // solo las del tema actual
+  return (await dbAll('conversations')).filter(c => c.topic === CFG.topic).sort((a, b) => b.updated - a.updated); }
 
-function render(){
-  $('log').innerHTML = messages.map(m => m.role === 'user'
+async function newConv(){
+  const id = 'c' + Date.now() + Math.random().toString(36).slice(2, 6), now = Date.now();
+  await dbPut('conversations', { id, title: 'Nueva conversación', topic: CFG.topic, created: now, updated: now });
+  curConv = id; await renderSidebar(); await renderLog(); $('q').focus(); return id;
+}
+async function delConv(id, ev){
+  if (ev) ev.stopPropagation();
+  for (const m of await msgsOf(id)) await dbDelete('messages', m.mid);
+  await dbDelete('conversations', id);
+  if (curConv === id) curConv = null;
+  const list = await listConvs();
+  if (!curConv && list.length) curConv = list[0].id;
+  await renderSidebar(); await renderLog();
+}
+async function selectConv(id){ curConv = id; closeSide(); await renderSidebar(); await renderLog(); $('q').focus(); }
+
+async function renderSidebar(){
+  const list = await listConvs();
+  $('convs').innerHTML = list.length ? list.map(c =>
+    `<div class="conv ${c.id === curConv ? 'active' : ''}" onclick="selectConv('${c.id}')">
+       <span class="t">${esc(c.title || 'Conversación')}</span>
+       <button class="x" onclick="delConv('${c.id}',event)" title="Borrar">✕</button>
+     </div>`).join('') : '<div class="empty">Sin conversaciones aún.</div>';
+}
+async function renderLog(){
+  const msgs = curConv ? await msgsOf(curConv) : [];
+  $('logc').innerHTML = msgs.length ? msgs.map(m => m.role === 'user'
     ? '<div class="turn user">' + esc(m.content) + '</div>'
     : '<div class="turn bot">' + fmt(m.content) + sourcesHTML(m.chunks, m.search_query) + '</div>'
-  ).join('');
-  window.scrollTo(0, document.body.scrollHeight);
+  ).join('') : '<div class="empty">Escribe tu primera pregunta abajo.</div>';
+  const l = $('log'); l.scrollTop = l.scrollHeight;
 }
 
-// Título con el label del tópico (requiere sesión).
+// Título con el label del tópico.
 fetch('/api/topics').then(r => r.ok ? r.json() : []).then(ts => {
   const t = (ts || []).find(x => x.topic === CFG.topic);
   if (t && t.label){ $('title').textContent = t.label; document.title = t.label; }
@@ -151,22 +230,27 @@ form.addEventListener('submit', async e => {
   const text = $('q').value.trim();
   if (!text || busy) return;
   busy = true; $('send').disabled = true; $('q').value = '';
-  messages.push({ role: 'user', content: text });
-  render();
+  if (!curConv) await newConv();
+  await dbAdd('messages', { convId: curConv, role: 'user', content: text, ts: Date.now() });
+  // Titula la conversación con la primera pregunta.
+  const conv = (await listConvs()).find(c => c.id === curConv);
+  const userCount = (await msgsOf(curConv)).filter(m => m.role === 'user').length;
+  if (conv && userCount <= 1){ conv.title = text.slice(0, 60); conv.updated = Date.now(); await dbPut('conversations', conv); }
+  await renderSidebar(); await renderLog();
 
   // Burbuja en vivo
   const live = document.createElement('div'); live.className = 'turn bot';
-  live.innerHTML = '<span class="muted">⏳ …</span>'; $('log').appendChild(live);
-  window.scrollTo(0, document.body.scrollHeight);
+  live.innerHTML = '<span class="muted">⏳ …</span>'; $('logc').appendChild(live);
+  const toBottom = () => { const l = $('log'); l.scrollTop = l.scrollHeight; }; toBottom();
 
   let answer = '', errMsg = null, meta = { chunks: [], search_query: '' };
   try{
+    const history = (await msgsOf(curConv)).map(m => ({ role: m.role, content: m.content }));
     const resp = await fetch('/chat/stream', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
-        setting: CFG.setting, k: CFG.k, topic: CFG.topic, jurisdictions: CFG.jurisdictions,
-        neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank,
+        messages: history, setting: CFG.setting, k: CFG.k, topic: CFG.topic,
+        jurisdictions: CFG.jurisdictions, neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank,
       }),
     });
     if (resp.status === 401) throw new Error('Sesión expirada. <a href="/login">Inicia sesión</a>.');
@@ -176,23 +260,43 @@ form.addEventListener('submit', async e => {
       else if (ev.stage === 'retrieving'){ if (!answer) live.innerHTML = '<span class="muted">⏳ recuperando…</span>'; }
       else if (ev.stage === 'context'){ meta.chunks = ev.chunks || []; meta.search_query = ev.search_query || '';
         if (!answer) live.innerHTML = '<span class="muted">✍️ redactando…</span>'; }
-      else if (ev.stage === 'token'){ answer += ev.text || ''; live.innerHTML = fmt(answer); window.scrollTo(0, document.body.scrollHeight); }
+      else if (ev.stage === 'token'){ answer += ev.text || ''; live.innerHTML = fmt(answer); toBottom(); }
       else if (ev.stage === 'error'){ errMsg = ev.error || 'error'; }
     });
     if (errMsg) throw new Error(errMsg);
-    messages.push({ role: 'assistant', content: answer || '(sin respuesta)', chunks: meta.chunks, search_query: meta.search_query });
+    await dbAdd('messages', { convId: curConv, role: 'assistant', content: answer || '(sin respuesta)', ts: Date.now(),
+      chunks: meta.chunks, search_query: meta.search_query });
+    const c2 = (await listConvs()).find(c => c.id === curConv);
+    if (c2){ c2.updated = Date.now(); await dbPut('conversations', c2); }
   }catch(err){
-    messages.push({ role: 'assistant', content: '⚠️ ' + (err.message || err) });
+    await dbAdd('messages', { convId: curConv, role: 'assistant', content: '⚠️ ' + (err.message || err), ts: Date.now() });
   }finally{
-    live.remove(); render();
-    busy = false; $('send').disabled = false; $('q').focus();
+    live.remove();
+    busy = false; $('send').disabled = false;
+    await renderSidebar(); await renderLog(); $('q').focus();
   }
 });
 
-$('q').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
-});
-$('reset').addEventListener('click', () => { messages.length = 0; render(); $('q').focus(); });
+$('q').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+$('new').addEventListener('click', () => newConv());
+
+// Drawer móvil
+const openSide = () => { $('side').classList.add('open'); $('backdrop').classList.add('on'); };
+const closeSide = () => { $('side').classList.remove('open'); $('backdrop').classList.remove('on'); };
+$('menu').addEventListener('click', openSide);
+$('backdrop').addEventListener('click', closeSide);
+
+// Init: carga conversaciones del tema; selecciona la más reciente o deja vacío.
+(async () => {
+  try{
+    await openDB();
+    const list = await listConvs();
+    curConv = list.length ? list[0].id : null;
+    await renderSidebar(); await renderLog();
+  }catch(e){
+    $('logc').innerHTML = '<div class="empty err">Tu navegador no permite IndexedDB; no se puede guardar el historial.</div>';
+  }
+})();
 </script>
 </body>
 </html>
