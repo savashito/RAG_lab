@@ -307,6 +307,9 @@
    <p class="muted" style="margin:12px 0 4px"><b>2 · System prompt.</b> Instrucción al <b>LLM</b> sobre cómo <b>redactar la respuesta</b> en este tema (tono, qué citar, en qué basarse). Es lo que carga el «⚙️ System prompt» de Preguntar/Conversacional al elegir este tema.</p>
    <textarea id="ing-topic-system" style="min-height:100px" placeholder="Eres un asistente experto en este tema. Responde solo con base en el CONTEXTO…"></textarea>
 
+   <p class="muted" style="margin:12px 0 4px"><b>3 · Prompt de HyDE.</b> Instrucción para que el LLM redacte el <b>borrador hipotético</b> del pasaje buscado (solo se usa con HyDE activo). Debe describir el <b>vocabulario del tema</b>. Ojo: el default es <i>jurídico penal</i>; cámbialo en temas no jurídicos (p. ej. psicología).</p>
+   <textarea id="ing-topic-hyde" style="min-height:100px" placeholder="Redacta en 2 a 4 oraciones cómo luciría el pasaje que responde la pregunta, con el vocabulario técnico del tema. No inventes datos ni referencias. Devuelve solo el pasaje."></textarea>
+
    <div class="row" style="margin-top:10px">
      <button id="ing-topic-create" type="button">Crear tema</button>
      <button id="ing-topic-cancel" class="ghost" type="button">Cancelar</button>
@@ -1034,6 +1037,7 @@ function openTopicForm(mode){
     $('ing-topic-label').value=t.label;
     $('ing-topic-instruct').value=t.instruct||'';
     $('ing-topic-system').value=t.system_prompt||'';
+    $('ing-topic-hyde').value=t.hyde_prompt||'';
     $('ing-topic-create').textContent='Guardar cambios';
   }else{
     editingTopic=null;
@@ -1041,6 +1045,7 @@ function openTopicForm(mode){
     $('ing-topic-label').value='';
     $('ing-topic-instruct').value=INSTRUCT_DEFAULT;
     $('ing-topic-system').value=ASK_SYSTEM_DEFAULT;
+    $('ing-topic-hyde').value='';
     $('ing-topic-create').textContent='Crear tema';
   }
   $('ing-topic-form').style.display='block';
@@ -1054,7 +1059,7 @@ async function saveTopic(){
   try{
     const d=await (await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({label, instruct:$('ing-topic-instruct').value,
-        system_prompt:$('ing-topic-system').value})})).json();
+        system_prompt:$('ing-topic-system').value, hyde_prompt:$('ing-topic-hyde').value})})).json();
     if(d.error){ $('ing-topic-msg').innerHTML='<span style="color:#f87171">'+esc(d.error)+'</span>'; return; }
     const keep=d.topic;   // deja seleccionado el tema creado/editado
     await loadMe();       // el tópico recién creado pasa a ser "propio" → habilitado para subir

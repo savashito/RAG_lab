@@ -40,7 +40,7 @@ load_dotenv(HERE / '.env')
 from shared.db import connect
 from shared.legal_chunking import find_article_ref
 from shared.lexical import BM25, rank_indices_by_score, rrf, tokenize
-from shared.llm_client import REWRITE_SYSTEM, LlamaClient
+from shared.llm_client import HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient
 from shared.rerank_client import RerankClient
 from shared.tei_client import TEIClient
 
@@ -222,6 +222,11 @@ with connect() as _c, _c.cursor() as _cur:
     # system_prompt por tópico (instrucción del LLM al RESPONDER; distinta del instruct
     # de búsqueda). Se rellena con el default global más abajo, cuando ASK_SYSTEM existe.
     _cur.execute(f"ALTER TABLE {TOPICS_TABLE} ADD COLUMN IF NOT EXISTS system_prompt text")
+    # hyde_prompt por tópico: instrucción para redactar el borrador hipotético (HyDE).
+    # Backfill con el HyDE penal por defecto para NO cambiar el comportamiento actual;
+    # cada tópico edita el suyo desde el editor de temas (los no jurídicos deben cambiarlo).
+    _cur.execute(f"ALTER TABLE {TOPICS_TABLE} ADD COLUMN IF NOT EXISTS hyde_prompt text")
+    _cur.execute(f"UPDATE {TOPICS_TABLE} SET hyde_prompt = %s WHERE hyde_prompt IS NULL", (HYDE_SYSTEM,))
     # Semilla del tópico por defecto y backfill de lo ya insertado (que tenía topic NULL).
     _cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct) VALUES (%s, %s, %s) "
                  f"ON CONFLICT (topic) DO NOTHING",
@@ -265,9 +270,9 @@ TOPICS: dict[str, dict] = {}
 def load_topics():
     global TOPICS
     with connect() as c, c.cursor() as cur:
-        cur.execute(f"SELECT topic, label, instruct, system_prompt FROM {TOPICS_TABLE} ORDER BY created_at")
-        TOPICS = {t: {'label': lb, 'instruct': ins, 'system_prompt': sp}
-                  for t, lb, ins, sp in cur.fetchall()}
+        cur.execute(f"SELECT topic, label, instruct, system_prompt, hyde_prompt FROM {TOPICS_TABLE} ORDER BY created_at")
+        TOPICS = {t: {'label': lb, 'instruct': ins, 'system_prompt': sp, 'hyde_prompt': hp}
+                  for t, lb, ins, sp, hp in cur.fetchall()}
     return TOPICS
 
 
@@ -376,6 +381,12 @@ def system_for(topic) -> str:
     """System prompt del tópico (instrucción al LLM al responder), o el default global
     ASK_SYSTEM si el tópico no tiene uno."""
     return (TOPICS.get(topic) or {}).get('system_prompt') or ASK_SYSTEM
+
+
+def hyde_for(topic) -> str:
+    """Prompt de HyDE del tópico (cómo redactar el borrador hipotético del pasaje), o el
+    default global HYDE_SYSTEM (penal) si el tópico no tiene uno."""
+    return (TOPICS.get(topic) or {}).get('hyde_prompt') or HYDE_SYSTEM
 
 
 def slugify(text) -> str:
@@ -759,7 +770,7 @@ def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
     dense_text = question
     if hyde:
         try:
-            passage = llm.hyde_passage(question)
+            passage = llm.hyde_passage(question, system=hyde_for(topic))
             if passage:
                 dense_text = f'{question}\n\n{passage}'
                 if debug is not None:
@@ -966,6 +977,7 @@ def api_topics():
         counts = {t: n for t, n in cur.fetchall()}
     return [{'topic': t, 'label': v['label'], 'instruct': v['instruct'],
              'system_prompt': v.get('system_prompt') or ASK_SYSTEM,
+             'hyde_prompt': v.get('hyde_prompt') or HYDE_SYSTEM,
              'chunks': counts.get(t, 0)} for t, v in TOPICS.items()]
 
 
@@ -984,15 +996,16 @@ async def api_topic_create(req: Request):
     topic = slugify(label)
     instruct = (b.get('instruct') or '').strip() or DEFAULT_INSTRUCT
     system_prompt = (b.get('system_prompt') or '').strip() or ASK_SYSTEM
+    hyde_prompt = (b.get('hyde_prompt') or '').strip() or HYDE_SYSTEM
     with connect() as c, c.cursor() as cur:
         cur.execute(f"SELECT 1 FROM {TOPICS_TABLE} WHERE topic = %s", (topic,))
         if cur.fetchone():
             return JSONResponse({'error': f'Ya existe un tópico con id {topic!r}'}, status_code=409)
-        cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct, system_prompt, owner_email) "
-                    f"VALUES (%s, %s, %s, %s, %s)", (topic, label, instruct, system_prompt, email))
+        cur.execute(f"INSERT INTO {TOPICS_TABLE} (topic, label, instruct, system_prompt, hyde_prompt, owner_email) "
+                    f"VALUES (%s, %s, %s, %s, %s, %s)", (topic, label, instruct, system_prompt, hyde_prompt, email))
         c.commit()
     load_topics()
-    return {'topic': topic, 'label': label, 'instruct': instruct, 'system_prompt': system_prompt}
+    return {'topic': topic, 'label': label, 'instruct': instruct, 'system_prompt': system_prompt, 'hyde_prompt': hyde_prompt}
 
 
 @app.post('/api/topics/{topic}')
@@ -1011,6 +1024,8 @@ async def api_topic_update(topic: str, req: Request):
         sets.append('instruct = %s'); vals.append((b.get('instruct') or '').strip() or DEFAULT_INSTRUCT)
     if 'system_prompt' in b:
         sets.append('system_prompt = %s'); vals.append((b.get('system_prompt') or '').strip() or ASK_SYSTEM)
+    if 'hyde_prompt' in b:
+        sets.append('hyde_prompt = %s'); vals.append((b.get('hyde_prompt') or '').strip() or HYDE_SYSTEM)
     if not sets:
         return JSONResponse({'error': 'nada que actualizar'}, status_code=400)
     vals.append(topic)

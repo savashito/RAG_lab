@@ -130,10 +130,10 @@ class LlamaClient:
         """Pregunta coloquial → enunciado jurídico breve (para query rewriting)."""
         return self.chat(REWRITE_SYSTEM, question)
 
-    def hyde_passage(self, question: str) -> str:
+    def hyde_passage(self, question: str, system: str | None = None) -> str:
         """Pregunta → borrador hipotético del pasaje buscado (para HyDE). Da margen de
         tokens porque queremos vocabulario de la conducta, no una frase telegráfica.
         `reasoning_effort=low`: en modelos de razonamiento (GPT-OSS) el 'thinking' se
         come el presupuesto y deja `content` vacío; con esfuerzo bajo redacta directo."""
-        return self.chat(HYDE_SYSTEM, question, max_tokens=512, timeout=120,
+        return self.chat(system or HYDE_SYSTEM, question, max_tokens=512, timeout=120,
                          extra={'reasoning_effort': 'low'})
