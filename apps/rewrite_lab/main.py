@@ -862,6 +862,44 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
 # de seguimiento), pero el retrieval RAG se hace SOLO sobre el último mensaje del
 # usuario; los chunks devueltos son los de esa última pregunta (no se acumulan). El
 # historial de conversaciones vive en el browser (IndexedDB), no en el servidor.
+# ── Condensación de la consulta (RAG multi-turno) ──────────────────────────────────
+# En una conversación, el retrieval solo del último mensaje falla con seguimientos
+# ("dime más", "¿por qué?"): no cargan el tema. Antes de buscar, el LLM reescribe el
+# último mensaje como una consulta AUTÓNOMA usando el historial. La generación sigue
+# recibiendo todos los turnos; solo la BÚSQUEDA usa la consulta condensada (y HyDE, si
+# está activo, se monta sobre ella).
+CONDENSE_SYSTEM = (
+    "Reescribe el ÚLTIMO mensaje del usuario como una consulta de búsqueda AUTÓNOMA en "
+    "español, resolviendo pronombres y referencias con el historial de la conversación "
+    "(p. ej. 'dime más' → el tema del que se venía hablando). Si el mensaje ya es autónomo, "
+    "devuélvelo casi igual. No respondas la pregunta ni agregues información nueva. Devuelve "
+    "SOLO la consulta, en una línea, sin comillas ni preámbulo."
+)
+
+
+def condense_question(msgs, max_turns=6, max_answer_chars=500) -> str:
+    """`msgs` (ya filtrado, último = usuario) → consulta autónoma usando el historial.
+    Primer turno o error del LLM → devuelve el último mensaje tal cual."""
+    last = msgs[-1]['content'].strip()
+    prev = msgs[:-1]
+    if not prev:
+        return last
+    lines = []
+    for m in prev[-max_turns:]:
+        who = 'Usuario' if m['role'] == 'user' else 'Asistente'
+        txt = ' '.join((m.get('content') or '').split())
+        if m['role'] == 'assistant' and len(txt) > max_answer_chars:
+            txt = txt[:max_answer_chars] + '…'
+        lines.append(f'{who}: {txt}')
+    prompt = 'CONVERSACIÓN:\n' + '\n'.join(lines) + f'\n\nÚLTIMO MENSAJE: {last}\n\nConsulta autónoma:'
+    try:
+        q = (llm.chat(CONDENSE_SYSTEM, prompt, max_tokens=128, timeout=60,
+                      extra={'reasoning_effort': 'low'}) or '').strip()
+        return q or last
+    except Exception:  # noqa: BLE001 — si falla, buscamos con el mensaje crudo
+        return last
+
+
 def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=None,
                 neighbors=True, hyde=False, rerank=False):
     if setting not in ASK_SETTINGS:
@@ -870,17 +908,18 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     if not msgs or msgs[-1]['role'] != 'user':
         raise ValueError('el último mensaje debe ser del usuario')
     question = msgs[-1]['content'].strip()
-    if find_article_ref(question):
+    search_q = condense_question(msgs)   # consulta autónoma para el retrieval (multi-turno)
+    if find_article_ref(search_q):
         k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
     dbg: dict = {}
-    with connect() as c, c.cursor() as cur:   # retrieval SOLO de la última pregunta
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
-        if rerank and not find_article_ref(question):
-            scored, did = _rerank_scored(question, scored)
+    with connect() as c, c.cursor() as cur:   # retrieval sobre la consulta CONDENSADA
+        scored, score_kind, rw = retrieve_scored(cur, search_q, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
+        if rerank and not find_article_ref(search_q):
+            scored, did = _rerank_scored(search_q, scored)
             if did:
                 score_kind = 'rerank'
-        ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
+        ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
             'score_kind': score_kind, 'neighbor': cid in extra, 'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
@@ -895,7 +934,9 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
     answer = llm.chat_messages(llm_msgs, max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
-            'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
+            'question': question,
+            'search_query': search_q if search_q != question else '',
+            'chunks': top, 'seconds': round(time.time() - t0, 1),
             'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', '')}
 
 

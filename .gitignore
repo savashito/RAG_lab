@@ -3,6 +3,7 @@
 *.env
 .env.bak*
 !.env.example
+.claude/settings.local.json
 
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
@@ -27,8 +28,12 @@ data.zip
 *.zip
 *.joblib
 *.png
-*.md
 *.pdf
+# Salidas de ingesta (Markdown OCR'd / limpio); no doc del repo. (Antes: *.md genérico,
+# que también ignoraba READMEs/FUTURE_WORK y demás docs.)
+/ingestion/out/
+/ingestion/out_clean/
+/ingestion/markdown/
 scratch/
 # runtime work dir — staged canonical CSVs (patient PII) + geometry; never commit
 var/

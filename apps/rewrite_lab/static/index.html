@@ -948,6 +948,7 @@ function msgBubble(m,isLastAssistant){
     const fmt=v=>v==null?'vecino':((skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2));
     src=`<div class="chat-src"><details><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
       (m.setting?` · <span class="muted">${esc(m.setting)}</span>`:'')+
+      (m.search_query?` · 🔎 búsqueda: <span class="rw">${esc(m.search_query)}</span>`:'')+
       (m.rewrite?` · reescritura: <span class="rw">${esc(m.rewrite)}</span>`:'')+`</summary>`+
       m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
         <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
@@ -995,7 +996,7 @@ async function chatSend(){
       await dbAdd('messages',{convId:curConv,role:'assistant',content:'⚠️ Error: '+d.error,ts:Date.now(),chunks:[]});
     }else{
       await dbAdd('messages',{convId:curConv,role:'assistant',content:d.answer||'',ts:Date.now(),
-        chunks:d.chunks||[],rewrite:d.rewrite,setting:d.setting,score_kind:d.score_kind,seconds:d.seconds});
+        chunks:d.chunks||[],rewrite:d.rewrite,setting:d.setting,score_kind:d.score_kind,seconds:d.seconds,search_query:d.search_query});
     }
     const c2=(await listConvs()).find(c=>c.id===curConv);
     if(c2){ c2.updated=Date.now(); await dbPut('conversations',c2); }
