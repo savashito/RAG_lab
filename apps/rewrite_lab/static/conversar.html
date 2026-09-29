@@ -36,7 +36,17 @@
   .main{flex:1;display:flex;flex-direction:column;min-width:0}
   .bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
   .bar .menu{display:none;border:0;background:none;color:var(--ink);font-size:20px;cursor:pointer}
-  h1{font-size:17px;margin:0;font-weight:650;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  h1{font-size:17px;margin:0;font-weight:650;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* El título es un selector de tema: se ve como título, con una flecha discreta. */
+  select.topic{font:inherit;font-weight:650;color:var(--ink);background:transparent;cursor:pointer;
+    border:1px solid transparent;border-radius:8px;padding:4px 26px 4px 8px;margin-left:-8px;max-width:100%;
+    appearance:none;-webkit-appearance:none;text-overflow:ellipsis;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 13px) 55%,calc(100% - 8px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+  select.topic:hover{border-color:var(--line)}
+  select.topic:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  select.topic:disabled{cursor:progress;opacity:.7}
+  select.topic option{background:var(--card);color:var(--ink);font-weight:400}
   .log{flex:1;overflow:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px}
   .log .center{max-width:760px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px}
   .turn{max-width:88%;white-space:normal}
@@ -118,6 +128,8 @@ const CFG = {
 };
 
 const $ = id => document.getElementById(id);
+// Enlace de login que regresa a esta misma página (con su ?tema=…) tras autenticarse.
+const loginHref = () => '/login?next=' + encodeURIComponent(location.pathname + location.search);
 const esc = s => (s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 function fmt(t){
@@ -212,11 +224,31 @@ async function renderLog(){
   const l = $('log'); l.scrollTop = l.scrollHeight;
 }
 
-// Título con el label del tópico.
-fetch('/api/topics').then(r => r.ok ? r.json() : []).then(ts => {
-  const t = (ts || []).find(x => x.topic === CFG.topic);
-  if (t && t.label){ $('title').textContent = t.label; document.title = t.label; }
-}).catch(() => {});
+// Título = selector de tema. Lista los temas con documentos (y el actual aunque esté
+// vacío); al cambiar, actualiza ?tema= en la URL y muestra las conversaciones de ese tema.
+let TOPICS = [];
+const topicLabel = t => (TOPICS.find(x => x.topic === t) || {}).label || t;
+function renderTopicPicker(){
+  const opts = TOPICS.filter(t => t.chunks > 0 || t.topic === CFG.topic)
+    .sort((a, b) => (a.label || a.topic).localeCompare(b.label || b.topic, 'es'));
+  if (!opts.some(t => t.topic === CFG.topic)) opts.unshift({ topic: CFG.topic, label: CFG.topic });
+  document.title = topicLabel(CFG.topic);
+  if (opts.length < 2){ $('title').textContent = topicLabel(CFG.topic); return; }
+  $('title').innerHTML = '<select class="topic" id="topic" aria-label="Tema">' + opts.map(t =>
+    `<option value="${esc(t.topic)}"${t.topic === CFG.topic ? ' selected' : ''}>${esc(t.label || t.topic)}</option>`).join('') + '</select>';
+  $('topic').addEventListener('change', e => switchTopic(e.target.value));
+}
+async function switchTopic(topic){
+  if (busy || topic === CFG.topic){ $('topic').value = CFG.topic; return; }
+  CFG.topic = topic;
+  const u = new URL(location.href); u.searchParams.set('tema', topic);
+  history.replaceState(null, '', u);
+  document.title = topicLabel(topic);
+  const list = await listConvs();          // las conversaciones se guardan por tema
+  curConv = list.length ? list[0].id : null;
+  await renderSidebar(); await renderLog(); $('q').focus();
+}
+fetch('/api/topics').then(r => r.ok ? r.json() : []).then(ts => { TOPICS = ts || []; renderTopicPicker(); }).catch(() => {});
 
 async function readSSE(resp, onEvent){
   const reader = resp.body.getReader(), dec = new TextDecoder(); let buf = '';
@@ -238,6 +270,7 @@ form.addEventListener('submit', async e => {
   const text = $('q').value.trim();
   if (!text || busy) return;
   busy = true; $('send').disabled = true; $('q').value = '';
+  if ($('topic')) $('topic').disabled = true;
   if (!curConv) await newConv();
   await dbAdd('messages', { convId: curConv, role: 'user', content: text, ts: Date.now() });
   // Titula la conversación con la primera pregunta.
@@ -261,7 +294,7 @@ form.addEventListener('submit', async e => {
         jurisdictions: CFG.jurisdictions, neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank,
       }),
     });
-    if (resp.status === 401) throw new Error('Sesión expirada. <a href="/login">Inicia sesión</a>.');
+    if (resp.status === 401) throw new Error('Sesión expirada. <a href="' + loginHref() + '">Inicia sesión</a>.');
     if (!resp.ok || !resp.body) throw new Error('HTTP ' + resp.status);
     await readSSE(resp, ev => {
       if (ev.stage === 'search'){ if (!answer) live.innerHTML = '<span class="muted">🔎 buscando: ' + esc(ev.query || '') + '</span>'; }
@@ -281,6 +314,7 @@ form.addEventListener('submit', async e => {
   }finally{
     live.remove();
     busy = false; $('send').disabled = false;
+    if ($('topic')) $('topic').disabled = false;
     await renderSidebar(); await renderLog(); $('q').focus();
   }
 });

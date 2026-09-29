@@ -94,6 +94,8 @@ const CFG = {
 };
 
 const $ = id => document.getElementById(id);
+// Enlace de login que regresa a esta misma página (con su ?tema=…) tras autenticarse.
+const loginHref = () => '/login?next=' + encodeURIComponent(location.pathname + location.search);
 const esc = s => (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 // Formato mínimo: **negrita**, párrafos por línea en blanco, saltos simples.
 function fmt(t){
@@ -138,7 +140,7 @@ form.addEventListener('submit', async e => {
     });
     if (resp.status === 401){
       $('status').textContent = '';
-      $('extra').innerHTML = '<div class="err">Sesión expirada. <a href="/login">Inicia sesión</a> para continuar.</div>';
+      $('extra').innerHTML = '<div class="err">Sesión expirada. <a href="' + loginHref() + '">Inicia sesión</a> para continuar.</div>';
       return;
     }
     if (!resp.ok || !resp.body){ throw new Error('HTTP ' + resp.status); }

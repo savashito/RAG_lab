@@ -47,6 +47,22 @@ def _email(request) -> str | None:
     return (request.session.get('user') or {}).get('email')
 
 
+def _safe_next(url: str | None) -> str | None:
+    """Destino post-login SOLO si es una ruta interna (`/conversar?tema=…`). Rechaza
+    URLs absolutas o `//host` (redirección abierta) y las rutas del propio login."""
+    if not url or not url.startswith('/') or url.startswith('//') or '\\' in url:
+        return None
+    if url.split('?', 1)[0] in PUBLIC_PATHS:
+        return None
+    return url
+
+
+def _requested_url(request) -> str:
+    """Ruta + query de la petición, p. ej. `/conversar?tema=psicologia_conductual`."""
+    q = request.url.query
+    return request.url.path + ('?' + q if q else '')
+
+
 def install_auth(app, is_allowed=None) -> bool:
     """Instala la puerta OAuth en la app FastAPI. Devuelve True si quedó activa.
 
@@ -81,6 +97,10 @@ def install_auth(app, is_allowed=None) -> bool:
         # Sin sesión: las peticiones de API (POST/JSON) reciben 401; la navegación, redirect.
         if request.method != 'GET' or 'text/html' not in request.headers.get('accept', ''):
             return JSONResponse({'error': 'no autenticado'}, status_code=401)
+        # Recuerda a dónde iba (con su query: ?tema=…) para volver ahí tras el login.
+        nxt = _safe_next(_requested_url(request))
+        if nxt:
+            request.session['next'] = nxt
         return RedirectResponse('/login')
 
     # El orden importa: SessionMiddleware debe envolver a la puerta (se agrega después,
@@ -91,6 +111,10 @@ def install_auth(app, is_allowed=None) -> bool:
 
     @app.get('/login')
     async def login(request: Request):
+        # `/login?next=/conversar?tema=…` (p. ej. el enlace "Inicia sesión" de una página).
+        nxt = _safe_next(request.query_params.get('next'))
+        if nxt:
+            request.session['next'] = nxt
         redirect_uri = REDIRECT_URL or str(request.url_for('auth_callback'))
         return await oauth.google.authorize_redirect(request, redirect_uri)
 
@@ -105,7 +129,7 @@ def install_auth(app, is_allowed=None) -> bool:
         if not info.get('email_verified', False) or not allowed(email):
             return HTMLResponse(_DENIED.format(email=email or '(sin correo)'), status_code=403)
         request.session['user'] = {'email': email, 'name': info.get('name', '')}
-        return RedirectResponse('/')
+        return RedirectResponse(_safe_next(request.session.pop('next', None)) or '/')
 
     @app.get('/logout')
     async def logout(request: Request):
