@@ -6,58 +6,102 @@ DB `rag_lab`, TEI/LLM en rtx5090).
 
 ## Ingesta y OCR
 
-### 1. Automatizar la ingesta de PDFs escaneados
+Detalle de lo hecho, benchmark y evidencia de cada hallazgo:
+[`ingestion/OCR_ESCANEADOS.md`](ingestion/OCR_ESCANEADOS.md).
 
-**Estado actual (manual, solo Mac):** prod convierte con `pymupdf4llm`, que **no OCRea**.
-Un PDF escaneado → texto vacío → `KeyError: 'document'` en `merge_small_siblings`. Hoy se
-resuelve OCReando **en local** con Docling + macOS Vision (`ingestion/ocr_*.py`) e
-insertando el `.md` con `ingestion.pipeline.ingest_md`. Requiere una Mac + los scripts →
-no lo puede hacer cualquier admin.
+### ✅ 1. Automatizar la ingesta de PDFs escaneados (hecho 2026-09-28)
+Cualquier admin, desde cualquier dispositivo, sube el PDF por el tab. `pdf_triage` decide
+por página, sin OCR, si hace falta OCR:
+- **Digital:** `pymupdf4llm` en el VPS.
+- **Escaneado o con texto roto:** servicio **Docling + macOS Vision en la Mac mini**,
+  vía túnel inverso a `127.0.0.1:8095` con token.
 
-**Requisito:** que **cualquier admin, desde cualquier OS (Win/Mac/Linux) y desde el
-teléfono**, suba un escaneado por el tab y se ingiera solo.
+La UI muestra dónde se procesó cada documento. Se validó sobre 60 PDFs: detectó los 8
+escaneados conocidos y ningún falso positivo.
 
-**Consecuencia de diseño:** el teléfono y el "cualquier OS" implican que **el OCR NO puede
-correr en el dispositivo del usuario**. El cliente solo sube; el OCR es **server-side o en
-la nube**. Esto descarta la opción de "preprocesar con una app local" (no aplica a móvil;
-instalación por-OS; calidad dispareja).
+Se eligió la **opción D** (Mac mini) en lugar de A (`rapidocr` en el VPS), que era la
+recomendada antes:
+- el VPS comparte CPU con `dengue_forecast` y no debe hacer OCR;
+- en el CAG real, Docling + Vision recupera el 94.6% de las palabras contra el 60.5% de
+  Tesseract.
 
-**Opciones (todas: subir el PDF por el tab; el OCR ocurre server-side):**
+Las opciones B (rtx5090) y C (nube) siguen abiertas si la Mac se vuelve cuello de botella.
 
-| # | Solución | Esfuerzo | Pros | Contras |
-|---|---|---|---|---|
-| **A** | **OCR en el server de la app** (agregar `rapidocr`; pymupdf4llm lo usa solo) | **Mínimo** | Sin infra nueva; funciona desde cualquier device y móvil; uniforme | Carga de CPU en el VPS con libros grandes (minutos, RAM); calidad RapidOCR (más ruidosa que Vision) |
-| **B** | **Offload a rtx5090** (microservicio OCR HTTP, como TEI/LLM/reranker) | Medio | Encaja con la arquitectura (cómputo pesado ya vive en rtx5090 vía túneles); GPU-rápido; alta calidad; VPS ligero; móvil ok | Un servicio nuevo que mantener en rtx5090 |
-| **C** | **API de OCR en la nube** (Mistral OCR / Google Document AI / Azure DI) | Bajo | Cero infra; mejor calidad; funciona en todo incl. móvil; barato (~$1/1000 págs) | Los datos salen a un tercero (privacidad); API key; costo por página |
-| **D** | **Offload a una Mac mini vía SSH** (macOS Vision) | Medio-alto | Calidad de Vision; VPS ligero; móvil ok | Un box nuevo, **menos integrado que rtx5090** (que ya está en el stack); orquestación SSH; peor que B salvo que se necesite Vision específicamente |
-| ~~E~~ | ~~Preprocesar con app local~~ (la opción 1 planteada) | — | — | **Rechazada:** no corre en teléfono; instalación por-OS; calidad dispareja |
+### ✅ 2. Fix defensivo del `KeyError: 'document'` (hecho 2026-09-28)
+`_ingest_markdown` falla con un mensaje claro si el texto limpio queda vacío ("¿PDF
+escaneado sin OCR?"). Además, la red de seguridad de `convert_pdf` reintenta con OCR si
+el VPS produce un Markdown casi vacío.
 
-**Recomendación (por fases):**
-- **Fase 1 (MVP, ya):** **Opción A** — agregar `rapidocr` al extra `parse` + redeploy
-  (`uv sync --extra parse && sudo systemctl restart legis-app`). Satisface el requisito
-  completo (cualquier admin/OS/móvil) con cambio mínimo y reusa el job async ya probado.
-  Guardarraíles: límite de páginas/tamaño por subida, y mantenerlo de a uno (ya lo es).
-  Los libros de alto valor pueden seguir usando el flujo local Docling+Vision cuando la
-  precisión importe.
-- **Fase 2 (si la carga o la calidad lo exigen):** **Opción B** (rtx5090, consistente con
-  la arquitectura y privado) o **C** (nube, menos esfuerzo y mejor calidad). La **D**
-  (Mac mini) solo si se requiere específicamente la calidad de macOS Vision y el OCR de
-  rtx5090 no basta — pero B usa un box ya integrado, así que domina a D.
+### ✅ Limpieza que borraba párrafos con "Secretaría General" (hecho 2026-09-29)
+La regla `institutional_header` descartaba líneas completas, y en Docling una línea es
+un párrafo entero. Se le puso tope de palabras; los folios `N/M` ahora sí se limpian.
+Se reingirieron los 7 documentos afectados que tenían fuente local (el CAG recuperó
+unas 14.5 mil palabras), comprobando oración por oración que no se perdiera nada.
 
-**En todos los casos** shipear también el fix defensivo del `KeyError` (ítem 2): un OCR
-que salga vacío debe dar un error claro, no un crash.
+### 3. Recarga del índice BM25 tras inserciones out-of-band (parcial)
+- **Ya hecho:** el borrado desde la UI recarga el BM25 en segundo plano, y la recarga
+  publica el índice de un solo golpe, con lock.
+- **Falta:** un insert hecho por fuera de la app (script directo, como la reingesta del
+  2026-09-29) sigue sin refrescar el BM25 en memoria, y hay que reiniciar el servicio.
+  La búsqueda densa sí lo ve al instante.
+- **Acción:** endpoint admin `POST /admin/reload-index` que llame `load_corpus_index()`
+  en segundo plano.
 
-### 2. Fix defensivo del `KeyError: 'document'`
-`shared/legal_chunking.py` → `merge_small_siblings`: si `units` viene vacío, lanzar un
-error claro ("documento sin texto extraíble — ¿PDF escaneado sin OCR?") en vez del
-`KeyError` críptico. Igual en el reporte de la UI.
+### 8. Reinsertar Sociología con el CMap corregido (alta)
+- 264 de 311 chunks del libro de sociología jurídica tienen `�`: se perdieron "Capítulo
+  N" y subtítulos como "la encuesta", "la mesa redonda" o "el sociodrama".
+- La causa es que la fuente `ArialMT` trae un `ToUnicode` incompleto.
+- El arreglo exacto ya está probado: agregar 35 entradas `bfchar` al CMap del PDF, que
+  da 0 `�` y no necesita OCR (ver `OCR_ESCANEADOS.md` §3).
+- **Acción:** generar el PDF parchado, subirlo por la UI con el mismo nombre para que
+  reemplace los 311 chunks, y verificar que se encuentran "sociodrama" y "mesa redonda".
+- Opcional: detectarlo solo en `pdf_triage` (una fuente con CIDs sin mapear) y aplicar el
+  parche antes de convertir.
 
-### 3. Recarga del índice BM25 tras inserciones out-of-band
-Un insert hecho por fuera de la app (script directo) NO refresca el BM25 en memoria
-(solo se recarga al arrancar o vía `on_complete` de un ingest por la app). La densa sí
-lo ve al instante. Hoy se soluciona reiniciando el servicio.
-- **Acción:** endpoint admin `POST /admin/reload-index` que llame `load_corpus_index()`,
-  para evitar reiniciar todo el servicio.
+### 9. Verificar la limpieza en los 36 documentos subidos solo por la UI (media)
+- Sin su PDF ni su md crudo no se puede medir si el bug de "Secretaría General" les borró
+  texto.
+- Son sobre todo leyes de Diputados (Ley General de Víctimas, LFCDO, Secuestro, Trata),
+  códigos de la CDMX y el Edomex, el CNPCyF, los cuadernos "Derecho y Familia" de la SCJN
+  y libros de teoría del delito.
+- **Acción:** conseguir los PDFs (las leyes son públicas, en diputados.gob.mx), reconvertir
+  con el pipeline actual, comparar oración por oración contra la DB y reingerir solo los
+  que ganen texto.
+
+### 10. Ligaduras perdidas en FAP 1 (baja)
+- 19 de 21 chunks tienen `identi�car`, `bene�cios` o `el �n`: la ligadura `fi` sale
+  como U+FFFD, y BM25 no encuentra esas palabras.
+- **Acción:** parchar el CMap como en el ítem 8, o mapear las ligaduras al convertir, y
+  reingerir.
+
+### 11. Nombres de fuente en NFD (baja)
+- macOS sube nombres con los acentos descompuestos (NFD); hoy hay 8 fuentes así en la DB.
+- Si alguien vuelve a subir el mismo documento desde Windows o Linux (NFC), queda
+  duplicado en vez de reemplazarse.
+- **Acción:** normalizar a NFC en `source_name()`, y en la misma migración pasar a NFC
+  esas 8 fuentes en la tabla, en `out_clean/` y en `_conversion.json`.
+
+### 12. Resiliencia de la Mac mini (media)
+- **Reinicio:** tras un reinicio no arrancan ni el OCR, ni el túnel, ni el bastión hasta
+  que alguien inicie sesión en la Mac. Hay dos salidas:
+  - activar el inicio de sesión automático;
+  - pasar el túnel y el bastión a `LaunchDaemons`. Falta comprobar si Vision funciona sin
+    sesión gráfica.
+- **Monitoreo:** avisar si `/health` falla desde el VPS, con un check periódico.
+- **Versionado:** el código del servicio vive en un repo git local de la Mac
+  (`~/ai/ocr`). Conviene versionarlo, por ejemplo en `deploy/ocr_macmini/` de este repo.
+
+### 13. Calidad de Docling en escaneos (media)
+- En el CAG, Docling a veces omite (unas 34 palabras) o reordena un párrafo.
+- **Acción:** un control de calidad en el servicio que compare las palabras por página
+  del resultado contra el OCR crudo de Vision (`ocrmac`) y avise si faltan más del ~10%.
+  Esto se relaciona con el ítem 4.
+
+### 14. PDFs mixtos: OCR solo de las páginas escaneadas (baja)
+- Hoy, si menos del 20% de las páginas están escaneadas, esas páginas se omiten y el
+  reporte las lista.
+- **Acción:** mandar a la Mac solo esas páginas y reinsertar su Markdown en orden.
+- Limpiar de paso los mds de 0 bytes que quedaron en `out_clean/` de intentos fallidos.
 
 ### 4. Limpieza post-OCR de los escaneados legales (CAG)
 El OCR de CAG (Docling+Vision) dejó errores por clase: acentos perdidos

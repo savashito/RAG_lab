@@ -122,19 +122,17 @@ cita, cae a su nombre `.md`.
 
 ## OCR de PDFs escaneados
 
-El pipeline de ingesta (prod) convierte con **pymupdf4llm**, que **no OCRea**: un PDF
-**escaneado** produce texto vacío → 0 chunks → `KeyError: 'document'` en el chunker.
-Los PDFs de **texto digital** entran normal. Para escaneados el flujo es **OCR local** y
-luego insertar el Markdown ya OCR'd:
+Automático desde el tab de ingesta: `ingestion/pdf_triage.py` detecta por página si un PDF
+está escaneado (o trae la capa de texto rota). Si es así, `ingestion/ocr_client.py` lo
+manda al servicio **Docling + macOS Vision de la Mac mini** (`127.0.0.1:8095`, túnel
+inverso), y el Markdown sigue el camino de siempre. Los PDFs digitales se convierten en el
+VPS con `pymupdf4llm`. El reporte de cada archivo, y la lista del corpus, dicen dónde se
+procesó (🖥️ VPS / 🍎 Mac mini). El VPS nunca hace OCR: si la Mac no responde, la
+ingesta falla con un mensaje claro.
 
-1. OCR con Docling + macOS Vision (mejor que RapidOCR en español), ver
-   `ingestion/ocr_cag.py` / `ingestion/ocr_psicologia.py`.
-2. Insertar el `.md` con `ingestion.pipeline.ingest_md` (misma limpieza → chunking →
-   embeddings → upsert que un PDF, saltando la conversión), y etiquetar
-   `topic`/`jurisdiction` por `source` como hace el tab de ingesta.
-
-Arreglo de fondo pendiente: agregar `rapidocr` al extra `parse` para que el tab OCRee
-escaneados directamente; ver `FUTURE_WORK.md`.
+Configuración: `OCR_URL`, `OCR_TOKEN_FILE` (`~/.ocr_token`) y `OCR_MAX_WAIT` en
+`.env.example`. Arquitectura, benchmark, operación y hallazgos:
+[`ingestion/OCR_ESCANEADOS.md`](../../ingestion/OCR_ESCANEADOS.md).
 
 ## Estructura
 
