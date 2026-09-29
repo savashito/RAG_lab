@@ -75,6 +75,11 @@
   button.send{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;
     padding:11px 20px;font:inherit;font-weight:600;cursor:pointer}
   button.send:disabled{opacity:.5;cursor:progress}
+  /* Conmutador Preguntar | Conversar: mismo tema y parámetros (?tema=…) en ambas páginas. */
+  .modes{display:inline-flex;flex:none;border:1px solid var(--line);border-radius:9px;padding:2px;background:var(--card)}
+  .modes a{padding:4px 10px;border-radius:7px;font-size:13px;line-height:1.4;color:var(--muted);text-decoration:none;white-space:nowrap}
+  .modes a:hover{color:var(--ink)}
+  .modes a[aria-current]{background:var(--soft);color:var(--accent);font-weight:600}
   .muted{color:var(--muted)} .err{color:#dc2626} a{color:var(--accent)}
   @media (max-width:720px){
     .side{position:fixed;z-index:20;top:0;bottom:0;left:0;transform:translateX(-100%);transition:transform .2s}
@@ -97,6 +102,7 @@
     <div class="bar">
       <button class="menu" id="menu" type="button" title="Conversaciones">☰</button>
       <h1 id="title">Conversar</h1>
+      <nav class="modes" aria-label="Modo"><a href="/preguntar" data-path="/preguntar">Preguntar</a><a href="/conversar" data-path="/conversar" aria-current="page">Conversar</a></nav>
     </div>
     <div class="log" id="log"><div class="center" id="logc"></div></div>
     <div class="composer">
@@ -339,6 +345,12 @@ $('backdrop').addEventListener('click', closeSide);
     $('logc').innerHTML = '<div class="empty err">Tu navegador no permite IndexedDB; no se puede guardar el historial.</div>';
   }
 })();
+
+// Los enlaces del conmutador llevan la query ACTUAL (el tema puede haber cambiado).
+document.querySelectorAll('.modes a').forEach(a => {
+  const sync = () => { a.href = a.dataset.path + location.search; };
+  sync(); a.addEventListener('pointerdown', sync); a.addEventListener('focus', sync); a.addEventListener('click', sync);
+});
 </script>
 </body>
 </html>

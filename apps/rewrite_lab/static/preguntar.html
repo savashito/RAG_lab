@@ -53,13 +53,18 @@
   .err{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-top:12px}
   @media (prefers-color-scheme: dark){ .err{background:#2a1416;border-color:#4c1d1d;color:#fca5a5} }
   a{color:var(--accent)}
+  /* Conmutador Preguntar | Conversar: mismo tema y parámetros (?tema=…) en ambas páginas. */
+  .modes{display:inline-flex;flex:none;border:1px solid var(--line);border-radius:9px;padding:2px;background:var(--card)}
+  .modes a{padding:4px 10px;border-radius:7px;font-size:13px;line-height:1.4;color:var(--muted);text-decoration:none;white-space:nowrap}
+  .modes a:hover{color:var(--ink)}
+  .modes a[aria-current]{background:var(--soft);color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1 id="title">Consulta</h1>
-    <span class="sub" id="sub"></span>
+    <nav class="modes" aria-label="Modo"><a href="/preguntar" data-path="/preguntar" aria-current="page">Preguntar</a><a href="/conversar" data-path="/conversar">Conversar</a></nav>
   </header>
 
   <form id="form">
@@ -200,6 +205,12 @@ form.addEventListener('submit', async e => {
 // Enter envía; Shift+Enter hace salto de línea.
 $('q').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); }
+});
+
+// Los enlaces del conmutador llevan la query ACTUAL (el tema puede haber cambiado).
+document.querySelectorAll('.modes a').forEach(a => {
+  const sync = () => { a.href = a.dataset.path + location.search; };
+  sync(); a.addEventListener('pointerdown', sync); a.addEventListener('focus', sync); a.addEventListener('click', sync);
 });
 </script>
 </body>
