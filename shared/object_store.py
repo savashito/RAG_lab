@@ -12,8 +12,8 @@ Config por env (sin pydantic: el venv de prod no lo trae):
   MINIO_ENDPOINT   p. ej. 127.0.0.1:9000 en el servidor
   MINIO_ACCESS_KEY / MINIO_SECRET_KEY
   MINIO_SECURE     true/false (default false: en el servidor se habla por loopback)
-  MINIO_BUCKET     default llm-lab
-  OBJECT_PREFIX    default rag_lab/ (todo lo de este app cuelga de ahí dentro del bucket)
+  MINIO_BUCKET     default rag-lab (bucket propio del lab; `llm-lab` es de otros usos)
+  OBJECT_PREFIX    default vacío (opcional: subcarpeta dentro del bucket)
 
 Si MinIO no está configurado (sin endpoint o sin llaves), cae a una carpeta local
 (`OBJECT_STORE_DIR`, default ingestion/.objects) con las MISMAS llaves. Así el app
@@ -36,8 +36,9 @@ class ObjectStore:
         self.access_key = os.environ.get('MINIO_ACCESS_KEY', '').strip()
         self.secret_key = os.environ.get('MINIO_SECRET_KEY', '').strip()
         self.secure = os.environ.get('MINIO_SECURE', 'false').strip().lower() in ('1', 'true', 'yes')
-        self.bucket = os.environ.get('MINIO_BUCKET', 'llm-lab').strip()
-        self.prefix = os.environ.get('OBJECT_PREFIX', 'rag_lab/').strip().strip('/') + '/'
+        self.bucket = os.environ.get('MINIO_BUCKET', 'rag-lab').strip()
+        prefix = os.environ.get('OBJECT_PREFIX', '').strip().strip('/')
+        self.prefix = prefix + '/' if prefix else ''
         self.local_dir = Path(os.environ.get('OBJECT_STORE_DIR', LABS / 'ingestion' / '.objects'))
         self._client = None
         self.backend = 'minio' if (self.endpoint and self.access_key and self.secret_key) else 'local'

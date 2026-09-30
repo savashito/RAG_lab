@@ -156,10 +156,11 @@ admins ven el tab; editar un set requiere permiso sobre su tema. Código: `bench
 **Dónde vive cada cosa**: preguntas, componentes, métricas y veredictos en Postgres
 (`bench_sets`, `bench_questions`, `bench_components`, `bench_runs`, `bench_results`); el
 detalle pesado de cada corrida (respuesta completa, chunks, prompt, salida cruda del juez)
-en el object store como `rag_lab/bench/runs/<id>.json`, y los respaldos de sets en
-`rag_lab/bench/exports/`. El object store (`shared/object_store.py`) es **MinIO** si hay
+en el object store como `bench/runs/<id>.json` (bucket `rag-lab`), y los respaldos de sets en
+`bench/exports/`. El object store (`shared/object_store.py`) es **MinIO** si hay
 `MINIO_ENDPOINT` + llaves en el `.env` (en el servidor: `MINIO_ENDPOINT=127.0.0.1:9000`,
-`MINIO_SECURE=false`, `MINIO_BUCKET=llm-lab`); si no, cae a la carpeta local
+`MINIO_SECURE=false`, `MINIO_BUCKET=rag-lab`, con un usuario `rag-lab-app` cuya política
+solo permite ese bucket); si no, cae a la carpeta local
 `ingestion/.objects/` con las mismas llaves.
 
 ## Estructura
