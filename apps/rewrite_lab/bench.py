@@ -25,11 +25,13 @@ de lo que razona sobre reglas de puntuación.
 
 from __future__ import annotations
 
+import http.client
 import json
 import re
 import threading
 import time
 import traceback
+import urllib.error
 from typing import Callable
 
 from fastapi import APIRouter, Request
@@ -182,7 +184,36 @@ CREATE TABLE IF NOT EXISTS bench_results (
     question_id int, position int, question text, score real, passed boolean,
     must_total int, must_ok int, violations int, verdicts jsonb, seconds real, error text);
 CREATE INDEX IF NOT EXISTS bench_results_run ON bench_results (run_id, position);
+-- Latido de la corrida: se actualiza con cada pregunta terminada (ver STALE_MINUTES).
+ALTER TABLE bench_runs ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 """
+
+# Una corrida 'running' sin avance en este tiempo se da por muerta (el proceso que la corría
+# se reinició). NO basta con ver status='running' al arrancar: la BD es compartida (prod y una
+# app local por túnel), y otro proceso puede tener una corrida viva. Una pregunta tarda
+# segundos; el peor caso (timeouts de LLM y juez) ronda 6 min.
+STALE_MINUTES = 15
+_STALE_SQL = ("UPDATE bench_runs SET status = 'interrupted', finished_at = now() "
+              "WHERE status = 'running' AND coalesce(updated_at, created_at) < now() - %s * interval '1 minute'")
+
+
+# Errores de red/servidor del LLM (se reinicia, corta respuestas largas): se reintentan. Un
+# error de lógica (ValueError, KeyError…) no se reintenta: fallaría igual.
+_TRANSIENT = (ConnectionError, TimeoutError, urllib.error.URLError, http.client.HTTPException)
+RETRY_WAITS = (5, 15)
+
+
+def _retry(fn, cancel: threading.Event | None = None):
+    for wait in RETRY_WAITS:
+        try:
+            return fn()
+        except _TRANSIENT as e:
+            print(f'bench: error transitorio ({type(e).__name__}: {e}); reintento en {wait}s')
+            if cancel is not None and cancel.wait(wait):
+                raise
+            if cancel is None:
+                time.sleep(wait)
+    return fn()
 
 
 class Bench:
@@ -200,9 +231,7 @@ class Bench:
         self._cancel = threading.Event()
         with connect() as c, c.cursor() as cur:
             cur.execute(SCHEMA)
-            # Corridas que quedaron "running" por un reinicio del servicio ya no avanzan.
-            cur.execute("UPDATE bench_runs SET status = 'interrupted', finished_at = now() "
-                        "WHERE status = 'running'")
+            cur.execute(_STALE_SQL, (STALE_MINUTES,))   # corridas huérfanas de un reinicio
             c.commit()
         self.router = self._make_router()
 
@@ -297,6 +326,11 @@ class Bench:
             if self._running is not None:
                 raise RuntimeError(f'Ya hay una corrida en curso (#{self._running}). Espera o cancélala.')
             with self.connect() as c, c.cursor() as cur:
+                cur.execute(_STALE_SQL, (STALE_MINUTES,))
+                cur.execute("SELECT id FROM bench_runs WHERE status = 'running' LIMIT 1")
+                other = cur.fetchone()
+                if other:   # viva en OTRO proceso (p. ej. prod mientras se prueba local)
+                    raise RuntimeError(f'Ya hay una corrida en curso (#{other[0]}). Espera o cancélala.')
                 s = self.load_set(cur, set_id)
                 if not s:
                     raise ValueError('el set no existe')
@@ -332,9 +366,11 @@ class Bench:
                 det = {'question_id': q['id'], 'question': q['question'],
                        'expected_answer': q.get('expected_answer') or '', 'components': comps}
                 try:
-                    a = self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
-                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'], cfg['rerank'])
-                    g = self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or '')
+                    a = _retry(lambda: self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
+                                                cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
+                                                cfg['rerank']), self._cancel)
+                    g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or ''),
+                               self._cancel)
                     sc = score_question(comps, g['verdicts'])
                     row.update(sc)
                     row['verdicts'] = [{'text': c['text'], 'kind': c['kind'], 'weight': c['weight'], **v}
@@ -357,7 +393,7 @@ class Bench:
                         (rid, row['question_id'], pos, row['question'], row['score'], row['passed'],
                          row['must_total'], row['must_ok'], row['violations'],
                          json.dumps(row['verdicts'], ensure_ascii=False), row['seconds'], row['error']))
-                    cur.execute("UPDATE bench_runs SET done = %s, metrics = %s::jsonb WHERE id = %s",
+                    cur.execute("UPDATE bench_runs SET done = %s, metrics = %s::jsonb, updated_at = now() WHERE id = %s",
                                 (len(results), json.dumps(aggregate(results)), rid))
                     c.commit()
         except Exception as e:  # noqa: BLE001
@@ -576,6 +612,8 @@ class Bench:
         @r.get('/runs')
         def runs(set_id: int | None = None):
             with self.connect() as c, c.cursor() as cur:
+                cur.execute(_STALE_SQL, (STALE_MINUTES,))
+                c.commit()
                 cur.execute("SELECT id, set_id, set_name, topic, label, config, status, n, done, metrics, "
                             "error, created_by, created_at::text, finished_at::text FROM bench_runs "
                             + ("WHERE set_id = %s " if set_id else "") + "ORDER BY id DESC LIMIT 200",

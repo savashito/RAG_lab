@@ -133,6 +133,50 @@
  .sc{font-weight:700;text-align:center;white-space:nowrap}
  tr.clk{cursor:pointer} tr.clk:hover td{background:#131722}
  .runcfg{font:11px ui-monospace,monospace;color:#9aa4b2}
+ .bbar{position:sticky;top:0;z-index:20;background:#0f1115;padding:10px 0 0;border-bottom:1px solid #2a2f3a;margin:-8px 0 12px}
+ .bsub{display:flex;gap:4px;margin-top:8px}
+ .bsub button{background:transparent;color:#9aa4b2;border:0;border-bottom:2px solid transparent;border-radius:0;padding:9px 14px;font-weight:600}
+ .bsub button.active{color:#e6e6e6;border-bottom-color:#3b82f6}
+ .pill{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#232833;color:#c7cdd6;font-size:11px;text-align:center}
+ .bsubpage[hidden]{display:none}
+ .bcard{background:#171a21;border:1px solid #2a2f3a;border-radius:10px;padding:12px 14px}
+ .ghostbtn{list-style:none;cursor:pointer;background:#232833;color:#fff;border-radius:8px;padding:8px 12px;font-weight:600;white-space:nowrap}
+ .ghostbtn::-webkit-details-marker{display:none}
+ details.bmenu{position:relative}
+ .bmenu-items{position:absolute;z-index:40;top:40px;left:0;display:flex;flex-direction:column;gap:4px;background:#171a21;
+   border:1px solid #2a2f3a;border-radius:10px;padding:8px;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+ .bmenu-items button{text-align:left}
+ .linkbtn{background:transparent;color:#a5d6ff;padding:6px 8px}
+ .bmodal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;
+   overflow:auto;padding:40px 16px}
+ .bmodal[hidden]{display:none}
+ .bmodal-box{background:#0f1115;border:1px solid #2a2f3a;border-radius:12px;padding:16px 18px;width:100%;max-width:560px;box-sizing:border-box}
+ .bmodal-box.wide{max-width:900px}
+ .bmodal-box h3{margin:0 0 8px;font-size:15px}
+ .bmodal-box label.f{display:block;color:#9aa4b2;font-size:12px;margin:10px 0 4px}
+ details.bq{padding:0}
+ details.bq>summary{list-style:none;display:flex;gap:10px;align-items:center;padding:9px 12px;margin:0;color:#e6e6e6;cursor:pointer}
+ details.bq>summary::-webkit-details-marker{display:none}
+ details.bq>summary .qt{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ details.bq[open]>summary .qt{white-space:normal}
+ details.bq>summary button{padding:3px 9px;font-size:12px}
+ details.bq .qbody{padding:0 14px 12px}
+ .cnt{font:11px ui-monospace,monospace;white-space:nowrap;color:#9aa4b2}
+ .cnt b{color:#c7cdd6;font-weight:600}
+ .tag{font-size:11px;border-radius:6px;padding:1px 7px;white-space:nowrap}
+ .tag.gap{background:#3b2a06;color:#fcd34d;border:1px solid #854d0e}
+ .fchips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+ .fchips button{background:#171a21;border:1px solid #2a2f3a;color:#c7cdd6;padding:5px 11px;font-size:12px;font-weight:600}
+ .fchips button.active{background:#1e3a5f;border-color:#3b82f6;color:#fff}
+ .miss{font-size:12px;color:#fca5a5} .miss li{margin:2px 0}
+ tr.sel td{background:#131a26}
+ .delta.up{color:#4ade80} .delta.down{color:#f87171}
+ @media (max-width:900px){
+   .bbar{position:static;margin-top:0}   /* en pantallas chicas la barra fija se comería media pantalla */
+   .bsub{overflow-x:auto} .bsub button{white-space:nowrap;padding:9px 10px}
+   .bmodal{padding:12px 8px} .cedit{flex-wrap:wrap} .cedit input[type=text]{flex:1 1 100%;order:3}
+   #bench-runs,#bench-detail,#bench-compare-out{overflow-x:auto}
+ }
  /* ── Responsive / móvil ── */
  @media (max-width:760px){
    .wrap{padding:12px}
@@ -367,80 +411,121 @@
 
 <!-- ── Tab "Usuarios" (solo superadmin) ── -->
 <div id="tab-bench" class="wrap tabpage" hidden>
- <p class="muted">Evalúa la <b>respuesta</b> del LLM (no solo el retrieval). Cada pregunta lleva los
-   <b>componentes</b> que la respuesta debe contener; el juez (<span id="bench-judge">LLM</span>) marca cada uno como
-   presente / parcial / ausente y el score se calcula en código.</p>
- <div class="legend">
-   <b>Tipos de componente:</b>
-   <ul>
-     <li><span class="comp must"><span class="k">must</span></span> obligatorio: si falta, la pregunta <b>no pasa</b>.</li>
-     <li><span class="comp should"><span class="k">should</span></span> deseable: suma al score pero no reprueba.</li>
-     <li><span class="comp must_not"><span class="k">must_not</span></span> no debe aparecer (p. ej. un artículo equivocado, jurisprudencia inventada): si aparece, reprueba y resta.</li>
-   </ul>
-   <b>score</b> = (Σ peso·valor de must/should − Σ peso·valor de must_not) / Σ peso de must/should, con presente=1, parcial=0.5, ausente=0.
-   Si una pregunta no tiene componentes pero sí respuesta de referencia, se evalúa como un único <i>must</i> «coincide con la referencia».
- </div>
- <div class="row">
-   <label>Tema: <select id="bench-topic-filter"><option value="">todos</option></select></label>
-   <label>Set: <select id="bench-set" style="min-width:260px"></select></label>
-   <button class="ghost" id="bench-new-set">➕ Nuevo set</button>
-   <button class="ghost" id="bench-edit-set">✏️ Editar</button>
-   <button class="ghost" id="bench-export">⬇ Exportar JSON</button>
-   <button class="ghost" id="bench-import-btn">⬆ Importar JSON</button>
-   <input type="file" id="bench-import" accept=".json,application/json" hidden>
-   <button class="ghost" id="bench-backup" title="Guarda un snapshot del set en el object store">💾 Respaldar</button>
- </div>
- <div id="bench-set-form" class="bform" style="display:none">
-   <label class="f">Nombre del set</label><input type="text" id="bench-set-name" style="width:100%;box-sizing:border-box">
-   <label class="f">Tema (las preguntas se responden buscando solo en este tema)</label><select id="bench-set-topic"></select>
-   <label class="f">Descripción</label><textarea id="bench-set-desc" style="min-height:50px"></textarea>
-   <div class="row"><button id="bench-set-save">Guardar</button><button class="ghost" id="bench-set-cancel">Cancelar</button>
-     <span style="flex:1"></span><button class="danger" id="bench-set-delete">🗑 Borrar set</button></div>
+ <!-- Barra fija: set activo + sub-pestañas. Se queda arriba al hacer scroll. -->
+ <div class="bbar">
+   <div class="row" style="margin:0">
+     <label>Tema: <select id="bench-topic-filter"><option value="">todos</option></select></label>
+     <label>Set: <select id="bench-set" style="min-width:240px;max-width:420px"></select></label>
+     <details class="bmenu" id="bench-menu"><summary class="ghostbtn">⋯ Set</summary>
+       <div class="bmenu-items">
+         <button class="ghost" id="bench-new-set">➕ Nuevo set</button>
+         <button class="ghost" id="bench-edit-set">✏️ Editar / borrar set</button>
+         <button class="ghost" id="bench-export">⬇ Exportar JSON</button>
+         <button class="ghost" id="bench-import-btn">⬆ Importar JSON (crea un set nuevo)</button>
+         <button class="ghost" id="bench-backup" title="Guarda un snapshot del set en el object store">💾 Respaldar en MinIO</button>
+       </div></details>
+     <input type="file" id="bench-import" accept=".json,application/json" hidden>
+     <span style="flex:1"></span>
+     <button class="ghost linkbtn" id="bench-help-btn">❔ ¿Cómo se califica?</button>
+   </div>
+   <div class="bsub">
+     <button data-sub="run" class="active">▶ Correr y resultados</button>
+     <button data-sub="questions">📝 Preguntas <span id="bench-qcount" class="pill"></span></button>
+     <button data-sub="compare">📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
+   </div>
  </div>
  <div id="bench-msg" class="muted"></div>
 
- <h2>Preguntas <span id="bench-qcount" class="muted"></span></h2>
- <div id="bench-questions"></div>
- <div class="row"><button class="ghost" id="bench-add-q">➕ Agregar pregunta</button></div>
- <div id="bench-q-form" class="bform" style="display:none">
+ <!-- ▶ Correr y resultados -->
+ <div id="bsub-run" class="bsubpage">
+   <div class="bcard">
+     <div class="row" style="margin-top:0">
+       <label>Método: <select id="bench-setting"></select></label>
+       <label>Top-k: <select id="bench-k"><option>3</option><option>5</option><option>8</option><option selected>10</option></select></label>
+       <details class="jur" id="bench-jur"><summary>Lugar: <span class="jl">Todos</span></summary><div class="jm"></div></details>
+       <label class="chk"><input type="checkbox" id="bench-neighbors" checked> vecinos ↕</label>
+       <label class="chk"><input type="checkbox" id="bench-hyde" checked> HyDE 🧪</label>
+       <label class="chk"><input type="checkbox" id="bench-rerank"> rerank 🎯</label>
+     </div>
+     <div class="row">
+       <input type="text" id="bench-label" placeholder="Etiqueta (ej. 'híbrido k10 + HyDE')" style="flex:1">
+       <button id="bench-run">▶ Correr benchmark</button>
+       <button class="danger" id="bench-cancel" style="display:none">■ Cancelar</button>
+     </div>
+     <details><summary>⚙️ System prompt de la respuesta (por defecto, el del tema del set)</summary>
+       <textarea id="bench-system" style="min-height:110px;margin-top:8px"></textarea></details>
+     <div id="bench-progress"></div>
+   </div>
+
+   <div class="row" style="margin-top:18px">
+     <b>Corridas de este set</b>
+     <span class="muted" style="font-size:12px">— clic en una fila para ver sus resultados · marca ☑ dos o más para comparar</span>
+     <span style="flex:1"></span>
+     <button class="ghost" id="bench-compare">📊 Comparar marcadas</button>
+     <button class="ghost" id="bench-refresh" title="Recargar">↻</button>
+   </div>
+   <div id="bench-runs"></div>
+   <div id="bench-detail"></div>
+ </div>
+
+ <!-- 📝 Preguntas -->
+ <div id="bsub-questions" class="bsubpage" hidden>
+   <div class="row" style="margin-top:0">
+     <input type="text" id="bench-qsearch" placeholder="🔎 Buscar en preguntas, componentes o notas…" style="flex:1">
+     <select id="bench-qfilter">
+       <option value="">todas</option><option value="hueco">solo HUECO CORPUS</option>
+       <option value="nocomp">sin componentes</option>
+     </select>
+     <button class="ghost" id="bench-expand-all">↕ Expandir todo</button>
+     <button id="bench-add-q">➕ Agregar pregunta</button>
+   </div>
+   <div id="bench-questions"></div>
+ </div>
+
+ <!-- 📊 Comparar -->
+ <div id="bsub-compare" class="bsubpage" hidden>
+   <div id="bench-compare-out"><p class="muted">Marca dos o más corridas en «▶ Correr y resultados» y pulsa «📊 Comparar marcadas».</p></div>
+ </div>
+
+ <!-- Ventanas emergentes -->
+ <div class="bmodal" id="bench-set-modal" hidden><div class="bmodal-box">
+   <h3 id="bench-set-title">Set</h3>
+   <label class="f">Nombre del set</label><input type="text" id="bench-set-name" style="width:100%;box-sizing:border-box">
+   <label class="f">Tema (las preguntas se responden buscando solo en este tema)</label><select id="bench-set-topic"></select>
+   <label class="f">Descripción</label><textarea id="bench-set-desc" style="min-height:60px"></textarea>
+   <div class="row"><button id="bench-set-save">Guardar</button><button class="ghost" id="bench-set-cancel">Cancelar</button>
+     <span style="flex:1"></span><button class="danger" id="bench-set-delete">🗑 Borrar set</button></div>
+ </div></div>
+
+ <div class="bmodal" id="bench-q-modal" hidden><div class="bmodal-box wide">
+   <h3 id="bq-title">Pregunta</h3>
    <label class="f">Pregunta</label><textarea id="bq-question" style="min-height:60px"></textarea>
-   <label class="f">Respuesta esperada / de referencia (opcional — el juez la usa para interpretar los componentes)</label>
-   <textarea id="bq-expected"></textarea>
+   <label class="f">Respuesta esperada / de referencia (el juez la usa para interpretar los componentes)</label>
+   <textarea id="bq-expected" style="min-height:90px"></textarea>
    <label class="f">Componentes que la respuesta debe (o no debe) contener</label>
    <div id="bq-comps"></div>
    <div class="row" style="margin:6px 0"><button class="ghost" id="bq-add-comp">+ componente</button></div>
-   <label class="f">Notas (no se mandan al juez)</label><input type="text" id="bq-notes" style="width:100%;box-sizing:border-box">
+   <label class="f">Notas (no se mandan al juez; «HUECO CORPUS» marca preguntas que exhiben huecos del corpus)</label>
+   <input type="text" id="bq-notes" style="width:100%;box-sizing:border-box">
    <div class="row"><button id="bq-save">Guardar pregunta</button><button class="ghost" id="bq-cancel">Cancelar</button></div>
- </div>
+ </div></div>
 
- <h2>Correr</h2>
- <div class="row">
-   <label>Método: <select id="bench-setting"></select></label>
-   <label>Top-k: <select id="bench-k"><option>3</option><option>5</option><option>8</option><option selected>10</option></select></label>
-   <details class="jur" id="bench-jur"><summary>Lugar: <span class="jl">Todos</span></summary><div class="jm"></div></details>
-   <label class="chk"><input type="checkbox" id="bench-neighbors" checked> vecinos ↕</label>
-   <label class="chk"><input type="checkbox" id="bench-hyde" checked> HyDE 🧪</label>
-   <label class="chk"><input type="checkbox" id="bench-rerank"> rerank 🎯</label>
- </div>
- <details style="margin-top:0">
-   <summary>⚙️ System prompt de la respuesta (por defecto, el del tema del set)</summary>
-   <textarea id="bench-system" style="min-height:110px;margin-top:8px"></textarea>
- </details>
- <div class="row">
-   <input type="text" id="bench-label" placeholder="Etiqueta de la corrida (ej. 'híbrido k10 + HyDE')">
-   <button id="bench-run">▶ Correr benchmark</button>
-   <button class="danger" id="bench-cancel" style="display:none">■ Cancelar</button>
- </div>
- <div id="bench-progress"></div>
-
- <h2>Corridas de este set</h2>
- <div class="row">
-   <button class="ghost" id="bench-refresh">↻ Recargar</button>
-   <button class="ghost" id="bench-compare">📊 Comparar seleccionadas</button>
-   <span id="bench-storage" class="muted" style="font-size:12px"></span>
- </div>
- <div id="bench-runs"></div>
- <div id="bench-detail"></div>
+ <div class="bmodal" id="bench-help" hidden><div class="bmodal-box wide">
+   <h3>¿Cómo se califica?</h3>
+   <p>Para cada pregunta el sistema responde con la configuración elegida y el <b>juez</b> (<span id="bench-judge">LLM</span>)
+     marca cada componente como <b>presente</b>, <b>parcial</b> o <b>ausente</b>. El score se calcula en código:</p>
+   <ul>
+     <li><span class="comp must"><span class="k">must</span></span> obligatorio: si no está <b>presente</b>, la pregunta <b>no pasa</b>.</li>
+     <li><span class="comp should"><span class="k">should</span></span> deseable: suma al score pero no reprueba.</li>
+     <li><span class="comp must_not"><span class="k">must not</span></span> no debe aparecer (artículo equivocado, dato inventado): si aparece, reprueba y resta.</li>
+   </ul>
+   <p><b>score</b> = (Σ peso·valor de must/should − Σ peso·valor de must_not) / Σ peso de must/should, con presente=1, parcial=0.5, ausente=0.<br>
+     <b>pasa</b> = todos los must presentes y ningún must_not presente. <b>cobertura de must</b> = % de must presentes en todo el set.</p>
+   <p>Colores de los componentes en resultados: <span class="comp must good">bien</span> <span class="comp must half">parcial</span>
+     <span class="comp must bad">mal</span> <span class="comp must unk">sin veredicto</span> (en must_not, «presente» es rojo).</p>
+   <p class="muted" id="bench-storage" style="font-size:12px"></p>
+   <div class="row"><button class="ghost" id="bench-help-close">Cerrar</button></div>
+ </div></div>
 </div>
 
 <div id="tab-admin" class="wrap tabpage" hidden>

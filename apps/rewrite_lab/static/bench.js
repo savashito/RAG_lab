@@ -1,9 +1,14 @@
 // Tab "🧪 Benchmark" — sets de preguntas por tema, componentes esperados, corridas
 // juzgadas por el LLM y comparación entre corridas. Backend: /api/bench/* (bench.py).
-// Usa los helpers globales de index.html ($, esc, readJur, window.__topics), que ya
-// existen cuando se llama a cualquiera de estas funciones.
+// Usa los helpers globales de index.html ($, esc, readJur, renderChunks, window.__topics),
+// que ya existen cuando se llama a cualquiera de estas funciones.
+//
+// Estructura: barra fija (tema · set · menú ⋯ · ayuda) + tres sub-pestañas:
+//   ▶ Correr y resultados (default) · 📝 Preguntas · 📊 Comparar
+// Los formularios de set y de pregunta son ventanas emergentes (no hay que hacer scroll).
 
-let BENCH = {sets: [], set: null, editingQ: null, editingSet: null, poll: null, inited: false};
+let BENCH = {sets: [], set: null, runs: [], editingQ: null, editingSet: null, poll: null, inited: false,
+             sub: 'run', detail: null, dfilter: 'all', dsort: 'pos', open: new Set(), cmp: null, cmpOnlyDiff: false};
 
 async function bjson(url, opts){
   const r = await fetch(url, opts);
@@ -12,39 +17,68 @@ async function bjson(url, opts){
   return body;
 }
 const bpost = (url, obj) => bjson(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(obj||{})});
-function bmsg(html, ok){ $('bench-msg').innerHTML = html ? `<span style="color:${ok===false?'#f87171':'#4ade80'}">${html}</span>` : ''; }
+function bmsg(html, ok){
+  $('bench-msg').innerHTML = html ? `<span style="color:${ok===false?'#f87171':'#4ade80'}">${html}</span>` : '';
+  clearTimeout(BENCH.msgT); if(html && ok!==false) BENCH.msgT = setTimeout(()=>bmsg(''), 6000);
+}
 const attr = s => esc(s).replace(/"/g,'&quot;');
 const pct = v => v==null ? '—' : (100*v).toFixed(0)+'%';
 function scoreColor(v){ if(v==null) return '#374151'; if(v>=.85) return '#166534'; if(v>=.6) return '#3f6212'; if(v>=.35) return '#854d0e'; return '#7f1d1d'; }
 const topicLabel = t => ((window.__topics||[]).find(x=>x.topic===t)||{}).label || t;
+const isGap = notes => /HUECO/i.test(notes||'');
+// notes de la pregunta (del set actual) por id — los resultados no las traen.
+const qNotes = qid => ((BENCH.set && BENCH.set.questions.find(q=>q.id===qid)) || {}).notes || '';
+
+// ── Navegación ──────────────────────────────────────────────────────────────────
+function benchSub(name){
+  BENCH.sub = name;
+  document.querySelectorAll('.bsub button').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
+  for(const s of ['run','questions','compare']) $('bsub-'+s).hidden = (s!==name);
+}
+function openModal(id){ $(id).hidden = false; }
+function closeModal(id){ $(id).hidden = true; }
 
 async function benchInit(){
   if(!BENCH.inited){
     BENCH.inited = true;
+    document.querySelectorAll('.bsub button').forEach(b=>b.addEventListener('click', ()=>benchSub(b.dataset.sub)));
     $('bench-set').addEventListener('change', ()=>loadBenchSet($('bench-set').value));
-    $('bench-topic-filter').addEventListener('change', renderSetOptions);
-    $('bench-new-set').addEventListener('click', ()=>openSetForm(null));
-    $('bench-edit-set').addEventListener('click', ()=>BENCH.set && openSetForm(BENCH.set));
-    $('bench-set-cancel').addEventListener('click', ()=>$('bench-set-form').style.display='none');
+    $('bench-topic-filter').addEventListener('change', ()=>renderSetOptions());
+    // Menú ⋯: cada acción cierra el menú.
+    const menu = (id, fn) => $(id).addEventListener('click', ()=>{ $('bench-menu').open = false; fn(); });
+    menu('bench-new-set', ()=>openSetForm(null));
+    menu('bench-edit-set', ()=>BENCH.set && openSetForm(BENCH.set));
+    menu('bench-export', exportSet);
+    menu('bench-import-btn', ()=>$('bench-import').click());
+    menu('bench-backup', backupSet);
+    $('bench-import').addEventListener('change', importSet);
+    $('bench-set-cancel').addEventListener('click', ()=>closeModal('bench-set-modal'));
     $('bench-set-save').addEventListener('click', saveSet);
     $('bench-set-delete').addEventListener('click', deleteSet);
-    $('bench-export').addEventListener('click', exportSet);
-    $('bench-import-btn').addEventListener('click', ()=>$('bench-import').click());
-    $('bench-import').addEventListener('change', importSet);
-    $('bench-backup').addEventListener('click', backupSet);
+    $('bench-help-btn').addEventListener('click', ()=>openModal('bench-help'));
+    $('bench-help-close').addEventListener('click', ()=>closeModal('bench-help'));
+    // Preguntas
     $('bench-add-q').addEventListener('click', ()=>openQForm(null));
+    $('bench-qsearch').addEventListener('input', renderQuestions);
+    $('bench-qfilter').addEventListener('change', renderQuestions);
+    $('bench-expand-all').addEventListener('click', toggleExpandAll);
     $('bq-add-comp').addEventListener('click', ()=>addCompRow());
     $('bq-cancel').addEventListener('click', closeQForm);
     $('bq-save').addEventListener('click', saveQ);
+    // Corridas
     $('bench-run').addEventListener('click', startBenchRun);
     $('bench-cancel').addEventListener('click', cancelBenchRun);
     $('bench-refresh').addEventListener('click', loadBenchRuns);
     $('bench-compare').addEventListener('click', compareBenchRuns);
+    // Modales: clic en el fondo o Esc cierran; el menú ⋯ se cierra al hacer clic fuera.
+    document.querySelectorAll('.bmodal').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m) m.hidden = true; }));
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.bmodal').forEach(m=>m.hidden = true); });
+    document.addEventListener('click', e=>{ const m=$('bench-menu'); if(m.open && !m.contains(e.target)) m.open = false; });
   }
   try{
     const info = await bjson('/api/bench/info');
     const st = info.storage||{};
-    $('bench-storage').textContent = `artefactos → ${st.backend==='minio' ? 'MinIO '+st.where : 'carpeta local '+st.where+' (MinIO no configurado)'}`;
+    $('bench-storage').textContent = `Detalle de cada corrida → ${st.backend==='minio' ? 'MinIO '+st.where : 'carpeta local '+st.where+' (MinIO no configurado)'}`;
     $('bench-judge').textContent = 'LLM en '+(info.judge_url||'?');
     if(info.running) watchBenchRun(info.running);
   }catch(e){}
@@ -79,15 +113,18 @@ function renderSetOptions(selectId){
   const list = BENCH.sets.filter(s=>!f || s.topic===f);
   const want = String(selectId || (BENCH.set && BENCH.set.id) || '');
   $('bench-set').innerHTML = list.length
-    ? list.map(s=>`<option value="${s.id}">${esc(s.name)} · ${esc(s.topic_label)} · ${s.n_questions} preg.</option>`).join('')
-    : '<option value="">— no hay sets; crea uno —</option>';
+    ? list.map(s=>`<option value="${s.id}">${esc(s.name)} · ${s.n_questions} preg.${f?'':' · '+esc(s.topic_label)}</option>`).join('')
+    : '<option value="">— no hay sets; crea uno en ⋯ Set —</option>';
   if(want && list.some(s=>String(s.id)===want)) $('bench-set').value = want;
   loadBenchSet($('bench-set').value);
 }
 async function loadBenchSet(id){
   closeQForm();
+  BENCH.detail = null; BENCH.open.clear();
   $('bench-detail').innerHTML = '';
-  if(!id){ BENCH.set=null; $('bench-questions').innerHTML='<p class="muted">Crea un set para empezar.</p>';
+  $('bench-compare-out').innerHTML = '<p class="muted">Marca dos o más corridas en «▶ Correr y resultados» y pulsa «📊 Comparar marcadas».</p>';
+  $('bench-ccount').hidden = true;
+  if(!id){ BENCH.set=null; $('bench-questions').innerHTML='<p class="muted">Crea un set para empezar (menú ⋯ Set).</p>';
     $('bench-qcount').textContent=''; $('bench-runs').innerHTML=''; return; }
   try{ BENCH.set = await bjson('/api/bench/sets/'+id); }catch(e){ bmsg(esc(e.message), false); return; }
   const t = (window.__topics||[]).find(x=>x.topic===BENCH.set.topic);
@@ -97,12 +134,13 @@ async function loadBenchSet(id){
 }
 function openSetForm(s){
   BENCH.editingSet = s;
-  $('bench-set-form').style.display = 'block';
+  $('bench-set-title').textContent = s ? `Editar set «${s.name}»` : 'Nuevo set';
   $('bench-set-name').value = s ? s.name : '';
   $('bench-set-desc').value = s ? (s.description||'') : '';
   if(s) $('bench-set-topic').value = s.topic;
   else if($('bench-topic-filter').value) $('bench-set-topic').value = $('bench-topic-filter').value;
   $('bench-set-delete').style.display = s ? '' : 'none';
+  openModal('bench-set-modal');
   $('bench-set-name').focus();
 }
 async function saveSet(){
@@ -111,7 +149,7 @@ async function saveSet(){
     let id;
     if(BENCH.editingSet){ id = BENCH.editingSet.id; await bpost('/api/bench/sets/'+id, body); }
     else id = (await bpost('/api/bench/sets', body)).id;
-    $('bench-set-form').style.display = 'none';
+    closeModal('bench-set-modal');
     bmsg('Set guardado.');
     await loadBenchSets(id);
   }catch(e){ bmsg(esc(e.message), false); }
@@ -120,7 +158,7 @@ async function deleteSet(){
   const s = BENCH.editingSet; if(!s) return;
   if(!confirm(`¿Borrar el set «${s.name}» con sus ${s.questions.length} preguntas? Las corridas se conservan.`)) return;
   try{ await bjson('/api/bench/sets/'+s.id, {method:'DELETE'}); BENCH.set=null;
-    $('bench-set-form').style.display='none'; bmsg('Set borrado.'); await loadBenchSets(); }
+    closeModal('bench-set-modal'); bmsg('Set borrado.'); await loadBenchSets(); }
   catch(e){ bmsg(esc(e.message), false); }
 }
 async function exportSet(){
@@ -165,19 +203,47 @@ function compChip(c, verdict){
   const title = verdict!==undefined ? `${verdict||'sin veredicto'}${c.evidence?' — «'+c.evidence+'»':''}` : '';
   return `<span class="comp ${c.kind} ${cls}" title="${attr(title)}"><span class="k">${c.kind.replace('_',' ')}${w}</span>${esc(c.text)}</span>`;
 }
+function compCounts(comps){
+  const n = k => comps.filter(c=>c.kind===k).length;
+  return `<span class="cnt"><b>${n('must')}</b> must · <b>${n('should')}</b> should · <b>${n('must_not')}</b> must not</span>`;
+}
 function renderQuestions(){
-  const qs = BENCH.set.questions;
-  $('bench-qcount').textContent = `(${qs.length})`;
-  $('bench-questions').innerHTML = qs.length ? qs.map((q,i)=>`
-    <div class="bq"><div class="qh"><span class="muted">#${i+1}</span><span class="qt">${esc(q.question)}</span>
-      <button class="ghost" onclick="openQForm(${q.id})">✏️</button>
-      <button class="danger" onclick="deleteQ(${q.id})">🗑</button></div>
-      ${q.expected_answer?`<details><summary>respuesta de referencia</summary><div class="ref">${esc(q.expected_answer)}</div></details>`:''}
-      <div class="comps">${q.components.length ? q.components.map(c=>compChip(c)).join('')
-        : (q.expected_answer ? '<span class="muted" style="font-size:12px">sin componentes: se compara contra la referencia</span>'
+  if(!BENCH.set) return;
+  const all = BENCH.set.questions;
+  $('bench-qcount').textContent = all.length;
+  const term = $('bench-qsearch').value.trim().toLowerCase(), f = $('bench-qfilter').value;
+  const shown = all.map((q,i)=>({q,i})).filter(({q})=>{
+    if(f==='hueco' && !isGap(q.notes)) return false;
+    if(f==='nocomp' && q.components.length) return false;
+    if(!term) return true;
+    return [q.question, q.expected_answer, q.notes, ...q.components.map(c=>c.text)].join(' ').toLowerCase().includes(term);
+  });
+  $('bench-questions').innerHTML = (shown.length!==all.length ? `<p class="muted" style="font-size:12px">${shown.length} de ${all.length}</p>` : '') +
+    (shown.length ? shown.map(({q,i})=>`
+    <details class="bq" data-qid="${q.id}" ${BENCH.open.has(q.id)?'open':''} ontoggle="benchQToggle(this)">
+      <summary><span class="muted">#${i+1}</span><span class="qt">${esc(q.question)}</span>
+        ${isGap(q.notes)?'<span class="tag gap" title="Exhibe un hueco del corpus">HUECO CORPUS</span>':''}
+        ${q.components.length ? compCounts(q.components)
+          : (q.expected_answer ? '<span class="cnt">vs. referencia</span>' : '<span class="cnt" style="color:#f87171">sin criterios</span>')}
+        <button class="ghost" onclick="event.preventDefault();openQForm(${q.id})" title="Editar">✏️</button>
+        <button class="danger" onclick="event.preventDefault();deleteQ(${q.id})" title="Borrar">🗑</button></summary>
+      <div class="qbody">
+        ${q.expected_answer?`<div class="ref"><b style="color:#c7cdd6">Respuesta esperada:</b> ${esc(q.expected_answer)}</div>`:''}
+        <div class="comps">${q.components.map(c=>compChip(c)).join('') ||
+          (q.expected_answer ? '<span class="muted" style="font-size:12px">sin componentes: se compara contra la referencia</span>'
                              : '<span style="color:#f87171;font-size:12px">sin componentes ni referencia: no se evalúa</span>')}</div>
-      ${q.notes?`<div class="muted" style="font-size:12px;margin-top:4px">📝 ${esc(q.notes)}</div>`:''}
-    </div>`).join('') : '<p class="muted">Este set aún no tiene preguntas.</p>';
+        ${q.notes?`<div class="muted" style="font-size:12px;margin-top:6px">📝 ${esc(q.notes)}</div>`:''}
+      </div>
+    </details>`).join('') : '<p class="muted">Ninguna pregunta coincide.</p>');
+  $('bench-expand-all').textContent = BENCH.open.size ? '↕ Colapsar todo' : '↕ Expandir todo';
+}
+function benchQToggle(el){ const id=+el.dataset.qid; if(el.open) BENCH.open.add(id); else BENCH.open.delete(id);
+  $('bench-expand-all').textContent = BENCH.open.size ? '↕ Colapsar todo' : '↕ Expandir todo'; }
+function toggleExpandAll(){
+  const els = [...document.querySelectorAll('#bench-questions details.bq')];
+  const open = !BENCH.open.size;
+  els.forEach(d=>{ d.open = open; });   // ontoggle actualiza BENCH.open
+  if(!open) BENCH.open.clear();
 }
 function addCompRow(c){
   c = c || {kind:'must', text:'', weight:1};
@@ -191,19 +257,19 @@ function addCompRow(c){
   return row;
 }
 function openQForm(qid){
-  const q = qid ? BENCH.set.questions.find(x=>x.id===qid) : null;
   if(!BENCH.set){ bmsg('Primero crea o elige un set.', false); return; }
+  const q = qid ? BENCH.set.questions.find(x=>x.id===qid) : null;
   BENCH.editingQ = q;
-  $('bench-q-form').style.display = 'block';
+  $('bq-title').textContent = q ? `Editar pregunta #${BENCH.set.questions.indexOf(q)+1}` : 'Nueva pregunta';
   $('bq-question').value = q ? q.question : '';
   $('bq-expected').value = q ? (q.expected_answer||'') : '';
   $('bq-notes').value = q ? (q.notes||'') : '';
   $('bq-comps').innerHTML = '';
   (q && q.components.length ? q.components : [null]).forEach(c=>addCompRow(c));
-  $('bench-q-form').scrollIntoView({behavior:'smooth', block:'center'});
+  openModal('bench-q-modal');
   $('bq-question').focus();
 }
-function closeQForm(){ BENCH.editingQ = null; $('bench-q-form').style.display = 'none'; }
+function closeQForm(){ BENCH.editingQ = null; closeModal('bench-q-modal'); }
 async function saveQ(){
   const components = [...$('bq-comps').querySelectorAll('.cedit')].map(r=>({
     kind: r.querySelector('.ck').value, text: r.querySelector('.ct').value.trim(),
@@ -222,6 +288,7 @@ async function saveQ(){
 async function deleteQ(qid){
   if(!confirm('¿Borrar esta pregunta?')) return;
   try{ await bjson('/api/bench/questions/'+qid, {method:'DELETE'});
+    BENCH.open.delete(qid);
     BENCH.set = await bjson('/api/bench/sets/'+BENCH.set.id); renderQuestions(); }
   catch(e){ bmsg(esc(e.message), false); }
 }
@@ -232,7 +299,7 @@ async function startBenchRun(){
   const body = {set_id: BENCH.set.id, label: $('bench-label').value, setting: $('bench-setting').value,
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
     rerank: $('bench-rerank').checked, system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
-  try{ const r = await bpost('/api/bench/run', body); watchBenchRun(r.run_id); }
+  try{ const r = await bpost('/api/bench/run', body); watchBenchRun(r.run_id); loadBenchRuns(); }
   catch(e){ bmsg(esc(e.message), false); }
 }
 async function cancelBenchRun(){
@@ -247,16 +314,20 @@ function watchBenchRun(rid){
     let r; try{ r = await bjson('/api/bench/runs/'+rid); }catch(e){ return; }
     const p = r.n ? Math.round(100*r.done/r.n) : 0, m = r.metrics||{};
     const running = r.status==='running';
+    const eta = running && m.avg_seconds ? ` · faltan ~${Math.ceil((r.n-r.done)*m.avg_seconds/60)} min` : '';
     $('bench-progress').innerHTML = `<div class="phead"><span>Corrida <b>#${r.id}</b> ${esc(r.label||'')} · ${esc(r.set_name||'')}</span>
-      <span><b>${r.done}/${r.n}</b> preguntas · ${esc(r.status)}${m.score!=null?` · score ${pct(m.score)} · pasan ${pct(m.pass_rate)}`:''}</span></div>
+      <span><b>${r.done}/${r.n}</b> preguntas · ${esc(r.status)}${m.score!=null?` · score ${pct(m.score)} · pasan ${pct(m.pass_rate)}`:''}${eta}</span></div>
       <div class="pbar ${running?'busy':(r.status==='done'?'done':'err')}"><i style="width:${Math.max(p,3)}%"></i></div>
       ${r.error?`<div style="color:#f87171;font-size:12px">${esc(r.error)}</div>`:''}`;
+    const mine = BENCH.set && r.set_id===BENCH.set.id;
     if(!running){
       clearInterval(BENCH.poll); BENCH.running = null;
       $('bench-run').disabled = false; $('bench-cancel').style.display = 'none';
-      if(BENCH.set && r.set_id===BENCH.set.id){ loadBenchRuns(); showBenchRun(rid); }
-    }else if(BENCH.set && r.set_id===BENCH.set.id && r.done && r.done!==BENCH.shownDone){
-      BENCH.shownDone = r.done; showBenchRun(rid, true);   // solo si llegó un resultado nuevo
+      if(mine){ loadBenchRuns(); if(!BENCH.detail || BENCH.detail.id===rid) showBenchRun(rid, true); }
+    }else if(mine && r.done && r.done!==BENCH.shownDone){
+      BENCH.shownDone = r.done;   // solo si llegó un resultado nuevo (no colapsa filas abiertas en cada tick)
+      loadBenchRuns();
+      if(!BENCH.detail || BENCH.detail.id===rid) showBenchRun(rid, true);
     }
   };
   tick(); BENCH.poll = setInterval(tick, 3000);
@@ -270,47 +341,92 @@ function cfgSummary(c){
 async function loadBenchRuns(){
   if(!BENCH.set) return;
   let runs; try{ runs = await bjson('/api/bench/runs?set_id='+BENCH.set.id); }catch(e){ return; }
+  const checked = new Set([...document.querySelectorAll('.bench-cmp:checked')].map(c=>+c.value));
   BENCH.runs = runs;
-  $('bench-runs').innerHTML = runs.length ? `<table><tr><th></th><th>#</th><th>fecha</th><th>etiqueta / config</th><th>estado</th>
+  const sel = BENCH.detail && BENCH.detail.id;
+  $('bench-runs').innerHTML = runs.length ? `<table><tr><th title="marcar para comparar">☑</th><th>#</th><th>fecha</th><th>etiqueta / config</th><th>estado</th>
     <th title="promedio del score por pregunta">score</th><th title="% de preguntas con todos los must y ningún must_not">pasan</th>
     <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th><th>s/preg</th><th></th></tr>`+
-    runs.map(r=>{ const m=r.metrics||{}; return `<tr>
-      <td><input type="checkbox" class="bench-cmp" value="${r.id}"></td><td>${r.id}</td>
-      <td style="white-space:nowrap">${esc((r.created_at||'').slice(0,16))}</td>
-      <td>${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></td>
-      <td>${esc(r.status)}${r.status==='running'?` ${r.done}/${r.n}`:''}${m.errors?` <span style="color:#f87171">(${m.errors} err)</span>`:''}</td>
+    runs.map(r=>{ const m=r.metrics||{}; return `<tr class="clk ${r.id===sel?'sel':''}" onclick="showBenchRun(${r.id})">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="bench-cmp" value="${r.id}" ${checked.has(r.id)?'checked':''}></td><td>${r.id}</td>
+      <td style="white-space:nowrap">${esc((r.created_at||'').slice(5,16))}</td>
+      <td>${esc(r.label||'—')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></td>
+      <td>${r.status==='running'?`⏳ ${r.done}/${r.n}`:esc(r.status)}${m.errors?` <span style="color:#f87171">(${m.errors} err)</span>`:''}</td>
       <td class="sc" style="background:${scoreColor(m.score)}">${pct(m.score)}</td>
       <td class="sc">${pct(m.pass_rate)}</td><td class="sc">${pct(m.must_coverage)}</td>
       <td class="sc">${m.violations??'—'}</td><td class="sc">${m.avg_seconds??'—'}</td>
-      <td style="white-space:nowrap"><button class="ghost" style="padding:3px 9px;font-size:12px" onclick="showBenchRun(${r.id})">ver</button>
-        <button class="danger" onclick="deleteBenchRun(${r.id})">🗑</button></td></tr>`; }).join('')+'</table>'
-    : '<p class="muted">Aún no hay corridas de este set.</p>';
+      <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
+    : '<p class="muted">Aún no hay corridas de este set. Configura arriba y pulsa ▶ Correr benchmark.</p>';
 }
 async function deleteBenchRun(rid){
   if(!confirm(`¿Borrar la corrida #${rid} (y su artefacto)?`)) return;
-  try{ await bjson('/api/bench/runs/'+rid, {method:'DELETE'}); $('bench-detail').innerHTML=''; loadBenchRuns(); }
+  try{ await bjson('/api/bench/runs/'+rid, {method:'DELETE'});
+    if(BENCH.detail && BENCH.detail.id===rid){ BENCH.detail=null; $('bench-detail').innerHTML=''; }
+    loadBenchRuns(); }
   catch(e){ bmsg(esc(e.message), false); }
 }
+
+// ── Detalle de una corrida ──────────────────────────────────────────────────────
+const DFILTERS = [
+  ['all', 'Todas', ()=>true],
+  ['fail', '❌ No pasan', x=>!x.error && !x.passed],
+  ['pass', '✅ Pasan', x=>!x.error && x.passed],
+  ['viol', '⚠️ Con violación', x=>x.violations>0],
+  ['gap', 'HUECO CORPUS', x=>isGap(qNotes(x.question_id))],
+  ['err', 'Errores', x=>!!x.error],
+];
 async function showBenchRun(rid, quiet){
   let r; try{ r = await bjson('/api/bench/runs/'+rid); }catch(e){ bmsg(esc(e.message), false); return; }
+  if(!BENCH.detail || BENCH.detail.id!==rid){ BENCH.dfilter = 'all'; }
+  BENCH.detail = r;
+  document.querySelectorAll('#bench-runs tr.clk').forEach(tr=>tr.classList.toggle('sel', tr.getAttribute('onclick')===`showBenchRun(${rid})`));
+  renderBenchDetail();
+  if(!quiet) $('bench-detail').scrollIntoView({behavior:'smooth', block:'start'});
+}
+// Lo que falló de una pregunta: must/should no presentes y must_not que aparecieron.
+function missesOf(x){
+  const out = [];
+  for(const v of (x.verdicts||[])){
+    if(v.kind==='must_not'){ if(v.verdict==='presente' || v.verdict==='parcial') out.push(['⚠️', v]); }
+    else if(v.verdict!=='presente') out.push([v.kind==='must' ? (v.verdict==='parcial'?'◐':'✗') : '·', v]);
+  }
+  return out;
+}
+function renderBenchDetail(){
+  const r = BENCH.detail; if(!r) return;
   const m = r.metrics||{};
-  $('bench-detail').innerHTML = `<h2>Corrida #${r.id} ${esc(r.label||'')} <span class="muted">${esc(cfgSummary(r.config))}</span></h2>
+  const f = DFILTERS.find(d=>d[0]===BENCH.dfilter) || DFILTERS[0];
+  let rows = r.results.filter(f[2]);
+  if(BENCH.dsort==='worst') rows = [...rows].sort((a,b)=>(a.error?-1:a.score)-(b.error?-1:b.score));
+  const card = (t, v, sub) => `<div class="card"><h3>${t}</h3><div style="font-size:22px;font-weight:700">${v}</div>${sub?`<div class="muted" style="font-size:12px">${sub}</div>`:''}</div>`;
+  const nPass = r.results.filter(x=>!x.error && x.passed).length;
+  $('bench-detail').innerHTML = `<h2 style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">Corrida #${r.id} ${esc(r.label||'')}
+      <span class="runcfg">${esc(cfgSummary(r.config))}</span>${r.status==='running'?`<span class="tag gap">en curso ${r.done}/${r.n}</span>`:''}</h2>
     <div class="cards">
-      <div class="card"><h3>score medio</h3><div style="font-size:22px;font-weight:700">${pct(m.score)}</div></div>
-      <div class="card"><h3>preguntas que pasan</h3><div style="font-size:22px;font-weight:700">${pct(m.pass_rate)}</div></div>
-      <div class="card"><h3>cobertura de must</h3><div style="font-size:22px;font-weight:700">${pct(m.must_coverage)}</div></div>
-      <div class="card"><h3>violaciones must_not</h3><div style="font-size:22px;font-weight:700">${m.violations??'—'}</div></div>
+      ${card('score medio', pct(m.score))}
+      ${card('preguntas que pasan', pct(m.pass_rate), `${nPass} de ${r.results.length}`)}
+      ${card('cobertura de must', pct(m.must_coverage))}
+      ${card('violaciones must_not', m.violations??'—')}
     </div>
-    <p class="muted" style="font-size:12px">Clic en una fila para ver la respuesta completa, las fuentes y la salida cruda del juez (desde el object store).
-      Pasa el cursor sobre un componente para ver la evidencia que citó el juez.</p>
-    <table><tr><th>#</th><th>pregunta</th><th>score</th><th>pasa</th><th>componentes (veredicto del juez)</th><th>s</th></tr>`+
-    r.results.map(x=>`<tr class="clk" onclick="toggleBenchAnswer(${r.id}, ${x.question_id}, this)">
-      <td>${x.position+1}</td><td>${esc(x.question)}</td>
+    <div class="fchips">${DFILTERS.map(([k,label,fn])=>{ const n = r.results.filter(fn).length;
+        return (k==='all'||n) ? `<button class="${k===BENCH.dfilter?'active':''}" onclick="BENCH.dfilter='${k}';renderBenchDetail()">${label} <span class="pill">${n}</span></button>` : ''; }).join('')}
+      <span style="flex:1"></span>
+      <select onchange="BENCH.dsort=this.value;renderBenchDetail()">
+        <option value="pos" ${BENCH.dsort==='pos'?'selected':''}>orden del set</option>
+        <option value="worst" ${BENCH.dsort==='worst'?'selected':''}>peor score primero</option></select>
+    </div>
+    <p class="muted" style="font-size:12px;margin:4px 0">Clic en una fila → respuesta completa, todos los veredictos con evidencia, fuentes y salida cruda del juez.</p>
+    <table><tr><th>#</th><th>pregunta</th><th>score</th><th>pasa</th><th title="must/should no presentes (✗ ausente · ◐ parcial · · should) y must_not que aparecieron (⚠️)">qué faltó / qué sobró</th><th>s</th></tr>`+
+    (rows.length ? rows.map(x=>{ const miss = missesOf(x); return `<tr class="clk" onclick="toggleBenchAnswer(${r.id}, ${x.question_id}, this)">
+      <td>${x.position+1}</td>
+      <td>${esc(x.question)}${isGap(qNotes(x.question_id))?' <span class="tag gap">HUECO</span>':''}</td>
       <td class="sc" style="background:${x.error?'#374151':scoreColor(x.score)}">${x.error?'err':pct(x.score)}</td>
       <td class="sc">${x.error?'—':(x.passed?'✅':'❌')}</td>
-      <td>${x.error?`<span style="color:#f87171">${esc(x.error)}</span>`:`<div class="comps" style="margin:0">${(x.verdicts||[]).map(v=>compChip(v, v.verdict)).join('')}</div>`}</td>
-      <td class="sc">${x.seconds??''}</td></tr>`).join('')+'</table>';
-  if(!quiet) $('bench-detail').scrollIntoView({behavior:'smooth'});
+      <td>${x.error?`<span style="color:#f87171">${esc(x.error)}</span>`
+        : miss.length ? `<ul class="miss" style="margin:0;padding-left:0;list-style:none">${miss.map(([ic,v])=>
+            `<li title="${attr((v.verdict||'sin veredicto')+(v.evidence?' — «'+v.evidence+'»':''))}">${ic} ${esc(v.text)}</li>`).join('')}</ul>`
+        : '<span class="muted" style="font-size:12px">todo presente</span>'}</td>
+      <td class="sc">${x.seconds??''}</td></tr>`; }).join('') : '<tr><td colspan="6" class="muted">Ninguna pregunta en este filtro.</td></tr>')+'</table>';
 }
 async function toggleBenchAnswer(rid, qid, tr){
   const next = tr.nextElementSibling;
@@ -322,33 +438,65 @@ async function toggleBenchAnswer(rid, qid, tr){
     const d = await bjson(`/api/bench/runs/${rid}/artifact?question_id=${qid}`);
     const md = s => (window.marked ? marked.parse(s||'') : `<pre>${esc(s)}</pre>`);
     row.innerHTML = `<td colspan="6">
-      <div class="ans">${md(d.answer)}</div>
-      ${d.expected_answer?`<details><summary>respuesta de referencia</summary><div class="ref">${esc(d.expected_answer)}</div></details>`:''}
-      <details><summary>veredictos con evidencia</summary><ul>${(d.verdicts||[]).map(v=>
+      <div class="comps" style="margin:4px 0 8px">${(d.verdicts||[]).map(v=>compChip(v, v.verdict)).join('')}</div>
+      <details open><summary>💬 Respuesta del sistema</summary><div class="ans">${md(d.answer)}</div></details>
+      ${d.expected_answer?`<details><summary>🎯 Respuesta esperada</summary><div class="ref">${esc(d.expected_answer)}</div></details>`:''}
+      <details><summary>⚖️ Veredictos con evidencia</summary><ul>${(d.verdicts||[]).map(v=>
         `<li>${compChip(v, v.verdict)} → <b>${esc(v.verdict||'sin veredicto')}</b>${v.evidence?` — «${esc(v.evidence)}»`:''}</li>`).join('')}</ul></details>
       ${d.chunks?renderChunks(d.chunks, d.score_kind||'score').replace('<details open>','<details>'):''}
-      <details><summary>salida cruda del juez</summary><pre class="hyde-p">${esc(d.judge_raw)}</pre></details>
-      ${d.hyde_passage?`<details><summary>borrador HyDE</summary><div class="hyde-p">${esc(d.hyde_passage)}</div></details>`:''}
+      <details><summary>🧾 Salida cruda del juez</summary><pre class="hyde-p">${esc(d.judge_raw)}</pre></details>
+      ${d.hyde_passage?`<details><summary>🧪 Borrador HyDE</summary><div class="hyde-p">${esc(d.hyde_passage)}</div></details>`:''}
     </td>`;
   }catch(e){ row.innerHTML = `<td colspan="6" style="color:#f87171">${esc(e.message)}</td>`; }
 }
+
+// ── Comparación ─────────────────────────────────────────────────────────────────
 async function compareBenchRuns(){
   const ids = [...document.querySelectorAll('.bench-cmp:checked')].map(c=>+c.value).sort((a,b)=>a-b);
-  if(ids.length < 2){ bmsg('Marca al menos 2 corridas para comparar.', false); return; }
-  const runs = await Promise.all(ids.map(id=>bjson('/api/bench/runs/'+id)));
+  if(ids.length < 2){ bmsg('Marca ☑ al menos 2 corridas en la tabla para comparar.', false); return; }
+  try{ BENCH.cmp = await Promise.all(ids.map(id=>bjson('/api/bench/runs/'+id))); }
+  catch(e){ bmsg(esc(e.message), false); return; }
+  $('bench-ccount').textContent = ids.length; $('bench-ccount').hidden = false;
+  renderCompare();
+  benchSub('compare');
+}
+function renderCompare(){
+  const runs = BENCH.cmp; if(!runs) return;
   // Filas = preguntas (por id, así una pregunta editada sigue alineada entre corridas y
   // dos preguntas con el mismo texto no se funden); columnas = corridas.
   const qkey = x => x.question_id ?? x.question;
   const qs = []; const seen = new Set();
   runs.forEach(r=>r.results.forEach(x=>{ if(!seen.has(qkey(x))){ seen.add(qkey(x)); qs.push(x); } }));
-  const cellOf = (r,q) => { const x = r.results.find(y=>qkey(y)===qkey(q));
+  const get = (r,q) => r.results.find(y=>qkey(y)===qkey(q));
+  const two = runs.length===2;
+  const delta = q => { const a=get(runs[0],q), b=get(runs[1],q); return (a&&b&&!a.error&&!b.error) ? b.score-a.score : null; };
+  let rows = qs;
+  if(BENCH.cmpOnlyDiff) rows = qs.filter(q=>{ const vals = runs.map(r=>{ const x=get(r,q); return x ? (x.error?'e':x.passed+':'+x.score.toFixed(2)) : '-'; });
+    return new Set(vals).size>1; });
+  if(two && BENCH.cmpSort==='delta') rows = [...rows].sort((a,b)=>(delta(a)??0)-(delta(b)??0));
+  const cell = (r,q) => { const x = get(r,q);
     if(!x) return '<td class="sc muted">—</td>';
     if(x.error) return '<td class="sc" style="background:#374151">err</td>';
     return `<td class="sc" style="background:${scoreColor(x.score)}">${pct(x.score)}${x.passed?' ✓':''}</td>`; };
-  $('bench-detail').innerHTML = `<h2>Comparación</h2><table><tr><th>pregunta</th>${runs.map(r=>
-      `<th>#${r.id} ${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}</tr>
-    <tr><td><b>score medio</b></td>${runs.map(r=>`<td class="sc" style="background:${scoreColor((r.metrics||{}).score)}">${pct((r.metrics||{}).score)}</td>`).join('')}</tr>
-    <tr><td><b>pasan</b></td>${runs.map(r=>`<td class="sc">${pct((r.metrics||{}).pass_rate)}</td>`).join('')}</tr>`+
-    qs.map(q=>`<tr><td>${esc(q.question)}</td>${runs.map(r=>cellOf(r,q)).join('')}</tr>`).join('')+'</table>';
-  $('bench-detail').scrollIntoView({behavior:'smooth'});
+  // Si la pregunta se editó entre corridas, sus criterios (componentes) no son los mismos y el
+  // cambio de score no significa que el sistema mejoró o empeoró: se marca ⚙.
+  const crit = x => (x && !x.error) ? (x.verdicts||[]).map(v=>v.kind+':'+v.text).join('|') : null;   // con error no hay criterios que comparar
+  const changed = q => new Set(runs.map(r=>crit(get(r,q))).filter(v=>v!=null)).size > 1;
+  const dcell = q => { const d = delta(q), ch = changed(q);
+    const mark = ch ? ' <span title="Los criterios de esta pregunta cambiaron entre corridas: el Δ no es comparable">⚙</span>' : '';
+    if(d==null) return `<td class="sc muted">—${mark}</td>`;
+    const s = Math.round(100*d); return `<td class="sc delta ${ch?'':s>0?'up':s<0?'down':''}">${s>0?'+':''}${s}${mark}</td>`; };
+  const mrow = (label, fn) => `<tr><td><b>${label}</b></td>${runs.map(r=>`<td class="sc">${fn(r.metrics||{})}</td>`).join('')}${two?'<td></td>':''}</tr>`;
+  $('bench-compare-out').innerHTML = `
+    <div class="row" style="margin-top:0">
+      <label class="chk"><input type="checkbox" ${BENCH.cmpOnlyDiff?'checked':''} onchange="BENCH.cmpOnlyDiff=this.checked;renderCompare()"> solo preguntas que cambian</label>
+      ${two?`<select onchange="BENCH.cmpSort=this.value;renderCompare()">
+        <option value="pos">orden del set</option><option value="delta" ${BENCH.cmpSort==='delta'?'selected':''}>más empeoradas primero</option></select>`:''}
+      <span class="muted" style="font-size:12px">${rows.length} de ${qs.length} preguntas</span>
+    </div>
+    <table><tr><th>pregunta</th>${runs.map(r=>`<th>#${r.id} ${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}
+      ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
+    <tr><td><b>score medio</b></td>${runs.map(r=>`<td class="sc" style="background:${scoreColor((r.metrics||{}).score)}">${pct((r.metrics||{}).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
+    ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}`+
+    rows.map(q=>`<tr><td>${esc(q.question)}${isGap(qNotes(q.question_id))?' <span class="tag gap">HUECO</span>':''}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';
 }

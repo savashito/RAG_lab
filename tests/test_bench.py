@@ -116,3 +116,48 @@ def test_aggregate_skips_errors():
     assert a['n'] == 3 and a['errors'] == 1
     assert a['score'] == 0.75 and a['pass_rate'] == 0.5 and a['must_coverage'] == 0.75
     assert a['violations'] == 1 and a['avg_seconds'] == 5.0
+
+
+# ── reintentos ante errores transitorios del LLM ────────────────────────────────
+
+def test_retry_recovers_from_transient(monkeypatch):
+    import http.client
+
+    import bench
+    monkeypatch.setattr(bench, 'RETRY_WAITS', (0, 0))
+    calls = []
+
+    def flaky():
+        calls.append(1)
+        if len(calls) < 3:
+            raise http.client.RemoteDisconnected('Remote end closed connection without response')
+        return 'ok'
+    assert bench._retry(flaky) == 'ok' and len(calls) == 3
+
+
+def test_retry_gives_up_and_skips_logic_errors(monkeypatch):
+    import urllib.error
+
+    import bench
+    monkeypatch.setattr(bench, 'RETRY_WAITS', (0, 0))
+    calls = []
+
+    def down():
+        calls.append(1)
+        raise urllib.error.URLError('[Errno 111] Connection refused')
+    try:
+        bench._retry(down)
+    except urllib.error.URLError:
+        pass
+    assert len(calls) == 3   # 1 + 2 reintentos
+
+    calls.clear()
+
+    def bug():
+        calls.append(1)
+        raise ValueError('pregunta vacía')
+    try:
+        bench._retry(bug)
+    except ValueError:
+        pass
+    assert len(calls) == 1   # los errores de lógica no se reintentan
