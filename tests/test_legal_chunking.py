@@ -172,3 +172,53 @@ def test_classification_consistent_both_directions(documents):
         looks_like_code = n_art >= 10 and dens >= lc.ARTICLE_DENSITY_MIN
         assert not (looks_like_code and strat != 'article'), f'{name}: código no enrutado a article'
         assert not (strat == 'article' and dens < lc.ARTICLE_DENSITY_MIN), f'{name}: prosa enrutada como code'
+
+
+# ── Jerarquía con encabezados rotos por el PDF→MD (caso real: acoso sexual CDMX) ──
+
+def _hier(md):
+    return {u['title']: u['hierarchy'] for u in lc.article_units(md)}
+
+
+def test_orphan_chapter_without_keyword_is_kept():
+    # El conversor perdió "CAPÍTULO III": sin esto el art. 179 no contenía "acoso".
+    md = ('# **TÍTULO QUINTO DELITOS CONTRA LA LIBERTAD SEXUAL**\n\n# **VIOLACIÓN**\n\n'
+          '**ARTÍCULO 174.-** Al que por medio de la violencia realice cópula…\n\n'
+          '# **ACOSO SEXUAL**\n\n**ARTÍCULO 179.-** A quien solicite favores sexuales…\n\n'
+          '# **CAPÍTULO IV ESTUPRO**\n\n**ARTÍCULO 180.-** Al que tenga cópula…\n')
+    h = _hier(md)
+    assert h['Artículo 174'].endswith('> VIOLACIÓN > Artículo 174')
+    assert h['Artículo 179'].endswith('> ACOSO SEXUAL > Artículo 179')
+    assert h['Artículo 180'].endswith('> CAPÍTULO IV ESTUPRO > Artículo 180')
+
+
+def test_bare_heading_takes_name_from_next_heading():
+    md = ('# TITULO PRIMERO\n\n# Responsabilidad Penal\n\n# CAPITULO IV\n\n'
+          '# Causas de exclusión del delito\n\n**Artículo 15** .- El delito se excluye cuando…\n')
+    assert _hier(md)['Artículo 15'] == ('TITULO PRIMERO Responsabilidad Penal > '
+                                        'CAPITULO IV Causas de exclusión del delito > Artículo 15')
+
+
+def test_bold_structure_counts_and_is_stripped_from_previous_article():
+    md = ('# **TÍTULO QUINTO DELITOS SEXUALES**\n\n# **CAPÍTULO VII CONTRA LA INTIMIDAD SEXUAL**\n\n'
+          '**ARTÍCULO 181 QUINTUS.-** Comete el delito… Este delito se perseguirá por querella. \n\n'
+          '**CAPÍTULO VIII** \n\n**DISPOSICIONES GENERALES**\n\n**ARTÍCULO 182.-** Cuando resulten hijos…\n')
+    units = {u['title']: u for u in lc.article_units(md)}
+    assert units['Artículo 182']['hierarchy'].endswith('> CAPÍTULO VIII DISPOSICIONES GENERALES > Artículo 182')
+    assert 'CAPÍTULO VIII' not in units['Artículo 181 QUINTUS']['text']
+    assert units['Artículo 181 QUINTUS']['text'].endswith('por querella.')
+
+
+def test_fractions_and_running_headers_are_not_chapters():
+    md = ('# TITULO SEGUNDO\n\n# CAPITULO I EL DELITO Y SUS CLASES\n\n**Artículo 8.-** Los delitos pueden ser:\n\n'
+          '# **I.** Dolosos;\n\nEl delito es doloso cuando…\n\n# CÓDIGO PENAL FEDERAL\n\n'
+          '# Nuevo Código Publicado en el Diario Oficial de la Federación\n\n**Artículo 9.-** Texto.\n')
+    h = _hier(md)
+    assert h['Artículo 9'] == 'TITULO SEGUNDO > CAPITULO I EL DELITO Y SUS CLASES > Artículo 9'
+
+
+def test_lowercase_orphan_heading_is_not_promoted():
+    # Un rubro en minúsculas suelto (sin encabezado desnudo antes) no se inventa como capítulo.
+    md = ('# TÍTULO TERCERO Aplicación de las Sanciones\n\n# CAPITULO I Reglas generales\n\n'
+          '**Artículo 51.-** Texto.\n\n# Otras reglas del juzgador\n\n**Artículo 52.-** Texto.\n')
+    assert _hier(md)['Artículo 52'].endswith('> CAPITULO I Reglas generales > Artículo 52')

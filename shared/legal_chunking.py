@@ -318,14 +318,41 @@ def document_strategy(text: str) -> str:
 # Encabezados estructurales de un código: LIBRO ⊃ TÍTULO ⊃ CAPÍTULO ⊃ SECCIÓN. En el
 # Markdown salido del PDF casi todos son "# ..." (mismo nivel Markdown), así que NO se
 # puede anidar por número de '#'; se clasifican por su palabra clave y se anidan por ese
-# rango. Un encabezado sin palabra clave (p. ej. el nombre de un delito suelto) se ignora
-# para la jerarquía (no queremos ruido), pero sí sirve para cortar el header colgante.
+# rango. El PDF→MD, además, rompe los encabezados de tres formas que hay que reparar
+# (medido en CDMX, CPF y Edomex; sin esto el capítulo se pierde y, p. ej., el chunk del
+# art. 179 CDMX no contenía la palabra "acoso" → BM25/híbrido no lo encontraba):
+#   1. Encabezado "desnudo" + nombre aparte: "# CAPITULO IV" y luego "# Causas de
+#      exclusión del delito" (o "TÍTULO PRIMERO" + "LA LEY PENAL"). El nombre se une.
+#   2. Capítulo sin la palabra clave: "# VIOLACIÓN", "# ACOSO SEXUAL", "# TENTATIVA" (el
+#      conversor perdió "CAPÍTULO I"). Un encabezado huérfano en MAYÚSCULAS dentro de un
+#      TÍTULO se toma como capítulo.
+#   3. Estructura en negritas sin '#': "**CAPÍTULO VIII**" + "**DISPOSICIONES GENERALES**";
+#      además de contarla, se quita del final del artículo anterior, donde quedaba pegada.
+# Lo que NO es estructura y se ignora: fracciones con forma de encabezado ("I. Dolosos;"),
+# corredores de página ("CÓDIGO PENAL FEDERAL", "Nuevo Código Publicado en el DOF…").
 _STRUCT_RANK = [
     (re.compile(r'(?i)\bLIBRO\b'), 0),
     (re.compile(r'(?i)\bT[ÍI]TULO\b'), 1),
-    (re.compile(r'(?i)\bCAP[ÍI]TULO\b'), 2),
-    (re.compile(r'(?i)\bSECCI[ÓO]N\b'), 3),
+    (re.compile(r'(?i)\bSUBT[ÍI]TULO\b'), 2),
+    (re.compile(r'(?i)\bCAP[ÍI]TULO\b'), 3),
+    (re.compile(r'(?i)\bSECCI[ÓO]N\b'), 4),
 ]
+CHAPTER_RANK = 3
+_TITLE_RANK = 1
+# "CAPÍTULO IV", "TITULO SEGUNDO", "CAPITULO III BIS", "SECCIÓN ÚNICA": palabra clave +
+# numeral y nada más → su nombre viene en el encabezado siguiente.
+_BARE_STRUCT_RE = re.compile(
+    r'(?i)^(?:LIBRO|SUBT[ÍI]TULO|T[ÍI]TULO|CAP[ÍI]TULO|SECCI[ÓO]N)\s+'
+    r'(?:[IVXLC]+|\d+|[ÚU]NIC[OA]|PRIMER[OA]|SEGUND[OA]|TERCER[OA]|CUART[OA]|QUINT[OA]|SEXT[OA]|'
+    r'S[ÉE]PTIM[OA]|OCTAV[OA]|NOVEN[OA]|D[ÉE]CIM[OA](?:\s+\w+)?|[A-ZÁÉÍÓÚ]+(?:GÉSIM|CENTÉSIM)\w*(?:\s+\w+)?)'
+    r'(?:\s+(?:BIS|TER|QU[ÁA]TER|QUINQUIES))?\.?$'
+)
+# Línea completa en negritas (candidata a encabezado sin '#'): "**CAPÍTULO VIII**".
+_BOLD_LINE_RE = re.compile(r'(?m)^[ \t]*\*\*([^*\n]{2,160})\*\*[ \t]*$')
+_REFORM_NOTE_RE = re.compile(r'\s*\((?:ref|adici|reforma|derog|p\.?\s*o\.?|dof|decreto)[^)]*\)\s*$', re.I)
+_FRACTION_RE = re.compile(r'(?i)^(?:[IVXLC]+|\d+|[a-z])[.)]\s')
+_RUNNING_HEADER_RE = re.compile(
+    r'(?i)^C[ÓO]DIGO\b|diario oficial|publicad[oa] en|[úu]ltima reforma|peri[óo]dico oficial|gaceta')
 
 
 def _heading_rank(title: str):
@@ -335,35 +362,96 @@ def _heading_rank(title: str):
     return None
 
 
+def _clean_heading(raw: str) -> str:
+    # Quita la nota de reforma que a veces cierra el título ("CAPÍTULO IV … (Ref. P.O…)").
+    return _REFORM_NOTE_RE.sub('', normalize_line(raw)).strip()
+
+
+def _is_structural_noise(title: str) -> bool:
+    """Encabezado sin palabra clave que NO es un nombre de capítulo/título."""
+    return (not title or bool(_FRACTION_RE.match(title)) or bool(_RUNNING_HEADER_RE.search(title))
+            or bool(re.search(r'(?i)\bart[íi]culo\s+\d', title)))
+
+
+def _is_orphan_chapter(title: str) -> bool:
+    """¿Un encabezado huérfano (sin palabra clave ni encabezado desnudo antes) es un
+    capítulo al que el conversor le quitó "CAPÍTULO N"? Sólo nombres cortos en MAYÚSCULAS
+    y sin puntuación final: los rubros en minúsculas o las oraciones no cuentan."""
+    letters = [c for c in title if c.isalpha()]
+    if not letters or len(title.split()) > 14 or title[-1] in '.;:,':
+        return False
+    return sum(c.isupper() for c in letters) / len(letters) >= 0.85
+
+
+def _structure_events(text: str):
+    """Encabezados en orden de lectura: '#…' siempre; líneas en negritas sólo como
+    candidatas (se aceptan si llevan palabra clave o si nombran un encabezado desnudo)."""
+    ev = [(m.start(), '#', m.group(2)) for m in HEADING_RE.finditer(text)]
+    ev += [(m.start(), '**', m.group(1)) for m in _BOLD_LINE_RE.finditer(text)
+           if not HEADING_RE.match(text[m.start():m.end()])]
+    return sorted(ev, key=lambda e: e[0])
+
+
+def _apply_heading(stack: dict, pending, kind: str, raw: str):
+    """Actualiza la pila con un encabezado; devuelve el nuevo `pending` (rango de un
+    encabezado desnudo que espera su nombre en el siguiente encabezado) o None."""
+    title = _clean_heading(raw)
+    rank = _heading_rank(title)
+    if rank is not None and not (kind == '**' and not re.match(r'(?i)^(?:LIBRO|SUBT[ÍI]TULO|T[ÍI]TULO|CAP[ÍI]TULO|SECCI[ÓO]N)\b', title)):
+        for deeper in [r for r in stack if r >= rank]:
+            del stack[deeper]
+        stack[rank] = title
+        return rank if _BARE_STRUCT_RE.match(title) else None
+    if _is_structural_noise(title):
+        return pending                                   # no rompe la espera del nombre
+    if pending is not None and pending in stack:         # patrón 1: nombre del desnudo
+        stack[pending] = f'{stack[pending]} {title}'
+        return None
+    if kind == '#' and _TITLE_RANK in stack and _is_orphan_chapter(title):   # patrón 2
+        for deeper in [r for r in stack if r >= CHAPTER_RANK]:
+            del stack[deeper]
+        stack[CHAPTER_RANK] = title
+    return None
+
+
+def _is_bold_struct(line: str) -> bool:
+    m = _BOLD_LINE_RE.match(line)
+    return bool(m and re.match(r'(?i)^\s*(?:LIBRO|SUBT[ÍI]TULO|T[ÍI]TULO|CAP[ÍI]TULO|SECCI[ÓO]N)\b', normalize_line(m.group(1))))
+
+
 def _strip_trailing_headings(body: str) -> str:
-    """Quita del FINAL del chunk las líneas de encabezado Markdown (y blancos): un header
-    al final de un artículo siempre introduce la SIGUIENTE sección, no la actual (así el
-    '# CAPÍTULO III ESTUPRO' deja de contaminar el chunk del 166 BIS)."""
+    """Quita del FINAL del chunk las líneas de encabezado (y blancos): un header al final
+    de un artículo siempre introduce la SIGUIENTE sección, no la actual (así el
+    '# CAPÍTULO III ESTUPRO' deja de contaminar el chunk del 166 BIS). Incluye la
+    estructura en negritas ("**CAPÍTULO VIII**" + "**DISPOSICIONES GENERALES**")."""
     lines = body.rstrip().split('\n')
-    while lines and (not lines[-1].strip() or HEADING_RE.match(lines[-1])):
-        lines.pop()
+    while lines:
+        last = lines[-1]
+        if not last.strip() or HEADING_RE.match(last) or _is_bold_struct(last):
+            lines.pop()
+            continue
+        # Nombre en negritas cuyo encabezado desnudo (en negritas) está justo arriba.
+        prev = next((ln for ln in reversed(lines[:-1]) if ln.strip()), '')
+        if _BOLD_LINE_RE.match(last) and _is_bold_struct(prev):
+            lines.pop()
+            continue
+        break
     return '\n'.join(lines).strip()
 
 
 def article_units(text: str):
     matches = list(ARTICLE_RE.finditer(text))
-    heads = list(HEADING_RE.finditer(text))
-    stack: dict[int, str] = {}   # rango estructural → título vigente (LIBRO/TÍTULO/CAPÍTULO/SECCIÓN)
+    heads = _structure_events(text)
+    stack: dict[int, str] = {}   # rango estructural → título vigente (LIBRO/TÍTULO/SUBTÍTULO/CAPÍTULO/SECCIÓN)
+    pending = None               # rango de un encabezado desnudo que espera su nombre
     hi = 0                       # cursor sobre `heads`, avanza en orden de lectura
     for i, match in enumerate(matches):
         # Consume los encabezados que aparecen ANTES del inicio de este artículo, para
         # dejar la pila con la sección en vigor. Un rango nuevo descarta los más profundos.
-        while hi < len(heads) and heads[hi].start() < match.start():
-            htitle = normalize_line(heads[hi].group(2))
-            # Quita la nota de reforma que a veces cierra el título ("CAPÍTULO IV … (Ref. P.O…)").
-            htitle = re.sub(r'\s*\((?:ref|adici|reforma|derog|p\.?\s*o\.?|dof|decreto)[^)]*\)\s*$',
-                            '', htitle, flags=re.I).strip()
-            rank = _heading_rank(htitle)
-            if rank is not None:
-                for deeper in [r for r in stack if r >= rank]:
-                    del stack[deeper]
-                stack[rank] = htitle
+        while hi < len(heads) and heads[hi][0] < match.start():
+            pending = _apply_heading(stack, pending, heads[hi][1], heads[hi][2])
             hi += 1
+        pending = None   # el nombre de un encabezado desnudo nunca va después de un artículo
         end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
         label, ocr_fix = _article_label_parts(match.group(1))
         title = 'Artículo ' + label
