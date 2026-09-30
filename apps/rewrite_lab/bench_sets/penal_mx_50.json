@@ -1,0 +1,1558 @@
+{
+ "format": "rag-lab-bench/v1",
+ "name": "Derecho penal mexicano · 50 (sexuales, parte general, CNPP)",
+ "topic": "derecho_penal_mexicano",
+ "description": "30 preguntas de delitos sexuales y cópula (CDMX, Edomex, CPF, Morelos; comparativas y procesales), 10 de parte general/dogmática y 10 del CNPP. Respuestas basadas en el texto del corpus al 2026-09-30. Querétaro no está en el corpus: esas preguntas miden que no se invente.",
+ "questions": [
+  {
+   "question": "Por favor verifica la legislación de las entidades Ciudad de México, Estado de México y Querétaro y dime las particularidades de cada entidad en cuanto al delito de estupro y sus elementos del delito conforme a la dogmática penal.",
+   "expected_answer": "Ciudad de México (art. 180 CPCDMX): comete estupro quien tiene cópula con persona mayor de doce y menor de dieciocho años, obteniendo su consentimiento por medio de cualquier tipo de engaño; pena de seis meses a cuatro años de prisión; se persigue por querella. Estado de México (arts. 271 y 272 CPEM): cópula con persona mayor de quince y menor de dieciocho años obteniendo su consentimiento por medio de cualquier tipo de seducción; uno a cinco años de prisión; sólo se procede por querella de la ofendida, sus padres o, a falta de éstos, sus representantes legítimos. Querétaro: el corpus no contiene su Código Penal, por lo que no puede afirmarse su regulación. Dogmáticamente: conducta de acción dolosa consistente en la cópula; sujeto activo indiferenciado; sujeto pasivo calificado por la edad; medio comisivo (engaño en CDMX, seducción en Edomex) que vicia el consentimiento; bien jurídico: libertad y seguridad sexuales y normal desarrollo psicosexual (así titula el CPCDMX el Título Quinto); tipicidad, antijuridicidad, culpabilidad (dolo) y punibilidad; querella como requisito de procedibilidad.",
+   "notes": "QRO · pregunta modelo del usuario",
+   "components": [
+    {
+     "kind": "must",
+     "text": "CDMX (art. 180): el sujeto pasivo es mayor de 12 y menor de 18 años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "CDMX: el consentimiento se obtiene mediante engaño",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Estado de México (art. 271): el sujeto pasivo es mayor de 15 y menor de 18 años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Estado de México: el consentimiento se obtiene mediante seducción",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Indica que los fragmentos/contexto disponibles no contienen la legislación penal de Querétaro (o que no hay información suficiente sobre Querétaro)",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Penas: CDMX de 6 meses a 4 años; Estado de México de 1 a 5 años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "En ambas entidades el estupro se persigue por querella",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Analiza elementos dogmáticos: conducta (cópula), sujetos, medio comisivo, bien jurídico, dolo",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Atribuye al Código Penal de Querétaro un número de artículo, una edad o una pena concretos",
+     "weight": 2
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que en la Ciudad de México el estupro exige que la víctima sea mayor de 15 años",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cómo define la ley el concepto de cópula en el Código Penal de la Ciudad de México, en el del Estado de México y en el Código Penal Federal? Señala las diferencias.",
+   "expected_answer": "CDMX (art. 174): introducción del pene en el cuerpo humano por vía vaginal, anal o bucal. Estado de México (art. 273): introducción del miembro viril en el cuerpo de la víctima por vía vaginal, anal u oral, independientemente de su sexo, exista eyaculación o no. CPF (art. 265): introducción del miembro viril en el cuerpo de la víctima por vía vaginal, anal u oral, independientemente de su sexo. La diferencia principal es que el Estado de México aclara expresamente que no se requiere eyaculación; las tres coinciden en las tres vías.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Cópula = introducción del pene/miembro viril en el cuerpo de la víctima",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Comprende las vías vaginal, anal y oral/bucal",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Señala que el Estado de México precisa que exista eyaculación o no",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita art. 174 CPCDMX, art. 273 CPEM y art. 265 CPF",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que la cópula requiere eyaculación",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuáles son los elementos del delito de estupro en la Ciudad de México y cómo se persigue?",
+   "expected_answer": "Art. 180 CPCDMX: al que tenga cópula con persona mayor de doce y menor de dieciocho años, obteniendo su consentimiento por medio de cualquier tipo de engaño, se le impondrá de seis meses a cuatro años de prisión. El delito se persigue por querella.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Conducta: tener cópula",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Sujeto pasivo mayor de 12 y menor de 18 años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Consentimiento obtenido por cualquier tipo de engaño",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Pena de seis meses a cuatro años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Se persigue por querella",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 180 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que se persigue de oficio",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué establece el Código Penal del Estado de México sobre el delito de estupro y quién puede presentar la querella?",
+   "expected_answer": "Art. 271 CPEM: comete estupro quien tenga cópula con una persona mayor de quince años y menor de dieciocho obteniendo su consentimiento por medio de cualquier tipo de seducción; uno a cinco años de prisión. Art. 272: no se procede sino por querella de la parte ofendida, de sus padres o, a falta de éstos, de sus representantes legítimos.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Sujeto pasivo mayor de 15 y menor de 18 años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Medio: cualquier tipo de seducción",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Pena de uno a cinco años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Querella de la parte ofendida, de sus padres o, a falta de éstos, de sus representantes legítimos",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita los artículos 271 y 272 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el medio típico en el Estado de México es la violencia física o moral",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "En el Código Penal Federal, ¿cómo se tipifica el estupro, cómo se persigue y prescribe su sanción?",
+   "expected_answer": "Art. 262 CPF: al que tenga cópula con persona mayor de quince años y menor de dieciocho, obteniendo su consentimiento por medio de engaño, se le aplicarán de tres meses a cuatro años de prisión. Art. 263: sólo se procede por queja del ofendido o de sus representantes. Art. 266 Ter: son imprescriptibles las sanciones de los artículos 261, 262 y 266.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Pasivo mayor de 15 y menor de 18 años; consentimiento obtenido por engaño",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Pena de tres meses a cuatro años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Se procede por queja del ofendido o sus representantes (art. 263)",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Las sanciones del estupro (art. 262) son imprescriptibles según el art. 266 Ter",
+     "weight": 2
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el estupro federal prescribe en los plazos ordinarios",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "Desde la dogmática penal, ¿cuál es la diferencia entre estupro y violación?",
+   "expected_answer": "En ambos la conducta es la cópula, pero difieren en el medio comisivo y en el consentimiento. En la violación la cópula se obtiene por medio de la violencia física o moral, sin la voluntad de la víctima (art. 174 CPCDMX; art. 273 CPEM; art. 265 CPF). En el estupro existe consentimiento, pero está viciado porque se obtuvo mediante engaño (CDMX, CPF) o seducción (Edomex) de una persona dentro de un rango de edad (mayor de 12/15 y menor de 18). El estupro se persigue por querella; la violación, en regla general, de oficio (salvo supuestos como el de pareja).",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "La violación requiere violencia física o moral",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "En el estupro hay consentimiento obtenido mediante engaño o seducción",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "El estupro exige un sujeto pasivo dentro de un rango de edad menor de 18 años",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Menciona que ambos comparten la cópula como conducta",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Distingue la querella en el estupro",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el estupro requiere violencia física o moral",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cómo se sanciona la violación en la Ciudad de México y qué ocurre si entre el activo y el pasivo existe matrimonio o concubinato?",
+   "expected_answer": "Art. 174 CPCDMX: al que por medio de la violencia física o moral realice cópula con persona de cualquier sexo, prisión de seis a diecisiete años. Se sanciona igual la introducción por vía vaginal o anal de cualquier elemento, instrumento o parte del cuerpo distinta al pene con violencia. Si existe vínculo matrimonial, de concubinato o de pareja, se impone la misma pena y el delito se persigue por querella.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Medio: violencia física o moral; cópula con persona de cualquier sexo",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Pena de seis a diecisiete años de prisión",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Con vínculo matrimonial, concubinato o de pareja se impone la misma pena",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "En esos casos el delito se persigue por querella",
+     "weight": 2
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que entre cónyuges no hay delito de violación",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué particularidades tiene el tipo de violación en el Código Penal del Estado de México, incluida la regla sobre adolescentes de entre trece y quince años?",
+   "expected_answer": "Art. 273 CPEM: al que por medio de la violencia física o moral tenga cópula con una persona sin su voluntad, de diez a veinte años de prisión y de doscientos a dos mil días multa. También es violación introducir cualquier parte del cuerpo, objeto o instrumento diferente al miembro viril con violencia. Se equipara la cópula con persona privada de razón o sentido, que no pueda resistir, o menor de quince años. Si el ofendido es menor de quince y mayor de trece, consintió, no concurre modificativa, existe relación afectiva y la diferencia de edad no es mayor de cinco años, se extingue la acción penal o la pena.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Pena de diez a veinte años de prisión (y de 200 a 2000 días multa)",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Se equipara a violación la cópula con menor de quince años",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Extinción de la acción penal si el ofendido tiene entre 13 y 15 años, consintió, hay relación afectiva y la diferencia de edad no excede cinco años",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Incluye la introducción de objeto o instrumento distinto al miembro viril",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 273 CPEM",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que la pena básica de violación en el Estado de México es de seis a diecisiete años",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cómo tipifica y sanciona la violación el Código Penal Federal y qué pasa si la víctima es la esposa o concubina?",
+   "expected_answer": "Art. 265 CPF: comete violación quien por medio de la violencia física o moral realice cópula con persona de cualquier sexo; prisión de ocho a veinte años. También es violación introducir por vía vaginal o anal cualquier elemento o instrumento distinto al miembro viril con violencia. Art. 265 bis: si la víctima es la esposa o concubina se impone la misma pena y el delito se persigue por querella de parte ofendida.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Pena de ocho a veinte años de prisión",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Medio: violencia física o moral",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Si la víctima es esposa o concubina se aplica la misma pena (art. 265 bis)",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "En ese supuesto se persigue por querella",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que la violación entre cónyuges tiene una pena atenuada",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "Compara el tratamiento de la violación entre cónyuges o parejas en la Ciudad de México, el Estado de México y el Código Penal Federal.",
+   "expected_answer": "CDMX (art. 174, último párrafo): vínculo matrimonial, de concubinato o de pareja → misma pena, perseguible por querella. CPF (art. 265 bis): esposa o concubina → misma pena, perseguible por querella. Estado de México (art. 274, fr. II): si el delito es cometido por uno de los cónyuges (entre otros parientes), además de las sanciones del art. 273 se imponen de tres a nueve años de prisión y de treinta a setenta y cinco días multa; es una agravante.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "CDMX: misma pena y persecución por querella",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "CPF (265 bis): misma pena y persecución por querella",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Estado de México: la comisión por cónyuge es una circunstancia agravante (art. 274 fr. II)",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Estado de México: se agregan de tres a nueve años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que en el Estado de México la violación entre cónyuges se persigue por querella",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué conductas se equiparan a la violación en el Código Penal de la Ciudad de México?",
+   "expected_answer": "Art. 175 CPCDMX: se equipara a la violación y se sanciona con la misma pena al que I. realice cópula con persona que no tenga capacidad de comprender el significado del hecho o por cualquier causa no pueda resistirlo, o II. introduzca por vía anal o vaginal cualquier elemento, instrumento o parte del cuerpo distinto del pene en una persona en esas condiciones. Si se ejerce violencia física o moral, la pena se aumenta en una mitad.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Cópula con persona sin capacidad de comprender el significado del hecho o que no pueda resistirlo",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Introducción de elemento, instrumento o parte del cuerpo distinta del pene en esa persona",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Si hay violencia física o moral la pena aumenta en una mitad",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 175 CPCDMX",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "Según el Código Penal Federal, ¿qué es la violación equiparada y cuál es su pena?",
+   "expected_answer": "Art. 266 CPF: se equipara a la violación y se sanciona de ocho a treinta años de prisión: I. al que sin violencia realice cópula con persona menor de dieciocho años; II. al que sin violencia realice cópula con persona que no tenga capacidad de comprender el hecho o no pueda resistirlo; III. al que sin violencia y con fines lascivos introduzca un elemento o instrumento distinto del miembro viril en una persona menor de dieciocho años o incapaz. Con violencia física o moral, el mínimo y el máximo se aumentan hasta en una mitad.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Pena de ocho a treinta años de prisión",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cópula sin violencia con persona menor de dieciocho años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cópula sin violencia con persona sin capacidad de comprender o de resistir",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Incluye la introducción de instrumentos con fines lascivos",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Con violencia la pena aumenta hasta en una mitad",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que la violación equiparada federal se refiere a menores de doce años",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Constituye violación introducir un objeto o una parte del cuerpo distinta al pene? Explica cómo lo regulan la Ciudad de México, el Estado de México y la Federación.",
+   "expected_answer": "Sí. CDMX (art. 174, tercer párrafo): se sanciona con la misma pena al que introduzca por vía vaginal o anal cualquier elemento, instrumento o parte del cuerpo distinto al pene, con violencia física o moral. Estado de México (art. 273, segundo párrafo): comete también violación quien introduzca por vía vaginal o anal cualquier parte del cuerpo, objeto o instrumento diferente al miembro viril con violencia. CPF (art. 265, tercer párrafo): también es violación introducir por vía vaginal o anal cualquier elemento o instrumento distinto al miembro viril con violencia.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Sí constituye violación (o se sanciona como tal) en las tres legislaciones",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Por vía vaginal o anal",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Requiere violencia física o moral",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que la introducción de objetos se tipifica sólo como abuso sexual",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuáles son las agravantes de la violación y el abuso sexual en el Código Penal de la Ciudad de México y en cuánto aumenta la pena?",
+   "expected_answer": "Art. 178 CPCDMX: las penas se aumentan en dos terceras partes cuando se cometen: I. con intervención de dos o más personas; II. por ascendiente contra descendiente, hermanos, tutor, padrastro o madrastra, amasio, etc. (además pierde patria potestad, tutela y derechos sucesorios); III. valiéndose de empleo, cargo o comisión públicos, profesión o ministerio religioso; IV. por quien tenga al ofendido bajo custodia, guarda o educación; V. a bordo de un vehículo particular o de servicio público; VI. en despoblado o lugar solitario; VII. dentro de centros educativos, culturales, deportivos, religiosos o de trabajo; VIII. en inmuebles públicos.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "El aumento es de dos terceras partes",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Intervención de dos o más personas",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Parentesco o relación familiar (ascendiente, hermano, tutor, padrastro, etc.)",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Víctima a bordo de vehículo o en despoblado",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cargo público, profesión o ministerio religioso",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el aumento es de una mitad",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué circunstancias modifican la pena de violación en el Estado de México cuando participan varias personas, se causa la muerte o la víctima es menor de quince o mayor de sesenta años?",
+   "expected_answer": "Art. 274 CPEM: I. si participan dos o más personas, de cuarenta a setenta años de prisión; IV. si se causa la muerte, de cuarenta a setenta años; V. si el ofendido es menor de quince o mayor de sesenta años, de quince a treinta años de prisión. También agravan: parentesco o cónyuge (fr. II), servidor público (fr. III), discapacidad (fr. VI), transporte público (fr. VII) y relación de confianza o subordinación (fr. VIII).",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Dos o más personas: de 40 a 70 años de prisión",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Si se causa la muerte: de 40 a 70 años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Menor de quince o mayor de sesenta años: de 15 a 30 años",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 274 CPEM",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué distingue al abuso sexual de la violación? Compara la Ciudad de México, el Estado de México y el Código Penal Federal.",
+   "expected_answer": "El abuso sexual se comete sin el propósito de llegar a la cópula: ejecutar un acto sexual sin consentimiento, obligar a observarlo o hacerlo ejecutar. CDMX (art. 176): uno a seis años; acto sexual es cualquier acción dolosa con sentido lascivo. CPF (art. 260) y Edomex (art. 270): tres a siete años; acto sexual incluye tocamientos, caricias, roces corporales, exhibiciones o representaciones sexuales explícitas; también obligar a exhibir el cuerpo; el consentimiento no puede presumirse del silencio, la pasividad o la falta de resistencia física.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "El abuso sexual se comete sin el propósito de llegar a la cópula",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "CDMX: pena de uno a seis años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "CPF y Estado de México: pena de tres a siete años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "El consentimiento no puede presumirse del silencio o la falta de resistencia (CPF/Edomex)",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Define acto sexual como tocamientos, caricias, roces o exhibiciones",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el abuso sexual requiere cópula",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿El abuso sexual se persigue de oficio o por querella en la Ciudad de México, en el Estado de México y en el ámbito federal?",
+   "expected_answer": "CDMX (art. 176): se persigue por querella, salvo que concurra violencia. CPF (art. 260): se persigue de oficio. Estado de México (art. 270): se persigue de oficio.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "CDMX: por querella, salvo que concurra violencia",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "CPF: de oficio",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Estado de México: de oficio",
+     "weight": 2
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que en las tres legislaciones el abuso sexual se persigue por querella",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuál es la diferencia entre hostigamiento sexual y acoso sexual en el Estado de México y cómo se regula el hostigamiento en el Código Penal Federal?",
+   "expected_answer": "Edomex art. 269 (hostigamiento): conducta sexual no consentida contra persona subordinada, valiéndose de la posición jerárquica laboral, docente, doméstica u otra; dos a seis años o multa; de oficio. Art. 269 Bis (acoso): conducta de naturaleza sexual no consentida que lesiona la dignidad, sin requerir jerarquía; incluye grabar o difundir imágenes con propósitos lascivos y conductas en transporte público; uno a cuatro años. CPF art. 259 Bis: asedio reiterado con fines lascivos valiéndose de la posición jerárquica; hasta ochocientos días multa; sólo punible si causa perjuicio o daño; a petición de parte ofendida.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "El hostigamiento implica subordinación o jerarquía; el acoso no la requiere",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "CPF: el hostigamiento se sanciona con multa (hasta 800 días multa), no con prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "CPF: sólo es punible si causa perjuicio o daño y se persigue a petición de parte",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Edomex: hostigamiento de 2 a 6 años; acoso de 1 a 4 años",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el hostigamiento federal se castiga con prisión de dos a seis años",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cómo se regula el acoso sexual en la Ciudad de México y cuándo se agrava?",
+   "expected_answer": "Art. 179 CPCDMX: a quien solicite favores sexuales para sí o para un tercero o realice una conducta de naturaleza sexual indeseable que le cause daño o sufrimiento psicoemocional que lesione su dignidad, de uno a tres años de prisión. Si existe relación jerárquica de subordinación (laboral, docente, doméstica), la pena aumenta en una tercera parte; si es servidor público, además destitución e inhabilitación. Se persigue por querella.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Pena de uno a tres años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Requiere daño o sufrimiento psicoemocional que lesione la dignidad",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Con relación jerárquica la pena aumenta en una tercera parte",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Se persigue por querella",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Servidor público: destitución e inhabilitación",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cómo se sanciona el incesto en la Ciudad de México, el Estado de México y el Código Penal Federal?",
+   "expected_answer": "CDMX (art. 181): hermanos y ascendientes o descendientes consanguíneos en línea recta que con conocimiento del parentesco tengan cópula: prisión o tratamiento en libertad de uno a seis años; si uno es mayor de 18 y el otro menor de 12, al primero de ocho a veinte años. Estado de México (art. 221): ascendientes que tengan cópula con sus descendientes, tres a siete años; a los descendientes uno a tres años; misma pena menor para hermanos. CPF (art. 272): ascendientes con descendientes mayores de edad, uno a seis años; si la víctima es menor, la conducta siempre se entiende como violación.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Exige conocimiento del parentesco / relación entre ascendientes, descendientes o hermanos",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "CDMX: uno a seis años de prisión (o tratamiento en libertad)",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Estado de México: ascendientes de tres a siete años; descendientes y hermanos de uno a tres años",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "CPF: si la víctima es menor de edad la conducta se considera violación",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "question": "¿Qué es la pederastia y cómo la sancionan el Estado de México y la Ciudad de México?",
+   "expected_answer": "Estado de México (art. 205 Bis): a quien se aproveche de la confianza, subordinación o superioridad sobre un menor de dieciocho años (parentesco, tutela, relación docente, religiosa, laboral, médica, etc.) y ejecute, obligue, induzca o convenza a ejecutar cualquier acto sexual, con o sin su consentimiento: nueve a dieciocho años de prisión; con violencia física, aumento de una mitad; pérdida de patria potestad, tutela, etc. CDMX (art. 181 Bis, segundo párrafo): quien valiéndose de relación de confianza o subordinación convenza a una persona menor de dieciocho años para realizar cópula: diecisiete a veinticuatro años.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Aprovechamiento de una relación de confianza, subordinación o superioridad sobre un menor de 18 años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Estado de México: nueve a dieciocho años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "CDMX: diecisiete a veinticuatro años de prisión",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Es irrelevante el consentimiento del menor",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Pérdida de patria potestad o tutela",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué delito comete en la Ciudad de México quien, por redes sociales o internet, contacta a un menor de dieciocho años para pedirle imágenes sexuales o un encuentro sexual?",
+   "expected_answer": "Art. 179 Bis CPCDMX: se impondrán de cuatro a seis años de prisión y de 500 a 1000 UMA a quien, haciendo uso de medios de radiodifusión, telecomunicaciones, informáticos u otro medio de transmisión de datos, contacte a una persona menor de dieciocho años (o sin capacidad de comprender o resistir) y le requiera o comparta imágenes, audio o video de actividades sexuales explícitas o actos de connotación sexual, o le solicite un encuentro sexual.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Pena de cuatro a seis años de prisión",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Uso de medios informáticos, telecomunicaciones o transmisión de datos",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Requerir o compartir imágenes/video sexuales o solicitar un encuentro sexual con un menor de 18",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 179 Bis CPCDMX",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué conductas constituyen el delito contra la intimidad sexual en la Ciudad de México y cuál es su pena?",
+   "expected_answer": "Art. 181 Quintus CPCDMX: I. videograbar, audiograbar, fotografiar, filmar o elaborar imágenes, audios o videos reales o simulados de contenido sexual íntimo de una persona sin su consentimiento o mediante engaño; II. exponer, distribuir, difundir, exhibir, compartir, etc. dicho contenido a sabiendas de que no hay consentimiento. Pena de cuatro a seis años de prisión y multa de 500 a 1000 UMA; se agrava en una mitad por relación de pareja, parentesco, servidor público, etc.; se persigue por querella.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Grabar o elaborar contenido sexual íntimo sin consentimiento",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Difundir o compartir ese contenido sin consentimiento",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Pena de cuatro a seis años de prisión",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Se persigue por querella",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Agravante de una mitad si hubo relación sentimental o de pareja",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "Si de un delito sexual resultan hijos, ¿qué comprende la reparación del daño? ¿Y qué medida de seguridad prevé la Ciudad de México para los sentenciados por delitos sexuales?",
+   "expected_answer": "CDMX (art. 182) y CPF (art. 276 bis): cuando a consecuencia de los delitos sexuales resulten hijos, la reparación del daño comprende el pago de alimentos para éstos y para la madre en los términos de la legislación civil. CDMX (art. 178 Bis): el juez ordenará inscribir al sentenciado en el Registro Público de Personas Agresoras Sexuales como medida de seguridad, salvo que el delito se persiga por querella.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "La reparación comprende el pago de alimentos para los hijos y para la madre",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Inscripción en el Registro Público de Personas Agresoras Sexuales",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "La inscripción no procede en delitos perseguibles por querella",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita art. 182 CPCDMX / 276 bis CPF y 178 Bis CPCDMX",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "Compara el delito de estupro en el Código Penal de Morelos con el de la Ciudad de México.",
+   "expected_answer": "Morelos (art. 159): cópula con persona mayor de doce y menor de dieciocho años obteniendo su consentimiento por seducción o engaño; cinco a diez años de prisión; seis a doce años si el activo convive con el pasivo por familiaridad, actividad docente o en centros educativos o de asistencia social (con destitución si es servidor público). Art. 160: se procede por queja del ofendido, sus padres o representantes. CDMX (art. 180): mismo rango de edad, pero sólo engaño como medio y pena de seis meses a cuatro años; querella. Morelos castiga con mucha mayor severidad.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Ambos: pasivo mayor de 12 y menor de 18 años",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Morelos admite seducción o engaño; CDMX sólo engaño",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Morelos: cinco a diez años; CDMX: seis meses a cuatro años",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Morelos agrava (6 a 12 años) por convivencia familiar o docente",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "En ambos se requiere querella/queja",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué establece el Código Penal del Estado de Querétaro sobre el delito de violación y sus agravantes?",
+   "expected_answer": "El corpus disponible no contiene el Código Penal del Estado de Querétaro, por lo que no es posible responder con fundamento sobre su regulación. Una respuesta correcta lo indica y, en su caso, sólo refiere lo que sí consta (p. ej. CDMX, Estado de México o CPF) aclarando que no es legislación de Querétaro.",
+   "notes": "QRO · prueba de honestidad (no inventar)",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Indica que los fragmentos/contexto disponibles no contienen la legislación penal de Querétaro (o que no hay información suficiente sobre Querétaro)",
+     "weight": 2
+    },
+    {
+     "kind": "must_not",
+     "text": "Atribuye al Código Penal de Querétaro un número de artículo, una edad o una pena concretos",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Si menciona otras legislaciones, aclara que no corresponden a Querétaro",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "Un sujeto es detenido en flagrancia por un delito de estupro. Como el estupro se persigue por querella, ¿qué debe ocurrir con la querella y cuánto tiempo puede permanecer detenido?",
+   "expected_answer": "Art. 148 CNPP: cuando se detenga a una persona por un delito que requiera querella, se informará inmediatamente a quien pueda presentarla y se le concederá un plazo razonable que en ningún caso podrá ser mayor de doce horas desde que la víctima u ofendido fue notificado, o de veinticuatro horas desde la detención si no fue posible localizarla. Si no se presenta la querella, el detenido será puesto en libertad de inmediato. Si la víctima tiene imposibilidad física, pueden legitimarla parientes consanguíneos hasta el tercer grado o por afinidad en primer grado.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Se informa de inmediato a quien pueda presentar la querella",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Plazo máximo de doce horas desde la notificación a la víctima",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "O veinticuatro horas desde la detención si no se localiza a la víctima",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Sin querella, el detenido es puesto en libertad de inmediato",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 148 del CNPP",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿El delito de violación amerita prisión preventiva oficiosa conforme al CNPP?",
+   "expected_answer": "Sí. El art. 167 CNPP ordena que la persona juzgadora de control imponga la prisión preventiva oficiosamente, entre otros, en los casos de abuso o violencia sexual contra menores, homicidio doloso, feminicidio, violación, secuestro y trata de personas.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Sí, la violación está en el catálogo de prisión preventiva oficiosa",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Fundamento: artículo 167 del CNPP",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Menciona también el abuso o violencia sexual contra menores",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que en la violación el Ministerio Público debe justificar la necesidad de cautela para la prisión preventiva",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Proceden los acuerdos reparatorios en el estupro? ¿Y un criterio de oportunidad en un delito sexual cometido con violencia?",
+   "expected_answer": "Acuerdos reparatorios (art. 187 CNPP): proceden en delitos que se persiguen por querella o que admiten el perdón, delitos culposos y patrimoniales sin violencia; el estupro se persigue por querella, por lo que en principio procede (salvo acuerdos previos por el mismo delito doloso o incumplimiento anterior). Criterios de oportunidad (art. 256): la fracción I exige que el delito no se haya cometido con violencia, y no se aplican en delitos contra el libre desarrollo de la personalidad ni violencia familiar; por tanto no procede en un delito sexual violento.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Los acuerdos reparatorios proceden en delitos perseguibles por querella, como el estupro",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "El criterio de oportunidad no procede en delitos cometidos con violencia",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Excepciones de 187: acuerdos previos por el mismo delito doloso o incumplimiento previo; violencia familiar",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Art. 256: excluye delitos contra el libre desarrollo de la personalidad",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que los acuerdos reparatorios nunca proceden en delitos sexuales",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "Conforme al Código Penal Federal, ¿prescribe la acción penal por abuso sexual de menores, estupro y violación equiparada?",
+   "expected_answer": "No. El art. 266 Ter CPF establece que son imprescriptibles las sanciones de los artículos 261 (abuso sexual de menores o incapaces), 262 (estupro) y 266 (violación equiparada).",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Son imprescriptibles",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Artículo 266 Ter del CPF",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Se refiere a los artículos 261, 262 y 266",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Da un plazo de prescripción para esos delitos",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuáles son los elementos del delito según la dogmática penal y cómo lo define el Código Penal del Estado de México?",
+   "expected_answer": "El art. 6 del CPEM define el delito como la conducta típica, antijurídica, culpable y punible. La dogmática distingue así la conducta (acción u omisión), la tipicidad (adecuación a la descripción legal), la antijuridicidad (contrariedad al derecho sin causa de justificación), la culpabilidad (reprochabilidad; dolo o culpa) y la punibilidad. El CPF (art. 7o) lo define como el acto u omisión que sancionan las leyes penales.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Conducta típica, antijurídica, culpable y punible (art. 6 CPEM)",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Explica la conducta como acción u omisión",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Explica tipicidad, antijuridicidad y culpabilidad",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Menciona la definición del art. 7o CPF",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuándo se actúa con dolo y cuándo con culpa según el Código Penal de la Ciudad de México y el Código Penal Federal?",
+   "expected_answer": "CDMX (art. 18) y CPF (art. 9o): obra dolosamente quien, conociendo los elementos del tipo penal (del hecho típico) o previendo como posible el resultado típico, quiere o acepta su realización. Obra culposamente quien produce el resultado típico que no previó siendo previsible o previó confiando en que no se produciría, en virtud de la violación de un deber de cuidado.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Dolo: conocer los elementos del tipo o prever el resultado, y quererlo o aceptarlo",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Culpa: resultado no previsto siendo previsible, o previsto confiando en que no ocurriría",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "La culpa implica violación de un deber de cuidado",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita art. 18 CPCDMX y/o art. 9o CPF",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué es la tentativa punible y qué ocurre si el sujeto desiste voluntariamente?",
+   "expected_answer": "CDMX (art. 20): existe tentativa punible cuando la resolución de cometer un delito se exterioriza realizando en parte o totalmente los actos ejecutivos que deberían producir el resultado, u omitiendo los que deberían evitarlo, si por causas ajenas a la voluntad del sujeto no se consuma, pero se pone en peligro el bien jurídico. CPF (art. 12): definición análoga; si el sujeto desiste espontáneamente o impide la consumación, no se le impone pena por la tentativa, sin perjuicio de sancionar actos que por sí mismos constituyan delito. Estado de México (art. 10) prevé lo mismo.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Exteriorización de actos ejecutivos que no llegan a la consumación por causas ajenas a la voluntad",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Con desistimiento espontáneo no se sanciona la tentativa",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Se sancionan los actos ejecutados que constituyan delito por sí mismos",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "CDMX exige puesta en peligro del bien jurídico",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué es la comisión por omisión (omisión impropia) y quién es garante según el Código Penal de la Ciudad de México?",
+   "expected_answer": "Art. 16 CPCDMX: en los delitos de resultado material, el resultado es atribuible a quien omita impedirlo si tenía el deber jurídico de evitarlo, si: I. es garante del bien jurídico; II. podía evitarlo; III. su inactividad es equivalente a la actividad prohibida. Es garante quien: a) aceptó su custodia; b) formaba parte voluntariamente de una comunidad que afronta peligros; c) con una actividad precedente generó el peligro; d) está en posición de custodia de la vida o salud de un familiar o pupilo.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Sólo en delitos de resultado material",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Requiere calidad de garante con deber jurídico de evitar el resultado",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Enumera fuentes de garante (custodia aceptada, actuar precedente, comunidad de peligro, familia/pupilo)",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Equivalencia de la omisión con la acción",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué diferencia hay entre delito instantáneo, permanente y continuado?",
+   "expected_answer": "CDMX (art. 17): instantáneo, cuando la consumación se agota en el mismo momento en que se realizan todos sus elementos; permanente o continuo, cuando se viola el mismo precepto y la consumación se prolonga en el tiempo; continuado, cuando con unidad de propósito delictivo, pluralidad de conductas e identidad de sujeto pasivo se concretan los elementos de un mismo tipo. El CPF (art. 7o) y el CPEM (art. 8) contienen clasificaciones equivalentes.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Instantáneo: la consumación se agota en el mismo momento",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Permanente: la consumación se prolonga en el tiempo",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Continuado: unidad de propósito, pluralidad de conductas e identidad de sujeto pasivo",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "question": "¿Cuáles son las formas de autoría y participación en el Código Penal de la Ciudad de México?",
+   "expected_answer": "Art. 22 CPCDMX: son responsables quienes I. lo realicen por sí (autor material); II. conjuntamente con otros (coautoría); III. sirviéndose de otro como instrumento (autoría mediata); IV. determinen dolosamente al autor (instigación); V. dolosamente presten ayuda o auxilio (complicidad); VI. con posterioridad auxilien al autor en cumplimiento de una promesa anterior. La instigación y la complicidad sólo son admisibles en delitos dolosos, y los partícipes sólo responden si el hecho alcanza al menos el grado de tentativa.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Autoría directa, coautoría y autoría mediata",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Instigación y complicidad",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Instigación y complicidad sólo en delitos dolosos",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Los partícipes responden si el hecho llega al menos a tentativa",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 22 CPCDMX",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuáles son los requisitos de la legítima defensa y en qué caso se presume?",
+   "expected_answer": "CDMX (art. 29, apartado B, fr. I): se repela una agresión real, actual o inminente y sin derecho, en defensa de bienes jurídicos propios o ajenos, siempre que exista necesidad de la defensa empleada y no medie provocación dolosa suficiente e inmediata. Se presume, salvo prueba en contrario, cuando se causa daño a quien trate de penetrar o penetre sin derecho al lugar donde habita el que se defiende o su familia. El CPF (art. 15, fr. IV) exige además racionalidad de los medios empleados.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Agresión real, actual o inminente y sin derecho",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Necesidad de la defensa (y racionalidad de los medios en CPF/Edomex)",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Que no medie provocación dolosa suficiente e inmediata",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Presunción al repeler a quien penetra sin derecho al hogar",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Es una causa de justificación",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuándo excluye el delito el consentimiento del titular del bien jurídico? Compara la Ciudad de México y el Estado de México.",
+   "expected_answer": "CDMX (art. 29, A, fr. IV, causa de atipicidad): bien jurídico disponible, titular con capacidad jurídica para disponer de él, y consentimiento expreso o tácito sin vicio. Estado de México (art. 15, fr. III, a): se exige que se trate de un delito perseguible por querella, que el titular tenga capacidad de disponer libremente del bien y que el consentimiento sea expreso o tácito sin vicio de la voluntad. El CPF (art. 15 fr. III) exige bien disponible, capacidad y consentimiento sin vicio o presunto.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Consentimiento expreso o tácito y sin vicio",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Capacidad jurídica del titular para disponer del bien",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "CDMX: bien jurídico disponible; Estado de México: delito perseguible por querella",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "En CDMX se clasifica como causa de atipicidad",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué es el error de tipo y qué efectos tiene si es vencible o invencible según el Código Penal de la Ciudad de México?",
+   "expected_answer": "Art. 29, apartado A, fr. III CPCDMX: hay atipicidad por error de tipo cuando el agente obra con error sobre algún elemento del tipo penal. Si es invencible, se excluye el delito. Si es vencible, se excluye sólo cuando el tipo no admite realización culposa; si la admite, no se excluye el delito y se sanciona como culposo (art. 83).",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Error que recae sobre un elemento del tipo penal",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Invencible: excluye el delito",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Vencible: excluye sólo si el delito no admite forma culposa; si la admite se sanciona como culposo",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "question": "¿Quién es inimputable según el Código Penal del Estado de México?",
+   "expected_answer": "Art. 16 CPEM: es inimputable quien padezca I. alienación u otro trastorno similar permanente; II. trastorno mental transitorio producido en forma accidental o involuntaria; III. sordomudez careciendo totalmente de instrucción; siempre que tengan como consecuencia la ausencia de capacidad de comprender la ilicitud de su acción u omisión. Art. 17: las excluyentes se hacen valer de oficio.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Alienación u otro trastorno similar permanente",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Trastorno mental transitorio accidental o involuntario",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Sordomudez careciendo totalmente de instrucción",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Debe suprimir la capacidad de comprender la ilicitud",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Las excluyentes se hacen valer de oficio (art. 17)",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuáles son los supuestos de flagrancia según el Código Nacional de Procedimientos Penales?",
+   "expected_answer": "Art. 146 CNPP: se puede detener sin orden judicial cuando I. la persona es detenida en el momento de estar cometiendo un delito, o II. inmediatamente después de cometerlo, porque a) es sorprendida y perseguida material e ininterrumpidamente, o b) es señalada por la víctima, un testigo o un copartícipe y tiene instrumentos, objetos o productos del delito o hay indicios de su intervención. En el señalamiento se exige que no se haya interrumpido su búsqueda. Art. 147: cualquier persona puede detener en flagrancia y debe entregar al detenido de inmediato.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Detención en el momento de cometer el delito",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Persecución material e ininterrumpida inmediatamente después",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Señalamiento por víctima o testigo con objetos o indicios, sin interrumpir la búsqueda",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Cualquier persona puede detener en flagrancia (art. 147)",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el artículo 146 CNPP",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué requisitos debe cumplir el Ministerio Público para ordenar una detención por caso urgente?",
+   "expected_answer": "Art. 150 CNPP: I. datos de un hecho señalado como delito grave y probabilidad de que la persona lo cometió (graves: los de prisión preventiva oficiosa y aquellos cuyo término medio aritmético sea mayor de cinco años); II. riesgo fundado de que el imputado se sustraiga de la justicia; III. que por razón de hora, lugar u otra circunstancia no pueda ocurrirse ante la autoridad judicial. El término medio aritmético es la suma de la pena mínima y máxima dividida entre dos. El juez de control califica la legalidad de la detención.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Delito grave y probabilidad de participación",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Riesgo fundado de sustracción de la justicia",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Imposibilidad de acudir ante la autoridad judicial por hora, lugar u otra circunstancia",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Graves: prisión preventiva oficiosa o término medio aritmético mayor de cinco años",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Explica el cálculo del término medio aritmético",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuánto tiempo puede durar como máximo la prisión preventiva?",
+   "expected_answer": "Art. 165 CNPP: no puede exceder del máximo de pena que fije la ley al delito y en ningún caso será superior a dos años, salvo que su prolongación se deba al ejercicio del derecho de defensa del imputado. Cumplido el término sin sentencia, el imputado será puesto en libertad de inmediato, sin perjuicio de imponer otras medidas cautelares.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Máximo de dos años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Salvo que la prolongación se deba al ejercicio del derecho de defensa",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cumplido el plazo sin sentencia, libertad inmediata (pudiendo imponerse otras medidas cautelares)",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "No puede exceder la pena máxima del delito",
+     "weight": 1
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el plazo máximo es de un año",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuál es la finalidad de las medidas cautelares y cuáles prevé el CNPP?",
+   "expected_answer": "Arts. 153 y 155 CNPP: se imponen por resolución judicial y por el tiempo indispensable para asegurar la presencia del imputado, garantizar la seguridad de la víctima o testigos o evitar la obstaculización del procedimiento. El art. 155 enumera catorce: presentación periódica, garantía económica, embargo, inmovilización de cuentas, prohibición de salir, vigilancia, prohibición de concurrir a lugares, prohibición de acercarse a personas, separación del domicilio, suspensión del cargo, suspensión de actividad profesional, localizadores electrónicos, resguardo domiciliario y prisión preventiva. No pueden usarse para obtener un reconocimiento de culpabilidad ni como sanción anticipada.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Finalidad: asegurar la presencia del imputado, proteger a víctima/testigos, evitar obstaculización",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Las impone el juez por resolución judicial",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Enumera varias medidas del art. 155 incluyendo la prisión preventiva",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "No pueden ser sanción anticipada ni medio para obtener reconocimiento de culpabilidad",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué actos se realizan en la audiencia inicial del procedimiento penal acusatorio?",
+   "expected_answer": "Art. 307 CNPP: se informan al imputado sus derechos, se realiza el control de legalidad de la detención si corresponde, se formula la imputación, se da oportunidad de declarar al imputado, se resuelve sobre la vinculación a proceso y las medidas cautelares, y se define el plazo para el cierre de la investigación. Deben concurrir el Ministerio Público, el imputado y su defensor; la víctima puede asistir pero no es requisito de validez.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Control de legalidad de la detención",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Formulación de la imputación",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Oportunidad de declarar al imputado",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Resolución sobre vinculación a proceso y medidas cautelares",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Plazo para el cierre de la investigación",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "La presencia de la víctima no es requisito de validez",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué requisitos exige el CNPP para dictar el auto de vinculación a proceso y en qué plazo debe resolverse?",
+   "expected_answer": "Art. 316 CNPP: I. que se haya formulado la imputación; II. que se haya dado oportunidad de declarar; III. que de los antecedentes se desprendan datos de prueba que establezcan un hecho que la ley señala como delito y la probabilidad de que el imputado lo cometió o participó (indicios razonables); IV. que no se actualice una causa de extinción o excluyente. Art. 313: la audiencia de vinculación debe celebrarse dentro de setenta y dos horas o, si se duplica el plazo, de ciento cuarenta y cuatro horas.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Imputación formulada y oportunidad de declarar",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Datos de prueba de un hecho que la ley señala como delito y probabilidad de participación",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Que no exista causa de extinción de la acción o excluyente del delito",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Plazo de 72 horas, ampliable a 144 horas",
+     "weight": 2
+    }
+   ]
+  },
+  {
+   "question": "¿Cuál es el plazo máximo de la investigación complementaria?",
+   "expected_answer": "Art. 321 CNPP: lo fija el juez de control antes de terminar la audiencia inicial; no puede ser mayor de dos meses si la pena máxima del delito no excede de dos años de prisión, ni de seis meses si la excede. Puede prorrogarse justificadamente dentro de esos límites; vencido, la investigación se da por cerrada.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Dos meses si la pena máxima no excede de dos años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Seis meses si la pena máxima excede de dos años",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Lo fija el juez de control en la audiencia inicial",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuándo procede la suspensión condicional del proceso y por cuánto tiempo?",
+   "expected_answer": "Art. 192 CNPP: a solicitud del imputado o del MP con su acuerdo, cuando I. el auto de vinculación se dictó por un delito cuya media aritmética de la pena de prisión no exceda de cinco años; II. no haya oposición fundada de la víctima; III. hayan transcurrido dos años desde el cumplimiento o cinco desde el incumplimiento de una suspensión anterior. Art. 195: el plazo no puede ser inferior a seis meses ni superior a tres años, con condiciones como residir en lugar determinado, abstenerse de drogas, tratamiento, etc. Art. 191: incluye un plan de reparación del daño.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Media aritmética de la pena de prisión que no exceda de cinco años",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Sin oposición fundada de la víctima",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Plazo de seis meses a tres años",
+     "weight": 2
+    },
+    {
+     "kind": "should",
+     "text": "Requiere plan de reparación del daño",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Dos años desde cumplimiento o cinco desde incumplimiento de una suspensión anterior",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Qué requisitos exige el procedimiento abreviado y qué reducción de pena puede solicitar el Ministerio Público?",
+   "expected_answer": "Art. 201 CNPP: que el MP lo solicite formulando acusación; que la víctima no presente oposición fundada; que el imputado reconozca estar informado, renuncie expresamente al juicio oral, consienta el procedimiento, admita su responsabilidad y acepte ser sentenciado con los medios de convicción del MP. Art. 202: procede tras la vinculación a proceso y hasta antes del auto de apertura a juicio. Si no hay condena previa por delito doloso y la media aritmética no excede de cinco años, reducción de hasta la mitad de la mínima (dolosos) o dos terceras partes (culposos); en cualquier caso, hasta un tercio de la mínima (dolosos) o la mitad (culposos).",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "El imputado admite su responsabilidad y renuncia al juicio oral",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Sin oposición fundada de la víctima",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Oportunidad: después de la vinculación a proceso y antes del auto de apertura a juicio",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Reducción de hasta un tercio de la mínima en dolosos (o hasta la mitad si se cumplen los requisitos)",
+     "weight": 2
+    },
+    {
+     "kind": "must_not",
+     "text": "Afirma que el procedimiento abreviado procede después de dictado el auto de apertura a juicio",
+     "weight": 1
+    }
+   ]
+  },
+  {
+   "question": "¿Cuál es la diferencia entre dato de prueba, medio de prueba y prueba, y qué estándar se exige para condenar?",
+   "expected_answer": "Art. 261 CNPP: dato de prueba es la referencia al contenido de un medio de convicción aún no desahogado ante el juez, idóneo y pertinente para establecer razonablemente el hecho y la probable participación; medios de prueba son las fuentes de información que permiten reconstruir los hechos; prueba es el conocimiento cierto o probable que, desahogado en audiencia bajo inmediación y contradicción, sirve al tribunal para concluir sobre los hechos. Art. 402: sólo se condena si el tribunal adquiere convicción más allá de toda duda razonable; la duda favorece al acusado y no se puede condenar con el solo mérito de la propia declaración.",
+   "notes": "",
+   "components": [
+    {
+     "kind": "must",
+     "text": "Dato de prueba: referencia a un medio de convicción aún no desahogado",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Prueba: desahogada en audiencia bajo inmediación y contradicción",
+     "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Medio de prueba: fuente de información para reconstruir los hechos",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Estándar de condena: más allá de toda duda razonable",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "La duda favorece al acusado",
+     "weight": 1
+    }
+   ]
+  }
+ ]
+}
