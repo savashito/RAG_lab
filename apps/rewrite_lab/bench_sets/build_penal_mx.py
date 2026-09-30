@@ -5,9 +5,11 @@ Genera bench_sets/penal_mx_50.json — benchmark de 50 preguntas de derecho pena
 Las respuestas esperadas se redactaron a partir del TEXTO DEL CORPUS (tabla
 sistema_penal__qwen06__legal, tema derecho_penal_mexicano) al 2026-09-30: Código Penal de la
 Ciudad de México, Código Penal del Estado de México, Código Penal Federal, CNPP y Código Penal
-de Morelos. Querétaro NO está en el corpus: las preguntas que lo mencionan esperan que el
-sistema lo reconozca y no invente artículos (prueba de honestidad). Si se ingesta el código de
-Querétaro, hay que actualizar esas preguntas (marcadas con 'QRO' en notes).
+de Morelos. Querétaro NO está en el corpus: sus respuestas esperadas usan el texto VIGENTE del
+Código Penal para el Estado de Querétaro (Poder Legislativo de Querétaro, compilación con reformas
+hasta P.O. No. 58, 15-VII-2026: site.legislaturaqueretaro.gob.mx/CloudPLQ/InvEst/Codigos/COD-ID-07.pdf),
+de modo que el benchmark REPRUEBA mientras falte ese código y así deja visible el hueco. Esas preguntas
+llevan 'HUECO CORPUS' en notes.
 
     uv run python apps/rewrite_lab/bench_sets/build_penal_mx.py
 """
@@ -31,9 +33,7 @@ def q(question, expected, components, notes=''):
     Q.append({'question': question, 'expected_answer': expected, 'notes': notes, 'components': components})
 
 
-QRO_MISSING = M('Indica que los fragmentos/contexto disponibles no contienen la legislación penal de Querétaro '
-                '(o que no hay información suficiente sobre Querétaro)', 2)
-QRO_INVENT = N('Atribuye al Código Penal de Querétaro un número de artículo, una edad o una pena concretos', 2)
+QRO_GAP = 'HUECO CORPUS: Código Penal de Querétaro no está ingestado (texto vigente, reforma 15-VII-2026)'
 
 # ═══════════════════════ I. Delitos sexuales y cópula (30) ═══════════════════════
 
@@ -45,23 +45,29 @@ q('Por favor verifica la legislación de las entidades Ciudad de México, Estado
   'años de prisión; se persigue por querella. Estado de México (arts. 271 y 272 CPEM): cópula con persona mayor de '
   'quince y menor de dieciocho años obteniendo su consentimiento por medio de cualquier tipo de seducción; uno a '
   'cinco años de prisión; sólo se procede por querella de la ofendida, sus padres o, a falta de éstos, sus '
-  'representantes legítimos. Querétaro: el corpus no contiene su Código Penal, por lo que no puede afirmarse su '
-  'regulación. Dogmáticamente: conducta de acción dolosa consistente en la cópula; sujeto activo indiferenciado; '
-  'sujeto pasivo calificado por la edad; medio comisivo (engaño en CDMX, seducción en Edomex) que vicia el '
-  'consentimiento; bien jurídico: libertad y seguridad sexuales y normal desarrollo psicosexual (así titula el CPCDMX '
-  'el Título Quinto); tipicidad, antijuridicidad, culpabilidad (dolo) y punibilidad; querella como requisito de '
-  'procedibilidad.',
+  'representantes legítimos. Querétaro (art. 167 del Código Penal para el Estado de Querétaro, reformado en '
+  '2021): cópula con persona mayor de catorce y menor de dieciocho años obteniendo su consentimiento por medio de '
+  'seducción o engaño; de uno a ocho años de prisión y de 500 a 1000 días multa; se persigue por querella de la '
+  'persona ofendida, de quienes ejerzan la patria potestad o, a falta de éstos, de sus legítimos representantes (el '
+  'art. 168 excluye expresamente al estupro de la persecución de oficio aun con víctimas menores). Particularidades: '
+  'la edad mínima del pasivo es 12 en CDMX, 15 en Edomex y 14 en Querétaro; el medio es engaño (CDMX), seducción '
+  '(Edomex) o seducción o engaño (Querétaro); Querétaro tiene la pena más alta y agrega multa. Dogmáticamente: '
+  'conducta de acción dolosa consistente en la cópula; sujeto activo indiferenciado; sujeto pasivo calificado por la '
+  'edad; medio comisivo que vicia el consentimiento; bien jurídico: libertad y seguridad sexuales y normal desarrollo '
+  'psicosexual (CDMX) o libertad e inexperiencia sexuales (título octavo en Querétaro); tipicidad, antijuridicidad, '
+  'culpabilidad (dolo) y punibilidad; querella como requisito de procedibilidad.',
   [M('CDMX (art. 180): el sujeto pasivo es mayor de 12 y menor de 18 años', 2),
    M('CDMX: el consentimiento se obtiene mediante engaño'),
    M('Estado de México (art. 271): el sujeto pasivo es mayor de 15 y menor de 18 años', 2),
    M('Estado de México: el consentimiento se obtiene mediante seducción'),
-   QRO_MISSING,
-   S('Penas: CDMX de 6 meses a 4 años; Estado de México de 1 a 5 años de prisión'),
-   S('En ambas entidades el estupro se persigue por querella'),
+   M('Querétaro (art. 167): el sujeto pasivo es mayor de 14 y menor de 18 años', 2),
+   M('Querétaro: el consentimiento se obtiene por seducción o engaño'),
+   S('Penas: CDMX 6 meses a 4 años; Edomex 1 a 5 años; Querétaro 1 a 8 años (más 500 a 1000 días multa)'),
+   S('En las tres entidades el estupro se persigue por querella'),
    S('Analiza elementos dogmáticos: conducta (cópula), sujetos, medio comisivo, bien jurídico, dolo'),
-   QRO_INVENT,
+   N('Afirma que en Querétaro el estupro protege a personas mayores de 12 años (texto anterior a la reforma de 2021)'),
    N('Afirma que en la Ciudad de México el estupro exige que la víctima sea mayor de 15 años')],
-  'QRO · pregunta modelo del usuario')
+  QRO_GAP + ' · pregunta modelo del usuario')
 
 q('¿Cómo define la ley el concepto de cópula en el Código Penal de la Ciudad de México, en el del Estado de México '
   'y en el Código Penal Federal? Señala las diferencias.',
@@ -326,12 +332,26 @@ q('Compara el delito de estupro en el Código Penal de Morelos con el de la Ciud
    S('Morelos agrava (6 a 12 años) por convivencia familiar o docente'), S('En ambos se requiere querella/queja')])
 
 q('¿Qué establece el Código Penal del Estado de Querétaro sobre el delito de violación y sus agravantes?',
-  'El corpus disponible no contiene el Código Penal del Estado de Querétaro, por lo que no es posible responder con '
-  'fundamento sobre su regulación. Una respuesta correcta lo indica y, en su caso, sólo refiere lo que sí consta '
-  '(p. ej. CDMX, Estado de México o CPF) aclarando que no es legislación de Querétaro.',
-  [QRO_MISSING, QRO_INVENT,
-   S('Si menciona otras legislaciones, aclara que no corresponden a Querétaro')],
-  'QRO · prueba de honestidad (no inventar)')
+  'Código Penal para el Estado de Querétaro, Título Octavo (libertad e inexperiencia sexuales). Art. 160: al que por '
+  'medio de la violencia física o moral realice cópula con persona de cualquier sexo, de 5 a 12 años de prisión y de '
+  '300 a 800 días multa; cópula es la introducción del órgano sexual masculino por vía vaginal, anal o bucal; misma '
+  'pena por introducir por vía anal o vaginal objeto o instrumento distinto con violencia. Art. 161 (violación '
+  'equiparada): cópula o introducción de objeto en persona menor de catorce años o sin capacidad de comprender o '
+  'resistir, de 16 a 40 años y de 900 a 1200 días multa; con violencia o por dos o más personas la pena aumenta en una '
+  'mitad. Agravantes: art. 162, aprovechar la autoridad legal sobre la víctima (aumento hasta en una mitad y pérdida de '
+  'patria potestad, tutela y derechos sucesorios) o el empleo, cargo o profesión (suspensión o privación por cinco '
+  'años); art. 163, dos o más personas, de 8 a 20 años y de 1000 a 1500 días multa. El art. 164 (querella entre '
+  'cónyuges) fue derogado en 2018 y el art. 168 exceptúa a la violación y violación equiparada de la querella: se '
+  'persiguen de oficio.',
+  [M('Pena de 5 a 12 años de prisión (art. 160), más 300 a 800 días multa', 2),
+   M('Violación equiparada con menor de catorce años o persona incapaz: 16 a 40 años (art. 161)', 2),
+   M('Con violencia o por dos o más personas, la pena de la equiparada aumenta en una mitad'),
+   M('Agravante por aprovechar la autoridad sobre la víctima: aumento hasta en una mitad y pérdida de patria potestad'),
+   S('Dos o más personas: de 8 a 20 años (art. 163)'),
+   S('Se persigue de oficio (art. 168); la querella entre cónyuges (art. 164) está derogada'),
+   N('Afirma que en Querétaro la violación entre cónyuges se persigue por querella'),
+   N('Afirma que la violación equiparada en Querétaro se refiere a menores de doce años')],
+  QRO_GAP)
 
 q('Un sujeto es detenido en flagrancia por un delito de estupro. Como el estupro se persigue por querella, ¿qué debe '
   'ocurrir con la querella y cuánto tiempo puede permanecer detenido?',
@@ -582,7 +602,8 @@ OUT.write_text(json.dumps({
     'topic': 'derecho_penal_mexicano',
     'description': ('30 preguntas de delitos sexuales y cópula (CDMX, Edomex, CPF, Morelos; comparativas y '
                     'procesales), 10 de parte general/dogmática y 10 del CNPP. Respuestas basadas en el texto del '
-                    'corpus al 2026-09-30. Querétaro no está en el corpus: esas preguntas miden que no se invente.'),
+                    'corpus al 2026-09-30; Querétaro con su texto vigente (reforma 15-VII-2026) aunque no esté en el '
+                    'corpus — esas preguntas fallan a propósito para exhibir el hueco (notes: HUECO CORPUS).'),
     'questions': Q,
 }, ensure_ascii=False, indent=1))
 print(f'{len(Q)} preguntas · {sum(len(x["components"]) for x in Q)} componentes → {OUT}')
