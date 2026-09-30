@@ -134,6 +134,34 @@ Configuración: `OCR_URL`, `OCR_TOKEN_FILE` (`~/.ocr_token`) y `OCR_MAX_WAIT` en
 `.env.example`. Arquitectura, benchmark, operación y hallazgos:
 [`ingestion/OCR_ESCANEADOS.md`](../../ingestion/OCR_ESCANEADOS.md).
 
+## 🧪 Benchmark de respuestas (`/benchmark`)
+
+Evalúa la **respuesta** del LLM, no solo el retrieval (eso lo mide el Rewrite Lab). Solo
+admins ven el tab; editar un set requiere permiso sobre su tema. Código: `bench.py`
+(backend) + `static/bench.js` (UI); pruebas en `tests/test_bench.py`.
+
+- **Sets por tema**: cada set pertenece a un tema y sus preguntas se responden buscando
+  solo en ese tema. Import/export en JSON (`rag-lab-bench/v1`).
+- **Pregunta** = texto + respuesta de referencia opcional + **componentes** esperados:
+  `must` (obligatorio: si falta, no pasa), `should` (suma, no reprueba), `must_not` (no
+  debe aparecer: artículo equivocado, jurisprudencia inventada…). Cada uno con peso.
+  Sin componentes pero con referencia → se evalúa un único `must` «coincide con la referencia».
+- **Juez**: el LLM (Gemma-4B hoy; otro servidor con `JUDGE_URL`) recibe pregunta,
+  componentes numerados (sin decirle cuáles son `must_not`) y la respuesta, y marca cada
+  uno presente / parcial / ausente con una cita de evidencia. El score se calcula en código:
+  `(Σ peso·valor must/should − Σ peso·valor must_not) / Σ peso must/should`.
+- **Métricas por corrida**: score medio, % de preguntas que pasan, cobertura de `must`,
+  violaciones `must_not`, segundos por pregunta. Se comparan corridas lado a lado.
+
+**Dónde vive cada cosa**: preguntas, componentes, métricas y veredictos en Postgres
+(`bench_sets`, `bench_questions`, `bench_components`, `bench_runs`, `bench_results`); el
+detalle pesado de cada corrida (respuesta completa, chunks, prompt, salida cruda del juez)
+en el object store como `rag_lab/bench/runs/<id>.json`, y los respaldos de sets en
+`rag_lab/bench/exports/`. El object store (`shared/object_store.py`) es **MinIO** si hay
+`MINIO_ENDPOINT` + llaves en el `.env` (en el servidor: `MINIO_ENDPOINT=127.0.0.1:9000`,
+`MINIO_SECURE=false`, `MINIO_BUCKET=llm-lab`); si no, cae a la carpeta local
+`ingestion/.objects/` con las mismas llaves.
+
 ## Estructura
 
 ```

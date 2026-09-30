@@ -977,6 +977,19 @@ from auth import install_auth  # noqa: E402  (import local del app, tras crear `
 
 AUTH_ON = install_auth(app, is_allowed=is_allowed)
 
+# Tab "🧪 Benchmark": evalúa la RESPUESTA del LLM contra componentes esperados (ver
+# bench.py). El juez es el mismo LLM salvo que JUDGE_URL apunte a otro servidor. El
+# detalle de cada corrida va al object store (MinIO o carpeta local, shared/object_store).
+from bench import Bench  # noqa: E402
+from shared.object_store import store  # noqa: E402
+
+judge_llm = LlamaClient(url=os.environ['JUDGE_URL']) if os.environ.get('JUDGE_URL') else llm
+bench = Bench(connect=connect, ask=ask, judge=judge_llm, store=store, system_for=system_for,
+              current_email=current_email, can_edit_topic=can_upload_topic, can_run=can_ingest,
+              topic_label=lambda t: (TOPICS.get(t) or {}).get('label', t))
+app.include_router(bench.router)
+print(f'Benchmark: artefactos en {store.describe()} · juez en {judge_llm.url}')
+
 
 @app.get('/healthz')
 def healthz():
@@ -992,6 +1005,7 @@ def healthz():
 @app.get('/ingesta')
 @app.get('/conversacional')
 @app.get('/admin')
+@app.get('/benchmark')
 def index():
     # no-store: el navegador no cachea el HTML, para que los cambios se vean sin hard-refresh.
     return FileResponse(STATIC / 'index.html', headers={'Cache-Control': 'no-store'})
@@ -1011,6 +1025,13 @@ def preguntar():
 @app.get('/conversar')
 def conversar():
     return FileResponse(STATIC / 'conversar.html', headers={'Cache-Control': 'no-store'})
+
+
+# JS del tab Benchmark (separado de index.html, que ya es grande).
+@app.get('/static/bench.js')
+def bench_js():
+    return FileResponse(STATIC / 'bench.js', media_type='text/javascript',
+                        headers={'Cache-Control': 'no-store'})
 
 
 @app.get('/api/me')

@@ -49,3 +49,5 @@ ingestion/pdfs/
 ingestion/out/
 ingestion/out_clean/    # Markdown LIMPIO generado por el pipeline (visualizable)
 ingestion/.uploads/     # PDFs subidos por el tab del app (temporales)
+# Object store local (fallback cuando MinIO no está configurado; ver shared/object_store.py)
+/ingestion/.objects/

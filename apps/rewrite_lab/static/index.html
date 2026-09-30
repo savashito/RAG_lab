@@ -112,6 +112,27 @@
  .chat-input{border-top:1px solid #2a2f3a;padding:10px 12px;background:#171a21}
  .chat-input textarea{min-height:52px}
  .chat-input .row{margin:8px 0 0}
+ /* ── Tab Benchmark ── */
+ .bq{background:#171a21;border:1px solid #2a2f3a;border-radius:10px;padding:10px 14px;margin:8px 0}
+ .bq .qh{display:flex;gap:10px;align-items:flex-start}
+ .bq .qh .qt{flex:1;font-weight:600}
+ .bq .qh button{padding:3px 9px;font-size:12px}
+ .bq .ref{color:#9aa4b2;font-size:13px;white-space:pre-wrap;margin-top:4px}
+ .comps{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+ .comp{font-size:12px;border-radius:6px;padding:2px 8px;border:1px solid #2a2f3a;background:#0b0d12}
+ .comp.must{border-color:#3b82f6} .comp.should{border-color:#4b5563;color:#c7cdd6}
+ .comp.must_not{border-color:#b91c1c;border-style:dashed}
+ .comp .k{font:10px ui-monospace,monospace;color:#9aa4b2;margin-right:4px;text-transform:uppercase}
+ .comp.good{background:#14532d} .comp.half{background:#713f12} .comp.bad{background:#7f1d1d} .comp.unk{background:#374151}
+ .cedit{display:flex;gap:6px;align-items:center;margin:4px 0}
+ .cedit input[type=text]{flex:1;min-width:0}
+ .cedit input[type=number]{width:62px;background:#0b0d12;color:#e6e6e6;border:1px solid #2a2f3a;border-radius:8px;padding:8px}
+ .bform{background:#0e1117;border:1px solid #2a2f3a;border-radius:10px;padding:12px 14px;margin:10px 0}
+ .bform textarea{min-height:70px}
+ .bform label.f{display:block;color:#9aa4b2;font-size:12px;margin:10px 0 4px}
+ .sc{font-weight:700;text-align:center;white-space:nowrap}
+ tr.clk{cursor:pointer} tr.clk:hover td{background:#131722}
+ .runcfg{font:11px ui-monospace,monospace;color:#9aa4b2}
  /* ── Responsive / móvil ── */
  @media (max-width:760px){
    .wrap{padding:12px}
@@ -150,6 +171,7 @@
   <button id="tabbtn-chat"  onclick="showTab('chat')">🗨️ Conversacional</button>
   <button id="tabbtn-rewrite"  onclick="showTab('rewrite')">Rewrite Lab</button>
   <button id="tabbtn-ingest"  onclick="showTab('ingest')" hidden>📥 Ingestar documentos</button>
+  <button id="tabbtn-bench"  onclick="showTab('bench')" hidden>🧪 Benchmark</button>
   <button id="tabbtn-admin"  onclick="showTab('admin')" hidden>👑 Usuarios</button>
   <span style="flex:1"></span>
   <span id="me-badge" class="muted" style="align-self:center;padding-right:12px;font-size:12px"></span>
@@ -344,6 +366,83 @@
 </div>
 
 <!-- ── Tab "Usuarios" (solo superadmin) ── -->
+<div id="tab-bench" class="wrap tabpage" hidden>
+ <p class="muted">Evalúa la <b>respuesta</b> del LLM (no solo el retrieval). Cada pregunta lleva los
+   <b>componentes</b> que la respuesta debe contener; el juez (<span id="bench-judge">LLM</span>) marca cada uno como
+   presente / parcial / ausente y el score se calcula en código.</p>
+ <div class="legend">
+   <b>Tipos de componente:</b>
+   <ul>
+     <li><span class="comp must"><span class="k">must</span></span> obligatorio: si falta, la pregunta <b>no pasa</b>.</li>
+     <li><span class="comp should"><span class="k">should</span></span> deseable: suma al score pero no reprueba.</li>
+     <li><span class="comp must_not"><span class="k">must_not</span></span> no debe aparecer (p. ej. un artículo equivocado, jurisprudencia inventada): si aparece, reprueba y resta.</li>
+   </ul>
+   <b>score</b> = (Σ peso·valor de must/should − Σ peso·valor de must_not) / Σ peso de must/should, con presente=1, parcial=0.5, ausente=0.
+   Si una pregunta no tiene componentes pero sí respuesta de referencia, se evalúa como un único <i>must</i> «coincide con la referencia».
+ </div>
+ <div class="row">
+   <label>Tema: <select id="bench-topic-filter"><option value="">todos</option></select></label>
+   <label>Set: <select id="bench-set" style="min-width:260px"></select></label>
+   <button class="ghost" id="bench-new-set">➕ Nuevo set</button>
+   <button class="ghost" id="bench-edit-set">✏️ Editar</button>
+   <button class="ghost" id="bench-export">⬇ Exportar JSON</button>
+   <button class="ghost" id="bench-import-btn">⬆ Importar JSON</button>
+   <input type="file" id="bench-import" accept=".json,application/json" hidden>
+   <button class="ghost" id="bench-backup" title="Guarda un snapshot del set en el object store">💾 Respaldar</button>
+ </div>
+ <div id="bench-set-form" class="bform" style="display:none">
+   <label class="f">Nombre del set</label><input type="text" id="bench-set-name" style="width:100%;box-sizing:border-box">
+   <label class="f">Tema (las preguntas se responden buscando solo en este tema)</label><select id="bench-set-topic"></select>
+   <label class="f">Descripción</label><textarea id="bench-set-desc" style="min-height:50px"></textarea>
+   <div class="row"><button id="bench-set-save">Guardar</button><button class="ghost" id="bench-set-cancel">Cancelar</button>
+     <span style="flex:1"></span><button class="danger" id="bench-set-delete">🗑 Borrar set</button></div>
+ </div>
+ <div id="bench-msg" class="muted"></div>
+
+ <h2>Preguntas <span id="bench-qcount" class="muted"></span></h2>
+ <div id="bench-questions"></div>
+ <div class="row"><button class="ghost" id="bench-add-q">➕ Agregar pregunta</button></div>
+ <div id="bench-q-form" class="bform" style="display:none">
+   <label class="f">Pregunta</label><textarea id="bq-question" style="min-height:60px"></textarea>
+   <label class="f">Respuesta esperada / de referencia (opcional — el juez la usa para interpretar los componentes)</label>
+   <textarea id="bq-expected"></textarea>
+   <label class="f">Componentes que la respuesta debe (o no debe) contener</label>
+   <div id="bq-comps"></div>
+   <div class="row" style="margin:6px 0"><button class="ghost" id="bq-add-comp">+ componente</button></div>
+   <label class="f">Notas (no se mandan al juez)</label><input type="text" id="bq-notes" style="width:100%;box-sizing:border-box">
+   <div class="row"><button id="bq-save">Guardar pregunta</button><button class="ghost" id="bq-cancel">Cancelar</button></div>
+ </div>
+
+ <h2>Correr</h2>
+ <div class="row">
+   <label>Método: <select id="bench-setting"></select></label>
+   <label>Top-k: <select id="bench-k"><option>3</option><option>5</option><option>8</option><option selected>10</option></select></label>
+   <details class="jur" id="bench-jur"><summary>Lugar: <span class="jl">Todos</span></summary><div class="jm"></div></details>
+   <label class="chk"><input type="checkbox" id="bench-neighbors" checked> vecinos ↕</label>
+   <label class="chk"><input type="checkbox" id="bench-hyde" checked> HyDE 🧪</label>
+   <label class="chk"><input type="checkbox" id="bench-rerank"> rerank 🎯</label>
+ </div>
+ <details style="margin-top:0">
+   <summary>⚙️ System prompt de la respuesta (por defecto, el del tema del set)</summary>
+   <textarea id="bench-system" style="min-height:110px;margin-top:8px"></textarea>
+ </details>
+ <div class="row">
+   <input type="text" id="bench-label" placeholder="Etiqueta de la corrida (ej. 'híbrido k10 + HyDE')">
+   <button id="bench-run">▶ Correr benchmark</button>
+   <button class="danger" id="bench-cancel" style="display:none">■ Cancelar</button>
+ </div>
+ <div id="bench-progress"></div>
+
+ <h2>Corridas de este set</h2>
+ <div class="row">
+   <button class="ghost" id="bench-refresh">↻ Recargar</button>
+   <button class="ghost" id="bench-compare">📊 Comparar seleccionadas</button>
+   <span id="bench-storage" class="muted" style="font-size:12px"></span>
+ </div>
+ <div id="bench-runs"></div>
+ <div id="bench-detail"></div>
+</div>
+
 <div id="tab-admin" class="wrap tabpage" hidden>
  <p class="muted">Gestiona quién entra y con qué permisos. La lista blanca vive en la base
    de datos. Roles:
@@ -377,6 +476,7 @@
  </div>
 </div>
 
+<script src="/static/bench.js"></script>
 <script>
 let lastRun=null, chart=null, ASK_SYSTEM_DEFAULT='', INSTRUCT_DEFAULT='', DEFAULT_TOPIC='';
 const $=id=>document.getElementById(id);
@@ -387,7 +487,7 @@ const METHODS=['denso (orig)','rewrite-solo','multi-query','HyDE (denso)','híbr
 
 const esc=s=>(s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 // Cada tab tiene su propia URL, para enlaces directos y compartibles.
-const TAB_PATH={ask:'/consulta', chat:'/conversacional', rewrite:'/lab', ingest:'/ingesta', admin:'/admin'};
+const TAB_PATH={ask:'/consulta', chat:'/conversacional', rewrite:'/lab', ingest:'/ingesta', bench:'/benchmark', admin:'/admin'};
 function tabFromPath(p){
   for(const [t,path] of Object.entries(TAB_PATH)) if(p===path) return t;
   return 'ask';   // '/' y cualquier otra → Preguntar (RAG)
@@ -396,18 +496,20 @@ function tabFromPath(p){
 function tabAllowed(name){
   const me=window.__me||{};
   if(name==='ingest') return !!me.can_ingest;
+  if(name==='bench')  return !!me.can_ingest;
   if(name==='admin')  return !!me.is_superadmin;
   return true;
 }
 function showTab(name, push=true){
   if(!tabAllowed(name)) name='ask';
-  for(const t of ['rewrite','ask','ingest','chat','admin']){
+  for(const t of ['rewrite','ask','ingest','bench','chat','admin']){
     $('tab-'+t).hidden = (t!==name);
     $('tabbtn-'+t).classList.toggle('active', t===name);
   }
   if(name==='ingest') loadDocuments();
   if(name==='admin') loadUsers();
   if(name==='chat') chatInit();
+  if(name==='bench') benchInit();
   const path=TAB_PATH[name]||'/consulta';
   if(push && location.pathname!==path) history.pushState({tab:name}, '', path);
 }
@@ -421,6 +523,7 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
   const settingOpts=(c.ask_settings||['orig']).map(s=>`<option>${s}</option>`).join('');
   $('ask-setting').innerHTML=settingOpts;
   $('chat-setting').innerHTML=settingOpts;
+  $('bench-setting').innerHTML=settingOpts;
   ASK_SYSTEM_DEFAULT=c.ask_system||'';
   $('ask-system').value=ASK_SYSTEM_DEFAULT;
   $('chat-system').value=ASK_SYSTEM_DEFAULT;
@@ -431,6 +534,7 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
   window.__jurs=jurs;
   buildJurPicker('ask-jur', jurs);
   buildJurPicker('chat-jur', jurs);
+  buildJurPicker('bench-jur', jurs);
   $('ing-jur').innerHTML=jurs.map(j=>`<option value="${esc(j.id)}">${esc(j.label)}</option>`).join('');
   $('ing-jur').value=dj;
   if(c.table) $('ing-table').textContent=c.table;
@@ -479,6 +583,7 @@ async function loadMe(){
     const me=await (await fetch('/api/me')).json();
     window.__me=me;
     $('tabbtn-ingest').hidden=!me.can_ingest;
+    $('tabbtn-bench').hidden=!me.can_ingest;
     $('tabbtn-admin').hidden=!me.is_superadmin;
     $('me-badge').innerHTML=(me.email?esc(me.email):'—')+' · '+(ROLE_LABEL[me.role]||me.role)+
       ' · <a style="color:#3b82f6" href="/logout">salir</a>';
@@ -510,6 +615,7 @@ async function loadTopics(){
       if(prev && list.some(t=>t.topic===prev)) el.value=prev;
       else if(DEFAULT_TOPIC && list.some(t=>t.topic===DEFAULT_TOPIC)) el.value=DEFAULT_TOPIC;
     }
+    benchFillTopics();
     if(firstTopicsLoad){ syncSystem('ask-topic','ask-system'); syncSystem('chat-topic','chat-system'); firstTopicsLoad=false; }
   }catch(e){}
 }
