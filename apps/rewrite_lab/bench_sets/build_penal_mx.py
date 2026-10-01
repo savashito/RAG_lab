@@ -595,6 +595,73 @@ q('¿Cuál es la diferencia entre dato de prueba, medio de prueba y prueba, y qu
 
 assert len(Q) == 50, len(Q)
 
+# Citas de artículo como MUST (peso 1): la respuesta debe fundamentar con el artículo y la ley,
+# como exige el system prompt del tema. Una por código en las comparativas; "al menos uno" en
+# las preguntas genéricas que no nombran un código. (Las que ya citaban el artículo en un must
+# —#1, 5, 9, 26, 28, 30, 31, 44— quedan como estaban, salvo #9 y #10 que completan códigos.)
+LEY = {'CDMX': 'del Código Penal de la Ciudad de México', 'CPEM': 'del Código Penal del Estado de México',
+       'CPF': 'del Código Penal Federal', 'CNPP': 'del Código Nacional de Procedimientos Penales',
+       'MOR': 'del Código Penal para el Estado de Morelos'}
+
+
+def cita(art, ley):
+    return M(f'Cita el art. {art} {LEY[ley]}')
+
+
+def cita_alguno(*pares):
+    return M('Cita al menos uno de estos artículos: ' + '; '.join(f'art. {a} {LEY[l]}' for a, l in pares))
+
+
+CITAS = {
+    2: [cita(174, 'CDMX'), cita(273, 'CPEM'), cita(265, 'CPF')],
+    3: [cita(180, 'CDMX')],
+    4: [cita(271, 'CPEM'), S('Cita el art. 272 del Código Penal del Estado de México (querella)')],
+    6: [cita_alguno((174, 'CDMX'), (180, 'CDMX'), (265, 'CPF'), (262, 'CPF'), (273, 'CPEM'), (271, 'CPEM'))],
+    7: [cita(174, 'CDMX')],
+    8: [cita(273, 'CPEM')],
+    9: [cita(265, 'CPF')],
+    10: [cita(174, 'CDMX'), cita('265 bis', 'CPF')],
+    11: [cita(175, 'CDMX')],
+    12: [cita(266, 'CPF')],
+    13: [cita(174, 'CDMX'), cita(273, 'CPEM'), cita(265, 'CPF')],
+    14: [cita(178, 'CDMX')],
+    15: [cita(274, 'CPEM')],
+    16: [cita(176, 'CDMX'), cita(260, 'CPF'), cita(270, 'CPEM')],
+    17: [cita(176, 'CDMX'), cita(260, 'CPF'), cita(270, 'CPEM')],
+    18: [M('Cita los arts. 269 y 269 Bis del Código Penal del Estado de México'), cita('259 Bis', 'CPF')],
+    19: [cita(179, 'CDMX')],
+    20: [cita(181, 'CDMX'), cita(221, 'CPEM'), cita(272, 'CPF')],
+    21: [cita('205 Bis', 'CPEM'), cita('181 Bis', 'CDMX')],
+    22: [cita('179 Bis', 'CDMX')],
+    23: [cita('181 Quintus', 'CDMX')],
+    24: [cita_alguno((182, 'CDMX'), ('276 bis', 'CPF')), cita('178 Bis', 'CDMX')],
+    25: [cita(159, 'MOR'), cita(180, 'CDMX')],
+    27: [cita(148, 'CNPP')],
+    29: [cita(187, 'CNPP'), cita(256, 'CNPP')],
+    32: [cita(18, 'CDMX'), cita('9o', 'CPF')],
+    33: [cita_alguno((20, 'CDMX'), (12, 'CPF'), (10, 'CPEM'))],
+    34: [cita(16, 'CDMX')],
+    35: [cita_alguno((17, 'CDMX'), ('7o', 'CPF'), (8, 'CPEM'))],
+    36: [cita(22, 'CDMX')],
+    37: [cita_alguno((29, 'CDMX'), (15, 'CPF'), (15, 'CPEM'))],
+    38: [cita(29, 'CDMX'), cita(15, 'CPEM')],
+    39: [cita(29, 'CDMX')],
+    40: [cita(16, 'CPEM')],
+    41: [cita(146, 'CNPP')],
+    42: [cita(150, 'CNPP')],
+    43: [cita(165, 'CNPP')],
+    45: [cita(307, 'CNPP')],
+    46: [cita(316, 'CNPP')],
+    47: [cita(321, 'CNPP')],
+    48: [cita(192, 'CNPP')],
+    49: [cita(201, 'CNPP')],
+    50: [cita(261, 'CNPP'), cita(402, 'CNPP')],
+}
+for n, extra in CITAS.items():
+    comps = Q[n - 1]['components']
+    first_not = next((i for i, c in enumerate(comps) if c['kind'] == 'must_not'), len(comps))
+    Q[n - 1]['components'] = comps[:first_not] + extra + comps[first_not:]   # antes de los must_not
+
 # Dificultad (criterio del usuario):
 #   dificil — analogía y análisis de varias legislaciones de un mismo tema
 #   mediano — definición, clasificación y explicación de un tema específico

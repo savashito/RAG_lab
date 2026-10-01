@@ -94,6 +94,21 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita el art. 174 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 273 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 265 del Código Penal Federal",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que la cópula requiere eyaculación",
      "weight": 1
@@ -137,6 +152,11 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita el art. 180 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que se persigue de oficio",
      "weight": 1
@@ -172,6 +192,16 @@
     {
      "kind": "should",
      "text": "Cita los artículos 271 y 272 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 271 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "should",
+     "text": "Cita el art. 272 del Código Penal del Estado de México (querella)",
      "weight": 1
     },
     {
@@ -246,6 +276,11 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita al menos uno de estos artículos: art. 174 del Código Penal de la Ciudad de México; art. 180 del Código Penal de la Ciudad de México; art. 265 del Código Penal Federal; art. 262 del Código Penal Federal; art. 273 del Código Penal del Estado de México; art. 271 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que el estupro requiere violencia física o moral",
      "weight": 1
@@ -277,6 +312,11 @@
      "kind": "must",
      "text": "En esos casos el delito se persigue por querella",
      "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 174 del Código Penal de la Ciudad de México",
+     "weight": 1
     },
     {
      "kind": "must_not",
@@ -317,6 +357,11 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita el art. 273 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que la pena básica de violación en el Estado de México es de seis a diecisiete años",
      "weight": 1
@@ -347,6 +392,11 @@
     {
      "kind": "must",
      "text": "En ese supuesto se persigue por querella",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 265 del Código Penal Federal",
      "weight": 1
     },
     {
@@ -383,6 +433,16 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita el art. 174 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 265 bis del Código Penal Federal",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que en el Estado de México la violación entre cónyuges se persigue por querella",
      "weight": 1
@@ -413,6 +473,11 @@
     {
      "kind": "should",
      "text": "Cita el artículo 175 CPCDMX",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 175 del Código Penal de la Ciudad de México",
      "weight": 1
     }
    ]
@@ -449,6 +514,11 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita el art. 266 del Código Penal Federal",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que la violación equiparada federal se refiere a menores de doce años",
      "weight": 1
@@ -474,6 +544,21 @@
     {
      "kind": "must",
      "text": "Requiere violencia física o moral",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 174 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 273 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 265 del Código Penal Federal",
      "weight": 1
     },
     {
@@ -515,6 +600,11 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita el art. 178 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que el aumento es de una mitad",
      "weight": 1
@@ -545,6 +635,11 @@
     {
      "kind": "should",
      "text": "Cita el artículo 274 CPEM",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 274 del Código Penal del Estado de México",
      "weight": 1
     }
    ]
@@ -581,6 +676,21 @@
      "weight": 1
     },
     {
+     "kind": "must",
+     "text": "Cita el art. 176 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 260 del Código Penal Federal",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 270 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
      "kind": "must_not",
      "text": "Afirma que el abuso sexual requiere cópula",
      "weight": 1
@@ -607,6 +717,21 @@
      "kind": "must",
      "text": "Estado de México: de oficio",
      "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 176 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 260 del Código Penal Federal",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 270 del Código Penal del Estado de México",
+     "weight": 1
     },
     {
      "kind": "must_not",
@@ -639,6 +764,16 @@
     {
      "kind": "should",
      "text": "Edomex: hostigamiento de 2 a 6 años; acoso de 1 a 4 años",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita los arts. 269 y 269 Bis del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 259 Bis del Código Penal Federal",
      "weight": 1
     },
     {
@@ -678,6 +813,11 @@
      "kind": "should",
      "text": "Servidor público: destitución e inhabilitación",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 179 del Código Penal de la Ciudad de México",
+     "weight": 1
     }
    ]
   },
@@ -706,6 +846,21 @@
      "kind": "must",
      "text": "CPF: si la víctima es menor de edad la conducta se considera violación",
      "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 181 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 221 del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 272 del Código Penal Federal",
+     "weight": 1
     }
    ]
   },
@@ -739,6 +894,16 @@
      "kind": "should",
      "text": "Pérdida de patria potestad o tutela",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 205 Bis del Código Penal del Estado de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 181 Bis del Código Penal de la Ciudad de México",
+     "weight": 1
     }
    ]
   },
@@ -766,6 +931,11 @@
     {
      "kind": "should",
      "text": "Cita el artículo 179 Bis CPCDMX",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 179 Bis del Código Penal de la Ciudad de México",
      "weight": 1
     }
    ]
@@ -800,6 +970,11 @@
      "kind": "should",
      "text": "Agravante de una mitad si hubo relación sentimental o de pareja",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 181 Quintus del Código Penal de la Ciudad de México",
+     "weight": 1
     }
    ]
   },
@@ -827,6 +1002,16 @@
     {
      "kind": "should",
      "text": "Cita art. 182 CPCDMX / 276 bis CPF y 178 Bis CPCDMX",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita al menos uno de estos artículos: art. 182 del Código Penal de la Ciudad de México; art. 276 bis del Código Penal Federal",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 178 Bis del Código Penal de la Ciudad de México",
      "weight": 1
     }
    ]
@@ -860,6 +1045,16 @@
     {
      "kind": "should",
      "text": "En ambos se requiere querella/queja",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 159 del Código Penal para el Estado de Morelos",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 180 del Código Penal de la Ciudad de México",
      "weight": 1
     }
    ]
@@ -942,6 +1137,11 @@
      "kind": "should",
      "text": "Cita el artículo 148 del CNPP",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 148 del Código Nacional de Procedimientos Penales",
+     "weight": 1
     }
    ]
   },
@@ -997,6 +1197,16 @@
     {
      "kind": "should",
      "text": "Art. 256: excluye delitos contra el libre desarrollo de la personalidad",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 187 del Código Nacional de Procedimientos Penales",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 256 del Código Nacional de Procedimientos Penales",
      "weight": 1
     },
     {
@@ -1087,6 +1297,16 @@
      "kind": "should",
      "text": "Cita art. 18 CPCDMX y/o art. 9o CPF",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 18 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 9o del Código Penal Federal",
+     "weight": 1
     }
    ]
   },
@@ -1114,6 +1334,11 @@
     {
      "kind": "should",
      "text": "CDMX exige puesta en peligro del bien jurídico",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita al menos uno de estos artículos: art. 20 del Código Penal de la Ciudad de México; art. 12 del Código Penal Federal; art. 10 del Código Penal del Estado de México",
      "weight": 1
     }
    ]
@@ -1143,6 +1368,11 @@
      "kind": "should",
      "text": "Equivalencia de la omisión con la acción",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 16 del Código Penal de la Ciudad de México",
+     "weight": 1
     }
    ]
   },
@@ -1166,6 +1396,11 @@
      "kind": "must",
      "text": "Continuado: unidad de propósito, pluralidad de conductas e identidad de sujeto pasivo",
      "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cita al menos uno de estos artículos: art. 17 del Código Penal de la Ciudad de México; art. 7o del Código Penal Federal; art. 8 del Código Penal del Estado de México",
+     "weight": 1
     }
    ]
   },
@@ -1198,6 +1433,11 @@
     {
      "kind": "should",
      "text": "Cita el artículo 22 CPCDMX",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 22 del Código Penal de la Ciudad de México",
      "weight": 1
     }
    ]
@@ -1232,6 +1472,11 @@
      "kind": "should",
      "text": "Es una causa de justificación",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita al menos uno de estos artículos: art. 29 del Código Penal de la Ciudad de México; art. 15 del Código Penal Federal; art. 15 del Código Penal del Estado de México",
+     "weight": 1
     }
    ]
   },
@@ -1260,6 +1505,16 @@
      "kind": "should",
      "text": "En CDMX se clasifica como causa de atipicidad",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 29 del Código Penal de la Ciudad de México",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 15 del Código Penal del Estado de México",
+     "weight": 1
     }
    ]
   },
@@ -1283,6 +1538,11 @@
      "kind": "must",
      "text": "Vencible: excluye sólo si el delito no admite forma culposa; si la admite se sanciona como culposo",
      "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 29 del Código Penal de la Ciudad de México",
+     "weight": 1
     }
    ]
   },
@@ -1315,6 +1575,11 @@
     {
      "kind": "should",
      "text": "Las excluyentes se hacen valer de oficio (art. 17)",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 16 del Código Penal del Estado de México",
      "weight": 1
     }
    ]
@@ -1349,6 +1614,11 @@
      "kind": "should",
      "text": "Cita el artículo 146 CNPP",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 146 del Código Nacional de Procedimientos Penales",
+     "weight": 1
     }
    ]
   },
@@ -1382,6 +1652,11 @@
      "kind": "should",
      "text": "Explica el cálculo del término medio aritmético",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 150 del Código Nacional de Procedimientos Penales",
+     "weight": 1
     }
    ]
   },
@@ -1409,6 +1684,11 @@
     {
      "kind": "should",
      "text": "No puede exceder la pena máxima del delito",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 165 del Código Nacional de Procedimientos Penales",
      "weight": 1
     },
     {
@@ -1481,6 +1761,11 @@
      "kind": "should",
      "text": "La presencia de la víctima no es requisito de validez",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 307 del Código Nacional de Procedimientos Penales",
+     "weight": 1
     }
    ]
   },
@@ -1509,6 +1794,11 @@
      "kind": "must",
      "text": "Plazo de 72 horas, ampliable a 144 horas",
      "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 316 del Código Nacional de Procedimientos Penales",
+     "weight": 1
     }
    ]
   },
@@ -1531,6 +1821,11 @@
     {
      "kind": "should",
      "text": "Lo fija el juez de control en la audiencia inicial",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 321 del Código Nacional de Procedimientos Penales",
      "weight": 1
     }
    ]
@@ -1565,6 +1860,11 @@
      "kind": "should",
      "text": "Dos años desde cumplimiento o cinco desde incumplimiento de una suspensión anterior",
      "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 192 del Código Nacional de Procedimientos Penales",
+     "weight": 1
     }
    ]
   },
@@ -1593,6 +1893,11 @@
      "kind": "must",
      "text": "Reducción de hasta un tercio de la mínima en dolosos (o hasta la mitad si se cumplen los requisitos)",
      "weight": 2
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 201 del Código Nacional de Procedimientos Penales",
+     "weight": 1
     },
     {
      "kind": "must_not",
@@ -1630,6 +1935,16 @@
     {
      "kind": "should",
      "text": "La duda favorece al acusado",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 261 del Código Nacional de Procedimientos Penales",
+     "weight": 1
+    },
+    {
+     "kind": "must",
+     "text": "Cita el art. 402 del Código Nacional de Procedimientos Penales",
      "weight": 1
     }
    ]
