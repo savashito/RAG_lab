@@ -1014,6 +1014,12 @@ def index():
 # Página simplificada para usuarios finales: solo campo de pregunta + respuesta. Sin
 # controles (tema/vecinos/HyDE/método). Los defaults salen de la URL, p. ej.
 #   /preguntar?tema=psicologia_conductual&vecinos=true&HyDE=true
+# Editor JSON de un set del benchmark (página propia: editor con resaltado + vista previa).
+@app.get('/benchmark/editor')
+def bench_editor():
+    return FileResponse(STATIC / 'bench_editor.html', headers={'Cache-Control': 'no-store'})
+
+
 @app.get('/preguntar')
 def preguntar():
     return FileResponse(STATIC / 'preguntar.html', headers={'Cache-Control': 'no-store'})

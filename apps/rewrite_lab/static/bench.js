@@ -51,6 +51,9 @@ async function benchInit(){
     menu('bench-export', exportSet);
     menu('bench-import-btn', ()=>$('bench-import').click());
     menu('bench-backup', backupSet);
+    const openEditor = () => { if(BENCH.set) location.href = '/benchmark/editor?set=' + BENCH.set.id; };
+    menu('bench-json-editor', openEditor);
+    $('bench-json-editor2').addEventListener('click', openEditor);
     $('bench-import').addEventListener('change', importSet);
     $('bench-set-cancel').addEventListener('click', ()=>closeModal('bench-set-modal'));
     $('bench-set-save').addEventListener('click', saveSet);

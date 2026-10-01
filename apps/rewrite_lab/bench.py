@@ -157,6 +157,55 @@ def aggregate(results: list[dict]) -> dict:
     }
 
 
+def validate_set_payload(payload, existing_ids=frozenset()) -> list[str]:
+    """Errores del JSON de un set tal como lo edita /benchmark/editor (estricto: el editor no
+    "arregla" en silencio como el import). `existing_ids` = ids de preguntas del set; un
+    `id` ajeno o repetido es error (evita mover preguntas entre sets o duplicarlas)."""
+    errs = []
+    if not isinstance(payload, dict):
+        return ['El JSON debe ser un objeto { … }.']
+    for f in ('name', 'topic'):
+        if not str(payload.get(f) or '').strip():
+            errs.append(f'Falta "{f}".')
+    qs = payload.get('questions')
+    if not isinstance(qs, list):
+        return errs + ['"questions" debe ser una lista [ … ].']
+    seen = set()
+    for i, q in enumerate(qs, 1):
+        where = f'Pregunta #{i}'
+        if not isinstance(q, dict):
+            errs.append(f'{where}: debe ser un objeto {{ … }}.')
+            continue
+        if not str(q.get('question') or '').strip():
+            errs.append(f'{where}: "question" está vacío.')
+        qid = q.get('id')
+        if qid is not None:
+            if not isinstance(qid, int) or qid not in existing_ids:
+                errs.append(f'{where}: "id": {qid!r} no pertenece a este set (quítalo para crear una pregunta nueva).')
+            elif qid in seen:
+                errs.append(f'{where}: "id": {qid} está repetido.')
+            seen.add(qid)
+        comps = q.get('components', [])
+        if not isinstance(comps, list):
+            errs.append(f'{where}: "components" debe ser una lista.')
+            continue
+        for j, c in enumerate(comps, 1):
+            cw = f'{where}, componente {j}'
+            if not isinstance(c, dict):
+                errs.append(f'{cw}: debe ser un objeto.')
+                continue
+            if c.get('kind') not in KINDS:
+                errs.append(f'{cw}: "kind" debe ser "must", "should" o "must_not" (vino {c.get("kind")!r}).')
+            if not str(c.get('text') or '').strip():
+                errs.append(f'{cw}: "text" está vacío.')
+            w = c.get('weight', 1)
+            if isinstance(w, bool) or not isinstance(w, (int, float)) or w < 0:
+                errs.append(f'{cw}: "weight" debe ser un número ≥ 0.')
+        if not comps and not str(q.get('expected_answer') or '').strip():
+            errs.append(f'{where}: sin componentes ni "expected_answer": no se podría calificar.')
+    return errs
+
+
 # ── Esquema ───────────────────────────────────────────────────────────────────────
 
 SCHEMA = """
@@ -280,9 +329,11 @@ class Bench:
             cur.execute("INSERT INTO bench_components (question_id, position, text, kind, weight) "
                         "VALUES (%s, %s, %s, %s, %s)", (qid, pos, c['text'], c['kind'], c['weight']))
 
-    def _insert_question(self, cur, set_id: int, q: dict) -> int:
-        cur.execute("SELECT coalesce(max(position), -1) + 1 FROM bench_questions WHERE set_id = %s", (set_id,))
-        pos = cur.fetchone()[0]
+    def _insert_question(self, cur, set_id: int, q: dict, position: int | None = None) -> int:
+        if position is None:
+            cur.execute("SELECT coalesce(max(position), -1) + 1 FROM bench_questions WHERE set_id = %s", (set_id,))
+            position = cur.fetchone()[0]
+        pos = position
         cur.execute("INSERT INTO bench_questions (set_id, position, question, expected_answer, notes) "
                     "VALUES (%s, %s, %s, %s, %s) RETURNING id",
                     (set_id, pos, q['question'].strip(), (q.get('expected_answer') or '').strip() or None,
@@ -297,15 +348,56 @@ class Bench:
         r = cur.fetchone()
         return r[0] if r else None
 
-    def export_set(self, s: dict) -> dict:
-        """Formato portable (sin ids) — el mismo que acepta el import."""
+    def export_set(self, s: dict, with_ids: bool = False) -> dict:
+        """Formato portable — el mismo que acepta el import. `with_ids` añade el `id` de cada
+        pregunta (lo usa el editor JSON para actualizar en su lugar sin romper comparaciones)."""
+        def q_out(q):
+            d = {'id': q['id']} if with_ids else {}
+            d.update(question=q['question'], expected_answer=q.get('expected_answer') or '',
+                     notes=q.get('notes') or '',
+                     components=[{'kind': c['kind'], 'text': c['text'], 'weight': c['weight']}
+                                 for c in q['components']])
+            return d
         return {'format': 'rag-lab-bench/v1', 'name': s['name'], 'topic': s['topic'],
-                'description': s.get('description') or '',
-                'questions': [{'question': q['question'], 'expected_answer': q.get('expected_answer') or '',
-                               'notes': q.get('notes') or '',
-                               'components': [{'text': c['text'], 'kind': c['kind'], 'weight': c['weight']}
-                                              for c in q['components']]}
-                              for q in s['questions']]}
+                'description': s.get('description') or '', 'questions': [q_out(q) for q in s['questions']]}
+
+    def sync_set(self, cur, sid: int, payload: dict, dry_run: bool) -> dict:
+        """Deja el set igual al JSON del editor: preguntas con `id` se actualizan (conservan su
+        id → las corridas siguen siendo comparables), sin `id` se crean, y las del set que no
+        vienen se borran. El orden del JSON define la posición. Valida antes de tocar nada."""
+        s = self.load_set(cur, sid)
+        existing = {q['id']: q for q in s['questions']}
+        errs = validate_set_payload(payload, frozenset(existing))
+        if errs:
+            return {'errors': errs}
+        qs = payload['questions']
+        keep = {q['id'] for q in qs if q.get('id') is not None}
+        plan = {'updated': len(keep), 'created': sum(q.get('id') is None for q in qs),
+                'deleted': [{'id': q['id'], 'question': q['question']} for q in s['questions'] if q['id'] not in keep],
+                'changed': sum(1 for q in qs if q.get('id') is not None and self._q_changed(existing[q['id']], q))}
+        if dry_run:
+            return plan
+        cur.execute("UPDATE bench_sets SET name = %s, topic = %s, description = %s, updated_at = now() WHERE id = %s",
+                    (payload['name'].strip(), payload['topic'].strip(),
+                     (payload.get('description') or '').strip() or None, sid))
+        for d in plan['deleted']:
+            cur.execute("DELETE FROM bench_questions WHERE id = %s AND set_id = %s", (d['id'], sid))
+        for pos, q in enumerate(qs):
+            if q.get('id') is None:
+                self._insert_question(cur, sid, q, position=pos)
+                continue
+            cur.execute("UPDATE bench_questions SET position = %s, question = %s, expected_answer = %s, notes = %s, "
+                        "updated_at = now() WHERE id = %s",
+                        (pos, q['question'].strip(), (q.get('expected_answer') or '').strip() or None,
+                         (q.get('notes') or '').strip() or None, q['id']))
+            self._write_components(cur, q['id'], q.get('components'))
+        return plan
+
+    def _q_changed(self, old: dict, new: dict) -> bool:
+        norm = lambda q: (q['question'].strip(), (q.get('expected_answer') or '').strip(),  # noqa: E731
+                          (q.get('notes') or '').strip(),
+                          [(c['kind'], c['text'].strip(), float(c.get('weight', 1))) for c in q.get('components') or []])
+        return norm(old) != norm(new)
 
     # ── corrida ───────────────────────────────────────────────────────────────────
     def judge_model(self) -> str:
@@ -514,10 +606,31 @@ class Bench:
             return {'ok': True}
 
         @r.get('/sets/{sid}/export')
-        def set_export(sid: int):
+        def set_export(sid: int, ids: bool = False):
             with self.connect() as c, c.cursor() as cur:
                 s = self.load_set(cur, sid)
-            return self.export_set(s) if s else JSONResponse({'error': 'no existe'}, status_code=404)
+            return self.export_set(s, with_ids=ids) if s else JSONResponse({'error': 'no existe'}, status_code=404)
+
+        @r.post('/sets/{sid}/content')
+        async def set_content(sid: int, req: Request):
+            """Guarda el JSON completo del editor. {payload, dry_run}: con dry_run sólo
+            devuelve el plan (cuántas se actualizan/crean/borran) para confirmarlo."""
+            b = await req.json()
+            payload, dry = b.get('payload'), bool(b.get('dry_run'))
+            email = self.current_email(req)
+            with self.connect() as c, c.cursor() as cur:
+                topic = self._set_topic(cur, sid)
+                if topic is None:
+                    return JSONResponse({'error': 'no existe'}, status_code=404)
+                new_topic = str((payload or {}).get('topic') or topic).strip() if isinstance(payload, dict) else topic
+                if not (self.can_edit_topic(email, topic) and self.can_edit_topic(email, new_topic)):
+                    return deny()
+                out = self.sync_set(cur, sid, payload, dry)
+                if out.get('errors'):
+                    return JSONResponse({'error': 'El JSON tiene errores.', 'errors': out['errors']}, status_code=400)
+                if not dry:
+                    c.commit()
+            return out
 
         @r.post('/sets/{sid}/backup')
         def set_backup(sid: int, request: Request):

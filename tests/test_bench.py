@@ -161,3 +161,40 @@ def test_retry_gives_up_and_skips_logic_errors(monkeypatch):
     except ValueError:
         pass
     assert len(calls) == 1   # los errores de lógica no se reintentan
+
+
+# ── validación del JSON del editor (/benchmark/editor) ──────────────────────────
+
+def _payload(**over):
+    p = {'name': 'Set', 'topic': 't', 'questions': [
+        {'id': 1, 'question': '¿Q1?', 'components': [{'kind': 'must', 'text': 'A', 'weight': 2}]},
+        {'question': '¿Nueva?', 'expected_answer': 'Ref.'}]}
+    p.update(over)
+    return p
+
+
+def test_validate_ok():
+    from bench import validate_set_payload
+    assert validate_set_payload(_payload(), {1, 2}) == []
+
+
+def test_validate_reports_each_problem():
+    from bench import validate_set_payload
+    bad = _payload(name='', questions=[
+        {'id': 99, 'question': ' ', 'components': [{'kind': 'mus', 'text': '', 'weight': -1}]},
+        {'id': 1, 'question': 'ok', 'components': []},
+        {'id': 1, 'question': 'dup', 'components': [{'kind': 'should', 'text': 'x'}]}])
+    errs = validate_set_payload(bad, {1})
+    joined = '\n'.join(errs)
+    assert 'Falta "name"' in joined
+    assert 'Pregunta #1: "question" está vacío' in joined
+    assert '"id": 99 no pertenece' in joined
+    assert '"kind" debe ser' in joined and '"text" está vacío' in joined and '"weight" debe ser' in joined
+    assert 'Pregunta #2: sin componentes ni "expected_answer"' in joined
+    assert 'Pregunta #3: "id": 1 está repetido' in joined
+
+
+def test_validate_rejects_non_list_questions():
+    from bench import validate_set_payload
+    assert validate_set_payload(_payload(questions={}), set())[-1].startswith('"questions" debe ser una lista')
+    assert validate_set_payload([], set()) == ['El JSON debe ser un objeto { … }.']

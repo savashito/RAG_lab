@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor de set · Benchmark</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/mode/overlay.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/brace-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+<style>
+ :root{color-scheme:dark;--bg:#0f1115;--panel:#171a21;--panel2:#0b0d12;--line:#2a2f3a;--text:#e6e6e6;--muted:#9aa4b2;
+   --must:#3b82f6;--should:#9ca3af;--mustnot:#ef4444;--ok:#4ade80;--err:#f87171;--accent:#a5d6ff}
+ *{box-sizing:border-box}
+ html,body{height:100%}
+ body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,sans-serif;display:flex;flex-direction:column}
+ header{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+ header h1{font-size:15px;margin:0 6px 0 0;white-space:nowrap}
+ header a{color:var(--accent);text-decoration:none;font-size:13px}
+ select,button{font:inherit}
+ select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 8px;max-width:360px}
+ button{background:#232833;color:#fff;border:0;border-radius:8px;padding:7px 12px;font-weight:600;cursor:pointer;white-space:nowrap}
+ button.primary{background:#3b82f6} button.danger{background:#7f1d1d}
+ button:disabled{opacity:.45;cursor:default}
+ .spacer{flex:1}
+ .kbd{font:11px ui-monospace,monospace;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+ /* barra de estado */
+ .status{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:6px 16px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);background:#12151b}
+ .status b{color:var(--text)}
+ .st-ok{color:var(--ok)} .st-err{color:var(--err)} .st-dirty{color:#fbbf24}
+ .chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;border-radius:6px;padding:1px 8px;border:1px solid var(--line);background:var(--panel2)}
+ .chip .k{font:10px ui-monospace,monospace;text-transform:uppercase;color:var(--muted)}
+ .chip.must{border-color:var(--must)} .chip.should{border-color:#4b5563;color:#c7cdd6}
+ .chip.must_not{border-color:#b91c1c;border-style:dashed}
+ /* layout principal */
+ main{flex:1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);min-height:0}
+ #editorWrap{min-height:0;border-right:1px solid var(--line);position:relative}
+ .CodeMirror{height:100%;background:var(--panel2);color:#d6dbe3;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace}
+ .CodeMirror-gutters{background:#0d1016;border-right:1px solid var(--line)}
+ .CodeMirror-linenumber{color:#4b5563}
+ .CodeMirror-cursor{border-left:2px solid #93c5fd}
+ .CodeMirror-activeline-background{background:#141a24}
+ .CodeMirror-selected,.CodeMirror-focused .CodeMirror-selected{background:#1e3a5f!important}
+ .CodeMirror-matchingbracket{color:#fff!important;background:#334155;outline:none}
+ .CodeMirror-foldmarker{color:#93c5fd;text-shadow:none;font-family:ui-monospace,monospace}
+ .CodeMirror-foldgutter-open:after,.CodeMirror-foldgutter-folded:after{color:#64748b}
+ /* colores del JSON */
+ .cm-s-default .cm-string{color:#e5d3a1}
+ .cm-s-default .cm-string.cm-property,.cm-s-default .cm-property{color:#7dd3fc}
+ .cm-s-default .cm-number{color:#c4b5fd}
+ .cm-s-default .cm-atom{color:#f9a8d4}
+ /* overlay: tipos de componente y el inicio de cada pregunta */
+ .cm-kind-must{color:#bfdbfe!important;background:rgba(59,130,246,.22);border-radius:4px;font-weight:700}
+ .cm-kind-should{color:#e5e7eb!important;background:rgba(156,163,175,.2);border-radius:4px;font-weight:700}
+ .cm-kind-mustnot{color:#fecaca!important;background:rgba(239,68,68,.24);border-radius:4px;font-weight:700}
+ .cm-qkey{color:#86efac!important;font-weight:700}
+ .cm-idval{color:#64748b!important}
+ .err-line{background:rgba(239,68,68,.13)}
+ .err-mark{color:var(--err);font-size:11px;padding-left:2px;cursor:help}
+ .flash-line{animation:flash 1.2s ease-out}
+ @keyframes flash{from{background:rgba(250,204,21,.35)}to{background:transparent}}
+ /* panel derecho */
+ #side{display:flex;flex-direction:column;min-height:0}
+ .stabs{display:flex;gap:2px;padding:0 10px;border-bottom:1px solid var(--line);background:var(--panel)}
+ .stabs button{background:transparent;color:var(--muted);border-radius:0;border-bottom:2px solid transparent;padding:9px 12px}
+ .stabs button.active{color:var(--text);border-bottom-color:#3b82f6}
+ .pill{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#232833;color:#c7cdd6;font-size:11px;text-align:center}
+ .pill.bad{background:#7f1d1d;color:#fff}
+ .pane{flex:1;overflow:auto;padding:12px 14px}
+ .pane[hidden]{display:none}
+ .qcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;cursor:pointer}
+ .qcard:hover{border-color:#3b4556}
+ .qcard.cur{border-color:#3b82f6;box-shadow:0 0 0 1px #3b82f6 inset}
+ .qcard.has-err{border-color:#7f1d1d}
+ .qhead{display:flex;gap:8px;align-items:baseline}
+ .qhead .n{color:var(--muted);font-size:12px;min-width:26px}
+ .qhead .t{flex:1;font-weight:600}
+ .badge{font-size:11px;border-radius:6px;padding:0 6px;white-space:nowrap}
+ .badge.new{background:#14532d;color:#bbf7d0} .badge.id{color:#64748b;border:1px solid var(--line)}
+ .badge.gap{background:#3b2a06;color:#fcd34d;border:1px solid #854d0e}
+ .ref{color:var(--muted);font-size:12.5px;margin:6px 0 0;white-space:pre-wrap}
+ .comps{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+ .note{color:var(--muted);font-size:12px;margin-top:6px}
+ .meta{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px}
+ .meta .lbl{color:var(--muted);font-size:12px}
+ .prob{display:flex;gap:10px;padding:8px 10px;border:1px solid #3f1d1d;background:#1c1012;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px}
+ .prob .ln{font:12px ui-monospace,monospace;color:#fca5a5;white-space:nowrap}
+ .prob.warn{border-color:#4a3a12;background:#1a160c} .prob.warn .ln{color:#fcd34d}
+ .empty{color:var(--muted);text-align:center;padding:30px 10px}
+ .help h3{font-size:14px;margin:4px 0 8px} .help code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12px}
+ .help pre{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;overflow:auto}
+ .help li{margin:4px 0}
+ /* modal de confirmación */
+ .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+ .modal[hidden]{display:none}
+ .mbox{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px 18px;max-width:560px;width:100%}
+ .mbox h3{margin:0 0 10px;font-size:15px}
+ .mbox ul{margin:6px 0;padding-left:20px;max-height:200px;overflow:auto;font-size:13px}
+ .mrow{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+ #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#14532d;color:#dcfce7;padding:9px 16px;border-radius:9px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60}
+ #toast.show{opacity:1} #toast.bad{background:#7f1d1d;color:#fee2e2}
+ @media (max-width:900px){
+   main{grid-template-columns:1fr;grid-template-rows:60vh auto}
+   #editorWrap{border-right:0;border-bottom:1px solid var(--line)}
+   header h1{font-size:14px}
+ }
+</style>
+</head>
+<body>
+<header>
+  <a href="/benchmark" title="Volver al tab Benchmark">← Benchmark</a>
+  <h1>📝 Editor JSON del set</h1>
+  <select id="setSel" title="Set a editar"></select>
+  <span class="spacer"></span>
+  <button id="btnAddQ" title="Agrega una pregunta de plantilla al final">➕ Pregunta</button>
+  <button id="btnAddC" title="Inserta un componente debajo de la línea actual">➕ Componente</button>
+  <button id="btnFmt" title="Formatear (Ctrl/⌘+Shift+F)">✨ Formatear</button>
+  <button id="btnReload" title="Descarta los cambios y recarga desde el servidor">↶ Descartar</button>
+  <button id="btnSave" class="primary" title="Guardar (Ctrl/⌘+S)">💾 Guardar</button>
+</header>
+<div class="status" id="status"></div>
+<main>
+  <div id="editorWrap"></div>
+  <section id="side">
+    <div class="stabs">
+      <button data-p="preview" class="active">👁 Vista previa</button>
+      <button data-p="problems">⚠ Problemas <span id="probCount" class="pill">0</span></button>
+      <button data-p="help">❔ Formato</button>
+    </div>
+    <div class="pane" id="p-preview"></div>
+    <div class="pane" id="p-problems" hidden></div>
+    <div class="pane help" id="p-help" hidden>
+      <h3>Cómo se escribe un set</h3>
+      <ul>
+        <li><code>"topic"</code> es el <b>id</b> del tema (p. ej. <code>derecho_penal_mexicano</code>): las preguntas se responden buscando sólo en él.</li>
+        <li>Cada pregunta lleva <code>"question"</code> (obligatorio), <code>"expected_answer"</code> (la respuesta de referencia que ve el juez), <code>"notes"</code> (no se mandan al juez; <code>HUECO CORPUS</code> marca huecos del corpus) y <code>"components"</code>.</li>
+        <li><code>"id"</code>: <b>no lo cambies</b>. Identifica la pregunta para actualizarla en su lugar y que las corridas sigan siendo comparables. Las preguntas nuevas van <b>sin</b> <code>id</code>; si borras una pregunta del JSON, se borra del set (te lo confirmo antes).</li>
+        <li><code>"kind"</code> del componente:
+          <span class="chip must"><span class="k">must</span>obligatorio</span>
+          <span class="chip should"><span class="k">should</span>deseable</span>
+          <span class="chip must_not"><span class="k">must not</span>no debe aparecer</span>
+          — y <code>"weight"</code> (número ≥ 0, por defecto 1).</li>
+        <li>Si una pregunta no tiene componentes, se califica contra <code>"expected_answer"</code> como un único <i>must</i>.</li>
+      </ul>
+      <h3>Plantilla</h3>
+<pre>{
+  "question": "¿…?",
+  "expected_answer": "Art. … : …",
+  "notes": "",
+  "components": [
+    {"kind": "must", "text": "…", "weight": 2},
+    {"kind": "should", "text": "…", "weight": 1},
+    {"kind": "must_not", "text": "…", "weight": 1}
+  ]
+}</pre>
+      <h3>Atajos</h3>
+      <ul>
+        <li><span class="kbd">Ctrl/⌘ S</span> guardar · <span class="kbd">Ctrl/⌘ Shift F</span> formatear</li>
+        <li>Clic en una tarjeta de la vista previa → salta a esa pregunta en el editor; mover el cursor en el editor resalta su tarjeta.</li>
+        <li>Clic en un problema → salta a la línea.</li>
+        <li>▸ en el margen pliega una pregunta o una lista.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<div class="modal" id="confirm" hidden><div class="mbox">
+  <h3>¿Guardar los cambios?</h3>
+  <div id="confirmBody"></div>
+  <div class="mrow"><button id="cfCancel">Cancelar</button><button id="cfOk" class="primary">💾 Guardar</button></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KINDS = ['must', 'should', 'must_not'];
+const S = {setId: null, saved: '', topics: [], canEdit: true, data: null, ranges: [], errors: [], curQ: -1, marks: []};
+
+// ── Editor ──────────────────────────────────────────────────────────────────────
+// Overlay sobre el modo JSON: colorea los valores de "kind" igual que sus chips y marca
+// la clave "question" (inicio visual de cada pregunta).
+CodeMirror.defineMode('benchjson', (config) => CodeMirror.overlayMode(
+  CodeMirror.getMode(config, {name: 'javascript', json: true}), {
+    token(stream){
+      if (stream.match(/^"must_not"/)) return 'kind-mustnot';
+      if (stream.match(/^"must"/)) return 'kind-must';
+      if (stream.match(/^"should"/)) return 'kind-should';
+      if (stream.match(/^"question"(?=\s*:)/)) return 'qkey';
+      if (stream.match(/^"id"\s*:\s*\d+/)) return 'idval';
+      if (stream.match(/^"(?:[^"\\]|\\.)*"/)) return null;   // salta strings completos
+      stream.next(); return null;
+    }
+  }));
+const cm = CodeMirror($('editorWrap'), {
+  mode: 'benchjson', lineNumbers: true, lineWrapping: true, matchBrackets: true,
+  autoCloseBrackets: true, foldGutter: true, styleActiveLine: true, tabSize: 2, indentUnit: 2,
+  gutters: ['CodeMirror-linenumbers', 'errs', 'CodeMirror-foldgutter'],
+  extraKeys: {
+    'Ctrl-S': () => save(), 'Cmd-S': () => save(),
+    'Shift-Ctrl-F': () => formatDoc(), 'Shift-Cmd-F': () => formatDoc(),
+    Tab: cm => cm.execCommand('indentMore'), 'Shift-Tab': cm => cm.execCommand('indentLess'),
+  },
+});
+
+// ── Localizador: offset de cada valor por ruta ("questions.3.components.1") ────
+// Un mini-parser JSON que sólo registra posiciones (JSON.parse no las da).
+function locate(text){
+  let i = 0; const pos = {};
+  const ws = () => { while (i < text.length && ' \t\n\r'.includes(text[i])) i++; };
+  const str = () => { i++; while (i < text.length && text[i] !== '"') { if (text[i] === '\\') i++; i++; } i++; };
+  function val(path){
+    ws(); pos[path] = i; const c = text[i];
+    if (c === '{'){ i++; ws(); if (text[i] === '}'){ i++; return; }
+      for(;;){ ws(); const ks = i; str(); const key = JSON.parse(text.slice(ks, i)); ws(); i++; val(path ? path+'.'+key : key); ws();
+        if (text[i] === ','){ i++; continue; } i++; return; } }
+    if (c === '['){ i++; ws(); if (text[i] === ']'){ i++; return; } let n = 0;
+      for(;;){ val(path+'.'+(n++)); ws(); if (text[i] === ','){ i++; continue; } i++; return; } }
+    if (c === '"'){ str(); return; }
+    while (i < text.length && !',}] \t\n\r'.includes(text[i])) i++;
+  }
+  try { val(''); return pos; } catch(e){ return null; }
+}
+const lineOf = off => cm.posFromIndex(off).line;
+
+// ── Formateo: una pregunta por bloque, un componente por línea ─────────────────
+const Q_ORDER = ['id', 'question', 'expected_answer', 'notes', 'components'];
+const C_ORDER = ['kind', 'text', 'weight'];
+const ordered = (obj, order) => [...order.filter(k => k in obj), ...Object.keys(obj).filter(k => !order.includes(k))];
+function fmt(d){
+  const J = v => JSON.stringify(v);
+  const top = ordered(d, ['format', 'name', 'topic', 'description', 'questions']);
+  const lines = ['{'];
+  top.forEach((k, ti) => {
+    const last = ti === top.length - 1;
+    if (k === 'questions' && Array.isArray(d.questions)){
+      lines.push('  "questions": [');
+      d.questions.forEach((q, qi) => {
+        if (!q || typeof q !== 'object' || Array.isArray(q)){ lines.push('    ' + J(q) + (qi < d.questions.length - 1 ? ',' : '')); return; }
+        lines.push('    {');
+        const qk = ordered(q, Q_ORDER);
+        qk.forEach((kk, ki) => {
+          const comma = ki < qk.length - 1 ? ',' : '';
+          if (kk === 'components' && Array.isArray(q.components)){
+            if (!q.components.length){ lines.push('      "components": []' + comma); return; }
+            lines.push('      "components": [');
+            q.components.forEach((c, ci) => {
+              const body = (c && typeof c === 'object' && !Array.isArray(c))
+                ? '{' + ordered(c, C_ORDER).map(ck => J(ck) + ': ' + J(c[ck])).join(', ') + '}' : J(c);
+              lines.push('        ' + body + (ci < q.components.length - 1 ? ',' : ''));
+            });
+            lines.push('      ]' + comma);
+          } else lines.push('      ' + J(kk) + ': ' + J(q[kk]) + comma);
+        });
+        lines.push('    }' + (qi < d.questions.length - 1 ? ',' : ''));
+      });
+      lines.push('  ]' + (last ? '' : ','));
+    } else lines.push('  ' + J(k) + ': ' + J(d[k]) + (last ? '' : ','));
+  });
+  lines.push('}');
+  return lines.join('\n');
+}
+
+// ── Validación (espejo de validate_set_payload en bench.py, con línea) ─────────
+function validate(text){
+  const errs = [];   // {line, msg, path, warn?}
+  let d;
+  try { d = JSON.parse(text); }
+  catch(e){
+    const m = /position (\d+)/.exec(e.message), lc = /line (\d+) column (\d+)/.exec(e.message);
+    const line = lc ? (+lc[1] - 1) : (m ? lineOf(+m[1]) : 0);
+    let msg = 'JSON inválido: ' + e.message.replace(/^JSON\.parse: /, '').replace(/ in JSON at position \d+.*$/, '');
+    // El parser señala el token SIGUIENTE al error: una coma olvidada se reporta en la línea de abajo.
+    if (/Expected ',' or|Unexpected string|Expected double-quoted property/i.test(e.message)) msg += ' — ¿falta una coma al final de la línea anterior (o sobra una)?';
+    return {data: null, errs: [{line, msg}]};
+  }
+  const pos = locate(text) || {};
+  const at = p => { for (let q = p; q != null; q = q.includes('.') ? q.slice(0, q.lastIndexOf('.')) : (q ? '' : null)) if (q in pos) return lineOf(pos[q]); return 0; };
+  const add = (path, msg, warn) => errs.push({line: at(path), msg, path, warn});
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return {data: null, errs: [{line: 0, msg: 'El JSON debe ser un objeto { … }.'}]};
+  for (const f of ['name', 'topic']) if (!String(d[f] || '').trim()) add(f, `Falta "${f}".`);
+  if (d.topic && S.topics.length && !S.topics.some(t => t.topic === d.topic))
+    add('topic', `"topic": "${d.topic}" no existe. Temas: ${S.topics.map(t => t.topic).join(', ')}`);
+  if (!Array.isArray(d.questions)){ add('questions', '"questions" debe ser una lista [ … ].'); return {data: d, errs}; }
+  const ids = new Set();
+  d.questions.forEach((q, qi) => {
+    const P = `questions.${qi}`, W = `Pregunta #${qi + 1}`;
+    if (!q || typeof q !== 'object' || Array.isArray(q)){ add(P, `${W}: debe ser un objeto { … }.`); return; }
+    if (!String(q.question || '').trim()) add(P + '.question', `${W}: "question" está vacío.`);
+    if (q.id != null){
+      if (!Number.isInteger(q.id) || (S.knownIds && !S.knownIds.has(q.id))) add(P + '.id', `${W}: "id": ${JSON.stringify(q.id)} no pertenece a este set (quítalo para crear una pregunta nueva).`);
+      else if (ids.has(q.id)) add(P + '.id', `${W}: "id": ${q.id} está repetido (¿copiaste una pregunta? quítale el id a la copia).`);
+      ids.add(q.id);
+    }
+    const comps = q.components == null ? [] : q.components;
+    if (!Array.isArray(comps)){ add(P + '.components', `${W}: "components" debe ser una lista.`); return; }
+    comps.forEach((c, ci) => {
+      const CP = `${P}.components.${ci}`, CW = `${W}, componente ${ci + 1}`;
+      if (!c || typeof c !== 'object' || Array.isArray(c)){ add(CP, `${CW}: debe ser un objeto.`); return; }
+      if (!KINDS.includes(c.kind)) add(CP + '.kind', `${CW}: "kind" debe ser "must", "should" o "must_not" (vino ${JSON.stringify(c.kind)}).`);
+      if (!String(c.text || '').trim()) add(CP + '.text', `${CW}: "text" está vacío.`);
+      const w = c.weight == null ? 1 : c.weight;
+      if (typeof w !== 'number' || w < 0) add(CP + '.weight', `${CW}: "weight" debe ser un número ≥ 0.`);
+    });
+    if (!comps.length && !String(q.expected_answer || '').trim()) add(P, `${W}: sin componentes ni "expected_answer": no se podría calificar.`);
+    if (comps.length && !comps.some(c => c && c.kind === 'must')) add(P + '.components', `${W}: no tiene ningún "must": siempre pasará si no hay must_not.`, true);
+  });
+  // Rangos de línea por pregunta (para sincronizar cursor ↔ tarjeta).
+  S.ranges = d.questions.map((q, qi) => `questions.${qi}` in pos ? lineOf(pos[`questions.${qi}`]) : null);
+  return {data: d, errs};
+}
+
+// ── Render: estado, problemas y vista previa ───────────────────────────────────
+function chip(c){
+  const w = (c.weight != null && +c.weight !== 1) ? ` ×${+c.weight}` : '';
+  const k = KINDS.includes(c.kind) ? c.kind : 'must';
+  return `<span class="chip ${k}"><span class="k">${esc(String(c.kind).replace('_', ' '))}${w}</span>${esc(c.text)}</span>`;
+}
+function refresh(){
+  const text = cm.getValue();
+  const {data, errs} = validate(text);
+  S.data = data; S.errors = errs;
+  // marcas en el editor
+  S.marks.forEach(l => { cm.removeLineClass(l, 'background', 'err-line'); });
+  cm.clearGutter('errs'); S.marks = [];
+  const hard = errs.filter(e => !e.warn);
+  for (const e of hard){
+    const h = cm.addLineClass(e.line, 'background', 'err-line'); S.marks.push(h);
+    const m = document.createElement('span'); m.className = 'err-mark'; m.textContent = '●'; m.title = e.msg;
+    cm.setGutterMarker(e.line, 'errs', m);
+  }
+  // problemas
+  $('probCount').textContent = errs.length; $('probCount').className = 'pill' + (hard.length ? ' bad' : '');
+  $('p-problems').innerHTML = errs.length ? errs.map((e, i) =>
+    `<div class="prob ${e.warn ? 'warn' : ''}" data-i="${i}"><span class="ln">${e.warn ? '⚠' : '✗'} línea ${e.line + 1}</span><span>${esc(e.msg)}</span></div>`).join('')
+    : '<div class="empty">✓ Sin problemas</div>';
+  // estado
+  const dirty = text !== S.saved;
+  const qs = data && Array.isArray(data.questions) ? data.questions.filter(q => q && typeof q === 'object') : [];
+  const comps = qs.flatMap(q => Array.isArray(q.components) ? q.components.filter(Boolean) : []);
+  const n = k => comps.filter(c => c.kind === k).length;
+  const nNew = qs.filter(q => q.id == null).length;
+  const nDel = S.knownIds ? [...S.knownIds].filter(id => !qs.some(q => q.id === id)).length : 0;
+  $('status').innerHTML = (!data ? [   // JSON ilegible: no hay conteos confiables
+    `<span class="st-err">✗ JSON inválido</span>`, '<span class="spacer"></span>',
+    dirty ? '<span class="st-dirty">● cambios sin guardar</span>' : '',
+  ] : [
+    hard.length ? `<span class="st-err">✗ ${hard.length} problema${hard.length > 1 ? 's' : ''}</span>` : '<span class="st-ok">✓ JSON válido</span>',
+    `<span><b>${qs.length}</b> preguntas</span>`,
+    `<span class="chip must"><span class="k">must</span>${n('must')}</span>`,
+    `<span class="chip should"><span class="k">should</span>${n('should')}</span>`,
+    `<span class="chip must_not"><span class="k">must not</span>${n('must_not')}</span>`,
+    nNew ? `<span class="st-ok">+${nNew} nueva${nNew > 1 ? 's' : ''}</span>` : '',
+    nDel ? `<span class="st-err">−${nDel} se borrará${nDel > 1 ? 'n' : ''}</span>` : '',
+    '<span class="spacer"></span>',
+    !S.canEdit ? '<span class="st-err">solo lectura: necesitas permiso de admin sobre este tema</span>'
+      : dirty ? '<span class="st-dirty">● cambios sin guardar</span>' : '<span>guardado</span>',
+  ]).join('');
+  $('btnSave').disabled = !S.canEdit || !dirty || hard.length > 0;
+  $('btnReload').disabled = !dirty;
+  renderPreview(data, errs);
+}
+function renderPreview(d, errs){
+  if (!d){ $('p-preview').innerHTML = '<div class="empty">El JSON no es válido todavía: revisa ⚠ Problemas. La vista previa vuelve en cuanto se pueda leer.</div>'; return; }
+  const errQ = new Set(errs.filter(e => !e.warn && e.path && e.path.startsWith('questions.')).map(e => +e.path.split('.')[1]));
+  const topic = S.topics.find(t => t.topic === d.topic);
+  const qs = Array.isArray(d.questions) ? d.questions : [];
+  $('p-preview').innerHTML = `<div class="meta"><div><b>${esc(d.name || '(sin nombre)')}</b></div>
+      <div class="lbl">tema: ${esc(topic ? topic.label : d.topic || '—')} ${d.description ? '· ' + esc(d.description) : ''}</div></div>` +
+    (qs.length ? qs.map((q, i) => {
+      if (!q || typeof q !== 'object') return '';
+      const comps = Array.isArray(q.components) ? q.components.filter(c => c && typeof c === 'object') : [];
+      const ref = String(q.expected_answer || '');
+      return `<div class="qcard ${i === S.curQ ? 'cur' : ''} ${errQ.has(i) ? 'has-err' : ''}" data-q="${i}">
+        <div class="qhead"><span class="n">#${i + 1}</span><span class="t">${esc(q.question || '(pregunta vacía)')}</span>
+          ${/HUECO/i.test(q.notes || '') ? '<span class="badge gap">HUECO</span>' : ''}
+          ${q.id == null ? '<span class="badge new">nueva</span>' : `<span class="badge id">id ${esc(q.id)}</span>`}</div>
+        ${ref ? `<div class="ref">🎯 ${esc(ref.length > 260 ? ref.slice(0, 260) + '…' : ref)}</div>` : ''}
+        <div class="comps">${comps.map(chip).join('') || (ref ? '<span class="note">sin componentes: se compara contra la referencia</span>' : '<span class="note" style="color:var(--err)">sin criterios</span>')}</div>
+        ${q.notes ? `<div class="note">📝 ${esc(q.notes)}</div>` : ''}
+      </div>`; }).join('') : '<div class="empty">Sin preguntas. Usa ➕ Pregunta.</div>');
+}
+
+// ── Interacción ─────────────────────────────────────────────────────────────────
+function jumpTo(line){
+  cm.focus(); cm.setCursor({line, ch: 0});
+  cm.scrollIntoView({line, ch: 0}, 120);
+  cm.addLineClass(line, 'background', 'flash-line');
+  setTimeout(() => cm.removeLineClass(line, 'background', 'flash-line'), 1200);
+}
+function qAtCursor(){
+  const l = cm.getCursor().line; let cur = -1;
+  S.ranges.forEach((start, i) => { if (start != null && start <= l) cur = i; });
+  return cur;
+}
+$('p-preview').addEventListener('click', e => {
+  const c = e.target.closest('.qcard'); if (!c) return;
+  const line = S.ranges[+c.dataset.q]; if (line != null) jumpTo(line);
+});
+$('p-problems').addEventListener('click', e => {
+  const p = e.target.closest('.prob'); if (p) jumpTo(S.errors[+p.dataset.i].line);
+});
+document.querySelectorAll('.stabs button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.stabs button').forEach(x => x.classList.toggle('active', x === b));
+  for (const p of ['preview', 'problems', 'help']) $('p-' + p).hidden = (p !== b.dataset.p);
+}));
+cm.on('cursorActivity', () => {
+  const q = qAtCursor(); if (q === S.curQ) return;
+  S.curQ = q;
+  document.querySelectorAll('.qcard').forEach(c => c.classList.toggle('cur', +c.dataset.q === q));
+  const card = document.querySelector(`.qcard[data-q="${q}"]`);
+  if (card && !$('p-preview').hidden) card.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+});
+let tmr; cm.on('change', () => { clearTimeout(tmr); tmr = setTimeout(refresh, 250); });
+
+function toast(msg, bad){
+  const t = $('toast'); t.textContent = msg; t.className = 'show' + (bad ? ' bad' : '');
+  clearTimeout(t._h); t._h = setTimeout(() => { t.className = ''; }, 3500);
+}
+function formatDoc(){
+  if (!S.data){ toast('Primero arregla los errores de sintaxis', true); return; }
+  const line = cm.getCursor().line, q = qAtCursor();
+  cm.setValue(fmt(S.data)); refresh();
+  if (q >= 0 && S.ranges[q] != null) cm.setCursor({line: S.ranges[q], ch: 0}); else cm.setCursor({line, ch: 0});
+}
+$('btnFmt').onclick = formatDoc;
+$('btnAddQ').onclick = () => {
+  if (!S.data || !Array.isArray(S.data.questions)){ toast('Primero arregla los errores del JSON', true); return; }
+  S.data.questions.push({question: '¿…?', expected_answer: '', notes: '',
+    components: [{kind: 'must', text: '…', weight: 2}, {kind: 'should', text: '…', weight: 1}, {kind: 'must_not', text: '…', weight: 1}]});
+  cm.setValue(fmt(S.data)); refresh();
+  const i = S.data.questions.length - 1;
+  if (S.ranges[i] != null){ jumpTo(S.ranges[i] + 1); const ln = cm.getLine(S.ranges[i] + 1); const ch = ln.indexOf('¿…?');
+    if (ch >= 0) cm.setSelection({line: S.ranges[i] + 1, ch}, {line: S.ranges[i] + 1, ch: ch + '¿…?'.length}); }
+};
+$('btnAddC').onclick = () => {
+  const l = cm.getCursor().line, cur = cm.getLine(l);
+  const indent = (/^\s*/.exec(cur) || [''])[0];
+  const needComma = /[}\]"\d]\s*$/.test(cur) && !/[\[{,]\s*$/.test(cur);
+  if (needComma) cm.replaceRange(',', {line: l, ch: cur.length});
+  const snip = '{"kind": "must", "text": "…", "weight": 1}';
+  cm.replaceRange('\n' + indent + snip, {line: l, ch: cm.getLine(l).length});
+  const ch = indent.length + snip.indexOf('…');
+  cm.focus(); cm.setSelection({line: l + 1, ch}, {line: l + 1, ch: ch + 1});
+};
+$('btnReload').onclick = () => { if (confirm('¿Descartar los cambios sin guardar?')) loadSet(S.setId, true); };
+
+// ── Guardar: plan (dry-run) → confirmación → guardar ───────────────────────────
+async function api(url, body){
+  const r = await fetch(url, body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : undefined);
+  let j = null; try { j = await r.json(); } catch(e){}
+  if (!r.ok || (j && j.error)){ const err = new Error((j && j.error) || `HTTP ${r.status}`); err.details = j && j.errors; throw err; }
+  return j;
+}
+async function save(){
+  if ($('btnSave').disabled) return;
+  refresh();
+  if (S.errors.some(e => !e.warn)){ toast('Hay problemas: revisa ⚠ Problemas', true); return; }
+  let plan;
+  try { plan = await api(`/api/bench/sets/${S.setId}/content`, {payload: S.data, dry_run: true}); }
+  catch(e){ toast(e.message + (e.details ? ' ' + e.details[0] : ''), true); return; }
+  const del = plan.deleted || [];
+  $('confirmBody').innerHTML = `<p>Se <b>actualizarán ${plan.changed}</b> pregunta${plan.changed === 1 ? '' : 's'} (de ${plan.updated} existentes),
+    se <b>crearán ${plan.created}</b>${del.length ? ` y se <b style="color:var(--err)">borrarán ${del.length}</b>` : ''}.</p>
+    ${del.length ? `<p style="color:var(--err);font-size:13px">Las borradas desaparecen del set (sus resultados en corridas pasadas se conservan):</p>
+      <ul>${del.map(x => `<li>${esc(x.question)}</li>`).join('')}</ul>` : ''}
+    <p style="color:var(--muted);font-size:12px">Las preguntas conservan su id, así que siguen siendo comparables entre corridas. Si cambias los componentes de una, la comparación la marcará con ⚙.</p>`;
+  $('confirm').hidden = false;
+}
+$('btnSave').onclick = save;
+$('cfCancel').onclick = () => { $('confirm').hidden = true; };
+$('cfOk').onclick = async () => {
+  $('cfOk').disabled = true;
+  try {
+    const r = await api(`/api/bench/sets/${S.setId}/content`, {payload: S.data, dry_run: false});
+    $('confirm').hidden = true;
+    await loadSet(S.setId, true, true);
+    toast(`✓ Guardado: ${r.changed} actualizada(s), ${r.created} nueva(s), ${(r.deleted || []).length} borrada(s)`);
+  } catch(e){ toast(e.message + (e.details ? ' ' + e.details[0] : ''), true); }
+  finally { $('cfOk').disabled = false; }
+};
+window.addEventListener('beforeunload', e => { if (cm.getValue() !== S.saved){ e.preventDefault(); e.returnValue = ''; } });
+
+// ── Carga ───────────────────────────────────────────────────────────────────────
+async function loadSet(id, force, keepPos){
+  if (!force && cm.getValue() !== S.saved && !confirm('Tienes cambios sin guardar. ¿Descartarlos y cambiar de set?')){
+    $('setSel').value = S.setId; return;
+  }
+  const scroll = cm.getScrollInfo(), cursor = cm.getCursor();
+  const d = await api(`/api/bench/sets/${id}/export?ids=true`);
+  S.setId = +id; S.knownIds = new Set(d.questions.map(q => q.id));
+  const me = window.__me || {};
+  S.canEdit = !!(me.is_superadmin || (me.can_ingest && (me.allowed_topics || []).includes(d.topic)));
+  S.saved = fmt(d); cm.setValue(S.saved); cm.clearHistory();
+  cm.setOption('readOnly', !S.canEdit);
+  history.replaceState(null, '', `/benchmark/editor?set=${id}`);
+  refresh();
+  if (keepPos){ cm.setCursor(cursor); cm.scrollTo(scroll.left, scroll.top); }
+}
+(async () => {
+  try {
+    const [sets, topics, me] = await Promise.all([api('/api/bench/sets'), api('/api/topics'), api('/api/me')]);
+    S.topics = topics; window.__me = me;
+    $('setSel').innerHTML = sets.map(s => `<option value="${s.id}">${esc(s.name)} · ${s.n_questions} preg. · ${esc(s.topic_label)}</option>`).join('');
+    const want = new URLSearchParams(location.search).get('set');
+    const id = (want && sets.some(s => String(s.id) === want)) ? want : (sets[0] && sets[0].id);
+    if (!id){ $('p-preview').innerHTML = '<div class="empty">No hay sets todavía. Crea uno en el tab Benchmark.</div>'; return; }
+    $('setSel').value = id;
+    $('setSel').onchange = () => loadSet($('setSel').value);
+    await loadSet(id, true);
+  } catch(e){ toast('No pude cargar: ' + e.message, true); }
+})();
+</script>
+</body>
+</html>
