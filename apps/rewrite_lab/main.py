@@ -986,7 +986,7 @@ from shared.object_store import store  # noqa: E402
 judge_llm = LlamaClient(url=os.environ['JUDGE_URL']) if os.environ.get('JUDGE_URL') else llm
 bench = Bench(connect=connect, ask=ask, judge=judge_llm, store=store, system_for=system_for,
               current_email=current_email, can_edit_topic=can_upload_topic, can_run=can_ingest,
-              topic_label=lambda t: (TOPICS.get(t) or {}).get('label', t))
+              topic_label=lambda t: (TOPICS.get(t) or {}).get('label', t), table=TABLE)
 app.include_router(bench.router)
 print(f'Benchmark: artefactos en {store.describe()} · juez en {judge_llm.url}')
 

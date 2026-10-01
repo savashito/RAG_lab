@@ -31,6 +31,12 @@ const DIFFS = [['facil','Fácil'], ['mediano','Mediano'], ['dificil','Difícil']
 const diffLabel = d => (DIFFS.find(x=>x[0]===d)||[])[1] || '';
 const diffTag = d => d ? `<span class="tag d-${d}" title="Dificultad">${diffLabel(d)}</span>` : '';
 const qDiff = qid => ((BENCH.set && BENCH.set.questions.find(q=>q.id===qid)) || {}).difficulty || '';
+// Recuperación: ¿llegaron al contexto los artículos que piden los must de cita? (sin LLM)
+function retBadge(r){
+  if(!r || !r.attainable) return r && r.total ? '<span class="tag gap" title="Los artículos de esta pregunta no están en el corpus">🔎 hueco</span>' : '';
+  const h = Math.min(r.hit, r.attainable), cls = h>=r.attainable ? 'ret-ok' : h ? 'ret-part' : 'ret-bad';
+  return `<span class="tag ${cls}" title="Artículos necesarios que la búsqueda trajo al contexto del LLM">🔎 ${h}/${r.attainable}</span>`;
+}
 // Score medio y % que pasa por dificultad, sobre los resultados sin error.
 function diffStats(results){
   const out = {};
@@ -369,7 +375,8 @@ async function loadBenchRuns(){
   const sel = BENCH.detail && BENCH.detail.id;
   $('bench-runs').innerHTML = runs.length ? `<table><tr><th title="marcar para comparar">☑</th><th>#</th><th>fecha</th><th>etiqueta / config</th><th>estado</th>
     <th title="promedio del score por pregunta">score</th><th title="% de preguntas con todos los must y ningún must_not">pasan</th>
-    <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th><th>s/preg</th><th></th></tr>`+
+    <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th>
+    <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th><th>s/preg</th><th></th></tr>`+
     runs.map(r=>{ const m=r.metrics||{}; return `<tr class="clk ${r.id===sel?'sel':''}" onclick="showBenchRun(${r.id})">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="bench-cmp" value="${r.id}" ${checked.has(r.id)?'checked':''}></td><td>${r.id}</td>
       <td style="white-space:nowrap">${esc((r.created_at||'').slice(5,16))}</td>
@@ -377,7 +384,7 @@ async function loadBenchRuns(){
       <td>${r.status==='running'?`⏳ ${r.done}/${r.n}`:esc(r.status)}${m.errors?` <span style="color:#f87171">(${m.errors} err)</span>`:''}</td>
       <td class="sc" style="background:${scoreColor(m.score)}">${pct(m.score)}</td>
       <td class="sc">${pct(m.pass_rate)}</td><td class="sc">${pct(m.must_coverage)}</td>
-      <td class="sc">${m.violations??'—'}</td><td class="sc">${m.avg_seconds??'—'}</td>
+      <td class="sc">${m.violations??'—'}</td><td class="sc">${pct(m.retrieval_recall)}</td><td class="sc">${m.avg_seconds??'—'}</td>
       <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
     : '<p class="muted">Aún no hay corridas de este set. Configura arriba y pulsa ▶ Correr benchmark.</p>';
 }
@@ -396,6 +403,8 @@ const DFILTERS = [
   ['pass', '✅ Pasan', x=>!x.error && x.passed],
   ['viol', '⚠️ Con violación', x=>x.violations>0],
   ['gap', 'HUECO CORPUS', x=>isGap(qNotes(x.question_id))],
+  ['noret', '🔎 No trajo el artículo', x=>!x.error && x.retrieval && x.retrieval.hit < x.retrieval.attainable],
+  ['retfail', '🔎✓ pero no pasa', x=>!x.error && !x.passed && x.retrieval && x.retrieval.attainable && x.retrieval.hit >= x.retrieval.attainable],
   ['facil', 'Fácil', x=>qDiff(x.question_id)==='facil'],
   ['mediano', 'Mediano', x=>qDiff(x.question_id)==='mediano'],
   ['dificil', 'Difícil', x=>qDiff(x.question_id)==='dificil'],
@@ -418,6 +427,13 @@ function missesOf(x){
   }
   return out;
 }
+// Artículos que la búsqueda NO trajo (o que no existen en el corpus), para "qué faltó".
+function retMiss(x){
+  const r = x.retrieval; if(!r) return [];
+  return r.groups.filter(g=>g.rank==null).map(g=> g.in_corpus
+    ? `<li style="color:#fbbf24" title="La búsqueda no trajo este artículo al contexto: el LLM nunca lo vio">🔎✗ no llegó al contexto: ${esc(g.labels.join(' o '))}</li>`
+    : `<li style="color:#fcd34d" title="Este artículo no está en el corpus (hueco)">🔎 no está en el corpus: ${esc(g.labels.join(' o '))}</li>`);
+}
 function renderBenchDetail(){
   const r = BENCH.detail; if(!r) return;
   const m = r.metrics||{};
@@ -433,6 +449,7 @@ function renderBenchDetail(){
       ${card('preguntas que pasan', pct(m.pass_rate), `${nPass} de ${r.results.length}`)}
       ${card('cobertura de must', pct(m.must_coverage))}
       ${card('violaciones must_not', m.violations??'—')}
+      ${m.retrieval_recall!=null ? card('artículos recuperados 🔎', pct(m.retrieval_recall), `${pct(m.retrieval_full)} de las preguntas con todos`) : ''}
       ${(()=>{ const ds = diffStats(r.results); if(!DIFFS.some(([d])=>ds[d])) return '';
         return `<div class="card"><h3>score por dificultad</h3>${DIFFS.map(([d,l])=>ds[d]
           ? `<div class="m"><span>${diffTag(d)} <span class="muted" style="font-size:11px">${ds[d].n}</span></span><b>${pct(ds[d].score)}</b></div>` : '').join('')}</div>`; })()}
@@ -448,12 +465,12 @@ function renderBenchDetail(){
     <table><tr><th>#</th><th>pregunta</th><th>score</th><th>pasa</th><th title="must/should no presentes (✗ ausente · ◐ parcial · · should) y must_not que aparecieron (⚠️)">qué faltó / qué sobró</th><th>s</th></tr>`+
     (rows.length ? rows.map(x=>{ const miss = missesOf(x); return `<tr class="clk" onclick="toggleBenchAnswer(${r.id}, ${x.question_id}, this)">
       <td>${x.position+1}</td>
-      <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))}${isGap(qNotes(x.question_id))?' <span class="tag gap">HUECO</span>':''}</td>
+      <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))} ${retBadge(x.retrieval)}${isGap(qNotes(x.question_id))?' <span class="tag gap">HUECO</span>':''}</td>
       <td class="sc" style="background:${x.error?'#374151':scoreColor(x.score)}">${x.error?'err':pct(x.score)}</td>
       <td class="sc">${x.error?'—':(x.passed?'✅':'❌')}</td>
       <td>${x.error?`<span style="color:#f87171">${esc(x.error)}</span>`
-        : miss.length ? `<ul class="miss" style="margin:0;padding-left:0;list-style:none">${miss.map(([ic,v])=>
-            `<li title="${attr((v.verdict||'sin veredicto')+(v.evidence?' — «'+v.evidence+'»':''))}">${ic} ${esc(v.text)}</li>`).join('')}</ul>`
+        : (miss.length || retMiss(x).length) ? `<ul class="miss" style="margin:0;padding-left:0;list-style:none">${miss.map(([ic,v])=>
+            `<li title="${attr((v.verdict||'sin veredicto')+(v.evidence?' — «'+v.evidence+'»':''))}">${ic} ${esc(v.text)}</li>`).join('')}${retMiss(x).join('')}</ul>`
         : '<span class="muted" style="font-size:12px">todo presente</span>'}</td>
       <td class="sc">${x.seconds??''}</td></tr>`; }).join('') : '<tr><td colspan="6" class="muted">Ninguna pregunta en este filtro.</td></tr>')+'</table>';
 }
@@ -526,7 +543,7 @@ function renderCompare(){
     <table><tr><th>pregunta</th>${runs.map(r=>`<th>#${r.id} ${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
     <tr><td><b>score medio</b></td>${runs.map(r=>`<td class="sc" style="background:${scoreColor((r.metrics||{}).score)}">${pct((r.metrics||{}).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
-    ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}
+    ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}${mrow('🔎 artículos recuperados', m=>pct(m.retrieval_recall))}
     ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(r.results)[d]); if(!st.some(Boolean)) return '';
       return `<tr><td><b>score ${diffTag(d)}</b></td>${st.map(x=>`<td class="sc" style="background:${scoreColor(x&&x.score)}">${x?pct(x.score):'—'}</td>`).join('')}${two?'<td></td>':''}</tr>`; }).join('')}`+
     rows.map(q=>`<tr><td>${esc(q.question)} ${diffTag(qDiff(q.question_id))}${isGap(qNotes(q.question_id))?' <span class="tag gap">HUECO</span>':''}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';

@@ -158,6 +158,124 @@ def score_question(components: list[dict], verdicts: list[dict]) -> dict:
             'must_total': must_total, 'must_ok': must_ok, 'violations': violations}
 
 
+# ── Recuperación del artículo correcto (sin LLM) ─────────────────────────────────
+# Los `must` de cita ("Cita el art. 179 del Código Penal de la Ciudad de México") dicen QUÉ
+# artículo necesita la respuesta. Aquí se convierten en referencias (documento, artículo) y,
+# en cada corrida, se mide si ese chunk llegó al contexto del LLM: separa "la búsqueda no lo
+# trajo" de "lo tenía y respondió mal", y no depende del juez (no tiene ruido).
+LAW_SOURCES = [   # (patrón en el texto, documento del corpus o None si no está ingestado)
+    (r'Ciudad de M[ée]xico|\bCDMX\b|\bCPCDMX\b', 'Código Penal de la Ciudad de México.md'),
+    (r'Estado de M[ée]xico|\bCPEM\b|\bEdomex\b', 'Código Penal del Estado de México.md'),
+    (r'C[óo]digo Penal Federal|\bCPF\b', 'Código Penal Federal.md'),
+    (r'Nacional de Procedimientos|\bCNPP\b', 'Código Nacional de Procedimientos Penales.md'),
+    (r'Morelos', 'Código PENALEM.md'),
+    (r'Quer[ée]taro', None),
+]
+_SUFFIX = r'(?:\s*(?:o\b|bis\b|ter\b|qu[aá]ter\b|quintus\b|quinquies\b))?'
+_ART_LIST_RE = re.compile(   # "art. 179", "arts. 269 y 269 Bis", "artículos 261, 262 y 266"
+    r'(?i)\bart(?:[íi]culos?|s?\.)\s*(\d+' + _SUFFIX + r'(?:\s*(?:,|\by\b)\s*\d+' + _SUFFIX + r')*)')
+_ART_ONE_RE = re.compile(r'(?i)\d+' + _SUFFIX)
+
+
+def _laws_in(text: str) -> list:
+    """Leyes mencionadas, en orden de aparición, como (patrón, documento)."""
+    hits = []
+    for rx, src in LAW_SOURCES:
+        m = re.search('(?i)' + rx, text or '')
+        if m:
+            hits.append((m.start(), rx, src))
+    return [(rx, src) for _, rx, src in sorted(hits)]
+
+
+def _label(raw: str) -> str:
+    return re.sub(r'\s+', ' ', raw.strip())
+
+
+def gold_refs(question: str, components: list[dict]) -> list[list[dict]]:
+    """Grupos de artículos que la respuesta necesita, leídos de los MUST. Cada grupo es una
+    lista de alternativas [{'source', 'article', 'label'}]: basta con recuperar una ("Cita al
+    menos uno…"). `source` None = la ley no está en el corpus (hueco: nunca se recupera)."""
+    q_laws = _laws_in(question)
+    groups, seen = [], set()
+    for c in components or []:
+        if c.get('kind') != 'must':
+            continue
+        text = c.get('text') or ''
+        if re.match(r'(?i)\s*cita al menos uno', text):
+            alts = []
+            for part in text.split(':', 1)[-1].split(';'):
+                laws = _laws_in(part)
+                for m in _ART_LIST_RE.finditer(part):
+                    for a in _ART_ONE_RE.findall(m.group(1)):
+                        if laws:
+                            alts.append({'source': laws[0][1], 'article': _label(a)})
+            chunks = [alts] if alts else []
+        else:
+            chunks = []
+            for m in _ART_LIST_RE.finditer(text):
+                # Ley: la que se nombra DESPUÉS del artículo en el mismo must, si no la primera
+                # del must, si no la única de la pregunta.
+                after = _laws_in(text[m.end():m.end() + 80])
+                laws = after or _laws_in(text) or (q_laws if len(q_laws) == 1 else [])
+                if not laws:
+                    continue
+                for a in _ART_ONE_RE.findall(m.group(1)):
+                    chunks.append([{'source': laws[0][1], 'article': _label(a)}])
+        for g in chunks:
+            key = tuple(sorted((x['source'] or '', x['article'].lower()) for x in g))
+            if key not in seen:
+                seen.add(key)
+                groups.append(g)
+    for g in groups:
+        for x in g:
+            short = next((k for k, v in (('CDMX', 'Ciudad'), ('CPEM', 'Estado de M'), ('CPF', 'Federal'),
+                                         ('CNPP', 'Nacional'), ('Morelos', 'PENALEM')) if x['source'] and v in x['source']),
+                         'Querétaro' if x['source'] is None else '?')
+            x['label'] = f"{short} {x['article']}"
+    return groups
+
+
+def _article_rx(article: str):
+    toks = article.split()
+    return re.compile(r'(?i)> art[íi]culo\s+' + r'\s*'.join(map(re.escape, toks)) + r'[oº°]?\.?$')
+
+
+def resolve_gold(cur, table: str, groups: list[list[dict]]) -> list[list[dict]]:
+    """Añade a cada alternativa los `ids` de sus chunks: por jerarquía ("> Artículo 179") y,
+    si el documento no está partido por artículo (p. ej. Morelos), por el texto."""
+    cache = {}
+    for g in groups:
+        for x in g:
+            src = x['source']
+            if src is None:
+                x['ids'] = []
+                continue
+            if src not in cache:
+                cur.execute(f"SELECT id, hierarchy, text FROM {table} WHERE source = %s", (src,))
+                cache[src] = cur.fetchall()
+            rx = _article_rx(x['article'])
+            ids = [i for i, h, _ in cache[src] if rx.search(h or '')]
+            if not ids:
+                num = re.escape(x['article'].split()[0])
+                trx = re.compile(r'(?i)art[íi]culo\W{0,4}' + num + r'(?![0-9])')
+                ids = [i for i, _, t in cache[src] if trx.search(t or '')]
+            x['ids'] = ids
+    return groups
+
+
+def retrieval_check(groups: list[list[dict]], context_ids: list[int]) -> dict:
+    """¿Llegó cada artículo necesario al contexto? rank = posición (1 = primero) o None."""
+    pos = {cid: i + 1 for i, cid in enumerate(context_ids)}
+    out = []
+    for g in groups:
+        ranks = [pos[i] for x in g for i in x.get('ids', []) if i in pos]
+        out.append({'labels': [x['label'] for x in g], 'rank': min(ranks) if ranks else None,
+                    'in_corpus': any(x.get('ids') for x in g)})
+    hit = sum(o['rank'] is not None for o in out)
+    attainable = sum(o['in_corpus'] for o in out)
+    return {'groups': out, 'hit': hit, 'total': len(out), 'attainable': attainable}
+
+
 def aggregate(results: list[dict]) -> dict:
     ok = [r for r in results if not r.get('error')]
     n = len(ok)
@@ -169,7 +287,19 @@ def aggregate(results: list[dict]) -> dict:
         'must_coverage': round(sum(r['must_ok'] for r in ok) / must_total, 4) if must_total else None,
         'violations': sum(r['violations'] for r in ok),
         'avg_seconds': round(sum(r.get('seconds') or 0 for r in ok) / n, 1) if n else None,
+        **_retrieval_agg(ok),
     }
+
+
+def _retrieval_agg(ok: list[dict]) -> dict:
+    rs = [r['retrieval'] for r in ok if r.get('retrieval') and r['retrieval'].get('attainable')]
+    if not rs:
+        return {}
+    hit = sum(min(r['hit'], r['attainable']) for r in rs)
+    att = sum(r['attainable'] for r in rs)
+    return {'retrieval_recall': round(hit / att, 4) if att else None,          # artículos que llegaron
+            'retrieval_full': round(sum(r['hit'] >= r['attainable'] for r in rs) / len(rs), 4),  # preguntas completas
+            'retrieval_n': len(rs)}
 
 
 def validate_set_payload(payload, existing_ids=frozenset()) -> list[str]:
@@ -251,6 +381,7 @@ CREATE TABLE IF NOT EXISTS bench_results (
     question_id int, position int, question text, score real, passed boolean,
     must_total int, must_ok int, violations int, verdicts jsonb, seconds real, error text);
 CREATE INDEX IF NOT EXISTS bench_results_run ON bench_results (run_id, position);
+ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS retrieval jsonb;   -- ¿llegó el artículo correcto al contexto?
 -- Latido de la corrida: se actualiza con cada pregunta terminada (ver STALE_MINUTES).
 ALTER TABLE bench_runs ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 """
@@ -289,8 +420,9 @@ class Bench:
 
     def __init__(self, *, connect: Callable, ask: Callable, judge, store,
                  system_for: Callable, current_email: Callable, can_edit_topic: Callable,
-                 can_run: Callable, topic_label: Callable):
+                 can_run: Callable, topic_label: Callable, table: str | None = None):
         self.connect, self.ask, self.judge, self.store = connect, ask, judge, store
+        self.table = table   # tabla de chunks: para ubicar los artículos de los must (recuperación)
         self.system_for, self.current_email = system_for, current_email
         self.can_edit_topic, self.can_run, self.topic_label = can_edit_topic, can_run, topic_label
         self._lock = threading.Lock()
@@ -464,6 +596,14 @@ class Bench:
     def _run(self, rid: int, s: dict, qs: list[dict], cfg: dict) -> None:
         results, detail = [], []
         status, err = 'done', None
+        gold = {}
+        if self.table:
+            try:
+                with self.connect() as c, c.cursor() as cur:
+                    gold = {q['id']: resolve_gold(cur, self.table, gold_refs(q['question'], effective_components(q)))
+                            for q in qs}
+            except Exception:  # noqa: BLE001 — sin gold la corrida sigue (solo falta la métrica)
+                traceback.print_exc()
         try:
             for pos, q in enumerate(qs):
                 if self._cancel.is_set():
@@ -473,7 +613,7 @@ class Bench:
                 t0 = time.time()
                 row = {'question_id': q['id'], 'position': pos, 'question': q['question'],
                        'score': 0.0, 'passed': False, 'must_total': 0, 'must_ok': 0, 'violations': 0,
-                       'verdicts': [], 'seconds': None, 'error': None}
+                       'verdicts': [], 'seconds': None, 'error': None, 'retrieval': None}
                 det = {'question_id': q['id'], 'question': q['question'],
                        'expected_answer': q.get('expected_answer') or '', 'difficulty': q.get('difficulty'),
                        'components': comps}
@@ -485,13 +625,16 @@ class Bench:
                                self._cancel)
                     sc = score_question(comps, g['verdicts'])
                     row.update(sc)
+                    if gold.get(q['id']):
+                        row['retrieval'] = retrieval_check(gold[q['id']], [ch.get('id') for ch in a.get('chunks', [])])
                     row['verdicts'] = [{'text': c['text'], 'kind': c['kind'], 'weight': c['weight'], **v}
                                        for c, v in zip(comps, g['verdicts'])]
                     det.update(answer=a['answer'], chunks=[{k: ch.get(k) for k in
                                                             ('rank', 'id', 'source', 'hierarchy', 'score', 'neighbor', 'text')}
                                                            for ch in a.get('chunks', [])],
                                rewrite=a.get('rewrite'), score_kind=a.get('score_kind'), hyde_passage=a.get('hyde_passage'),
-                               judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'))
+                               judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'),
+                               retrieval=row['retrieval'])
                 except Exception as e:  # noqa: BLE001 — una pregunta que falla no tumba la corrida
                     row['error'] = det['error'] = f'{type(e).__name__}: {e}'
                 row['seconds'] = round(time.time() - t0, 1)
@@ -500,11 +643,12 @@ class Bench:
                 with self.connect() as c, c.cursor() as cur:
                     cur.execute(
                         "INSERT INTO bench_results (run_id, question_id, position, question, score, passed, "
-                        "must_total, must_ok, violations, verdicts, seconds, error) "
-                        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s)",
+                        "must_total, must_ok, violations, verdicts, seconds, error, retrieval) "
+                        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s::jsonb)",
                         (rid, row['question_id'], pos, row['question'], row['score'], row['passed'],
                          row['must_total'], row['must_ok'], row['violations'],
-                         json.dumps(row['verdicts'], ensure_ascii=False), row['seconds'], row['error']))
+                         json.dumps(row['verdicts'], ensure_ascii=False), row['seconds'], row['error'],
+                         json.dumps(row['retrieval'], ensure_ascii=False) if row['retrieval'] else None))
                     cur.execute("UPDATE bench_runs SET done = %s, metrics = %s::jsonb, updated_at = now() WHERE id = %s",
                                 (len(results), json.dumps(aggregate(results)), rid))
                     c.commit()
@@ -768,10 +912,10 @@ class Bench:
                         'metrics', 'error', 'artifact_key', 'created_at', 'finished_at']
                 out = dict(zip(cols, row))
                 cur.execute("SELECT question_id, position, question, score, passed, must_total, must_ok, "
-                            "violations, verdicts, seconds, error FROM bench_results WHERE run_id = %s "
+                            "violations, verdicts, seconds, error, retrieval FROM bench_results WHERE run_id = %s "
                             "ORDER BY position", (rid,))
                 rcols = ['question_id', 'position', 'question', 'score', 'passed', 'must_total', 'must_ok',
-                         'violations', 'verdicts', 'seconds', 'error']
+                         'violations', 'verdicts', 'seconds', 'error', 'retrieval']
                 out['results'] = [dict(zip(rcols, x)) for x in cur.fetchall()]
             return out
 

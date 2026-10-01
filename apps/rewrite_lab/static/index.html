@@ -167,6 +167,7 @@
  .tag.gap{background:#3b2a06;color:#fcd34d;border:1px solid #854d0e}
  .tag.d-facil{background:#14532d;color:#bbf7d0} .tag.d-mediano{background:#713f12;color:#fde68a}
  .tag.d-dificil{background:#4c1d95;color:#ddd6fe}
+ .tag.ret-ok{background:#0c4a6e;color:#bae6fd} .tag.ret-part{background:#713f12;color:#fde68a} .tag.ret-bad{background:#7f1d1d;color:#fecaca}
  .fchips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
  .fchips button{background:#171a21;border:1px solid #2a2f3a;color:#c7cdd6;padding:5px 11px;font-size:12px;font-weight:600}
  .fchips button.active{background:#1e3a5f;border-color:#3b82f6;color:#fff}
@@ -536,6 +537,10 @@
    </ul>
    <p><b>score</b> = (Σ peso·valor de must/should − Σ peso·valor de must_not) / Σ peso de must/should, con presente=1, parcial=0.5, ausente=0.<br>
      <b>pasa</b> = todos los must presentes y ningún must_not presente. <b>cobertura de must</b> = % de must presentes en todo el set.</p>
+   <p><b>🔎 Artículos recuperados</b> (sin LLM): los <i>must</i> de cita («Cita el art. 179 del Código Penal de la Ciudad de México»)
+     dicen qué artículo necesita la respuesta. En cada corrida se revisa si el chunk de ese artículo llegó al contexto que vio el LLM.
+     Así se separa <b>«la búsqueda no lo trajo»</b> (🔎✗, problema de recuperación) de <b>«lo tenía y respondió mal»</b>
+     (filtro «🔎✓ pero no pasa», problema de prompt o del modelo). No depende del juez, así que no tiene ruido.</p>
    <p><b>Dificultad de cada pregunta</b> (sirve para ver el score por nivel en los resultados y en la comparación):</p>
    <ul>
      <li><span class="tag d-facil">Fácil</span> pregunta directa sobre un artículo o caso específico bien definido de la ley (p. ej. «¿cuál es el plazo máximo de la prisión preventiva?»).</li>

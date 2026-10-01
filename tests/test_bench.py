@@ -217,3 +217,46 @@ def test_validate_difficulty():
     assert validate_set_payload(ok, set()) == []
     bad = _payload(questions=[{'question': 'q', 'difficulty': 'extrema', 'expected_answer': 'r'}])
     assert '"difficulty" debe ser' in validate_set_payload(bad, set())[0]
+
+
+# ── artículo correcto: extracción desde los must y chequeo de recuperación ──────
+
+def test_gold_refs_from_citation_musts():
+    from bench import gold_refs
+    comps = [{'kind': 'must', 'text': 'Cita el art. 179 del Código Penal de la Ciudad de México'},
+             {'kind': 'must', 'text': 'Cita los arts. 269 y 269 Bis del Código Penal del Estado de México'},
+             {'kind': 'must', 'text': 'Cita al menos uno de estos artículos: art. 20 del Código Penal de la Ciudad de México; '
+                                      'art. 12 del Código Penal Federal'},
+             {'kind': 'should', 'text': 'Cita el art. 272 del Código Penal del Estado de México'},   # should: no es gold
+             {'kind': 'must_not', 'text': 'Cita el art. 1 del Código Penal Federal'}]                # must_not: tampoco
+    g = gold_refs('¿pregunta?', comps)
+    assert [[x['label'] for x in grp] for grp in g] == [['CDMX 179'], ['CPEM 269'], ['CPEM 269 Bis'], ['CDMX 20', 'CPF 12']]
+
+
+def test_gold_refs_uses_question_law_and_marks_gap():
+    from bench import gold_refs
+    g = gold_refs('En el Código Penal Federal, ¿cómo se tipifica el estupro?',
+                  [{'kind': 'must', 'text': 'Las sanciones del estupro (art. 262) son imprescriptibles'},
+                   {'kind': 'must', 'text': 'Querétaro (art. 167): el sujeto pasivo es mayor de 14'}])
+    assert [x['label'] for grp in g for x in grp] == ['CPF 262', 'Querétaro 167']
+    assert g[1][0]['source'] is None          # Querétaro no está en el corpus
+
+
+def test_retrieval_check_ranks_and_attainable():
+    from bench import retrieval_check
+    groups = [[{'label': 'CDMX 179', 'ids': [10]}],
+              [{'label': 'CDMX 20', 'ids': [20]}, {'label': 'CPF 12', 'ids': [30]}],   # basta una
+              [{'label': 'CPF 266', 'ids': [40]}],
+              [{'label': 'Querétaro 167', 'ids': []}]]                                 # hueco
+    r = retrieval_check(groups, [99, 30, 10])
+    assert [g['rank'] for g in r['groups']] == [3, 2, None, None]
+    assert (r['hit'], r['total'], r['attainable']) == (2, 4, 3)
+
+
+def test_aggregate_retrieval():
+    rows = [dict(score=1, passed=True, must_total=1, must_ok=1, violations=0, seconds=1, error=None,
+                 retrieval={'hit': 2, 'total': 2, 'attainable': 2}),
+            dict(score=0, passed=False, must_total=1, must_ok=0, violations=0, seconds=1, error=None,
+                 retrieval={'hit': 0, 'total': 2, 'attainable': 1})]
+    a = aggregate(rows)
+    assert a['retrieval_recall'] == round(2 / 3, 4) and a['retrieval_full'] == 0.5 and a['retrieval_n'] == 2
