@@ -40,7 +40,7 @@ load_dotenv(HERE / '.env')
 
 from shared.db import connect
 from shared.legal_chunking import find_article_ref
-from shared.lexical import BM25, rank_indices_by_score, rrf, tokenize
+from shared.lexical import BM25, interleave_scored, rank_indices_by_score, rrf, tokenize
 from shared.llm_client import HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient
 from shared.rerank_client import RerankClient
 from shared.tei_client import TEIClient
@@ -836,8 +836,43 @@ def _rerank_scored(question, scored, top_n=RERANK_TOP_N):
     return [(cid, smap.get(cid, 0.0)) for cid in new_ids], True
 
 
+def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neighbors=True,
+                    hyde=False, rerank=False, decompose=False, debug=None):
+    """Búsqueda completa de una pregunta: retrieve_scored + reranker opcional y, con
+    `decompose`, query decomposition: el LLM divide la pregunta comparativa en sub-preguntas
+    (una por entidad: ley, estado, autor, enfoque…), se busca cada una con la MISMA config y
+    se intercalan los resultados. Si la pregunta no es comparativa queda una sola sub-pregunta
+    y el resultado es idéntico al de no descomponer. Devuelve (scored, score_kind, rewrite)."""
+    subqs = llm.decompose(question) if decompose else [question]
+    if debug is not None and decompose:
+        debug['subqueries'] = subqs
+    # La búsqueda de la pregunta ORIGINAL siempre entra a la mezcla: la descomposición es un
+    # complemento (asegura a cada entidad su lugar), no un reemplazo; si el LLM divide mal, lo
+    # que la búsqueda normal encontraba sigue en el contexto.
+    queries = [question] + [q for q in subqs if q.strip().lower() != question.strip().lower()]
+    lists, kind, rw, passages = [], None, None, []
+    for q in queries:
+        d = {} if debug is not None else None
+        scored, sk, r = retrieve_scored(cur, q, setting, topic, jurisdictions, neighbors, hyde, debug=d)
+        if rerank and not find_article_ref(q):
+            scored, did = _rerank_scored(q, scored)
+            if did:
+                sk = 'rerank'
+        lists.append(scored)
+        kind, rw = kind or sk, rw or r
+        if d:
+            passages.append((q, d))
+    if debug is not None and passages:
+        if len(passages) == 1:
+            debug.update(passages[0][1])
+        else:   # un borrador HyDE por sub-pregunta: se muestran todos
+            debug['hyde_passage'] = '\n\n'.join(f'— {q}\n{x.get("hyde_passage", "")}' for q, x in passages)
+            debug['embed_text'] = '\n\n'.join(x.get('embed_text', '') for _, x in passages)
+    return (lists[0] if len(lists) == 1 else interleave_scored(lists)), kind, rw
+
+
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
-        neighbors=True, hyde=False, rerank=False):
+        neighbors=True, hyde=False, rerank=False, decompose=False):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -847,11 +882,8 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     t0 = time.time()
     dbg: dict = {}
     with connect() as c, c.cursor() as cur:
-        scored, score_kind, rw = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
-        if rerank and not find_article_ref(question):
-            scored, did = _rerank_scored(question, scored)
-            if did:
-                score_kind = 'rerank'
+        scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions, neighbors,
+                                                 hyde, rerank, decompose, debug=dbg)
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -865,7 +897,8 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
                       max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
             'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
-            'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', '')}
+            'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
+            'subqueries': dbg.get('subqueries')}
 
 
 # ── Tab "Conversacional" ──────────────────────────────────────────────────────────
@@ -917,7 +950,7 @@ def condense_question(msgs, max_turns=6, max_answer_chars=500) -> str:
 
 
 def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=None,
-                neighbors=True, hyde=False, rerank=False):
+                neighbors=True, hyde=False, rerank=False, decompose=False):
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
     msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
@@ -930,11 +963,8 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     t0 = time.time()
     dbg: dict = {}
     with connect() as c, c.cursor() as cur:   # retrieval sobre la consulta CONDENSADA
-        scored, score_kind, rw = retrieve_scored(cur, search_q, setting, topic, jurisdictions, neighbors, hyde, debug=dbg)
-        if rerank and not find_article_ref(search_q):
-            scored, did = _rerank_scored(search_q, scored)
-            if did:
-                score_kind = 'rerank'
+        scored, score_kind, rw = retrieve_ranked(cur, search_q, setting, topic, jurisdictions, neighbors,
+                                                 hyde, rerank, decompose, debug=dbg)
         ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -953,7 +983,8 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
             'question': question,
             'search_query': search_q if search_q != question else '',
             'chunks': top, 'seconds': round(time.time() - t0, 1),
-            'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', '')}
+            'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
+            'subqueries': dbg.get('subqueries')}
 
 
 load_corpus_index()   # índice BM25 en memoria para la tab de RAG (bm25 / híbrido)
@@ -1266,12 +1297,12 @@ async def ask_route(req: Request):
                    int(body.get('k', 5)), body.get('system'), body.get('topic'),
                    body.get('jurisdictions') or body.get('jurisdiction'),
                    bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                   bool(body.get('rerank', False)))
+                   bool(body.get('rerank', False)), bool(body.get('decompose', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
 
-def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False):
+def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False):
     """Generador SSE que transparenta el PROCESO paso a paso en lugar de esperar al final:
     1) 'hyde' (borrador hipotético + texto exacto que se embebe),
     2) 'context' (las referencias recuperadas, ya con su jerarquía),
@@ -1290,14 +1321,11 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         yield sse({'stage': 'retrieving', 'hyde': hyde})
         dbg: dict = {}
         with connect() as c, c.cursor() as cur:
-            scored, score_kind, rw = retrieve_scored(cur, question, setting, topic,
-                                                     jurisdictions, neighbors, hyde, debug=dbg)
-            if rerank and not find_article_ref(question):
-                yield sse({'stage': 'reranking'})
-                scored, did = _rerank_scored(question, scored)
-                if did:
-                    score_kind = 'rerank'
+            scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions,
+                                                     neighbors, hyde, rerank, decompose, debug=dbg)
             ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
+        if len(dbg.get('subqueries') or []) > 1:
+            yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -1328,7 +1356,7 @@ async def ask_stream_route(req: Request):
                       int(body.get('k', 5)), body.get('system'), body.get('topic'),
                       body.get('jurisdictions') or body.get('jurisdiction'),
                       bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                      bool(body.get('rerank', False)))
+                      bool(body.get('rerank', False)), bool(body.get('decompose', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
@@ -1343,12 +1371,12 @@ async def chat_route(req: Request):
                            int(body.get('k', 5)), body.get('system'), body.get('topic'),
                            body.get('jurisdictions') or body.get('jurisdiction'),
                            bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                           bool(body.get('rerank', False)))
+                           bool(body.get('rerank', False)), bool(body.get('decompose', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
 
-def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False):
+def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False):
     """Igual que `chat_answer` pero en streaming (SSE): condensa la consulta, transparenta
     el proceso (search → retrieving → hyde → context → token* → done) y streamea la
     respuesta. La generación recibe todos los turnos; la búsqueda usa la consulta condensada."""
@@ -1370,14 +1398,11 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
         yield sse({'stage': 'retrieving', 'hyde': hyde})
         dbg: dict = {}
         with connect() as c, c.cursor() as cur:
-            scored, score_kind, rw = retrieve_scored(cur, search_q, setting, topic,
-                                                     jurisdictions, neighbors, hyde, debug=dbg)
-            if rerank and not find_article_ref(search_q):
-                yield sse({'stage': 'reranking'})
-                scored, did = _rerank_scored(search_q, scored)
-                if did:
-                    score_kind = 'rerank'
+            scored, score_kind, rw = retrieve_ranked(cur, search_q, setting, topic, jurisdictions,
+                                                     neighbors, hyde, rerank, decompose, debug=dbg)
             ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
+        if len(dbg.get('subqueries') or []) > 1:
+            yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -1410,7 +1435,7 @@ async def chat_stream_route(req: Request):
                        int(body.get('k', 5)), body.get('system'), body.get('topic'),
                        body.get('jurisdictions') or body.get('jurisdiction'),
                        bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                       bool(body.get('rerank', False)))
+                       bool(body.get('rerank', False)), bool(body.get('decompose', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 

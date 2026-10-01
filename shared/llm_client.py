@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import urllib.request
 
 # Prompt deliberadamente TERSO: las reescrituras largas del LLM (citas
@@ -44,6 +45,43 @@ HYDE_SYSTEM = (
     "(p. ej. seducción o engaño) sin inventarlos. NO inventes números de artículo ni "
     "entidades. Devuelve solo el pasaje, sin preámbulo."
 )
+
+
+# ── Query decomposition ────────────────────────────────────────────────────────────
+# Una pregunta que compara varias cosas ("estupro en Morelos y en la CDMX", "conductismo vs
+# psicoanálisis") se busca mal de una sola vez: la entidad con más texto parecido acapara el
+# top-k. Se divide en sub-preguntas autónomas, una por entidad/ley/autor/enfoque, y se busca
+# cada una por separado. Genérico por diseño: no conoce estados ni temas, solo la estructura.
+DECOMPOSE_SYSTEM = (
+    "Decide si la PREGUNTA compara o relaciona DOS O MÁS ENTIDADES distintas: leyes, códigos, "
+    "estados o países, autores, teorías, escuelas, enfoques o conceptos contrapuestos "
+    "(p. ej. «estupro en Morelos y en la CDMX», «condicionamiento clásico vs operante»). "
+    "Si es así, escribe una sub-pregunta de búsqueda por entidad: autónoma, con el tema completo "
+    "y nombrando solo UNA entidad. "
+    "NO dividas por aspectos de una misma entidad (definición, pena, requisitos, procedimiento, "
+    "efectos): eso es UNA sola entidad. Si hay una sola entidad, devuelve la pregunta EXACTA, sin "
+    "reescribirla. Máximo 4 sub-preguntas. No respondas la pregunta. "
+    'Devuelve SOLO un JSON: {"subpreguntas": ["…", "…"]}'
+)
+
+
+def parse_subquestions(raw: str, question: str, max_n: int = 4) -> list[str]:
+    """Salida del LLM → lista de sub-preguntas (sin vacías ni repetidas). Ante cualquier
+    problema devuelve [question]: la descomposición nunca debe romper la búsqueda."""
+    m = re.search(r'\{.*\}', raw or '', re.S)
+    try:
+        items = json.loads(m.group(0)).get('subpreguntas') if m else None
+    except (ValueError, AttributeError):
+        items = None
+    out = []
+    for it in items or []:
+        t = str(it or '').strip()
+        if t and t.lower() not in {x.lower() for x in out}:
+            out.append(t)
+    out = out[:max_n]
+    # Una sola sub-pregunta = no es comparativa: se busca con la pregunta ORIGINAL, nunca con
+    # una paráfrasis del LLM (parafrasear cambia —y a veces empeora— la búsqueda).
+    return out if len(out) > 1 else [question]
 
 
 class LlamaClient:
@@ -129,6 +167,16 @@ class LlamaClient:
     def rewrite_legal(self, question: str) -> str:
         """Pregunta coloquial → enunciado jurídico breve (para query rewriting)."""
         return self.chat(REWRITE_SYSTEM, question)
+
+    def decompose(self, question: str) -> list[str]:
+        """Pregunta comparativa → sub-preguntas autónomas (una por entidad). [question] si no
+        es comparativa o si el LLM falla."""
+        try:
+            raw = self.chat(DECOMPOSE_SYSTEM, question, temperature=0.0, max_tokens=400, timeout=60,
+                            extra={'response_format': {'type': 'json_object'}})
+        except Exception:   # noqa: BLE001
+            return [question]
+        return parse_subquestions(raw, question)
 
     def hyde_passage(self, question: str, system: str | None = None) -> str:
         """Pregunta → borrador hipotético del pasaje buscado (para HyDE). Da margen de

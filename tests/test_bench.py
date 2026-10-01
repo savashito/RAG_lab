@@ -260,3 +260,27 @@ def test_aggregate_retrieval():
                  retrieval={'hit': 0, 'total': 2, 'attainable': 1})]
     a = aggregate(rows)
     assert a['retrieval_recall'] == round(2 / 3, 4) and a['retrieval_full'] == 0.5 and a['retrieval_n'] == 2
+
+
+# ── query decomposition ─────────────────────────────────────────────────────────
+
+def test_parse_subquestions():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from shared.llm_client import parse_subquestions
+    q = 'Compara el estupro en Morelos y en la CDMX'
+    raw = 'Claro: {"subpreguntas": ["estupro en el Código Penal de Morelos", "estupro en el Código Penal de la CDMX", "Estupro en el Código Penal de Morelos", ""]}'
+    assert parse_subquestions(raw, q) == ['estupro en el Código Penal de Morelos', 'estupro en el Código Penal de la CDMX']
+    assert parse_subquestions('no es json', q) == [q]          # cualquier falla → la pregunta original
+    assert parse_subquestions('{"subpreguntas": []}', q) == [q]
+    # una sola sub-pregunta (aunque sea una paráfrasis) → se usa la pregunta original
+    assert parse_subquestions('{"subpreguntas": ["¿Qué es el estupro en Morelos y CDMX? (reformulada)"]}', q) == [q]
+    assert len(parse_subquestions('{"subpreguntas": ["a","b","c","d","e"]}', q)) == 4
+
+
+def test_interleave_scored_balances_entities():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from shared.lexical import interleave_scored
+    morelos = [(1, .9), (2, .8), (3, .7), (4, .6)]
+    cdmx = [(10, .5), (2, .4), (11, .3)]
+    assert [i for i, _ in interleave_scored([morelos, cdmx])] == [1, 10, 2, 3, 11, 4]   # sin repetir el 2
+    assert interleave_scored([morelos]) == morelos

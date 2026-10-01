@@ -64,3 +64,16 @@ def rrf(ranked_lists: list[list[int]], k: int = 60) -> list[int]:
         for rank, idx in enumerate(rl):
             agg[idx] = agg.get(idx, 0.0) + 1.0 / (k + rank + 1)
     return sorted(agg, key=lambda i: -agg[i])
+
+
+def interleave_scored(lists: list[list[tuple]]) -> list[tuple]:
+    """Une rankings [(id, score)] de varias sub-búsquedas alternando (1.º de A, 1.º de B, 2.º de
+    A…), sin repetir ids: cada entidad de una pregunta comparativa conserva sus mejores chunks
+    en el top-k (query decomposition). Con una sola lista, la devuelve tal cual."""
+    seen, out = set(), []
+    for i in range(max((len(x) for x in lists), default=0)):
+        for lst in lists:
+            if i < len(lst) and lst[i][0] not in seen:
+                seen.add(lst[i][0])
+                out.append(lst[i])
+    return out

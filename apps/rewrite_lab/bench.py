@@ -620,7 +620,7 @@ class Bench:
                 try:
                     a = _retry(lambda: self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
-                                                cfg['rerank']), self._cancel)
+                                                cfg['rerank'], decompose=cfg.get('decompose', False)), self._cancel)
                     g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or ''),
                                self._cancel)
                     sc = score_question(comps, g['verdicts'])
@@ -634,7 +634,7 @@ class Bench:
                                                            for ch in a.get('chunks', [])],
                                rewrite=a.get('rewrite'), score_kind=a.get('score_kind'), hyde_passage=a.get('hyde_passage'),
                                judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'),
-                               retrieval=row['retrieval'])
+                               retrieval=row['retrieval'], subqueries=a.get('subqueries'))
                 except Exception as e:  # noqa: BLE001 — una pregunta que falla no tumba la corrida
                     row['error'] = det['error'] = f'{type(e).__name__}: {e}'
                 row['seconds'] = round(time.time() - t0, 1)
@@ -870,7 +870,8 @@ class Bench:
             try:
                 cfg = {'setting': b.get('setting') or 'híbrido', 'k': int(b.get('k') or 10),
                        'neighbors': bool(b.get('neighbors', True)), 'hyde': bool(b.get('hyde', False)),
-                       'rerank': bool(b.get('rerank', False)), 'system': b.get('system') or '',
+                       'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
+                       'system': b.get('system') or '',
                        'jurisdictions': b.get('jurisdictions') or []}
                 rid = self.start_run(int(b.get('set_id')), cfg, (b.get('label') or '').strip(), email)
             except (RuntimeError, ValueError, TypeError) as e:

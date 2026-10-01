@@ -327,7 +327,8 @@ async function startBenchRun(){
   if(!BENCH.set) return;
   const body = {set_id: BENCH.set.id, label: $('bench-label').value, setting: $('bench-setting').value,
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
-    rerank: $('bench-rerank').checked, system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
+    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked,
+    system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
   try{ const r = await bpost('/api/bench/run', body); watchBenchRun(r.run_id); loadBenchRuns(); }
   catch(e){ bmsg(esc(e.message), false); }
 }
@@ -363,7 +364,7 @@ function watchBenchRun(rid){
 }
 function cfgSummary(c){
   c = c||{};
-  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'',
+  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'',
           (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'']
     .filter(Boolean).join(' · ');
 }
@@ -485,6 +486,7 @@ async function toggleBenchAnswer(rid, qid, tr){
     const md = s => (window.marked ? marked.parse(s||'') : `<pre>${esc(s)}</pre>`);
     row.innerHTML = `<td colspan="6">
       <div class="comps" style="margin:4px 0 8px">${(d.verdicts||[]).map(v=>compChip(v, v.verdict)).join('')}</div>
+      ${(d.subqueries||[]).length>1?`<details open><summary>🧩 Buscó por partes (${d.subqueries.length} sub-búsquedas)</summary><ol style="margin:4px 0;padding-left:20px">${d.subqueries.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`:''}
       <details open><summary>💬 Respuesta del sistema</summary><div class="ans">${md(d.answer)}</div></details>
       ${d.expected_answer?`<details><summary>🎯 Respuesta esperada</summary><div class="ref">${esc(d.expected_answer)}</div></details>`:''}
       <details><summary>⚖️ Veredictos con evidencia</summary><ul>${(d.verdicts||[]).map(v=>
