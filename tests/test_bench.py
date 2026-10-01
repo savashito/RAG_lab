@@ -284,3 +284,15 @@ def test_interleave_scored_balances_entities():
     cdmx = [(10, .5), (2, .4), (11, .3)]
     assert [i for i, _ in interleave_scored([morelos, cdmx])] == [1, 10, 2, 3, 11, 4]   # sin repetir el 2
     assert interleave_scored([morelos]) == morelos
+
+
+def test_gold_refs_family_codes_not_confused():
+    from bench import gold_refs
+    comps = [{'kind': 'must', 'text': 'Cita el art. 562 del Código Nacional de Procedimientos Civiles y Familiares'},
+             {'kind': 'must', 'text': 'Cita el art. 491 del Código Procesal Familiar para el Estado de Morelos'},
+             {'kind': 'must', 'text': 'Cita el art. 65 del Código Familiar para el Estado de Morelos'},
+             {'kind': 'must', 'text': 'Cita el art. 146 del Código Nacional de Procedimientos Penales'},
+             {'kind': 'must', 'text': 'Cita el art. 159 del Código Penal para el Estado de Morelos'}]
+    srcs = [g[0]['source'] for g in gold_refs('q', comps)]
+    assert srcs == ['Código Nacional de Procedimientos Civiles y Familiares.md', 'CPROFAMEM.md', 'CFAMILIAREM.md',
+                    'Código Nacional de Procedimientos Penales.md', 'Código PENALEM.md']

@@ -164,10 +164,15 @@ def score_question(components: list[dict], verdicts: list[dict]) -> dict:
 # en cada corrida, se mide si ese chunk llegó al contexto del LLM: separa "la búsqueda no lo
 # trajo" de "lo tenía y respondió mal", y no depende del juez (no tiene ruido).
 LAW_SOURCES = [   # (patrón en el texto, documento del corpus o None si no está ingestado)
+    # Los más específicos primero: "Código Nacional de Procedimientos Civiles y Familiares" contiene
+    # "Nacional de Procedimientos" (CNPP) y los códigos familiares de Morelos contienen "Morelos".
+    (r'Procedimientos Civiles y Familiares|\bCNPCF\b', 'Código Nacional de Procedimientos Civiles y Familiares.md'),
+    (r'C[óo]digo Procesal Familiar|\bCPROFAMEM\b', 'CPROFAMEM.md'),
+    (r'C[óo]digo Familiar|\bCFAMILIAREM\b', 'CFAMILIAREM.md'),
     (r'Ciudad de M[ée]xico|\bCDMX\b|\bCPCDMX\b', 'Código Penal de la Ciudad de México.md'),
     (r'Estado de M[ée]xico|\bCPEM\b|\bEdomex\b', 'Código Penal del Estado de México.md'),
     (r'C[óo]digo Penal Federal|\bCPF\b', 'Código Penal Federal.md'),
-    (r'Nacional de Procedimientos|\bCNPP\b', 'Código Nacional de Procedimientos Penales.md'),
+    (r'Procedimientos Penales|\bCNPP\b', 'Código Nacional de Procedimientos Penales.md'),
     (r'Morelos', 'Código PENALEM.md'),
     (r'Quer[ée]taro', None),
 ]
@@ -228,8 +233,10 @@ def gold_refs(question: str, components: list[dict]) -> list[list[dict]]:
                 groups.append(g)
     for g in groups:
         for x in g:
-            short = next((k for k, v in (('CDMX', 'Ciudad'), ('CPEM', 'Estado de M'), ('CPF', 'Federal'),
-                                         ('CNPP', 'Nacional'), ('Morelos', 'PENALEM')) if x['source'] and v in x['source']),
+            short = next((k for k, v in (('CNPCF', 'Civiles y Familiares'), ('CFM', 'CFAMILIAREM'),
+                                         ('CPFM', 'CPROFAMEM'), ('CDMX', 'Ciudad'), ('CPEM', 'Estado de M'),
+                                         ('CPF', 'Federal'), ('CNPP', 'Procedimientos Penales'),
+                                         ('Morelos', 'PENALEM')) if x['source'] and v in x['source']),
                          'Querétaro' if x['source'] is None else '?')
             x['label'] = f"{short} {x['article']}"
     return groups
@@ -256,9 +263,16 @@ def resolve_gold(cur, table: str, groups: list[list[dict]]) -> list[list[dict]]:
             rx = _article_rx(x['article'])
             ids = [i for i, h, _ in cache[src] if rx.search(h or '')]
             if not ids:
+                # Documento sin chunk propio para ese artículo (p. ej. "ARTÍCULO *65.-" de Morelos,
+                # que el chunker no separa): primero el chunk donde el artículo EMPIEZA (encabezado
+                # de línea) y, solo si no hay, cualquier mención — una referencia cruzada como
+                # "…los artículos 65 y 737…" no debe contar como el artículo.
                 num = re.escape(x['article'].split()[0])
-                trx = re.compile(r'(?i)art[íi]culo\W{0,4}' + num + r'(?![0-9])')
-                ids = [i for i, _, t in cache[src] if trx.search(t or '')]
+                start = re.compile(r'(?im)^[\s#>*_]*art[íi]c?u?lo\s*\**\s*' + num + r'(?![0-9])')
+                ids = [i for i, _, t in cache[src] if start.search(t or '')]
+                if not ids:
+                    trx = re.compile(r'(?i)art[íi]culo\W{0,4}' + num + r'(?![0-9])')
+                    ids = [i for i, _, t in cache[src] if trx.search(t or '')]
             x['ids'] = ids
     return groups
 
