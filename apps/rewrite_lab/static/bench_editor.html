@@ -245,6 +245,7 @@ function fmt(d){
   const lines = ['{'];
   top.forEach((k, ti) => {
     const last = ti === top.length - 1;
+    if (k === 'questions' && Array.isArray(d.questions) && !d.questions.length){ lines.push('  "questions": []' + (last ? '' : ',')); return; }
     if (k === 'questions' && Array.isArray(d.questions)){
       lines.push('  "questions": [');
       d.questions.forEach((q, qi) => {

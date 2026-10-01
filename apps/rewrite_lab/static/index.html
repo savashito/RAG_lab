@@ -414,13 +414,13 @@
  <!-- Barra fija: set activo + sub-pestañas. Se queda arriba al hacer scroll. -->
  <div class="bbar">
    <div class="row" style="margin:0">
-     <label>Tema: <select id="bench-topic-filter"><option value="">todos</option></select></label>
-     <label>Set: <select id="bench-set" style="min-width:240px;max-width:420px"></select></label>
-     <details class="bmenu" id="bench-menu"><summary class="ghostbtn">⋯ Set</summary>
+     <label>Tema: <select id="bench-topic-filter" style="max-width:170px"><option value="">todos</option></select></label>
+     <label>Set: <select id="bench-set" style="min-width:200px;max-width:330px"></select></label>
+     <button class="ghost" id="bench-new-set" title="Crear un set de preguntas nuevo">➕ Nuevo set</button>
+     <button class="ghost" id="bench-json-editor" title="Editar todas las preguntas del set como JSON, con colores y vista previa">📝 Editar JSON</button>
+     <details class="bmenu" id="bench-menu"><summary class="ghostbtn" title="Más opciones del set">⚙️ Más ▾</summary>
        <div class="bmenu-items">
-         <button class="ghost" id="bench-new-set">➕ Nuevo set</button>
-         <button class="ghost" id="bench-edit-set">✏️ Editar / borrar set</button>
-         <button class="ghost" id="bench-json-editor">📝 Editar JSON del set (editor con colores)</button>
+         <button class="ghost" id="bench-edit-set">✏️ Renombrar / cambiar tema / borrar set</button>
          <button class="ghost" id="bench-export">⬇ Exportar JSON</button>
          <button class="ghost" id="bench-import-btn">⬆ Importar JSON (crea un set nuevo)</button>
          <button class="ghost" id="bench-backup" title="Guarda un snapshot del set en el object store">💾 Respaldar en MinIO</button>
@@ -495,7 +495,9 @@
    <label class="f">Nombre del set</label><input type="text" id="bench-set-name" style="width:100%;box-sizing:border-box">
    <label class="f">Tema (las preguntas se responden buscando solo en este tema)</label><select id="bench-set-topic"></select>
    <label class="f">Descripción</label><textarea id="bench-set-desc" style="min-height:60px"></textarea>
-   <div class="row"><button id="bench-set-save">Guardar</button><button class="ghost" id="bench-set-cancel">Cancelar</button>
+   <div class="row"><button id="bench-set-save">Guardar</button>
+     <button id="bench-set-save-json" class="ghost" title="Guarda el set y abre el editor JSON para escribir sus preguntas">📝 Guardar y editar JSON</button>
+     <button class="ghost" id="bench-set-cancel">Cancelar</button>
      <span style="flex:1"></span><button class="danger" id="bench-set-delete">🗑 Borrar set</button></div>
  </div></div>
 

@@ -46,17 +46,18 @@ async function benchInit(){
     $('bench-topic-filter').addEventListener('change', ()=>renderSetOptions());
     // Menú ⋯: cada acción cierra el menú.
     const menu = (id, fn) => $(id).addEventListener('click', ()=>{ $('bench-menu').open = false; fn(); });
-    menu('bench-new-set', ()=>openSetForm(null));
+    $('bench-new-set').addEventListener('click', ()=>openSetForm(null));
     menu('bench-edit-set', ()=>BENCH.set && openSetForm(BENCH.set));
     menu('bench-export', exportSet);
     menu('bench-import-btn', ()=>$('bench-import').click());
     menu('bench-backup', backupSet);
     const openEditor = () => { if(BENCH.set) location.href = '/benchmark/editor?set=' + BENCH.set.id; };
-    menu('bench-json-editor', openEditor);
+    $('bench-json-editor').addEventListener('click', openEditor);
     $('bench-json-editor2').addEventListener('click', openEditor);
     $('bench-import').addEventListener('change', importSet);
     $('bench-set-cancel').addEventListener('click', ()=>closeModal('bench-set-modal'));
-    $('bench-set-save').addEventListener('click', saveSet);
+    $('bench-set-save').addEventListener('click', ()=>saveSet(false));
+    $('bench-set-save-json').addEventListener('click', ()=>saveSet(true));
     $('bench-set-delete').addEventListener('click', deleteSet);
     $('bench-help-btn').addEventListener('click', ()=>openModal('bench-help'));
     $('bench-help-close').addEventListener('click', ()=>closeModal('bench-help'));
@@ -127,6 +128,7 @@ async function loadBenchSet(id){
   $('bench-detail').innerHTML = '';
   $('bench-compare-out').innerHTML = '<p class="muted">Marca dos o más corridas en «▶ Correr y resultados» y pulsa «📊 Comparar marcadas».</p>';
   $('bench-ccount').hidden = true;
+  $('bench-json-editor').disabled = !id;
   if(!id){ BENCH.set=null; $('bench-questions').innerHTML='<p class="muted">Crea un set para empezar (menú ⋯ Set).</p>';
     $('bench-qcount').textContent=''; $('bench-runs').innerHTML=''; return; }
   try{ BENCH.set = await bjson('/api/bench/sets/'+id); }catch(e){ bmsg(esc(e.message), false); return; }
@@ -146,13 +148,14 @@ function openSetForm(s){
   openModal('bench-set-modal');
   $('bench-set-name').focus();
 }
-async function saveSet(){
+async function saveSet(thenEditJson){
   const body = {name:$('bench-set-name').value, topic:$('bench-set-topic').value, description:$('bench-set-desc').value};
   try{
     let id;
     if(BENCH.editingSet){ id = BENCH.editingSet.id; await bpost('/api/bench/sets/'+id, body); }
     else id = (await bpost('/api/bench/sets', body)).id;
     closeModal('bench-set-modal');
+    if(thenEditJson){ location.href = '/benchmark/editor?set=' + id; return; }
     bmsg('Set guardado.');
     await loadBenchSets(id);
   }catch(e){ bmsg(esc(e.message), false); }
