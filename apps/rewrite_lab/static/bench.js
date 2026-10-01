@@ -26,6 +26,20 @@ const pct = v => v==null ? '—' : (100*v).toFixed(0)+'%';
 function scoreColor(v){ if(v==null) return '#374151'; if(v>=.85) return '#166534'; if(v>=.6) return '#3f6212'; if(v>=.35) return '#854d0e'; return '#7f1d1d'; }
 const topicLabel = t => ((window.__topics||[]).find(x=>x.topic===t)||{}).label || t;
 const isGap = notes => /HUECO/i.test(notes||'');
+// Dificultad (criterio en la ayuda «¿Cómo se califica?»).
+const DIFFS = [['facil','Fácil'], ['mediano','Mediano'], ['dificil','Difícil']];
+const diffLabel = d => (DIFFS.find(x=>x[0]===d)||[])[1] || '';
+const diffTag = d => d ? `<span class="tag d-${d}" title="Dificultad">${diffLabel(d)}</span>` : '';
+const qDiff = qid => ((BENCH.set && BENCH.set.questions.find(q=>q.id===qid)) || {}).difficulty || '';
+// Score medio y % que pasa por dificultad, sobre los resultados sin error.
+function diffStats(results){
+  const out = {};
+  for(const [d] of DIFFS){
+    const rs = results.filter(x=>!x.error && qDiff(x.question_id)===d);
+    out[d] = rs.length ? {n: rs.length, score: rs.reduce((a,x)=>a+x.score,0)/rs.length, pass: rs.filter(x=>x.passed).length/rs.length} : null;
+  }
+  return out;
+}
 // notes de la pregunta (del set actual) por id — los resultados no las traen.
 const qNotes = qid => ((BENCH.set && BENCH.set.questions.find(q=>q.id===qid)) || {}).notes || '';
 
@@ -221,6 +235,7 @@ function renderQuestions(){
   const shown = all.map((q,i)=>({q,i})).filter(({q})=>{
     if(f==='hueco' && !isGap(q.notes)) return false;
     if(f==='nocomp' && q.components.length) return false;
+    if(f.startsWith('dif:') && (q.difficulty||'') !== f.slice(4)) return false;
     if(!term) return true;
     return [q.question, q.expected_answer, q.notes, ...q.components.map(c=>c.text)].join(' ').toLowerCase().includes(term);
   });
@@ -228,6 +243,7 @@ function renderQuestions(){
     (shown.length ? shown.map(({q,i})=>`
     <details class="bq" data-qid="${q.id}" ${BENCH.open.has(q.id)?'open':''} ontoggle="benchQToggle(this)">
       <summary><span class="muted">#${i+1}</span><span class="qt">${esc(q.question)}</span>
+        ${diffTag(q.difficulty)}
         ${isGap(q.notes)?'<span class="tag gap" title="Exhibe un hueco del corpus">HUECO CORPUS</span>':''}
         ${q.components.length ? compCounts(q.components)
           : (q.expected_answer ? '<span class="cnt">vs. referencia</span>' : '<span class="cnt" style="color:#f87171">sin criterios</span>')}
@@ -270,6 +286,7 @@ function openQForm(qid){
   $('bq-question').value = q ? q.question : '';
   $('bq-expected').value = q ? (q.expected_answer||'') : '';
   $('bq-notes').value = q ? (q.notes||'') : '';
+  $('bq-difficulty').value = q ? (q.difficulty||'') : '';
   $('bq-comps').innerHTML = '';
   (q && q.components.length ? q.components : [null]).forEach(c=>addCompRow(c));
   openModal('bench-q-modal');
@@ -281,7 +298,7 @@ async function saveQ(){
     kind: r.querySelector('.ck').value, text: r.querySelector('.ct').value.trim(),
     weight: parseFloat(r.querySelector('.cw').value)||1})).filter(c=>c.text);
   const body = {question:$('bq-question').value, expected_answer:$('bq-expected').value,
-                notes:$('bq-notes').value, components};
+                notes:$('bq-notes').value, difficulty:$('bq-difficulty').value, components};
   try{
     if(BENCH.editingQ) await bpost('/api/bench/questions/'+BENCH.editingQ.id, body);
     else await bpost(`/api/bench/sets/${BENCH.set.id}/questions`, body);
@@ -379,6 +396,9 @@ const DFILTERS = [
   ['pass', '✅ Pasan', x=>!x.error && x.passed],
   ['viol', '⚠️ Con violación', x=>x.violations>0],
   ['gap', 'HUECO CORPUS', x=>isGap(qNotes(x.question_id))],
+  ['facil', 'Fácil', x=>qDiff(x.question_id)==='facil'],
+  ['mediano', 'Mediano', x=>qDiff(x.question_id)==='mediano'],
+  ['dificil', 'Difícil', x=>qDiff(x.question_id)==='dificil'],
   ['err', 'Errores', x=>!!x.error],
 ];
 async function showBenchRun(rid, quiet){
@@ -413,6 +433,9 @@ function renderBenchDetail(){
       ${card('preguntas que pasan', pct(m.pass_rate), `${nPass} de ${r.results.length}`)}
       ${card('cobertura de must', pct(m.must_coverage))}
       ${card('violaciones must_not', m.violations??'—')}
+      ${(()=>{ const ds = diffStats(r.results); if(!DIFFS.some(([d])=>ds[d])) return '';
+        return `<div class="card"><h3>score por dificultad</h3>${DIFFS.map(([d,l])=>ds[d]
+          ? `<div class="m"><span>${diffTag(d)} <span class="muted" style="font-size:11px">${ds[d].n}</span></span><b>${pct(ds[d].score)}</b></div>` : '').join('')}</div>`; })()}
     </div>
     <div class="fchips">${DFILTERS.map(([k,label,fn])=>{ const n = r.results.filter(fn).length;
         return (k==='all'||n) ? `<button class="${k===BENCH.dfilter?'active':''}" onclick="BENCH.dfilter='${k}';renderBenchDetail()">${label} <span class="pill">${n}</span></button>` : ''; }).join('')}
@@ -425,7 +448,7 @@ function renderBenchDetail(){
     <table><tr><th>#</th><th>pregunta</th><th>score</th><th>pasa</th><th title="must/should no presentes (✗ ausente · ◐ parcial · · should) y must_not que aparecieron (⚠️)">qué faltó / qué sobró</th><th>s</th></tr>`+
     (rows.length ? rows.map(x=>{ const miss = missesOf(x); return `<tr class="clk" onclick="toggleBenchAnswer(${r.id}, ${x.question_id}, this)">
       <td>${x.position+1}</td>
-      <td>${esc(x.question)}${isGap(qNotes(x.question_id))?' <span class="tag gap">HUECO</span>':''}</td>
+      <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))}${isGap(qNotes(x.question_id))?' <span class="tag gap">HUECO</span>':''}</td>
       <td class="sc" style="background:${x.error?'#374151':scoreColor(x.score)}">${x.error?'err':pct(x.score)}</td>
       <td class="sc">${x.error?'—':(x.passed?'✅':'❌')}</td>
       <td>${x.error?`<span style="color:#f87171">${esc(x.error)}</span>`
@@ -503,6 +526,8 @@ function renderCompare(){
     <table><tr><th>pregunta</th>${runs.map(r=>`<th>#${r.id} ${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
     <tr><td><b>score medio</b></td>${runs.map(r=>`<td class="sc" style="background:${scoreColor((r.metrics||{}).score)}">${pct((r.metrics||{}).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
-    ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}`+
-    rows.map(q=>`<tr><td>${esc(q.question)}${isGap(qNotes(q.question_id))?' <span class="tag gap">HUECO</span>':''}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';
+    ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}
+    ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(r.results)[d]); if(!st.some(Boolean)) return '';
+      return `<tr><td><b>score ${diffTag(d)}</b></td>${st.map(x=>`<td class="sc" style="background:${scoreColor(x&&x.score)}">${x?pct(x.score):'—'}</td>`).join('')}${two?'<td></td>':''}</tr>`; }).join('')}`+
+    rows.map(q=>`<tr><td>${esc(q.question)} ${diffTag(qDiff(q.question_id))}${isGap(qNotes(q.question_id))?' <span class="tag gap">HUECO</span>':''}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';
 }

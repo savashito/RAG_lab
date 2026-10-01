@@ -165,6 +165,8 @@
  .cnt b{color:#c7cdd6;font-weight:600}
  .tag{font-size:11px;border-radius:6px;padding:1px 7px;white-space:nowrap}
  .tag.gap{background:#3b2a06;color:#fcd34d;border:1px solid #854d0e}
+ .tag.d-facil{background:#14532d;color:#bbf7d0} .tag.d-mediano{background:#713f12;color:#fde68a}
+ .tag.d-dificil{background:#4c1d95;color:#ddd6fe}
  .fchips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
  .fchips button{background:#171a21;border:1px solid #2a2f3a;color:#c7cdd6;padding:5px 11px;font-size:12px;font-weight:600}
  .fchips button.active{background:#1e3a5f;border-color:#3b82f6;color:#fff}
@@ -476,6 +478,8 @@
      <select id="bench-qfilter">
        <option value="">todas</option><option value="hueco">solo HUECO CORPUS</option>
        <option value="nocomp">sin componentes</option>
+       <option value="dif:facil">dificultad: Fácil</option><option value="dif:mediano">dificultad: Mediano</option>
+       <option value="dif:dificil">dificultad: Difícil</option><option value="dif:">sin dificultad</option>
      </select>
      <button class="ghost" id="bench-expand-all">↕ Expandir todo</button>
      <button class="ghost" id="bench-json-editor2" title="Editar todas las preguntas como JSON, con resaltado y vista previa">📝 Editor JSON</button>
@@ -504,6 +508,13 @@
  <div class="bmodal" id="bench-q-modal" hidden><div class="bmodal-box wide">
    <h3 id="bq-title">Pregunta</h3>
    <label class="f">Pregunta</label><textarea id="bq-question" style="min-height:60px"></textarea>
+   <label class="f">Dificultad</label>
+   <select id="bq-difficulty">
+     <option value="">— sin asignar —</option>
+     <option value="facil">Fácil — pregunta directa sobre un artículo o caso específico bien definido</option>
+     <option value="mediano">Mediano — definición, clasificación o explicación de un tema específico</option>
+     <option value="dificil">Difícil — analogía y análisis de varias legislaciones de un mismo tema</option>
+   </select>
    <label class="f">Respuesta esperada / de referencia (el juez la usa para interpretar los componentes)</label>
    <textarea id="bq-expected" style="min-height:90px"></textarea>
    <label class="f">Componentes que la respuesta debe (o no debe) contener</label>
@@ -525,6 +536,12 @@
    </ul>
    <p><b>score</b> = (Σ peso·valor de must/should − Σ peso·valor de must_not) / Σ peso de must/should, con presente=1, parcial=0.5, ausente=0.<br>
      <b>pasa</b> = todos los must presentes y ningún must_not presente. <b>cobertura de must</b> = % de must presentes en todo el set.</p>
+   <p><b>Dificultad de cada pregunta</b> (sirve para ver el score por nivel en los resultados y en la comparación):</p>
+   <ul>
+     <li><span class="tag d-facil">Fácil</span> pregunta directa sobre un artículo o caso específico bien definido de la ley (p. ej. «¿cuál es el plazo máximo de la prisión preventiva?»).</li>
+     <li><span class="tag d-mediano">Mediano</span> definición, clasificación o explicación de un tema específico (p. ej. «¿qué es la tentativa punible?», «diferencia entre dato, medio de prueba y prueba»).</li>
+     <li><span class="tag d-dificil">Difícil</span> analogía y análisis de varias legislaciones sobre un mismo tema (p. ej. «compara el estupro en CDMX, Estado de México y Querétaro»).</li>
+   </ul>
    <p>Colores de los componentes en resultados: <span class="comp must good">bien</span> <span class="comp must half">parcial</span>
      <span class="comp must bad">mal</span> <span class="comp must unk">sin veredicto</span> (en must_not, «presente» es rojo).</p>
    <p class="muted" id="bench-storage" style="font-size:12px"></p>

@@ -595,6 +595,17 @@ q('¿Cuál es la diferencia entre dato de prueba, medio de prueba y prueba, y qu
 
 assert len(Q) == 50, len(Q)
 
+# Dificultad (criterio del usuario):
+#   dificil — analogía y análisis de varias legislaciones de un mismo tema
+#   mediano — definición, clasificación y explicación de un tema específico
+#   facil   — pregunta directa en base a la ley sobre un artículo o caso específico bien definido
+DIFICIL = {1, 2, 10, 13, 16, 17, 18, 20, 21, 25, 32, 38}
+MEDIANO = {6, 8, 24, 29, 31, 33, 34, 35, 36, 37, 39, 44, 45, 50}
+for n, item in enumerate(Q, 1):
+    level = 'dificil' if n in DIFICIL else 'mediano' if n in MEDIANO else 'facil'
+    Q[n - 1] = {'question': item['question'], 'difficulty': level,
+                **{k: v for k, v in item.items() if k != 'question'}}
+
 OUT = Path(__file__).with_name('penal_mx_50.json')
 OUT.write_text(json.dumps({
     'format': 'rag-lab-bench/v1',

@@ -66,6 +66,9 @@
  .cm-kind-should{color:#e5e7eb!important;background:rgba(156,163,175,.2);border-radius:4px;font-weight:700}
  .cm-kind-mustnot{color:#fecaca!important;background:rgba(239,68,68,.24);border-radius:4px;font-weight:700}
  .cm-qkey{color:#86efac!important;font-weight:700}
+ .cm-diff-facil{color:#bbf7d0!important;background:rgba(22,163,74,.22);border-radius:4px;font-weight:700}
+ .cm-diff-mediano{color:#fde68a!important;background:rgba(202,138,4,.22);border-radius:4px;font-weight:700}
+ .cm-diff-dificil{color:#ddd6fe!important;background:rgba(124,58,237,.28);border-radius:4px;font-weight:700}
  .cm-idval{color:#64748b!important}
  .err-line{background:rgba(239,68,68,.13)}
  .err-mark{color:var(--err);font-size:11px;padding-left:2px;cursor:help}
@@ -90,6 +93,8 @@
  .badge{font-size:11px;border-radius:6px;padding:0 6px;white-space:nowrap}
  .badge.new{background:#14532d;color:#bbf7d0} .badge.id{color:#64748b;border:1px solid var(--line)}
  .badge.gap{background:#3b2a06;color:#fcd34d;border:1px solid #854d0e}
+ .badge.d-facil{background:#14532d;color:#bbf7d0} .badge.d-mediano{background:#713f12;color:#fde68a}
+ .badge.d-dificil{background:#4c1d95;color:#ddd6fe} .badge.d-none{color:#fbbf24;border:1px dashed #854d0e}
  .ref{color:var(--muted);font-size:12.5px;margin:6px 0 0;white-space:pre-wrap}
  .comps{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
  .note{color:var(--muted);font-size:12px;margin-top:6px}
@@ -146,6 +151,11 @@
       <ul>
         <li><code>"topic"</code> es el <b>id</b> del tema (p. ej. <code>derecho_penal_mexicano</code>): las preguntas se responden buscando sólo en él.</li>
         <li>Cada pregunta lleva <code>"question"</code> (obligatorio), <code>"expected_answer"</code> (la respuesta de referencia que ve el juez), <code>"notes"</code> (no se mandan al juez; <code>HUECO CORPUS</code> marca huecos del corpus) y <code>"components"</code>.</li>
+        <li><code>"difficulty"</code>: dificultad de la pregunta, uno de
+          <span class="badge d-facil">"facil"</span> pregunta directa sobre un artículo o caso específico bien definido de la ley ·
+          <span class="badge d-mediano">"mediano"</span> definición, clasificación o explicación de un tema específico ·
+          <span class="badge d-dificil">"dificil"</span> analogía y análisis de varias legislaciones sobre un mismo tema.
+          Sirve para ver el score por nivel en los resultados.</li>
         <li><code>"id"</code>: <b>no lo cambies</b>. Identifica la pregunta para actualizarla en su lugar y que las corridas sigan siendo comparables. Las preguntas nuevas van <b>sin</b> <code>id</code>; si borras una pregunta del JSON, se borra del set (te lo confirmo antes).</li>
         <li><code>"kind"</code> del componente:
           <span class="chip must"><span class="k">must</span>obligatorio</span>
@@ -157,6 +167,7 @@
       <h3>Plantilla</h3>
 <pre>{
   "question": "¿…?",
+  "difficulty": "mediano",
   "expected_answer": "Art. … : …",
   "notes": "",
   "components": [
@@ -187,6 +198,10 @@
 const $ = id => document.getElementById(id);
 const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KINDS = ['must', 'should', 'must_not'];
+const DIFFS = {facil: 'Fácil', mediano: 'Mediano', dificil: 'Difícil'};
+const DIFF_ALIASES = {'facil':'facil','fácil':'facil','easy':'facil','mediano':'mediano','medio':'mediano','media':'mediano',
+                      'medium':'mediano','dificil':'dificil','difícil':'dificil','hard':'dificil'};
+const normDiff = v => (v == null || !String(v).trim()) ? null : (DIFF_ALIASES[String(v).trim().toLowerCase()] || false);
 const S = {setId: null, saved: '', topics: [], canEdit: true, data: null, ranges: [], errors: [], curQ: -1, marks: []};
 
 // ── Editor ──────────────────────────────────────────────────────────────────────
@@ -199,6 +214,9 @@ CodeMirror.defineMode('benchjson', (config) => CodeMirror.overlayMode(
       if (stream.match(/^"must"/)) return 'kind-must';
       if (stream.match(/^"should"/)) return 'kind-should';
       if (stream.match(/^"question"(?=\s*:)/)) return 'qkey';
+      if (stream.match(/^"facil"/)) return 'diff-facil';
+      if (stream.match(/^"mediano"/)) return 'diff-mediano';
+      if (stream.match(/^"dificil"/)) return 'diff-dificil';
       if (stream.match(/^"id"\s*:\s*\d+/)) return 'idval';
       if (stream.match(/^"(?:[^"\\]|\\.)*"/)) return null;   // salta strings completos
       stream.next(); return null;
@@ -236,7 +254,7 @@ function locate(text){
 const lineOf = off => cm.posFromIndex(off).line;
 
 // ── Formateo: una pregunta por bloque, un componente por línea ─────────────────
-const Q_ORDER = ['id', 'question', 'expected_answer', 'notes', 'components'];
+const Q_ORDER = ['id', 'question', 'difficulty', 'expected_answer', 'notes', 'components'];
 const C_ORDER = ['kind', 'text', 'weight'];
 const ordered = (obj, order) => [...order.filter(k => k in obj), ...Object.keys(obj).filter(k => !order.includes(k))];
 function fmt(d){
@@ -305,6 +323,9 @@ function validate(text){
       else if (ids.has(q.id)) add(P + '.id', `${W}: "id": ${q.id} está repetido (¿copiaste una pregunta? quítale el id a la copia).`);
       ids.add(q.id);
     }
+    const dn = normDiff(q.difficulty);
+    if (dn === false) add(P + '.difficulty', `${W}: "difficulty" debe ser "facil", "mediano" o "dificil" (vino ${JSON.stringify(q.difficulty)}).`);
+    else if (dn === null) add(P + '.question', `${W}: sin "difficulty" (facil / mediano / dificil).`, true);
     const comps = q.components == null ? [] : q.components;
     if (!Array.isArray(comps)){ add(P + '.components', `${W}: "components" debe ser una lista.`); return; }
     comps.forEach((c, ci) => {
@@ -363,6 +384,8 @@ function refresh(){
     `<span class="chip must"><span class="k">must</span>${n('must')}</span>`,
     `<span class="chip should"><span class="k">should</span>${n('should')}</span>`,
     `<span class="chip must_not"><span class="k">must not</span>${n('must_not')}</span>`,
+    Object.entries(DIFFS).map(([d, l]) => `<span class="badge d-${d}">${l} ${qs.filter(q => normDiff(q.difficulty) === d).length}</span>`).join(' '),
+    qs.some(q => !normDiff(q.difficulty)) ? `<span class="badge d-none">sin dificultad ${qs.filter(q => !normDiff(q.difficulty)).length}</span>` : '',
     nNew ? `<span class="st-ok">+${nNew} nueva${nNew > 1 ? 's' : ''}</span>` : '',
     nDel ? `<span class="st-err">−${nDel} se borrará${nDel > 1 ? 'n' : ''}</span>` : '',
     '<span class="spacer"></span>',
@@ -386,6 +409,7 @@ function renderPreview(d, errs){
       const ref = String(q.expected_answer || '');
       return `<div class="qcard ${i === S.curQ ? 'cur' : ''} ${errQ.has(i) ? 'has-err' : ''}" data-q="${i}">
         <div class="qhead"><span class="n">#${i + 1}</span><span class="t">${esc(q.question || '(pregunta vacía)')}</span>
+          ${(() => { const d = normDiff(q.difficulty); return d ? `<span class="badge d-${d}">${DIFFS[d]}</span>` : '<span class="badge d-none">sin dificultad</span>'; })()}
           ${/HUECO/i.test(q.notes || '') ? '<span class="badge gap">HUECO</span>' : ''}
           ${q.id == null ? '<span class="badge new">nueva</span>' : `<span class="badge id">id ${esc(q.id)}</span>`}</div>
         ${ref ? `<div class="ref">🎯 ${esc(ref.length > 260 ? ref.slice(0, 260) + '…' : ref)}</div>` : ''}
@@ -439,7 +463,7 @@ function formatDoc(){
 $('btnFmt').onclick = formatDoc;
 $('btnAddQ').onclick = () => {
   if (!S.data || !Array.isArray(S.data.questions)){ toast('Primero arregla los errores del JSON', true); return; }
-  S.data.questions.push({question: '¿…?', expected_answer: '', notes: '',
+  S.data.questions.push({question: '¿…?', difficulty: '', expected_answer: '', notes: '',
     components: [{kind: 'must', text: '…', weight: 2}, {kind: 'should', text: '…', weight: 1}, {kind: 'must_not', text: '…', weight: 1}]});
   cm.setValue(fmt(S.data)); refresh();
   const i = S.data.questions.length - 1;

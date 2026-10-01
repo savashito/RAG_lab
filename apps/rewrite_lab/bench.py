@@ -38,6 +38,21 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 KINDS = ('must', 'should', 'must_not')
+# Dificultad de la pregunta (criterio del set penal):
+#   facil   — pregunta directa sobre un artículo o caso específico bien definido de la ley
+#   mediano — definición, clasificación o explicación de un tema específico
+#   dificil — analogía y análisis de varias legislaciones sobre un mismo tema
+DIFFICULTIES = ('facil', 'mediano', 'dificil')
+_DIFF_ALIASES = {'facil': 'facil', 'fácil': 'facil', 'easy': 'facil',
+                 'mediano': 'mediano', 'medio': 'mediano', 'media': 'mediano', 'medium': 'mediano',
+                 'dificil': 'dificil', 'difícil': 'dificil', 'hard': 'dificil'}
+
+
+def norm_difficulty(v):
+    """'Fácil'/'medio'/'hard'… → id canónico; '' o None → None; desconocido → False."""
+    if v is None or not str(v).strip():
+        return None
+    return _DIFF_ALIASES.get(str(v).strip().lower(), False)
 VERDICT_VALUE = {'presente': 1.0, 'parcial': 0.5, 'ausente': 0.0}
 # Sinónimos que un modelo chico suele devolver en lugar del término pedido.
 _VERDICT_ALIASES = {
@@ -185,6 +200,8 @@ def validate_set_payload(payload, existing_ids=frozenset()) -> list[str]:
             elif qid in seen:
                 errs.append(f'{where}: "id": {qid} está repetido.')
             seen.add(qid)
+        if norm_difficulty(q.get('difficulty')) is False:
+            errs.append(f'{where}: "difficulty" debe ser "facil", "mediano" o "dificil" (vino {q.get("difficulty")!r}).')
         comps = q.get('components', [])
         if not isinstance(comps, list):
             errs.append(f'{where}: "components" debe ser una lista.')
@@ -217,6 +234,7 @@ CREATE TABLE IF NOT EXISTS bench_questions (
     position int NOT NULL DEFAULT 0, question text NOT NULL, expected_answer text, notes text,
     created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now());
 CREATE INDEX IF NOT EXISTS bench_questions_set ON bench_questions (set_id, position);
+ALTER TABLE bench_questions ADD COLUMN IF NOT EXISTS difficulty text;
 CREATE TABLE IF NOT EXISTS bench_components (
     id serial PRIMARY KEY, question_id int NOT NULL REFERENCES bench_questions(id) ON DELETE CASCADE,
     position int NOT NULL DEFAULT 0, text text NOT NULL,
@@ -293,9 +311,9 @@ class Bench:
             return None
         s = dict(zip(['id', 'name', 'topic', 'description', 'created_by', 'created_at', 'updated_at'], row))
         s['topic_label'] = self.topic_label(s['topic'])
-        cur.execute("SELECT id, position, question, expected_answer, notes FROM bench_questions "
+        cur.execute("SELECT id, position, question, expected_answer, notes, difficulty FROM bench_questions "
                     "WHERE set_id = %s ORDER BY position, id", (set_id,))
-        qs = [dict(zip(['id', 'position', 'question', 'expected_answer', 'notes'], r)) for r in cur.fetchall()]
+        qs = [dict(zip(['id', 'position', 'question', 'expected_answer', 'notes', 'difficulty'], r)) for r in cur.fetchall()]
         by_id = {q['id']: q for q in qs}
         for q in qs:
             q['components'] = []
@@ -334,10 +352,10 @@ class Bench:
             cur.execute("SELECT coalesce(max(position), -1) + 1 FROM bench_questions WHERE set_id = %s", (set_id,))
             position = cur.fetchone()[0]
         pos = position
-        cur.execute("INSERT INTO bench_questions (set_id, position, question, expected_answer, notes) "
-                    "VALUES (%s, %s, %s, %s, %s) RETURNING id",
+        cur.execute("INSERT INTO bench_questions (set_id, position, question, expected_answer, notes, difficulty) "
+                    "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
                     (set_id, pos, q['question'].strip(), (q.get('expected_answer') or '').strip() or None,
-                     (q.get('notes') or '').strip() or None))
+                     (q.get('notes') or '').strip() or None, norm_difficulty(q.get('difficulty')) or None))
         qid = cur.fetchone()[0]
         self._write_components(cur, qid, q.get('components'))
         cur.execute("UPDATE bench_sets SET updated_at = now() WHERE id = %s", (set_id,))
@@ -353,7 +371,8 @@ class Bench:
         pregunta (lo usa el editor JSON para actualizar en su lugar sin romper comparaciones)."""
         def q_out(q):
             d = {'id': q['id']} if with_ids else {}
-            d.update(question=q['question'], expected_answer=q.get('expected_answer') or '',
+            d.update(question=q['question'], difficulty=q.get('difficulty') or '',
+                     expected_answer=q.get('expected_answer') or '',
                      notes=q.get('notes') or '',
                      components=[{'kind': c['kind'], 'text': c['text'], 'weight': c['weight']}
                                  for c in q['components']])
@@ -387,15 +406,15 @@ class Bench:
                 self._insert_question(cur, sid, q, position=pos)
                 continue
             cur.execute("UPDATE bench_questions SET position = %s, question = %s, expected_answer = %s, notes = %s, "
-                        "updated_at = now() WHERE id = %s",
+                        "difficulty = %s, updated_at = now() WHERE id = %s",
                         (pos, q['question'].strip(), (q.get('expected_answer') or '').strip() or None,
-                         (q.get('notes') or '').strip() or None, q['id']))
+                         (q.get('notes') or '').strip() or None, norm_difficulty(q.get('difficulty')) or None, q['id']))
             self._write_components(cur, q['id'], q.get('components'))
         return plan
 
     def _q_changed(self, old: dict, new: dict) -> bool:
         norm = lambda q: (q['question'].strip(), (q.get('expected_answer') or '').strip(),  # noqa: E731
-                          (q.get('notes') or '').strip(),
+                          (q.get('notes') or '').strip(), norm_difficulty(q.get('difficulty')) or None,
                           [(c['kind'], c['text'].strip(), float(c.get('weight', 1))) for c in q.get('components') or []])
         return norm(old) != norm(new)
 
@@ -456,7 +475,8 @@ class Bench:
                        'score': 0.0, 'passed': False, 'must_total': 0, 'must_ok': 0, 'violations': 0,
                        'verdicts': [], 'seconds': None, 'error': None}
                 det = {'question_id': q['id'], 'question': q['question'],
-                       'expected_answer': q.get('expected_answer') or '', 'components': comps}
+                       'expected_answer': q.get('expected_answer') or '', 'difficulty': q.get('difficulty'),
+                       'components': comps}
                 try:
                     a = _retry(lambda: self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
@@ -677,9 +697,9 @@ class Bench:
                 if not self.can_edit_topic(self.current_email(req), row[0]):
                     return deny()
                 cur.execute("UPDATE bench_questions SET question = %s, expected_answer = %s, notes = %s, "
-                            "updated_at = now() WHERE id = %s",
+                            "difficulty = %s, updated_at = now() WHERE id = %s",
                             (b['question'].strip(), (b.get('expected_answer') or '').strip() or None,
-                             (b.get('notes') or '').strip() or None, qid))
+                             (b.get('notes') or '').strip() or None, norm_difficulty(b.get('difficulty')) or None, qid))
                 self._write_components(cur, qid, b.get('components'))
                 cur.execute("UPDATE bench_sets SET updated_at = now() WHERE id = %s", (row[1],))
                 c.commit()

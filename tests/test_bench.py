@@ -198,3 +198,22 @@ def test_validate_rejects_non_list_questions():
     from bench import validate_set_payload
     assert validate_set_payload(_payload(questions={}), set())[-1].startswith('"questions" debe ser una lista')
     assert validate_set_payload([], set()) == ['El JSON debe ser un objeto { … }.']
+
+
+# ── dificultad ───────────────────────────────────────────────────────────────────
+
+def test_norm_difficulty_aliases():
+    from bench import norm_difficulty
+    assert [norm_difficulty(x) for x in ('Fácil', 'facil', 'MEDIO', 'mediano', 'Difícil', 'hard')] == \
+        ['facil', 'facil', 'mediano', 'mediano', 'dificil', 'dificil']
+    assert norm_difficulty('') is None and norm_difficulty(None) is None
+    assert norm_difficulty('imposible') is False
+
+
+def test_validate_difficulty():
+    from bench import validate_set_payload
+    ok = _payload(questions=[{'question': 'q', 'difficulty': 'Difícil', 'expected_answer': 'r'},
+                             {'question': 'q2', 'expected_answer': 'r'}])          # sin dificultad: válido
+    assert validate_set_payload(ok, set()) == []
+    bad = _payload(questions=[{'question': 'q', 'difficulty': 'extrema', 'expected_answer': 'r'}])
+    assert '"difficulty" debe ser' in validate_set_payload(bad, set())[0]
