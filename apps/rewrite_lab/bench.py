@@ -676,6 +676,12 @@ class Bench:
                 qs = [q for q in s['questions'] if effective_components(q)]
                 if not qs:
                     raise ValueError('ninguna pregunta tiene componentes ni respuesta de referencia')
+                if cfg.get('question_ids'):   # corrida parcial: solo esas preguntas, en el orden del set
+                    want = set(cfg['question_ids'])
+                    qs = [q for q in qs if q['id'] in want]
+                    if not qs:
+                        raise ValueError('ninguna de las preguntas elegidas está en el set (o no tiene criterios)')
+                    cfg = dict(cfg, question_ids=[q['id'] for q in qs], set_total=len(s['questions']))
                 cfg = dict(cfg, system=(cfg.get('system') or '').strip() or self.system_for(s['topic']),
                            judge_model=self.judge_model())
                 cur.execute("INSERT INTO bench_runs (set_id, set_name, topic, label, config, n, created_by) "
@@ -969,6 +975,9 @@ class Bench:
                        'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
                        'system': b.get('system') or '',
                        'jurisdictions': b.get('jurisdictions') or []}
+                qids = [int(x) for x in (b.get('question_ids') or [])]
+                if qids:   # subconjunto («🎯 Qué preguntas correr»); `subset` describe el criterio
+                    cfg.update(question_ids=qids, subset=str(b.get('subset') or '')[:200])
                 rid = self.start_run(int(b.get('set_id')), cfg, (b.get('label') or '').strip(), email)
             except (RuntimeError, ValueError, TypeError) as e:
                 return bad(str(e))

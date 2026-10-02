@@ -176,6 +176,12 @@
  .miss{font-size:12px;color:#fca5a5} .miss li{margin:2px 0}
  tr.sel td{background:#131a26}
  .delta.up{color:#4ade80} .delta.down{color:#f87171}
+ /* 🎯 subconjunto de preguntas a correr */
+ .bss-list{max-height:280px;overflow:auto;border:1px solid #2a2f3a;border-radius:8px;background:#0b0d12;padding:4px 8px}
+ .bss-list label{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;border-bottom:1px solid #161a22;cursor:pointer}
+ .bss-list label:last-child{border-bottom:0}
+ .bss-list .qt{flex:1} .bss-list .sc{font-size:12px;min-width:44px;border-radius:4px}
+ #bench-subset[open]>summary{color:#e6e6e6}
  /* ✍️ revisión humana */
  .tag.rv-ok{background:#1e293b;color:#c7cdd6;border:1px solid #334155} .tag.rv-diff{background:#7f1d1d;color:#fecaca}
  .bmodal-box.xwide{max-width:1280px}
@@ -484,6 +490,36 @@
        <button id="bench-run">▶ Correr benchmark</button>
        <button class="danger" id="bench-cancel" style="display:none">■ Cancelar</button>
      </div>
+     <details id="bench-subset"><summary>🎯 Qué preguntas correr: <b id="bench-subset-sum">todas</b></summary>
+       <div class="bsubset">
+         <div class="row" style="margin:8px 0 4px">
+           <span class="muted">Dificultad:</span>
+           <label class="chk"><input type="checkbox" class="bss-diff" value="facil" checked> Fácil</label>
+           <label class="chk"><input type="checkbox" class="bss-diff" value="mediano" checked> Mediano</label>
+           <label class="chk"><input type="checkbox" class="bss-diff" value="dificil" checked> Difícil</label>
+           <label class="chk"><input type="checkbox" class="bss-diff" value="" checked> sin dificultad</label>
+         </div>
+         <div class="row" style="margin:4px 0">
+           <span class="muted">Según una corrida anterior:</span>
+           <select id="bss-crit">
+             <option value="">— cualquier resultado —</option>
+             <option value="fail">❌ no pasaron</option>
+             <option value="low">score menor a 70%</option>
+             <option value="viol">⚠️ con violación (must_not)</option>
+             <option value="noret">🔎 no trajo el artículo</option>
+             <option value="err">con error</option>
+           </select>
+           <span class="muted">en</span><select id="bss-run" style="max-width:340px"></select>
+         </div>
+         <div class="row" style="margin:4px 0">
+           <span class="muted" id="bss-count"></span><span style="flex:1"></span>
+           <button class="ghost" id="bss-all" title="Marca todas las que cumplen los filtros">☑ todas</button>
+           <button class="ghost" id="bss-none">☐ ninguna</button>
+           <button class="ghost" id="bss-reset" title="Vuelve a correr todo el set">↺ correr todo el set</button>
+         </div>
+         <div id="bss-list" class="bss-list"></div>
+       </div>
+     </details>
      <details><summary>⚙️ System prompt de la respuesta (por defecto, el del tema del set)</summary>
        <textarea id="bench-system" style="min-height:110px;margin-top:8px"></textarea></details>
      <div id="bench-progress"></div>

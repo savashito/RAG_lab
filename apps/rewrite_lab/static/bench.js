@@ -123,6 +123,17 @@ async function benchInit(){
     $('bq-save').addEventListener('click', saveQ);
     // Corridas
     $('bench-run').addEventListener('click', startBenchRun);
+    document.querySelectorAll('.bss-diff').forEach(c=>c.addEventListener('change', ()=>subsetChanged()));
+    $('bss-crit').addEventListener('change', ()=>subsetChanged());
+    $('bss-run').addEventListener('change', ()=>subsetChanged());
+    $('bss-all').addEventListener('click', ()=>{ BENCH.sub_manual = null; renderSubset(); });
+    $('bss-none').addEventListener('click', ()=>{ BENCH.sub_manual = new Set(); renderSubset(); });
+    $('bss-reset').addEventListener('click', resetSubset);
+    $('bss-list').addEventListener('change', e=>{
+      if(!e.target.classList.contains('bss-q')) return;
+      BENCH.sub_manual = new Set([...document.querySelectorAll('.bss-q:checked')].map(c=>+c.value));
+      renderSubset(false);
+    });
     $('bench-cancel').addEventListener('click', cancelBenchRun);
     $('bench-refresh').addEventListener('click', loadBenchRuns);
     $('bench-compare').addEventListener('click', compareBenchRuns);
@@ -188,6 +199,7 @@ async function loadBenchSet(id){
   const t = (window.__topics||[]).find(x=>x.topic===BENCH.set.topic);
   $('bench-system').value = (t && t.system_prompt) || '';
   renderQuestions();
+  resetSubset(true);
   await loadBenchRuns();
   // Primera carga: aplica lo que pedía la URL (vista, corrida abierta, corridas comparadas).
   const w = BENCH.want; BENCH.want = null;
@@ -372,6 +384,9 @@ async function startBenchRun(){
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
     rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked,
     system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
+  const sub = currentSubset();
+  if(!sub.ids.length){ bmsg('No hay preguntas seleccionadas en «🎯 Qué preguntas correr».', false); return; }
+  if(!sub.all){ body.question_ids = sub.ids; body.subset = sub.desc; }
   try{ const r = await bpost('/api/bench/run', body); watchBenchRun(r.run_id); loadBenchRuns(); }
   catch(e){ bmsg(esc(e.message), false); }
 }
@@ -408,7 +423,8 @@ function watchBenchRun(rid){
 function cfgSummary(c){
   c = c||{};
   return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'',
-          (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'']
+          (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'',
+          (c.question_ids||[]).length ? `🎯 ${c.question_ids.length}${c.set_total?'/'+c.set_total:''} preg.${c.subset?' ('+c.subset+')':''}` : '']
     .filter(Boolean).join(' · ');
 }
 async function loadBenchRuns(){
@@ -434,6 +450,7 @@ async function loadBenchRuns(){
       <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id}, ${r.reviewed||0})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
     : '<p class="muted">Aún no hay corridas de este set. Configura arriba y pulsa ▶ Correr benchmark.</p>';
   syncCompareTab();
+  fillSubsetRuns();
 }
 async function deleteBenchRun(rid, reviewed){
   if(!confirm(`¿Borrar la corrida #${rid} (y su artefacto)?` + (reviewed ? `\n\n⚠️ Tiene ${reviewed} preguntas con revisión humana: también se borrarán.` : ''))) return;
@@ -441,6 +458,106 @@ async function deleteBenchRun(rid, reviewed){
     if(BENCH.detail && BENCH.detail.id===rid){ BENCH.detail=null; $('bench-detail').innerHTML=''; benchUrlSync(); }
     loadBenchRuns(); }
   catch(e){ bmsg(esc(e.message), false); }
+}
+
+// ── 🎯 Qué preguntas correr ─────────────────────────────────────────────────────
+// Filtros (dificultad ∧ resultado en una corrida anterior) proponen una selección; las casillas
+// de la lista permiten ajustarla a mano (BENCH.sub_manual). Cambiar un filtro descarta lo manual.
+const SUB_CRITS = {
+  fail: ['no pasaron', x=>!x.error && !x.passed],
+  low: ['score < 70%', x=>!x.error && x.score < .7],
+  viol: ['con violación', x=>x.violations>0],
+  noret: ['🔎 no trajo el artículo', x=>!x.error && x.retrieval && x.retrieval.hit < x.retrieval.attainable],
+  err: ['con error', x=>!!x.error],
+};
+BENCH.sub_runs = {};   // id → resultados de corridas usadas como filtro (caché)
+function fillSubsetRuns(){
+  const sel = $('bss-run'), prev = sel.value;
+  const done = (BENCH.runs||[]).filter(r=>r.status!=='running' && r.done);
+  sel.innerHTML = done.length ? done.map(r=>`<option value="${r.id}">#${r.id} ${esc(r.label||'')} · ${pct((r.metrics||{}).score)}${(r.config||{}).question_ids?' · parcial':''}</option>`).join('')
+                              : '<option value="">(aún no hay corridas)</option>';
+  if(prev && done.some(r=>String(r.id)===prev)) sel.value = prev;
+  $('bss-crit').disabled = !done.length;
+}
+function resetSubset(quiet){
+  document.querySelectorAll('.bss-diff').forEach(c=>{ c.checked = true; });
+  $('bss-crit').value = ''; BENCH.sub_manual = null;
+  if(!quiet) $('bench-subset').open = false;
+  renderSubset();
+}
+async function subsetChanged(){
+  BENCH.sub_manual = null;
+  const rid = $('bss-run').value;
+  if($('bss-crit').value && rid && !BENCH.sub_runs[rid]){
+    $('bss-count').textContent = 'cargando la corrida…';
+    try{ BENCH.sub_runs[rid] = (await bjson('/api/bench/runs/'+rid)).results; }
+    catch(e){ bmsg(esc(e.message), false); return; }
+  }
+  renderSubset();
+}
+// Preguntas que proponen los filtros → [{q, res}] (res = su resultado en la corrida filtro).
+function subsetCandidates(){
+  if(!BENCH.set) return [];
+  const diffs = new Set([...document.querySelectorAll('.bss-diff:checked')].map(c=>c.value));
+  const crit = $('bss-crit').value, rid = $('bss-run').value, res = BENCH.sub_runs[rid];
+  return BENCH.set.questions.filter(q=>q.components.length || q.expected_answer).map(q=>{
+    const x = res ? res.find(y=>y.question_id===q.id) : null;
+    return {q, x};
+  }).filter(({q, x})=>{
+    if(!diffs.has(q.difficulty||'')) return false;
+    if(crit && res) return x && SUB_CRITS[crit][1](x);
+    return true;
+  });
+}
+function currentSubset(){
+  const runnable = BENCH.set ? BENCH.set.questions.filter(q=>q.components.length || q.expected_answer) : [];
+  const cand = subsetCandidates();
+  const ids = BENCH.sub_manual ? runnable.map(q=>q.id).filter(id=>BENCH.sub_manual.has(id)) : cand.map(c=>c.q.id);
+  const all = ids.length === runnable.length;
+  const diffs = [...document.querySelectorAll('.bss-diff:checked')].map(c=>c.value);
+  const crit = $('bss-crit').value;
+  const parts = [];
+  const dname = d => d ? diffLabel(d) : 'sin dificultad asignada';
+  const excl = [...document.querySelectorAll('.bss-diff:not(:checked)')].map(c=>c.value);
+  if(excl.length) parts.push(!diffs.length ? 'ninguna dificultad' : excl.length <= 2 ? 'sin ' + excl.map(dname).join(' ni ') : 'solo ' + diffs.map(dname).join('+'));
+  if(crit && $('bss-run').value) parts.push(`${SUB_CRITS[crit][0]} en #${$('bss-run').value}`);
+  if(BENCH.sub_manual) parts.push('elegidas a mano');
+  return {ids, all, total: runnable.length, desc: parts.join(' · ')};
+}
+function renderSubset(rebuildList=true){
+  if(!BENCH.set){ $('bss-list').innerHTML = ''; return; }
+  const sub = currentSubset(), chosen = new Set(sub.ids);
+  $('bench-subset-sum').textContent = sub.all ? `todas (${sub.total})` : `${sub.ids.length} de ${sub.total}${sub.desc?' · '+sub.desc:''}`;
+  $('bench-subset-sum').style.color = sub.all ? '' : '#fbbf24';
+  $('bss-count').textContent = `Se correrán ${sub.ids.length} de ${sub.total} preguntas` +
+    (sub.ids.length && BENCH.runs && BENCH.runs[0] && (BENCH.runs[0].metrics||{}).avg_seconds ? ` · ~${Math.ceil(sub.ids.length*(BENCH.runs[0].metrics.avg_seconds)/60)} min` : '');
+  $('bench-run').textContent = sub.all ? '▶ Correr benchmark' : `▶ Correr ${sub.ids.length} preguntas`;
+  if(!rebuildList) return;
+  // La lista muestra lo que proponen los filtros (y lo elegido a mano), con su score en la corrida filtro.
+  const cand = subsetCandidates(), rid = $('bss-run').value, res = BENCH.sub_runs[rid];
+  const shown = BENCH.sub_manual ? BENCH.set.questions.filter(q=>q.components.length || q.expected_answer).map(q=>({q, x: res && res.find(y=>y.question_id===q.id)}))
+                                 : cand;
+  const pos = new Map(BENCH.set.questions.map((q,i)=>[q.id, i+1]));
+  $('bss-list').innerHTML = shown.length ? shown.map(({q, x})=>`<label><input type="checkbox" class="bss-q" value="${q.id}" ${chosen.has(q.id)?'checked':''}>
+      <span class="muted">#${pos.get(q.id)}</span><span class="qt">${esc(q.question)} ${diffTag(q.difficulty)}</span>
+      ${x ? `<span class="sc" style="background:${x.error?'#374151':scoreColor(x.score)}" title="score en #${rid}">${x.error?'err':pct(x.score)}</span>` : ''}</label>`).join('')
+    : '<p class="muted" style="font-size:12px">Ninguna pregunta cumple estos filtros.</p>';
+}
+// Atajo desde el detalle de una corrida: deja preparado «solo las que no pasaron aquí».
+async function rerunFailed(rid){
+  document.querySelectorAll('.bss-diff').forEach(c=>{ c.checked = true; });
+  $('bss-crit').value = 'fail'; $('bss-run').value = String(rid);
+  await subsetChanged();
+  const r = (BENCH.runs||[]).find(x=>x.id===rid);
+  if(r && r.config){   // misma configuración que esa corrida, para que la comparación sea justa
+    const c = r.config;
+    if([...$('bench-setting').options].some(o=>o.value===c.setting)) $('bench-setting').value = c.setting;
+    $('bench-k').value = String(c.k); $('bench-neighbors').checked = !!c.neighbors; $('bench-hyde').checked = !!c.hyde;
+    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose;
+  }
+  $('bench-subset').open = true;
+  $('bench-subset').scrollIntoView({behavior:'smooth', block:'center'});
+  bmsg(`Listo: ${currentSubset().ids.length} preguntas que no pasaron en #${rid}, con su misma configuración. Ajusta y pulsa ▶.`);
 }
 
 // ── Detalle de una corrida ──────────────────────────────────────────────────────
@@ -510,7 +627,8 @@ function renderBenchDetail(){
   const nPass = r.results.filter(x=>!x.error && x.passed).length;
   $('bench-detail').innerHTML = `<h2 style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">Corrida #${r.id} ${esc(r.label||'')}
       <span class="runcfg">${esc(cfgSummary(r.config))}</span>${r.status==='running'?`<span class="tag gap">en curso ${r.done}/${r.n}</span>`:''}
-      <span style="flex:1"></span>${r.results.some(x=>!x.error)?`<button onclick="openReview()" title="Califica tú las respuestas, componente por componente">✍️ Revisar respuestas</button>`:''}</h2>
+      <span style="flex:1"></span>${r.status!=='running' && r.results.some(x=>!x.passed)?`<button class="ghost" onclick="rerunFailed(${r.id})" title="Prepara una corrida solo con las preguntas que no pasaron aquí (no la arranca)">🎯 Re-correr las que no pasan</button>`:''}
+      ${r.results.some(x=>!x.error)?`<button onclick="openReview()" title="Califica tú las respuestas, componente por componente">✍️ Revisar respuestas</button>`:''}</h2>
     <div class="cards">
       ${card('score medio', pct(m.score))}
       ${card('preguntas que pasan', pct(m.pass_rate), `${nPass} de ${r.results.length}`)}
@@ -705,6 +823,16 @@ async function compareBenchRuns(){
   renderCompare();
   benchSub('compare');
 }
+// Mismas métricas que aggregate() de bench.py, sobre un subconjunto de resultados.
+function metricsOver(rs){
+  const ok = rs.filter(x=>!x.error), n = ok.length, mt = ok.reduce((a,x)=>a+(x.must_total||0),0);
+  const rr = ok.map(x=>x.retrieval).filter(r=>r && r.attainable);
+  const att = rr.reduce((a,r)=>a+r.attainable,0);
+  return {score: n ? ok.reduce((a,x)=>a+x.score,0)/n : null, pass_rate: n ? ok.filter(x=>x.passed).length/n : null,
+          must_coverage: mt ? ok.reduce((a,x)=>a+(x.must_ok||0),0)/mt : null,
+          violations: ok.reduce((a,x)=>a+(x.violations||0),0),
+          retrieval_recall: att ? rr.reduce((a,r)=>a+Math.min(r.hit,r.attainable),0)/att : null};
+}
 function renderCompare(){
   const runs = BENCH.cmp; if(!runs) return;
   // Filas = preguntas (por id, así una pregunta editada sigue alineada entre corridas y
@@ -715,8 +843,15 @@ function renderCompare(){
   const get = (r,q) => r.results.find(y=>qkey(y)===qkey(q));
   const two = runs.length===2;
   const delta = q => { const a=get(runs[0],q), b=get(runs[1],q); return (a&&b&&!a.error&&!b.error) ? b.score-a.score : null; };
+  // Si alguna corrida es parcial (🎯), los promedios de cada una no se refieren a las mismas
+  // preguntas: se recalculan solo sobre las preguntas que están en TODAS.
+  const idSets = runs.map(r=>new Set(r.results.map(qkey)));
+  const common = [...idSets[0]].filter(k=>idSets.every(st=>st.has(k)));
+  const partial = idSets.some(st=>st.size !== common.length);
+  const commonSet = new Set(common);
   let rows = qs;
-  if(BENCH.cmpOnlyDiff) rows = qs.filter(q=>{ const vals = runs.map(r=>{ const x=get(r,q); return x ? (x.error?'e':x.passed+':'+x.score.toFixed(2)) : '-'; });
+  if(partial) rows = rows.filter(q=>commonSet.has(qkey(q)));   // las que no están en todas no se pueden comparar
+  if(BENCH.cmpOnlyDiff) rows = rows.filter(q=>{ const vals = runs.map(r=>{ const x=get(r,q); return x ? (x.error?'e':x.passed+':'+x.score.toFixed(2)) : '-'; });
     return new Set(vals).size>1; });
   if(two && BENCH.cmpSort==='delta') rows = [...rows].sort((a,b)=>(delta(a)??0)-(delta(b)??0));
   const cell = (r,q) => { const x = get(r,q);
@@ -731,7 +866,9 @@ function renderCompare(){
     const mark = ch ? ' <span title="Los criterios de esta pregunta cambiaron entre corridas: el Δ no es comparable">⚙</span>' : '';
     if(d==null) return `<td class="sc muted">—${mark}</td>`;
     const s = Math.round(100*d); return `<td class="sc delta ${ch?'':s>0?'up':s<0?'down':''}">${s>0?'+':''}${s}${mark}</td>`; };
-  const mrow = (label, fn) => `<tr><td><b>${label}</b></td>${runs.map(r=>`<td class="sc">${fn(r.metrics||{})}</td>`).join('')}${two?'<td></td>':''}</tr>`;
+  const met = r => partial ? metricsOver(r.results.filter(x=>commonSet.has(qkey(x)))) : (r.metrics||{});
+  const resOf = r => partial ? r.results.filter(x=>commonSet.has(qkey(x))) : r.results;
+  const mrow = (label, fn) => `<tr><td><b>${label}</b></td>${runs.map(r=>`<td class="sc">${fn(met(r))}</td>`).join('')}${two?'<td></td>':''}</tr>`;
   $('bench-compare-out').innerHTML = `
     <div class="row" style="margin-top:0">
       <label class="chk"><input type="checkbox" ${BENCH.cmpOnlyDiff?'checked':''} onchange="BENCH.cmpOnlyDiff=this.checked;renderCompare()"> solo preguntas que cambian</label>
@@ -739,11 +876,12 @@ function renderCompare(){
         <option value="pos">orden del set</option><option value="delta" ${BENCH.cmpSort==='delta'?'selected':''}>más empeoradas primero</option></select>`:''}
       <span class="muted" style="font-size:12px">${rows.length} de ${qs.length} preguntas</span>
     </div>
+    ${partial ? `<p class="muted" style="font-size:12px;margin:4px 0;color:#fbbf24">🎯 Hay corridas parciales: se comparan solo las <b>${common.length}</b> preguntas que están en todas (promedios incluidos).</p>` : ''}
     <table><tr><th>pregunta</th>${runs.map(r=>`<th>#${r.id} ${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
-    <tr><td><b>score medio</b></td>${runs.map(r=>`<td class="sc" style="background:${scoreColor((r.metrics||{}).score)}">${pct((r.metrics||{}).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
+    <tr><td><b>score medio</b>${partial?` <span class="muted" style="font-size:11px">(${common.length} comunes)</span>`:''}</td>${runs.map(r=>`<td class="sc" style="background:${scoreColor(met(r).score)}">${pct(met(r).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
     ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}${mrow('🔎 artículos recuperados', m=>pct(m.retrieval_recall))}
-    ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(r.results)[d]); if(!st.some(Boolean)) return '';
+    ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(resOf(r))[d]); if(!st.some(Boolean)) return '';
       return `<tr><td><b>score ${diffTag(d)}</b></td>${st.map(x=>`<td class="sc" style="background:${scoreColor(x&&x.score)}">${x?pct(x.score):'—'}</td>`).join('')}${two?'<td></td>':''}</tr>`; }).join('')}`+
     rows.map(q=>`<tr><td>${esc(q.question)} ${diffTag(qDiff(q.question_id))}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';
 }
