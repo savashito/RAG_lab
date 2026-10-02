@@ -51,6 +51,7 @@ from shared.legal_chunking import (
     semantic_units,
     words,
 )
+from shared.chunk_diagnostics import diagnose_chunks
 from shared.tei_client import TEIClient
 
 # ── Esquema de la tabla de vectores (única fuente de verdad) ──────────────────────
@@ -403,6 +404,12 @@ def assert_model_compatible(cursor, table: str, tei: TEIClient, vectors: np.ndar
         )
 
 
+def chunk_rows(chunks: pd.DataFrame) -> list[dict]:
+    """Chunks del pipeline → filas para `diagnose_chunks` (mismo formato que en la BD)."""
+    return [{"title": r.title, "unit_type": r.unit_type, "part": r.part, "position": r.position,
+             "hierarchy": r.hierarchy, "text": r.text_for_embedding} for r in chunks.itertuples(index=False)]
+
+
 def _ingest_markdown(result: IngestResult, raw_md: str, *, table: str, tei: TEIClient,
                      connect_fn, clean_dir: str | Path, save_clean: bool,
                      dry_run: bool, progress: Progress) -> IngestResult:
@@ -431,6 +438,10 @@ def _ingest_markdown(result: IngestResult, raw_md: str, *, table: str, tei: TEIC
         if not chunks.empty:
             report["chunk_words_mean"] = int(chunks["words"].mean())
             report["chunk_words_max"] = int(chunks["words"].max())
+            # ¿Quedó bien partido y etiquetado? (artículos pegados, huecos en la numeración,
+            # encabezados repetidos…). Solo avisa; la UI lo muestra al terminar la ingesta.
+            diag = diagnose_chunks(chunk_rows(chunks))
+            report["diagnostics"] = {k: diag[k] for k in ("status", "checks", "stats")}
 
         if dry_run or chunks.empty:
             progress("done", "Listo (dry-run: sin insertar)." if dry_run else "Sin chunks.")

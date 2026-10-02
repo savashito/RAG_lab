@@ -50,8 +50,26 @@ HEADING_PAGE_RE = re.compile(r'^#{1,6}[ \t]+(?:\d+|[ivxlcdm]+)[ \t]*$', re.I)
 
 REMOVAL_REASONS = [
     'catalog_record', 'contents_table', 'repeated_heading', 'heading_page_marker',
-    'editorial_watermark', 'page_number', 'institutional_header',
+    'editorial_watermark', 'page_number', 'institutional_header', 'repeated_block',
 ]
+# Encabezado/pie de página en TEXTO normal (no '#'): el PDF reimprime en cada hoja un bloque
+# de varias líneas —p. ej. Morelos: "Código Penal para el Estado de Morelos" / "Consejería
+# Jurídica del Poder Ejecutivo…" / "Última Reforma: 02-09-2026" / "Aprobación … Vigencia …"—.
+# Una línea se descarta si (a) se repite idéntica ≥ BLOCK_MIN_REPEATS veces en el documento,
+# (b) es corta (3–40 palabras, no tabla, no inicio de artículo) y (c) su vecina no vacía de
+# arriba o de abajo también cumple (a)+(b). La condición (c) es la que protege al texto legal
+# que se repite suelto ("Este delito se perseguirá por querella."): el mobiliario de página
+# viene en BLOQUE, una frase de ley repetida no.
+BLOCK_MIN_REPEATS = 5
+# Nunca es mobiliario lo que EMPIEZA como texto jurídico, aunque se repita en bloque: los
+# transitorios de cada decreto ("SEGUNDA. El presente Decreto entrará en vigor…", "Artículo
+# Primero. La presente Ley…"), la estructura ("Capítulo Único Disposiciones Generales") y las
+# notas de reforma ("Artículo reformado DOF…", "REFORMA VIGENTE.-"). Medido en el corpus: sin
+# esta exclusión la regla de bloques borraba transitorios de Morelos/Querétaro y capítulos del CNPCF.
+_LEGAL_START_RE = re.compile(
+    r'(?i)^(?:art[íi]?c?u?lo\b|libro\b|subt[íi]tulo\b|t[íi]tulo\b|cap[íi]tulo\b|secci[óo]n\b|'
+    r'(?:primer|segund|tercer|cuart|quint|sext|s[ée]ptim|octav|noven|d[ée]cim|und[ée]cim|duod[ée]cim|[úu]nic)\w*\b|'
+    r'reforma\b|nota\b|notas\b|fe de erratas\b|transitori)')
 
 
 def normalize_line(line: str) -> str:
@@ -90,6 +108,34 @@ def line_noise_reason(plain: str) -> str | None:
     return None
 
 
+def _furniture_key(line: str) -> str:
+    return re.sub(r'^#+\s*', '', normalize_line(line))
+
+
+def _repeated_block_lines(lines: list[str], min_repeats: int = BLOCK_MIN_REPEATS) -> set[int]:
+    """Índices de líneas que forman bloques repetidos de encabezado/pie de página."""
+    keys = [_furniture_key(ln) for ln in lines]
+    freq = Counter(k for k in keys if k)
+
+    def candidate(i: int) -> bool:
+        k = keys[i]
+        return (bool(k) and freq[k] >= min_repeats and 3 <= len(k.split()) <= 40
+                and not lines[i].lstrip().startswith('|') and not ARTICLE_RE.match(lines[i])
+                and not _LEGAL_START_RE.match(k))
+
+    nonblank = [i for i, k in enumerate(keys) if k]
+    cand = {i for i in nonblank if candidate(i)}
+    out = set()
+    for j, i in enumerate(nonblank):
+        if i not in cand:
+            continue
+        prev_i = nonblank[j - 1] if j else None
+        next_i = nonblank[j + 1] if j + 1 < len(nonblank) else None
+        if (prev_i in cand) or (next_i in cand):
+            out.add(i)
+    return out
+
+
 def clean_document(text: str, min_heading_repeats: int = 6) -> dict:
     """Elimina paratextos editoriales, no contenido jurídico ni bibliografía académica."""
     # Los marcadores del conversor delimitan OCR de imágenes; no son parte del texto.
@@ -101,6 +147,7 @@ def clean_document(text: str, min_heading_repeats: int = 6) -> dict:
     heading_freq = Counter(
         normalize_line(line) for line in lines if line.lstrip().startswith('#')
     )
+    furniture = _repeated_block_lines(lines)
     kept, removed = [], []
     removed_by_reason: Counter = Counter()
     in_catalog_record = False
@@ -110,8 +157,11 @@ def clean_document(text: str, min_heading_repeats: int = 6) -> dict:
         removed.append(line)
         removed_by_reason[reason] += 1
 
-    for line in lines:
+    for idx, line in enumerate(lines):
         plain = normalize_line(line)
+        if idx in furniture:
+            discard(line, 'repeated_block')
+            continue
         # La ficha va desde ‘Catalogación en la publicación’ hasta ‘Esta edición’.
         if in_catalog_record:
             discard(line, 'catalog_record')
@@ -175,15 +225,17 @@ HEADING_RE = re.compile(r'(?m)^(#{1,6})[ \t]+(.+?)[ \t]*$')
 # colapsan al mismo número y el tagueo/recuperación se confunde. `_ARTICLE_SUFFIX` lista
 # los latinos; el guion+letra/número cubre (c). Cada token exige separador propio para no
 # tragarse palabras del cuerpo ("Artículo 5 bis Del homicidio" → etiqueta "5 bis").
+# 'quarter' es errata de 'quáter' en el Código Penal de Morelos ("ARTÍCULO *148 quarter").
 _ARTICLE_LATIN = (
-    r'bis|ter|qu[aá]ter|quinquies|quintus|sexies|sextus|septies|septimus|octies|octavus|'
+    r'bis|ter|qu[aá]ter|quarter|quinquies|quintus|sexies|sextus|septies|septimus|octies|octavus|'
     r'nonies|nonus|decies|decimus|undecies|duodecies|terdecies|quaterdecies|quindecies|'
     r'sexdecies|septendecies|octodecies|novodecies|vicies'
 )
 # Subíndice OPCIONAL tras un latino: número ("211 bis 1", "127 bis-1"), palabra española
 # ("150 BIS UNO") o una sola letra ("221 bis-A"). Separado por espacio, punto o guion.
 _ARTICLE_SUBINDEX = (
-    r'(?:[ \t.\-]+(?:\d+|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|'
+    # Separador SIN punto: en "148 bis.- A la persona…" la "A" es texto, no subíndice.
+    r'(?:(?:[ \t]*-[ \t]*|[ \t]+)(?:\d+|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|'
     r'[A-Za-z](?![A-Za-z])))?'
 )
 # El TOKEN-NÚMERO tolera letras que el OCR confunde con dígitos cuando van PEGADAS a
@@ -198,16 +250,28 @@ _OCR_TO_DIGIT = str.maketrans({'I': '1', 'l': '1', '|': '1', 'O': '0', 'S': '5',
 #   · guion + número:        -1 · -2
 _ARTICLE_LABEL = (
     r'(' + _ARTICLE_NUM
-    + r'(?:[ \t]*[ºo°])?'
+    + r'(?:[ \t]*[ºo°](?![a-záéíóú]))?'   # ordinal "1o"/"1 o", pero NO la "O" de "Octies"/"Octavus"
     + r'(?:'
     + r'[ \t.\-]+(?:' + _ARTICLE_LATIN + r')' + _ARTICLE_SUBINDEX
     + r'|-[A-Za-z](?![A-Za-z])'
     + r'|-\d+'
+    # Cualquier palabra pegada al número y seguida del delimitador del artículo (".-") es
+    # su sufijo, aunque sea una errata del documento: "148 séptimus.-", "356 CUARTER.-",
+    # "455 osties.-" (Morelos, CDMX). Sin esto colapsan con el artículo base (148, 356, 455).
+    + r'|[ \t]+[A-Za-zÁÉÍÓÚáéíóú]{3,14}(?=[ \t]*\.?[ \t]*\**[ \t]*[-–])'
     + r')*'
     + r')'
 )
+# Variantes reales que también abren artículo (medido en los códigos de Morelos, donde sin
+# esto ~2/3 de los artículos del Código Penal quedaban pegados al anterior):
+#   · asterisco de "artículo reformado": "**ARTÍCULO *35.-**" (convención de la Consejería
+#     Jurídica de Morelos; el '*' va entre la palabra y el número);
+#   · erratas del documento fuente: "ARTÍULO", "ARTCULO", "ARTICULO" (sin acento);
+#   · viñeta de lista que dejó el conversor: "- **Artículo 167.-**" (CPF, CDMX, Querétaro);
+#   · fila de tabla: "|**ARTÍCULO 68.-**Se deroga.|" (LGEEPA).
+_ARTICLE_WORD = r'art(?:[íi]culo|[íi]ulo|culo)'
 ARTICLE_RE = re.compile(
-    r'(?im)^[ \t#>*_]*(?:<u>[ \t#>*_]*)?art[íi]culo[ \t]+' + _ARTICLE_LABEL,
+    r'(?im)^[ \t#>*_|]*(?:[-•·][ \t]+[ \t#>*_]*)?(?:<u>[ \t#>*_]*)?' + _ARTICLE_WORD + r'(?:[ \t]+\*?|[ \t]*\*)[ \t]*' + _ARTICLE_LABEL,
 )
 # Igual que ARTICLE_RE pero SIN anclar a inicio de línea: para detectar en una PREGUNTA
 # ("¿qué dice el artículo 167 de…?") a qué artículo se refiere y hacer búsqueda directa.
@@ -439,7 +503,35 @@ def _strip_trailing_headings(body: str) -> str:
     return '\n'.join(lines).strip()
 
 
+# Título de estructura y artículo en la MISMA línea (el conversor unió dos líneas):
+#   "## **CAPÍTULO II DEL DIVORCIO ARTÍCULO *174.-** DEL DIVORCIO. El divorcio…"
+#   "**CAPITULO IV Adulterio** (Se deroga) … **Artículo 273.-** (Se deroga)."
+# Se parte la línea antes del artículo. Solo si el artículo lleva forma de encabezado
+# ("ARTÍCULO N.-" / "Artículo N.-"); una cita en prosa ("del artículo 174") no la lleva.
+_GLUED_ARTICLE_RE = re.compile(
+    r'(?im)^([ \t#>*_]*(?:LIBRO|SUBT[ÍI]TULO|T[ÍI]TULO|CAP[ÍI]TULO|SECCI[ÓO]N)\b[^\n]*?)[ \t]*'
+    r'((?:\*\*)?(?-i:ART[ÍI]CULO|Art[íi]culo)[ \t]*\*?[ \t]*\d+[^\n]{0,24}?[ \t]*\.?[ \t]*\**[ \t]*[-–])')
+
+
+# Artículo en NEGRITAS que empieza a mitad de línea tras el fin de una oración: varios
+# derogados en una línea ("**Artículo 268** .- (Se deroga). **Artículo 269** .- (Se deroga).")
+# o un artículo vigente pegado al anterior ("…en favor de la comunidad. **ARTÍCULO 234.** -
+# Cuando se cause…", Código Penal de Morelos). Negritas + delimitador ".-" tras un punto es
+# forma de encabezado; una cita en prosa no lleva ninguna de las dos.
+_MIDLINE_BOLD_ARTICLE_RE = re.compile(
+    r'([.;:)\]])[ \t]+(\*\*(?:ART[ÍI]CULO|Art[íi]culo)[ \t]*\*?[ \t]*\d+'
+    r'(?:[^*\n]{0,30}?[-–][^*\n]{0,4}\*\*'                 # "**ARTÍCULO 178.-** Derogado"
+    r'|[^*\n]{0,30}?\.\*\*(?=[ \t]+[A-ZÁÉÍÓÚ(])'             # "**Artículo 130.** Derogado"
+    r'|[^*\n]{0,30}\*\*[ \t]*\.?[ \t]*[-–]))')           # "**Artículo 269** .- (Se deroga)"
+
+
+def split_glued_articles(text: str) -> str:
+    text = _GLUED_ARTICLE_RE.sub(lambda m: m.group(1).rstrip() + '\n\n' + m.group(2), text)
+    return _MIDLINE_BOLD_ARTICLE_RE.sub(lambda m: m.group(1) + '\n\n' + m.group(2), text)
+
+
 def article_units(text: str):
+    text = split_glued_articles(text)
     matches = list(ARTICLE_RE.finditer(text))
     heads = _structure_events(text)
     stack: dict[int, str] = {}   # rango estructural → título vigente (LIBRO/TÍTULO/SUBTÍTULO/CAPÍTULO/SECCIÓN)

@@ -38,6 +38,7 @@ from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(HERE / '.env')
 
+from shared.chunk_diagnostics import body_of, diagnose_chunks
 from shared.db import connect
 from shared.legal_chunking import find_article_ref
 from shared.lexical import BM25, interleave_scored, rank_indices_by_score, rrf, tokenize
@@ -1287,6 +1288,63 @@ def ingest_clean(source: str):
         return {'source': source, 'text': ingest_mgr.read_clean(source)}
     except FileNotFoundError as e:
         return JSONResponse({'error': str(e)}, status_code=404)
+
+
+# ── 🔍 Revisión del chunking de un documento ya ingerido ─────────────────────────
+# Mismas reglas que se reportan al ingerir (shared/chunk_diagnostics.py), aplicadas a los
+# chunks que están en la BD: sirve para documentos viejos y para verificar a mano que el
+# partido y las etiquetas (artículo, capítulo) quedaron bien.
+_DIAG_CACHE: dict[str, tuple] = {}   # source → ((nº chunks, max id), diagnóstico)
+
+
+def _doc_chunks(cur, source: str) -> list[dict]:
+    cur.execute(f"SELECT id, position, part, title, hierarchy, unit_type, words, text FROM {TABLE} "
+                f"WHERE source = %s ORDER BY position, part, id", (source,))
+    cols = ['id', 'position', 'part', 'title', 'hierarchy', 'unit_type', 'words', 'text']
+    return [dict(zip(cols, r)) for r in cur.fetchall()]
+
+
+def _diagnose_source(cur, source: str, signature) -> dict:
+    hit = _DIAG_CACHE.get(source)
+    if hit and hit[0] == signature:
+        return hit[1]
+    d = diagnose_chunks(_doc_chunks(cur, source))
+    _DIAG_CACHE[source] = (signature, d)
+    return d
+
+
+@app.get('/ingest/diagnostics/summary')
+def ingest_diagnostics_summary(request: Request):
+    """Semáforo de chunking por documento (para la tabla «Corpus actual»)."""
+    if not can_ingest(current_email(request)):
+        return JSONResponse({'error': 'Sin permiso.'}, status_code=403)
+    out = {}
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT source, count(*), max(id) FROM {TABLE} GROUP BY source")
+        for source, n, mx in cur.fetchall():
+            d = _diagnose_source(cur, source, (n, mx))
+            out[source] = {'status': d['status'],
+                           'issues': [{'id': k['id'], 'name': k['name'], 'level': k['level']}
+                                      for k in d['checks'] if k['level'] != 'ok']}
+    return out
+
+
+@app.get('/ingest/diagnostics')
+def ingest_diagnostics(request: Request, source: str):
+    """Diagnóstico completo + los chunks del documento (etiqueta, texto y avisos de cada uno)."""
+    if not can_ingest(current_email(request)):
+        return JSONResponse({'error': 'Sin permiso.'}, status_code=403)
+    with connect() as c, c.cursor() as cur:
+        rows = _doc_chunks(cur, source)
+        if not rows:
+            return JSONResponse({'error': f'No existe el documento {source!r}.'}, status_code=404)
+        d = _diagnose_source(cur, source, (len(rows), max(r['id'] for r in rows)))
+    rows.sort(key=lambda r: (r['position'] or 0, r['part'] or 1))   # mismo orden que diagnose_chunks
+    return {'source': source, 'status': d['status'], 'checks': d['checks'], 'stats': d['stats'],
+            'chunks': [{'i': i, 'id': r['id'], 'position': r['position'], 'part': r['part'], 'title': r['title'],
+                        'hierarchy': r['hierarchy'], 'unit_type': r['unit_type'], 'words': r['words'],
+                        'text': body_of(r['text']), 'flags': d['flags'].get(i, [])}
+                       for i, r in enumerate(rows)]}
 
 
 @app.post('/ask')

@@ -222,3 +222,88 @@ def test_lowercase_orphan_heading_is_not_promoted():
     md = ('# TÍTULO TERCERO Aplicación de las Sanciones\n\n# CAPITULO I Reglas generales\n\n'
           '**Artículo 51.-** Texto.\n\n# Otras reglas del juzgador\n\n**Artículo 52.-** Texto.\n')
     assert _hier(md)['Artículo 52'].endswith('> CAPITULO I Reglas generales > Artículo 52')
+
+
+# ── Variantes reales de inicio de artículo (Morelos, CPF, CDMX, Querétaro, LGEEPA) ──
+def _titles(md):
+    return [u['title'] for u in lc.article_units(md)]
+
+
+def test_asterisk_and_typo_articles_open_their_own_unit():
+    md = ('**ARTÍCULO 34.-** RECIPROCIDAD ALIMENTARIA. Texto.\n\n'
+          '**ARTÍULO *35.-** ORIGEN DE LA OBLIGACIÓN. Texto.\n\n'
+          'ARTCULO 36.- Texto.\n\nARTICULO *37.- Texto.\n')
+    assert _titles(md) == ['Artículo 34', 'Artículo 35', 'Artículo 36', 'Artículo 37']
+
+
+def test_bullet_and_table_row_articles():
+    md = '- **Artículo 167.-** Se impondrán…\n\n|**ARTÍCULO 68.-**Se deroga.|\n'
+    assert _titles(md) == ['Artículo 167', 'Artículo 68']
+
+
+def test_octies_is_a_suffix_not_an_ordinal():
+    md = '**Artículo 374.-** Texto.\n\n**Artículo 374 Octies.-** Texto.\n\n**ARTÍCULO 5o.-** Texto.\n'
+    assert _titles(md) == ['Artículo 374', 'Artículo 374 Octies', 'Artículo 5o']
+
+
+def test_letter_after_delimiter_is_text_not_subindex():
+    assert _titles('ARTÍCULO 148 bis.- A quien cometa…\n') == ['Artículo 148 bis']
+
+
+def test_unknown_suffix_word_before_delimiter_is_kept():
+    # Erratas reales: "quarter" (quáter), "osties" (octies), "CUARTER", "séptimus".
+    md = ('**ARTÍCULO *148 quarter.-** Texto.\n\n**Artículo *455 osties.-** Texto.\n\n'
+          '**ARTÍCULO 356 CUARTER.-** Texto.\n\n## **ARTÍCULO *148 séptimus.-** Derogado.\n')
+    assert _titles(md) == ['Artículo 148 quarter', 'Artículo 455 osties', 'Artículo 356 CUARTER',
+                           'Artículo 148 séptimus']
+
+
+def test_article_glued_to_structure_heading_is_split():
+    md = ('**ARTÍCULO *173.-** ILICITUD. Texto.\n\n'
+          '## **CAPÍTULO II DEL DIVORCIO ARTÍCULO *174.-** DEL DIVORCIO. El divorcio disuelve…\n')
+    units = {u['title']: u for u in lc.article_units(md)}
+    assert list(units) == ['Artículo 173', 'Artículo 174']
+    assert units['Artículo 174']['hierarchy'].startswith('CAPÍTULO II DEL DIVORCIO')
+    assert 'DIVORCIO' not in units['Artículo 173']['text']
+
+
+def test_several_bold_articles_in_one_line_are_split():
+    md = ('**Artículo 268** .- (Se deroga). **Artículo 269** .- (Se deroga). **Artículo 270** .- (Se deroga).\n\n'
+          '**ARTÍCULO 233.-** Texto… en favor de la comunidad. **ARTÍCULO 234.** - Cuando se cause algún daño…\n\n'
+          '**Artículo 129.** Derogado. **Artículo 130.** Derogado.\n')
+    assert _titles(md) == ['Artículo 268', 'Artículo 269', 'Artículo 270', 'Artículo 233', 'Artículo 234',
+                           'Artículo 129', 'Artículo 130']
+
+
+def test_prose_citations_are_not_split():
+    md = ('**Artículo 5.-** Conforme a lo dispuesto en el **artículo 4** del reglamento. '
+          'CAPÍTULO I. De conformidad con el artículo 5 de la ley.\n')
+    assert _titles(md) == ['Artículo 5']
+
+
+# ── Encabezado/pie de página repetido en bloque (texto normal, no '#') ──
+_MORELOS_HEADER = ('Código Penal para el Estado de Morelos\n\n'
+                   'Consejería Jurídica del Poder Ejecutivo del Estado de Morelos. Dirección General de Normatividad.\n\n'
+                   'Última Reforma: 02-09-2026\n\n')
+
+
+def test_repeated_page_header_block_is_removed():
+    body = ''.join(f'{_MORELOS_HEADER}**ARTÍCULO {n}.-** Texto del artículo {n}.\n\n' for n in range(1, 8))
+    out = lc.clean_document(body)
+    assert 'Consejería Jurídica' not in out['clean_text'] and 'Última Reforma' not in out['clean_text']
+    assert out['removed_by_reason']['repeated_block'] == 21
+    assert all(f'ARTÍCULO {n}.-' in out['clean_text'] for n in range(1, 8))
+
+
+def test_repeated_legal_sentence_alone_is_kept():
+    # Frase de ley repetida SUELTA (no en bloque) no es mobiliario.
+    body = ''.join(f'**ARTÍCULO {n}.-** Texto {n}.\n\nEste delito se perseguirá por querella.\n\n' for n in range(1, 9))
+    assert lc.clean_document(body)['clean_text'].count('se perseguirá por querella') == 8
+
+
+def test_repeated_transitorios_block_is_kept():
+    # Los transitorios de cada decreto se repiten en bloque, pero son texto legal.
+    dec = ('PRIMERA. Remítase el presente Decreto al Titular del Poder Ejecutivo para su publicación.\n\n'
+           'SEGUNDA. El presente Decreto entrará en vigor al día siguiente de su publicación.\n\n')
+    out = lc.clean_document(dec * 6)['clean_text']
+    assert out.count('SEGUNDA. El presente Decreto') == 6

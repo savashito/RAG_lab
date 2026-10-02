@@ -176,6 +176,13 @@
  .miss{font-size:12px;color:#fca5a5} .miss li{margin:2px 0}
  tr.sel td{background:#131a26}
  .delta.up{color:#4ade80} .delta.down{color:#f87171}
+ /* 🔍 revisión del chunking */
+ .dcheck{border:1px solid #2a2f3a;border-radius:8px;padding:6px 10px;margin:6px 0;background:#12151c}
+ .dcheck.warn{border-color:#854d0e} .dcheck.bad{border-color:#991b1b}
+ .dcheck summary{margin:0;color:#e6e6e6} .dcheck ul{margin:6px 0 2px;padding-left:20px;font-size:13px;color:#c7cdd6}
+ .dchunk{border-bottom:1px solid #22262f;padding:4px 2px} .dchunk summary{margin:0;color:#e6e6e6}
+ .dchunk.flag{background:#1f1a10} .dchunk.hl{outline:2px solid #3b82f6}
+ .dtext{white-space:pre-wrap;font-size:12px;color:#c7cdd6;background:#0b0d12;border-radius:6px;padding:8px;max-height:340px;overflow:auto}
  /* 🎯 subconjunto de preguntas a correr */
  .bss-list{max-height:280px;overflow:auto;border:1px solid #2a2f3a;border-radius:8px;background:#0b0d12;padding:4px 8px}
  .bss-list label{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:13px;border-bottom:1px solid #161a22;cursor:pointer}
@@ -674,6 +681,16 @@
  </div>
 </div>
 
+<div id="diag-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;padding:4vh 4vw" onclick="if(event.target===this) closeDiag()">
+ <div style="background:#171a21;border:1px solid #2a2f3a;border-radius:8px;max-width:1000px;margin:0 auto;height:92vh;display:flex;flex-direction:column">
+   <div class="row" style="padding:12px 16px;border-bottom:1px solid #2a2f3a;justify-content:space-between;margin:0">
+     <b id="diag-title">Chunking</b>
+     <button class="ghost" onclick="closeDiag()">✕ Cerrar</button>
+   </div>
+   <div id="diag-body" style="overflow:auto;padding:12px 16px;flex:1"></div>
+ </div>
+</div>
+
 <script src="/static/bench.js"></script>
 <script>
 let lastRun=null, chart=null, ASK_SYSTEM_DEFAULT='', INSTRUCT_DEFAULT='', DEFAULT_TOPIC='';
@@ -1003,7 +1020,7 @@ async function loadDocuments(){
     const docs=topic ? all.filter(d=>d.topic===topic) : all;
     if(!docs.length){ $('ing-docs').innerHTML=`<p class="muted">El tema <b>${esc(tname)}</b> aún no tiene documentos.</p>`; return; }
     const total=docs.reduce((a,d)=>a+d.chunks,0);
-    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th></th><th></th></tr>`;
+    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th title="¿Quedó bien partido y etiquetado? Clic para revisar">chunking</th><th></th><th></th></tr>`;
     for(const d of docs){ const btn=d.clean_available
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
@@ -1012,8 +1029,10 @@ async function loadDocuments(){
       // Dónde se procesó: línea chica bajo el nombre (una columna más desborda en móvil).
       const conv=c ? `<span style="white-space:nowrap" title="${esc([c.where==='mac_mini'?'OCR Docling + Vision':c.engine, c.reason, c.at].filter(Boolean).join(' · '))}">${c.where==='mac_mini'?'🍎 Mac mini':'🖥️ VPS'}</span>`
                    : `<span title="ingerido antes de que se registrara dónde se procesó">procesado en: —</span>`;
-      h+=`<tr><td>${esc(d.source)}<div class="muted" style="font-size:.85em">${conv}</div></td><td>${d.chunks}</td><td>${btn}</td><td>${del}</td></tr>`; }
-    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td></tr></table>`;
+      const diag=`<button class="ghost cdiag" data-src="${esc(d.source)}" onclick="openDiag(this.dataset.src)" title="Revisar cómo quedó partido y etiquetado">🔍 …</button>`;
+      h+=`<tr><td>${esc(d.source)}<div class="muted" style="font-size:.85em">${conv}</div></td><td>${d.chunks}</td><td>${diag}</td><td>${btn}</td><td>${del}</td></tr>`; }
+    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td><td></td></tr></table>`;
+    loadDiagSummary();
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
 }
 
@@ -1202,6 +1221,7 @@ function renderIngest(job){
           (w.positions?` (pos ${w.positions.join(', ')})`:'')+`</div>`).join('')+
         (warns.length>8?`<div class="muted">…y ${warns.length-8} más</div>`:'')+`</div>`;
     }
+    if(r.diagnostics) body+=diagCardBlock(r.diagnostics, f.source, !!f.done);
     const viewBtn=f.clean_available?`<div style="margin-top:8px"><button class="ghost" onclick="viewClean('${esc(f.source)}')">👁 ver md limpio</button></div>`:'';
     return `<div class="card" style="min-width:340px;text-align:left">${head}${bar}${status}${body}${viewBtn}</div>`;
   }).join('');
@@ -1218,6 +1238,84 @@ async function viewClean(source){
   }catch(e){ alert(e); }
 }
 function closeClean(){ $('ing-modal').style.display='none'; }
+
+// ── 🔍 Revisión del chunking (shared/chunk_diagnostics.py) ─────────────────────────
+// Semáforo por documento + ventana con los avisos y el explorador de chunks, para que
+// una persona verifique que cada artículo quedó en su chunk con su etiqueta correcta.
+const DIAG_ICON={ok:'✅', warn:'⚠️', bad:'❌'};
+const DIAG_LABEL={ok:'bien', warn:'revisar', bad:'problemas'};
+async function loadDiagSummary(){
+  try{
+    const r=await fetch('/ingest/diagnostics/summary'); if(!r.ok) return;
+    const sum=await r.json();
+    document.querySelectorAll('.cdiag').forEach(b=>{ const d=sum[b.dataset.src]; if(!d) return;
+      b.textContent=`${DIAG_ICON[d.status]} ${DIAG_LABEL[d.status]}`;
+      b.title=d.issues.length ? 'Avisos: '+d.issues.map(i=>i.name).join(' · ')+'\nClic para revisar' : 'Sin avisos. Clic para ver los chunks';
+    });
+  }catch(e){}
+}
+function diagCardBlock(dg, source, done){
+  const bad=dg.checks.filter(c=>c.level!=='ok');
+  const col={ok:'#166534', warn:'#854d0e', bad:'#991b1b'}[dg.status];
+  return `<div class="legend" style="border-color:${col};margin-top:8px">${DIAG_ICON[dg.status]} <b>Chunking: ${DIAG_LABEL[dg.status]}</b>`+
+    (bad.length ? bad.map(c=>`<div class="muted">${DIAG_ICON[c.level]} <b>${esc(c.name)}</b> — ${esc(c.summary)}</div>`).join('')
+                : '<div class="muted">Cada artículo en su chunk, numeración completa, sin encabezados repetidos.</div>')+
+    (done && source ? `<div style="margin-top:6px"><button class="ghost" onclick="openDiag('${esc(source)}')">🔍 revisar chunks</button></div>` : '')+`</div>`;
+}
+let DIAG=null;
+async function openDiag(source){
+  $('diag-modal').style.display='block';
+  $('diag-title').textContent='Chunking — '+source;
+  $('diag-body').innerHTML='<p class="muted">Analizando…</p>';
+  try{
+    const r=await fetch('/ingest/diagnostics?source='+encodeURIComponent(source));
+    const d=await r.json(); if(d.error) throw new Error(d.error);
+    DIAG=d; renderDiag();
+  }catch(e){ $('diag-body').innerHTML=`<p style="color:#f87171">${esc(e.message)}</p>`; }
+}
+function closeDiag(){ $('diag-modal').style.display='none'; }
+function renderDiag(){
+  const d=DIAG, st=d.stats;
+  const nFlag=d.chunks.filter(c=>c.flags.length).length;
+  const checks=d.checks.map(c=>`<details class="dcheck ${c.level}" ${c.level!=='ok'?'open':''}><summary>${DIAG_ICON[c.level]} <b>${esc(c.name)}</b> — ${esc(c.summary)}</summary>`+
+    (c.examples.length ? `<ul>${c.examples.map(e=>`<li>${e.chunk!=null?`<a href="#" onclick="diagGo(${e.chunk});return false">${esc(e.label||'chunk '+e.chunk)}</a>: `:''}${e.article!=null&&e.chunk==null?`<b>Art. ${esc(e.article)}</b>: `:''}${e.line?`«${esc(e.line)}» `:''}${esc(e.detail||'')}</li>`).join('')}`+
+      (c.n_examples>c.examples.length?`<li class="muted">…y ${c.n_examples-c.examples.length} más</li>`:'')+`</ul>` : '')+`</details>`).join('');
+  $('diag-body').innerHTML=`
+    <div class="muted" style="margin-bottom:8px">${st.chunks} chunks · ${st.article_chunks} de tipo artículo · ${st.article_starts} inicios de artículo en el texto · ${st.words_mean} palabras por chunk en promedio</div>
+    ${checks}
+    <h3 style="margin:14px 0 6px">Chunks <span class="muted" style="font-weight:400;font-size:13px">— verifica que cada etiqueta corresponda a su texto</span></h3>
+    <div class="row" style="margin:0 0 8px">
+      <input type="text" id="diag-q" placeholder="Buscar: número de artículo (ej. 35) o texto…" style="flex:1" oninput="renderDiagList()">
+      <label class="chk"><input type="checkbox" id="diag-only" onchange="renderDiagList()" ${nFlag?'':'disabled'}> solo con avisos (${nFlag})</label>
+    </div>
+    <div id="diag-list"></div>`;
+  renderDiagList();
+}
+function renderDiagList(){
+  const q=($('diag-q').value||'').trim().toLowerCase(), only=$('diag-only').checked;
+  const num=/^\d+(\s|$)/.test(q);
+  let rows=DIAG.chunks.filter(c=>{
+    if(only && !c.flags.length) return false;
+    if(!q) return true;
+    // Número de artículo: "34" encuentra el 34, 34 Bis, 34o… pero no el 340.
+    if(num){ const lab=(c.title||'').toLowerCase().replace(/^art[íi]culo\s+/,'');
+      return lab===q || lab.startsWith(q+' ') || lab===q+'o' || c.flags.some(f=>new RegExp('\\b'+q+'\\b').test(f)); }
+    return ((c.title||'')+' '+(c.hierarchy||'')+' '+c.text).toLowerCase().includes(q);
+  });
+  const total=rows.length; rows=rows.slice(0,300);
+  $('diag-list').innerHTML=`<div class="muted" style="font-size:12px;margin-bottom:4px">${total} chunk(s)${total>300?' · mostrando 300':''}</div>`+
+    rows.map(c=>`<details class="dchunk ${c.flags.length?'flag':''}" id="dchunk-${c.i}"><summary>
+        <span class="muted">#${c.i+1}</span> <b>${esc(c.title||'—')}</b>${c.part>1?` <span class="muted">(parte ${c.part})</span>`:''}
+        <span class="muted" style="font-size:12px">${c.words} pal.</span>
+        ${c.flags.map(f=>`<span class="tag gap">${esc(f)}</span>`).join(' ')}
+        <div class="muted" style="font-size:11px">${esc(c.hierarchy||'')}</div></summary>
+      <pre class="dtext">${esc(c.text)}</pre></details>`).join('');
+}
+function diagGo(i){
+  $('diag-q').value=''; $('diag-only').checked=false; renderDiagList();
+  const el=$('dchunk-'+i); if(!el) return; el.open=true; el.scrollIntoView({behavior:'smooth', block:'center'});
+  el.classList.add('hl'); setTimeout(()=>el.classList.remove('hl'), 1800);
+}
 
 // ── Tab "Conversacional" ─────────────────────────────────────────────────────────
 // Historial 100% local en el navegador vía IndexedDB (como la WebUI de llama.cpp:
