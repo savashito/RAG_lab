@@ -1055,8 +1055,8 @@ class Bench:
         @r.post('/runs/{rid}/reviews/{qid}')
         async def review_save(rid: int, qid: int, req: Request):
             email = self.current_email(req)
-            if not email:
-                return deny('Inicia sesión para revisar.')
+            if not email or not self.can_run(email):
+                return deny('Solo los administradores pueden calificar respuestas.')
             with self.connect() as c, c.cursor() as cur:
                 cur.execute("SELECT verdicts, error FROM bench_results WHERE run_id = %s AND question_id = %s",
                             (rid, qid))
@@ -1082,8 +1082,8 @@ class Bench:
         @r.delete('/runs/{rid}/reviews/{qid}')
         def review_delete(rid: int, qid: int, request: Request):
             email = self.current_email(request)
-            if not email:
-                return deny('Inicia sesión para revisar.')
+            if not email or not self.can_run(email):
+                return deny('Solo los administradores pueden calificar respuestas.')
             with self.connect() as c, c.cursor() as cur:   # cada quien borra solo la suya
                 cur.execute("DELETE FROM bench_reviews WHERE run_id = %s AND question_id = %s AND reviewer = %s",
                             (rid, qid, email))
