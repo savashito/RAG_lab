@@ -150,7 +150,7 @@
       <h3>Cómo se escribe un set</h3>
       <ul>
         <li><code>"topic"</code> es el <b>id</b> del tema (p. ej. <code>derecho_penal_mexicano</code>): las preguntas se responden buscando sólo en él.</li>
-        <li>Cada pregunta lleva <code>"question"</code> (obligatorio), <code>"expected_answer"</code> (la respuesta de referencia que ve el juez), <code>"notes"</code> (no se mandan al juez; <code>HUECO CORPUS</code> marca huecos del corpus) y <code>"components"</code>.</li>
+        <li>Cada pregunta lleva <code>"question"</code> (obligatorio), <code>"expected_answer"</code> (la respuesta de referencia que ve el juez), <code>"notes"</code> (no se mandan al juez) y <code>"components"</code>.</li>
         <li><code>"difficulty"</code>: dificultad de la pregunta, uno de
           <span class="badge d-facil">"facil"</span> pregunta directa sobre un artículo o caso específico bien definido de la ley ·
           <span class="badge d-mediano">"mediano"</span> definición, clasificación o explicación de un tema específico ·
@@ -410,7 +410,6 @@ function renderPreview(d, errs){
       return `<div class="qcard ${i === S.curQ ? 'cur' : ''} ${errQ.has(i) ? 'has-err' : ''}" data-q="${i}">
         <div class="qhead"><span class="n">#${i + 1}</span><span class="t">${esc(q.question || '(pregunta vacía)')}</span>
           ${(() => { const d = normDiff(q.difficulty); return d ? `<span class="badge d-${d}">${DIFFS[d]}</span>` : '<span class="badge d-none">sin dificultad</span>'; })()}
-          ${/HUECO/i.test(q.notes || '') ? '<span class="badge gap">HUECO</span>' : ''}
           ${q.id == null ? '<span class="badge new">nueva</span>' : `<span class="badge id">id ${esc(q.id)}</span>`}</div>
         ${ref ? `<div class="ref">🎯 ${esc(ref.length > 260 ? ref.slice(0, 260) + '…' : ref)}</div>` : ''}
         <div class="comps">${comps.map(chip).join('') || (ref ? '<span class="note">sin componentes: se compara contra la referencia</span>' : '<span class="note" style="color:var(--err)">sin criterios</span>')}</div>

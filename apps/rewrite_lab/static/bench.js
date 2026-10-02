@@ -27,7 +27,6 @@ const attr = s => esc(s).replace(/"/g,'&quot;');
 const pct = v => v==null ? '—' : (100*v).toFixed(0)+'%';
 function scoreColor(v){ if(v==null) return '#374151'; if(v>=.85) return '#166534'; if(v>=.6) return '#3f6212'; if(v>=.35) return '#854d0e'; return '#7f1d1d'; }
 const topicLabel = t => ((window.__topics||[]).find(x=>x.topic===t)||{}).label || t;
-const isGap = notes => /HUECO/i.test(notes||'');
 // Dificultad (criterio en la ayuda «¿Cómo se califica?»).
 const DIFFS = [['facil','Fácil'], ['mediano','Mediano'], ['dificil','Difícil']];
 const diffLabel = d => (DIFFS.find(x=>x[0]===d)||[])[1] || '';
@@ -48,8 +47,6 @@ function diffStats(results){
   }
   return out;
 }
-// notes de la pregunta (del set actual) por id — los resultados no las traen.
-const qNotes = qid => ((BENCH.set && BENCH.set.questions.find(q=>q.id===qid)) || {}).notes || '';
 
 // ── Navegación ──────────────────────────────────────────────────────────────────
 function benchSub(name){
@@ -241,7 +238,6 @@ function renderQuestions(){
   $('bench-qcount').textContent = all.length;
   const term = $('bench-qsearch').value.trim().toLowerCase(), f = $('bench-qfilter').value;
   const shown = all.map((q,i)=>({q,i})).filter(({q})=>{
-    if(f==='hueco' && !isGap(q.notes)) return false;
     if(f==='nocomp' && q.components.length) return false;
     if(f.startsWith('dif:') && (q.difficulty||'') !== f.slice(4)) return false;
     if(!term) return true;
@@ -252,7 +248,6 @@ function renderQuestions(){
     <details class="bq" data-qid="${q.id}" ${BENCH.open.has(q.id)?'open':''} ontoggle="benchQToggle(this)">
       <summary><span class="muted">#${i+1}</span><span class="qt">${esc(q.question)}</span>
         ${diffTag(q.difficulty)}
-        ${isGap(q.notes)?'<span class="tag gap" title="Exhibe un hueco del corpus">HUECO CORPUS</span>':''}
         ${q.components.length ? compCounts(q.components)
           : (q.expected_answer ? '<span class="cnt">vs. referencia</span>' : '<span class="cnt" style="color:#f87171">sin criterios</span>')}
         <button class="ghost" onclick="event.preventDefault();openQForm(${q.id})" title="Editar">✏️</button>
@@ -407,7 +402,7 @@ const DFILTERS = [
   ['fail', '❌ No pasan', x=>!x.error && !x.passed],
   ['pass', '✅ Pasan', x=>!x.error && x.passed],
   ['viol', '⚠️ Con violación', x=>x.violations>0],
-  ['gap', 'HUECO CORPUS', x=>isGap(qNotes(x.question_id))],
+  ['gap', '🔎 Ley fuera del corpus', x=>!x.error && x.retrieval && x.retrieval.attainable < x.retrieval.total],
   ['noret', '🔎 No trajo el artículo', x=>!x.error && x.retrieval && x.retrieval.hit < x.retrieval.attainable],
   ['retfail', '🔎✓ pero no pasa', x=>!x.error && !x.passed && x.retrieval && x.retrieval.attainable && x.retrieval.hit >= x.retrieval.attainable],
   ['facil', 'Fácil', x=>qDiff(x.question_id)==='facil'],
@@ -498,7 +493,7 @@ function renderBenchDetail(){
       <th title="Revisión humana: ✅/❌ según la persona, ★ calificación; en rojo si no coincide con el juez">✍️</th><th>s</th></tr>`+
     (rows.length ? rows.map(x=>{ const miss = missesOf(x); return `<tr class="clk" onclick="toggleBenchAnswer(${r.id}, ${x.question_id}, this)">
       <td>${x.position+1}</td>
-      <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))} ${retBadge(x.retrieval)}${isGap(qNotes(x.question_id))?' <span class="tag gap">HUECO</span>':''}</td>
+      <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))} ${retBadge(x.retrieval)}</td>
       <td class="sc" style="background:${x.error?'#374151':scoreColor(x.score)}">${x.error?'err':pct(x.score)}</td>
       <td class="sc">${x.error?'—':(x.passed?'✅':'❌')}</td>
       <td>${x.error?`<span style="color:#f87171">${esc(x.error)}</span>`
@@ -703,5 +698,5 @@ function renderCompare(){
     ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}${mrow('🔎 artículos recuperados', m=>pct(m.retrieval_recall))}
     ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(r.results)[d]); if(!st.some(Boolean)) return '';
       return `<tr><td><b>score ${diffTag(d)}</b></td>${st.map(x=>`<td class="sc" style="background:${scoreColor(x&&x.score)}">${x?pct(x.score):'—'}</td>`).join('')}${two?'<td></td>':''}</tr>`; }).join('')}`+
-    rows.map(q=>`<tr><td>${esc(q.question)} ${diffTag(qDiff(q.question_id))}${isGap(qNotes(q.question_id))?' <span class="tag gap">HUECO</span>':''}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';
+    rows.map(q=>`<tr><td>${esc(q.question)} ${diffTag(qDiff(q.question_id))}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';
 }

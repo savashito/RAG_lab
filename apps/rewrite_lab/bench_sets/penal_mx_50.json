@@ -2,13 +2,13 @@
  "format": "rag-lab-bench/v1",
  "name": "Derecho penal mexicano · 50 (sexuales, parte general, CNPP)",
  "topic": "derecho_penal_mexicano",
- "description": "30 preguntas de delitos sexuales y cópula (CDMX, Edomex, CPF, Morelos; comparativas y procesales), 10 de parte general/dogmática y 10 del CNPP. Respuestas basadas en el texto del corpus al 2026-09-30; Querétaro con su texto vigente (reforma 15-VII-2026) aunque no esté en el corpus — esas preguntas fallan a propósito para exhibir el hueco (notes: HUECO CORPUS).",
+ "description": "30 preguntas de delitos sexuales y cópula (CDMX, Edomex, CPF, Morelos; comparativas y procesales), 10 de parte general/dogmática y 10 del CNPP. Respuestas basadas en el texto del corpus al 2026-09-30; Querétaro con su texto vigente (reforma 15-VII-2026).",
  "questions": [
   {
    "question": "Por favor verifica la legislación de las entidades Ciudad de México, Estado de México y Querétaro y dime las particularidades de cada entidad en cuanto al delito de estupro y sus elementos del delito conforme a la dogmática penal.",
    "difficulty": "dificil",
    "expected_answer": "Ciudad de México (art. 180 CPCDMX): comete estupro quien tiene cópula con persona mayor de doce y menor de dieciocho años, obteniendo su consentimiento por medio de cualquier tipo de engaño; pena de seis meses a cuatro años de prisión; se persigue por querella. Estado de México (arts. 271 y 272 CPEM): cópula con persona mayor de quince y menor de dieciocho años obteniendo su consentimiento por medio de cualquier tipo de seducción; uno a cinco años de prisión; sólo se procede por querella de la ofendida, sus padres o, a falta de éstos, sus representantes legítimos. Querétaro (art. 167 del Código Penal para el Estado de Querétaro, reformado en 2021): cópula con persona mayor de catorce y menor de dieciocho años obteniendo su consentimiento por medio de seducción o engaño; de uno a ocho años de prisión y de 500 a 1000 días multa; se persigue por querella de la persona ofendida, de quienes ejerzan la patria potestad o, a falta de éstos, de sus legítimos representantes (el art. 168 excluye expresamente al estupro de la persecución de oficio aun con víctimas menores). Particularidades: la edad mínima del pasivo es 12 en CDMX, 15 en Edomex y 14 en Querétaro; el medio es engaño (CDMX), seducción (Edomex) o seducción o engaño (Querétaro); Querétaro tiene la pena más alta y agrega multa. Dogmáticamente: conducta de acción dolosa consistente en la cópula; sujeto activo indiferenciado; sujeto pasivo calificado por la edad; medio comisivo que vicia el consentimiento; bien jurídico: libertad y seguridad sexuales y normal desarrollo psicosexual (CDMX) o libertad e inexperiencia sexuales (título octavo en Querétaro); tipicidad, antijuridicidad, culpabilidad (dolo) y punibilidad; querella como requisito de procedibilidad.",
-   "notes": "HUECO CORPUS: Código Penal de Querétaro no está ingestado (texto vigente, reforma 15-VII-2026) · pregunta modelo del usuario",
+   "notes": "pregunta modelo del usuario",
    "components": [
     {
      "kind": "must",
@@ -1063,7 +1063,7 @@
    "question": "¿Qué establece el Código Penal del Estado de Querétaro sobre el delito de violación y sus agravantes?",
    "difficulty": "facil",
    "expected_answer": "Código Penal para el Estado de Querétaro, Título Octavo (libertad e inexperiencia sexuales). Art. 160: al que por medio de la violencia física o moral realice cópula con persona de cualquier sexo, de 5 a 12 años de prisión y de 300 a 800 días multa; cópula es la introducción del órgano sexual masculino por vía vaginal, anal o bucal; misma pena por introducir por vía anal o vaginal objeto o instrumento distinto con violencia. Art. 161 (violación equiparada): cópula o introducción de objeto en persona menor de catorce años o sin capacidad de comprender o resistir, de 16 a 40 años y de 900 a 1200 días multa; con violencia o por dos o más personas la pena aumenta en una mitad. Agravantes: art. 162, aprovechar la autoridad legal sobre la víctima (aumento hasta en una mitad y pérdida de patria potestad, tutela y derechos sucesorios) o el empleo, cargo o profesión (suspensión o privación por cinco años); art. 163, dos o más personas, de 8 a 20 años y de 1000 a 1500 días multa. El art. 164 (querella entre cónyuges) fue derogado en 2018 y el art. 168 exceptúa a la violación y violación equiparada de la querella: se persiguen de oficio.",
-   "notes": "HUECO CORPUS: Código Penal de Querétaro no está ingestado (texto vigente, reforma 15-VII-2026)",
+   "notes": "",
    "components": [
     {
      "kind": "must",

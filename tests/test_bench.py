@@ -239,7 +239,7 @@ def test_gold_refs_uses_question_law_and_marks_gap():
                   [{'kind': 'must', 'text': 'Las sanciones del estupro (art. 262) son imprescriptibles'},
                    {'kind': 'must', 'text': 'Querétaro (art. 167): el sujeto pasivo es mayor de 14'}])
     assert [x['label'] for grp in g for x in grp] == ['CPF 262', 'Querétaro 167']
-    assert g[1][0]['source'] is None          # Querétaro no está en el corpus
+    assert g[1][0]['source'] == 'Código Penal del Estado de Querétaro.md'
 
 
 def test_retrieval_check_ranks_and_attainable():

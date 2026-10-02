@@ -177,7 +177,7 @@ LAW_SOURCES = [   # (patrón en el texto, documento del corpus o None si no est�
     (r'C[óo]digo Penal Federal|\bCPF\b', 'Código Penal Federal.md'),
     (r'Procedimientos Penales|\bCNPP\b', 'Código Nacional de Procedimientos Penales.md'),
     (r'Morelos', 'Código PENALEM.md'),
-    (r'Quer[ée]taro', None),
+    (r'Quer[ée]taro', 'Código Penal del Estado de Querétaro.md'),
 ]
 _SUFFIX = r'(?:\s*(?:o\b|bis\b|ter\b|qu[aá]ter\b|quintus\b|quinquies\b))?'
 _ART_LIST_RE = re.compile(   # "art. 179", "arts. 269 y 269 Bis", "artículos 261, 262 y 266"
@@ -202,7 +202,8 @@ def _label(raw: str) -> str:
 def gold_refs(question: str, components: list[dict]) -> list[list[dict]]:
     """Grupos de artículos que la respuesta necesita, leídos de los MUST. Cada grupo es una
     lista de alternativas [{'source', 'article', 'label'}]: basta con recuperar una ("Cita al
-    menos uno…"). `source` None = la ley no está en el corpus (hueco: nunca se recupera)."""
+    menos uno…"). `source` None = ley que no está en LAW_SOURCES; si el documento no está
+    ingestado, resolve_gold no le encuentra chunks y cuenta como fuera del corpus."""
     q_laws = _laws_in(question)
     groups, seen = [], set()
     for c in components or []:
@@ -239,8 +240,9 @@ def gold_refs(question: str, components: list[dict]) -> list[list[dict]]:
             short = next((k for k, v in (('CNPCF', 'Civiles y Familiares'), ('CFM', 'CFAMILIAREM'),
                                          ('CPFM', 'CPROFAMEM'), ('CDMX', 'Ciudad'), ('CPEM', 'Estado de M'),
                                          ('CPF', 'Federal'), ('CNPP', 'Procedimientos Penales'),
-                                         ('Morelos', 'PENALEM')) if x['source'] and v in x['source']),
-                         'Querétaro' if x['source'] is None else '?')
+                                         ('Morelos', 'PENALEM'), ('Querétaro', 'Querétaro'))
+                          if x['source'] and v in x['source']),
+                         '?')
             x['label'] = f"{short} {x['article']}"
     return groups
 

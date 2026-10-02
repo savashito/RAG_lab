@@ -13,10 +13,6 @@ Genera bench_sets/familiar_50.json — benchmark de 50 preguntas de derecho fami
 * Dificultad: facil (artículo/caso concreto) · mediano (definición, clasificación, explicación)
   · dificil (análisis comparado de varias legislaciones/fuentes sobre un mismo tema).
 
-OJO (al 2026-10-01): CFAMILIAREM y CPROFAMEM están etiquetados en el tema PENAL, no en el
-familiar; mientras no se re-etiqueten, las preguntas que dependen de ellos fallarán la
-recuperación (notes: "MORELOS EN TEMA PENAL").
-
     uv run python apps/rewrite_lab/bench_sets/build_familiar_50.py
 """
 
@@ -45,7 +41,6 @@ def cita_alguno(*pares):
     return M('Cita al menos uno de estos artículos: ' + '; '.join(f'art. {a} {LEY[l]}' for a, l in pares))
 
 
-MORELOS = 'MORELOS EN TEMA PENAL: CFAMILIAREM/CPROFAMEM no están etiquetados en derecho_familiar'
 Q = []
 
 
@@ -62,7 +57,7 @@ q('facil', 'Según el Código Familiar para el Estado de Morelos, ¿de dónde se
   'el que los da tiene a su vez el derecho de pedirlos (art. 34).',
   [M('Matrimonio y concubinato como fuentes', 2), M('Parentesco y adopción como fuentes'),
    M('También por mandamiento judicial o disposición de la ley'), S('Menciona la reciprocidad alimentaria (art. 34)'),
-   cita(35, 'MF'), N('Afirma que el concubinato no genera obligación alimentaria')], MORELOS)
+   cita(35, 'MF'), N('Afirma que el concubinato no genera obligación alimentaria')])
 
 q('facil', '¿Qué comprenden los alimentos en el Código Familiar de Morelos y hasta qué edad subsisten si el acreedor estudia?',
   'Art. 43: los alimentos comprenden la casa, la comida, el vestido, la atención médica y psicológica preventiva, la '
@@ -73,7 +68,7 @@ q('facil', '¿Qué comprenden los alimentos en el Código Familiar de Morelos y 
   [M('Casa, comida, vestido y atención médica', 2), M('Educación y oficio, arte o profesión'),
    M('Subsisten hasta los 25 años si el acreedor estudia (sin causar baja ni tener ingresos propios)', 2),
    S('Incluye esparcimiento y gastos de embarazo y parto'), cita(43, 'MF'),
-   N('Afirma que la obligación termina siempre a los 18 años')], MORELOS)
+   N('Afirma que la obligación termina siempre a los 18 años')])
 
 q('facil', '¿En qué casos cesa la obligación de dar alimentos según el Código Familiar de Morelos?',
   'Art. 55: cesa I. mientras el deudor esté en imposibilidad absoluta; II. cuando el acreedor deja de necesitarlos (subsiste '
@@ -83,7 +78,7 @@ q('facil', '¿En qué casos cesa la obligación de dar alimentos según el Códi
   'subsiste hasta los dieciocho años.',
   [M('Imposibilidad absoluta del deudor'), M('El acreedor deja de necesitarlos'), M('Muerte del acreedor alimentario'),
    S('Violencia familiar o delito del acreedor contra el deudor'),
-   S('En las fracciones III a V subsiste hasta los 18 años'), cita(55, 'MF')], MORELOS)
+   S('En las fracciones III a V subsiste hasta los 18 años'), cita(55, 'MF')])
 
 q('facil', '¿Qué características tiene el derecho a recibir alimentos en el Código Familiar de Morelos?',
   'Art. 56: no es renunciable ni puede ser objeto de transacción, compensación o convenio que establezca modalidad o '
@@ -91,7 +86,7 @@ q('facil', '¿Qué características tiene el derecho a recibir alimentos en el C
   'momento por quien lo acredite.',
   [M('Es imprescriptible', 2), M('Es irrenunciable'), M('Es retroactivo'),
    S('No admite transacción ni compensación'), cita_alguno((56, 'MF'), (57, 'MF')),
-   N('Afirma que el derecho a alimentos prescribe')], MORELOS)
+   N('Afirma que el derecho a alimentos prescribe')])
 
 q('facil', '¿Cómo define el Código Familiar de Morelos el concubinato y cómo se acredita?',
   'Art. 65: es la unión de hecho de dos personas, ambas libres de matrimonio y sin impedimento para contraerlo, que viven '
@@ -101,13 +96,13 @@ q('facil', '¿Cómo define el Código Familiar de Morelos el concubinato y cómo
   [M('Unión de hecho de dos personas libres de matrimonio y sin impedimento para contraerlo', 2),
    M('Dos años de vida en común ininterrumpida', 2), M('O cohabitación con uno o más hijos en común'),
    cita(65, 'MF'), N('Afirma que exige cinco años de convivencia'),
-   N('Afirma que el concubinato solo puede ser entre un hombre y una mujer')], MORELOS)
+   N('Afirma que el concubinato solo puede ser entre un hombre y una mujer')])
 
 q('facil', '¿A qué edad pueden contraer matrimonio los contrayentes en Morelos?',
   'Art. 72 del Código Familiar para el Estado de Morelos: los contrayentes necesitan haber cumplido dieciocho años. La '
   'falta de edad requerida por la ley es un impedimento no dispensable (art. 77, fr. XVI).',
   [M('Dieciocho años', 2), cita(72, 'MF'), S('La falta de edad es impedimento no dispensable (art. 77)'),
-   N('Afirma que puede casarse a los 16 años con dispensa o consentimiento de los padres')], MORELOS)
+   N('Afirma que puede casarse a los 16 años con dispensa o consentimiento de los padres')])
 
 q('facil', '¿Cuáles son los impedimentos dispensables para contraer matrimonio en Morelos?',
   'Art. 78: I. derogada; II. estar inscrito en el Registro Nacional de Obligaciones Alimentarias (el oficial pide el '
@@ -117,7 +112,7 @@ q('facil', '¿Cuáles son los impedimentos dispensables para contraer matrimonio
   [M('Parentesco colateral desigual: tíos y sobrinos en tercer grado', 2),
    M('Enfermedad crónica e incurable contagiosa o hereditaria, con conocimiento acreditado de ambos'),
    S('Estar inscrito en el Registro Nacional de Obligaciones Alimentarias'), cita(78, 'MF'),
-   N('Afirma que el parentesco por consanguinidad en línea recta es dispensable')], MORELOS)
+   N('Afirma que el parentesco por consanguinidad en línea recta es dispensable')])
 
 q('facil', '¿Qué bienes pueden integrar el patrimonio de familia en Morelos y qué protección tienen?',
   'Art. 136: la casa habitación de la familia y los muebles de uso ordinario no suntuarios; un lote de parcela cultivable; '
@@ -126,14 +121,14 @@ q('facil', '¿Qué bienes pueden integrar el patrimonio de familia en Morelos y 
   'de socio en cooperativas y mutualistas; y el equipo de trabajo de quienes prestan servicios independientes. Art. 138: '
   'esos bienes son inalienables y no están sujetos a embargo ni gravamen alguno.',
   [M('La casa habitación y los muebles de uso ordinario no suntuarios'), M('Son inalienables e inembargables', 2),
-   S('Incluye parcela cultivable o equipo de trabajo'), cita_alguno((136, 'MF'), (138, 'MF'))], MORELOS)
+   S('Incluye parcela cultivable o equipo de trabajo'), cita_alguno((136, 'MF'), (138, 'MF'))])
 
 q('facil', '¿Cuándo puede haber separación de bienes en el matrimonio según el Código Familiar de Morelos?',
   'Art. 116: puede haber separación de bienes en virtud de capitulaciones anteriores al matrimonio, durante éste por '
   'convenio de los consortes o por sentencia judicial; puede comprender los bienes de que sean dueños al casarse y también '
   'los que adquieran después.',
   [M('Por capitulaciones anteriores al matrimonio'), M('Durante el matrimonio por convenio de los consortes'),
-   M('Por sentencia judicial'), S('Puede comprender bienes anteriores y posteriores'), cita(116, 'MF')], MORELOS)
+   M('Por sentencia judicial'), S('Puede comprender bienes anteriores y posteriores'), cita(116, 'MF')])
 
 q('facil', 'En Morelos, si el matrimonio fue bajo separación de bienes, ¿qué indemnización puede corresponder en el divorcio '
   'al cónyuge que se dedicó al hogar?',
@@ -142,14 +137,14 @@ q('facil', 'En Morelos, si el matrimonio fue bajo separación de bienes, ¿qué 
   'al trabajo del hogar y, en su caso, al cuidado de los hijos; el Juez de lo Familiar resuelve según las circunstancias.',
   [M('Hasta el 50% del valor de los bienes adquiridos', 2), M('Aplica al matrimonio bajo separación de bienes'),
    M('A favor del cónyuge dedicado preponderantemente al hogar y al cuidado de los hijos'), cita(178, 'MF'),
-   N('Afirma que la indemnización es siempre del 50% exacto de todos los bienes del otro cónyuge')], MORELOS)
+   N('Afirma que la indemnización es siempre del 50% exacto de todos los bienes del otro cónyuge')])
 
 q('facil', '¿Qué efecto tiene la reconciliación de los cónyuges en un procedimiento de divorcio en Morelos?',
   'Art. 176 del Código Familiar de Morelos: la reconciliación pone término al procedimiento de divorcio en cualquier estado '
   'en que se encuentre; los interesados deben comunicarla al Juez de lo Familiar. En el divorcio voluntario la '
   'reconciliación es además causa para archivar la solicitud (art. 497 del Código Procesal Familiar).',
   [M('Pone término al procedimiento en cualquier estado en que se encuentre', 2), M('Debe comunicarse al Juez de lo Familiar'),
-   cita(176, 'MF')], MORELOS)
+   cita(176, 'MF')])
 
 # CNPCF
 q('facil', 'Conforme al Código Nacional de Procedimientos Civiles y Familiares, cuando se acredita la obligación alimentaria, '
@@ -231,7 +226,7 @@ q('facil', 'Según el Código Procesal Familiar de Morelos, ¿en qué plazo debe
   'fraude si se le ocultó el nacimiento. Art. 449: la demanda de reconocimiento de paternidad y maternidad puede interponerse '
   'en cualquier tiempo.',
   [M('Sesenta días', 2), M('Desde el nacimiento, desde su llegada o desde que descubrió el fraude'),
-   M('El reconocimiento de paternidad puede demandarse en cualquier tiempo (art. 449)'), cita(447, 'MP')], MORELOS)
+   M('El reconocimiento de paternidad puede demandarse en cualquier tiempo (art. 449)'), cita(447, 'MP')])
 
 q('facil', 'En el divorcio voluntario regulado por el Código Procesal Familiar de Morelos, ¿pueden los cónyuges comparecer '
   'por medio de apoderado?',
@@ -239,7 +234,7 @@ q('facil', 'En el divorcio voluntario regulado por el Código Procesal Familiar 
   'comparecer personalmente, sin representantes ni mandatarios. La audiencia de divorcio debe fijarse en un plazo máximo de '
   'quince días (art. 492).',
   [M('No: deben comparecer personalmente', 2), cita(491, 'MP'), S('Audiencia dentro de un plazo máximo de 15 días (art. 492)'),
-   N('Afirma que pueden comparecer mediante apoderado o mandatario')], MORELOS)
+   N('Afirma que pueden comparecer mediante apoderado o mandatario')])
 
 # ═══════════════════════════════ MEDIANO (16) ═══════════════════════════════
 q('mediano', 'Clasifica los impedimentos para contraer matrimonio en el Código Familiar de Morelos y explica la diferencia '
@@ -253,14 +248,14 @@ q('mediano', 'Clasifica los impedimentos para contraer matrimonio en el Código 
   'conocimiento, e inscripción en el Registro Nacional de Obligaciones Alimentarias.',
   [M('Dispensables: el matrimonio celebrado puede convalidarse', 2), M('No dispensables: impiden la validez del matrimonio', 2),
    M('Ejemplo de no dispensable (consanguinidad en línea recta, matrimonio subsistente o falta de edad)'),
-   M('Ejemplo de dispensable (tíos y sobrinos o enfermedad crónica con conocimiento)'), cita(76, 'MF')], MORELOS)
+   M('Ejemplo de dispensable (tíos y sobrinos o enfermedad crónica con conocimiento)'), cita(76, 'MF')])
 
 q('mediano', '¿Cómo se miden los grados y las líneas de parentesco según el Código Familiar de Morelos?',
   'Arts. 29 y 30: cada generación forma un grado y la serie de grados constituye la línea de parentesco. La línea es recta '
   'o transversal: la recta es la serie de grados entre personas que descienden unas de otras; la transversal, la serie de '
   'grados entre personas que, sin descender unas de otras, proceden de un progenitor o tronco común.',
   [M('Cada generación forma un grado', 2), M('Línea recta: personas que descienden unas de otras'),
-   M('Línea transversal: proceden de un tronco común sin descender unas de otras'), cita_alguno((29, 'MF'), (30, 'MF'))], MORELOS)
+   M('Línea transversal: proceden de un tronco común sin descender unas de otras'), cita_alguno((29, 'MF'), (30, 'MF'))])
 
 q('mediano', '¿Qué son las capitulaciones matrimoniales y qué regímenes patrimoniales prevé el Código Familiar de Morelos?',
   'Art. 101: las capitulaciones matrimoniales son los pactos que los cónyuges celebran respecto de los bienes que aportan al '
@@ -268,7 +263,7 @@ q('mediano', '¿Qué son las capitulaciones matrimoniales y qué regímenes patr
   'y la separación de bienes (cap. VIII, art. 116), que puede pactarse antes, convenirse durante el matrimonio o decretarse '
   'judicialmente.',
   [M('Pactos de los cónyuges sobre los bienes que aportan o adquieren', 2), M('Sociedad conyugal'), M('Separación de bienes'),
-   cita(101, 'MF')], MORELOS)
+   cita(101, 'MF')])
 
 q('mediano', 'Explica los principios básicos de las órdenes de protección en el Código Nacional de Procedimientos Civiles y '
   'Familiares.',
@@ -389,7 +384,7 @@ q('mediano', '¿Qué deberes tienen los padres para con sus hijos según el Cód
   'positiva y ejemplar; alimentos; una familia estable y solidaria; dirección y orientación acordes con la evolución de sus '
   'facultades sin restringir sus derechos; y un entorno afectivo, comprensivo y sin violencia.',
   [M('Ambiente familiar propicio y familia estable', 2), M('Educación y alimentos'), M('Entorno afectivo y sin violencia'),
-   S('Orientación sin restringir sus derechos'), cita(181, 'MF')], MORELOS)
+   S('Orientación sin restringir sus derechos'), cita(181, 'MF')])
 
 # ═══════════════════════════════ DIFÍCIL (12) ═══════════════════════════════
 q('dificil', 'Compara el divorcio voluntario del Código Procesal Familiar de Morelos con el divorcio bilateral del Código '
@@ -405,7 +400,7 @@ q('dificil', 'Compara el divorcio voluntario del Código Procesal Familiar de Mo
    M('Morelos: comparecencia personal obligatoria'), M('CNPCF: puede tramitarse ante juez, notario o Registro Civil', 2),
    M('CNPCF: única audiencia con sentencia oral irrecurrible'), cita(493, 'MP'), cita_alguno((655, 'CN'), (657, 'CN')),
    S('Morelos: caducidad por tres meses de inactividad'),
-   N('Afirma que el CNPCF también exige una junta de avenencia para reconciliar')], MORELOS)
+   N('Afirma que el CNPCF también exige una junta de avenencia para reconciliar')])
 
 q('dificil', 'Compara la separación de personas como acto previo en el Código Procesal Familiar de Morelos y en el CNPCF, '
   'en especial respecto de la custodia de los hijos menores.',
@@ -419,7 +414,7 @@ q('dificil', 'Compara la separación de personas como acto previo en el Código 
    M('CNPCF: el juez decide la guarda y custodia provisional junto con alimentos y convivencias', 2),
    M('CNPCF: cualquier persona puede solicitarla si la violencia impide hacerlo a la interesada'),
    cita(212, 'MP'), cita_alguno((580, 'CN'), (581, 'CN')),
-   N('Afirma que el CNPCF otorga la custodia a la madre de los menores de siete años')], MORELOS)
+   N('Afirma que el CNPCF otorga la custodia a la madre de los menores de siete años')])
 
 q('dificil', 'Compara cómo se regulan las pruebas científicas o biológicas en el Código Procesal Familiar de Morelos y en el '
   'CNPCF, y qué ha dicho la SCJN sobre la negativa a la prueba genética.',
@@ -431,7 +426,7 @@ q('dificil', 'Compara cómo se regulan las pruebas científicas o biológicas en
   'identidad y el interés superior.',
   [M('Morelos: la parte oferente cubre los gastos y el juez admite según su prudente arbitrio'),
    M('CNPCF: obligación de proporcionar muestras, con apercibimiento de tener por ciertas las afirmaciones contrarias', 2),
-   M('SCJN: la negativa genera presunción de filiación', 2), cita_alguno((360, 'MP'), (362, 'MP')), cita(552, 'CN')], MORELOS)
+   M('SCJN: la negativa genera presunción de filiación', 2), cita_alguno((360, 'MP'), (362, 'MP')), cita(552, 'CN')])
 
 q('dificil', '¿Cómo se articulan las reglas sustantivas de alimentos del Código Familiar de Morelos con las reglas procesales '
   'del CNPCF para fijarlos y cobrarlos?',
@@ -444,7 +439,7 @@ q('dificil', '¿Cómo se articulan las reglas sustantivas de alimentos del Códi
   [M('Proporcionalidad entre posibilidad del deudor y necesidad del acreedor (Morelos)', 2),
    M('Pensión provisional al día siguiente con orden de descuento (CNPCF)'),
    M('Inscripción en el Registro Nacional de Obligaciones Alimentarias por más de 90 días de incumplimiento (CNPCF)'),
-   cita(46, 'MF'), cita_alguno((562, 'CN'), (565, 'CN'))], MORELOS)
+   cita(46, 'MF'), cita_alguno((562, 'CN'), (565, 'CN'))])
 
 q('dificil', 'Compara el procedimiento de adopción del Código Procesal Familiar de Morelos con el del CNPCF.',
   'Morelos (arts. 510–512): deben consentir quien ejerce la patria potestad, el tutor, quienes lo acogieron como hijo o el MP '
@@ -457,7 +452,7 @@ q('dificil', 'Compara el procedimiento de adopción del Código Procesal Familia
   [M('Morelos: el mayor de doce años debe consentir su adopción', 2), M('Morelos: el juez resuelve dentro del tercer día'),
    M('CNPCF: competente el juez del domicilio de quien se pretende adoptar'),
    M('CNPCF: solicitud por escrito o comparecencia videograbada, proveída el mismo día'),
-   cita(510, 'MP'), cita_alguno((642, 'CN'), (644, 'CN'))], MORELOS)
+   cita(510, 'MP'), cita_alguno((642, 'CN'), (644, 'CN'))])
 
 q('dificil', 'En un divorcio en Morelos, ¿cuándo procede pensión alimenticia para un excónyuge según el Código Familiar, y '
   'cómo se relaciona con la pensión compensatoria de la jurisprudencia de la SCJN?',
@@ -470,7 +465,7 @@ q('dificil', 'En un divorcio en Morelos, ¿cuándo procede pensión alimenticia 
   [M('Morelos: procede si acredita imposibilidad (edad, salud, incapacidad) y necesidad', 2),
    M('Morelos: el juez considera capacidad para trabajar y situación económica'),
    M('SCJN: pensión compensatoria asistencial y resarcitoria por desequilibrio económico', 2),
-   cita_alguno((37, 'MF'), (179, 'MF'))], MORELOS)
+   cita_alguno((37, 'MF'), (179, 'MF'))])
 
 q('dificil', 'Compara la indemnización al cónyuge dedicado al hogar del Código Familiar de Morelos con la compensación '
   'económica analizada por la SCJN.',
@@ -482,7 +477,7 @@ q('dificil', 'Compara la indemnización al cónyuge dedicado al hogar del Códig
   'sin expresión de causa).',
   [M('Ambos: hasta el 50% y régimen de separación de bienes', 2), M('Ambos: a favor del cónyuge dedicado al hogar y a los hijos'),
    M('SCJN: finalidad reparadora del desequilibrio, no sancionatoria'), S('SCJN: independiente de la culpa'),
-   cita(178, 'MF')], MORELOS)
+   cita(178, 'MF')])
 
 q('dificil', 'Compara cómo se acredita el concubinato en el Código Familiar de Morelos con los criterios de la SCJN para '
   'valorar su existencia y la duración de los alimentos tras terminar.',
@@ -492,7 +487,7 @@ q('dificil', 'Compara cómo se acredita el concubinato en el Código Familiar de
   'relaciones no matrimoniales son efímeras; tras terminar, los alimentos subsisten por el tiempo que duró la relación y '
   'mientras el acreedor no se case ni se una en otro concubinato.',
   [M('Morelos: dos años de vida en común o un hijo en común', 2), M('SCJN: valoración en conjunto y sin estereotipos', 2),
-   M('SCJN: alimentos por el tiempo que duró el concubinato'), cita(65, 'MF')], MORELOS)
+   M('SCJN: alimentos por el tiempo que duró el concubinato'), cita(65, 'MF')])
 
 q('dificil', 'Compara las medidas urgentes que puede dictar el juez familiar en Morelos al pedirse la separación de personas '
   'con las medidas provisionales y de protección del CNPCF.',
@@ -503,7 +498,7 @@ q('dificil', 'Compara las medidas urgentes que puede dictar el juez familiar en 
   'incluyen la desocupación del domicilio por el agresor y la prohibición de acercarse (art. 573).',
   [M('Morelos: en urgencia decreta con premura la separación y los alimentos', 2),
    M('CNPCF: medidas de oficio sin audiencia de la contraparte'), M('CNPCF: órdenes de protección en 24 horas y cumplidas en 72'),
-   cita(208, 'MP'), cita_alguno((569, 'CN'), (575, 'CN'))], MORELOS)
+   cita(208, 'MP'), cita_alguno((569, 'CN'), (575, 'CN'))])
 
 q('dificil', 'Analiza la custodia de hijos pequeños: la regla del Código Procesal Familiar de Morelos, el interés superior en '
   'el CNPCF y los criterios de la SCJN sobre la preferencia materna.',
@@ -516,7 +511,7 @@ q('dificil', 'Analiza la custodia de hijos pequeños: la regla del Código Proce
   [M('Morelos: la madre conserva a los menores de siete años a falta de convenio', 2),
    M('SCJN: la preferencia materna no es un derecho ni es absoluta (incluso inconstitucional)', 2),
    M('Debe prevalecer el interés superior del menor en cada caso'), cita(212, 'MP'), cita(557, 'CN'),
-   N('Concluye que la madre tiene derecho automático a la custodia por ser madre')], MORELOS)
+   N('Concluye que la madre tiene derecho automático a la custodia por ser madre')])
 
 q('dificil', 'Relaciona los plazos para impugnar o reclamar la paternidad en Morelos con los alimentos derivados del '
   'reconocimiento de paternidad y con el criterio de la SCJN sobre la prueba genética.',
@@ -528,7 +523,7 @@ q('dificil', 'Relaciona los plazos para impugnar o reclamar la paternidad en Mor
   [M('Sesenta días para que el marido impugne; el reconocimiento puede demandarse en cualquier tiempo', 2),
    M('Alimentos retroactivos al nacimiento tras el reconocimiento de paternidad', 2),
    M('SCJN: la negativa a la prueba genética genera presunción de filiación'),
-   cita(449, 'MP'), cita(38, 'MF')], MORELOS)
+   cita(449, 'MP'), cita(38, 'MF')])
 
 q('dificil', '¿Cómo se sanciona o enfrenta la violencia familiar en el Código Familiar de Morelos y en el CNPCF?',
   'Código Familiar de Morelos: la violencia familiar determinada por sentencia firme es impedimento no dispensable para '
@@ -540,7 +535,7 @@ q('dificil', '¿Cómo se sanciona o enfrenta la violencia familiar en el Código
   [M('Morelos: impedimento no dispensable para el matrimonio'), M('Morelos: causa de cese de alimentos'),
    M('CNPCF: modificar o suspender convivencias o custodia; convivencias supervisadas', 2),
    M('CNPCF: órdenes de protección (p. ej. desocupación del domicilio por el agresor)'),
-   cita_alguno((77, 'MF'), (55, 'MF')), cita_alguno((561, 'CN'), (573, 'CN'))], MORELOS)
+   cita_alguno((77, 'MF'), (55, 'MF')), cita_alguno((561, 'CN'), (573, 'CN'))])
 
 assert len(Q) == 50, len(Q)
 from collections import Counter  # noqa: E402

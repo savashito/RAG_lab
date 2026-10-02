@@ -5,11 +5,10 @@ Genera bench_sets/penal_mx_50.json — benchmark de 50 preguntas de derecho pena
 Las respuestas esperadas se redactaron a partir del TEXTO DEL CORPUS (tabla
 sistema_penal__qwen06__legal, tema derecho_penal_mexicano) al 2026-09-30: Código Penal de la
 Ciudad de México, Código Penal del Estado de México, Código Penal Federal, CNPP y Código Penal
-de Morelos. Querétaro NO está en el corpus: sus respuestas esperadas usan el texto VIGENTE del
-Código Penal para el Estado de Querétaro (Poder Legislativo de Querétaro, compilación con reformas
-hasta P.O. No. 58, 15-VII-2026: site.legislaturaqueretaro.gob.mx/CloudPLQ/InvEst/Codigos/COD-ID-07.pdf),
-de modo que el benchmark REPRUEBA mientras falte ese código y así deja visible el hueco. Esas preguntas
-llevan 'HUECO CORPUS' en notes.
+de Morelos. Las respuestas de Querétaro usan el texto VIGENTE del Código Penal para el Estado de
+Querétaro (Poder Legislativo de Querétaro, compilación con reformas hasta P.O. No. 58, 15-VII-2026:
+site.legislaturaqueretaro.gob.mx/CloudPLQ/InvEst/Codigos/COD-ID-07.pdf), que después se ingestó.
+Si una ley citada no está en el corpus, la métrica 🔎 lo detecta en cada corrida (no se marca a mano).
 
     uv run python apps/rewrite_lab/bench_sets/build_penal_mx.py
 """
@@ -32,8 +31,6 @@ Q = []
 def q(question, expected, components, notes=''):
     Q.append({'question': question, 'expected_answer': expected, 'notes': notes, 'components': components})
 
-
-QRO_GAP = 'HUECO CORPUS: Código Penal de Querétaro no está ingestado (texto vigente, reforma 15-VII-2026)'
 
 # ═══════════════════════ I. Delitos sexuales y cópula (30) ═══════════════════════
 
@@ -67,7 +64,7 @@ q('Por favor verifica la legislación de las entidades Ciudad de México, Estado
    S('Analiza elementos dogmáticos: conducta (cópula), sujetos, medio comisivo, bien jurídico, dolo'),
    N('Afirma que en Querétaro el estupro protege a personas mayores de 12 años (texto anterior a la reforma de 2021)'),
    N('Afirma que en la Ciudad de México el estupro exige que la víctima sea mayor de 15 años')],
-  QRO_GAP + ' · pregunta modelo del usuario')
+  'pregunta modelo del usuario')
 
 q('¿Cómo define la ley el concepto de cópula en el Código Penal de la Ciudad de México, en el del Estado de México '
   'y en el Código Penal Federal? Señala las diferencias.',
@@ -351,7 +348,7 @@ q('¿Qué establece el Código Penal del Estado de Querétaro sobre el delito de
    S('Se persigue de oficio (art. 168); la querella entre cónyuges (art. 164) está derogada'),
    N('Afirma que en Querétaro la violación entre cónyuges se persigue por querella'),
    N('Afirma que la violación equiparada en Querétaro se refiere a menores de doce años')],
-  QRO_GAP)
+  )
 
 q('Un sujeto es detenido en flagrancia por un delito de estupro. Como el estupro se persigue por querella, ¿qué debe '
   'ocurrir con la querella y cuánto tiempo puede permanecer detenido?',
@@ -680,8 +677,7 @@ OUT.write_text(json.dumps({
     'topic': 'derecho_penal_mexicano',
     'description': ('30 preguntas de delitos sexuales y cópula (CDMX, Edomex, CPF, Morelos; comparativas y '
                     'procesales), 10 de parte general/dogmática y 10 del CNPP. Respuestas basadas en el texto del '
-                    'corpus al 2026-09-30; Querétaro con su texto vigente (reforma 15-VII-2026) aunque no esté en el '
-                    'corpus — esas preguntas fallan a propósito para exhibir el hueco (notes: HUECO CORPUS).'),
+                    'corpus al 2026-09-30; Querétaro con su texto vigente (reforma 15-VII-2026).'),
     'questions': Q,
 }, ensure_ascii=False, indent=1))
 print(f'{len(Q)} preguntas · {sum(len(x["components"]) for x in Q)} componentes → {OUT}')
