@@ -174,11 +174,34 @@
  .miss{font-size:12px;color:#fca5a5} .miss li{margin:2px 0}
  tr.sel td{background:#131a26}
  .delta.up{color:#4ade80} .delta.down{color:#f87171}
+ /* ✍️ revisión humana */
+ .tag.rv-ok{background:#1e293b;color:#c7cdd6;border:1px solid #334155} .tag.rv-diff{background:#7f1d1d;color:#fecaca}
+ .bmodal-box.xwide{max-width:1280px}
+ .rv-q{font-size:16px;font-weight:600;margin:8px 0 10px}
+ .rv-cols{display:flex;gap:16px;align-items:flex-start}
+ .rv-ans{flex:3;min-width:0} .rv-ans .ans{background:#0b0d12;border:1px solid #2a2f3a;border-radius:10px;padding:4px 14px;max-height:62vh;overflow:auto}
+ .rv-side{flex:2;min-width:300px;max-height:62vh;overflow:auto;padding-right:4px}
+ .rv-comp{border:1px solid #2a2f3a;border-radius:8px;padding:8px 10px;margin:6px 0;font-size:13px;background:#12151c}
+ .rv-comp.must_not{border-style:dashed;border-color:#7f1d1d}
+ .rv-seg{display:flex;gap:4px;margin-top:6px}
+ .rv-seg button{flex:1;background:#171a21;border:1px solid #2a2f3a;color:#9aa4b2;padding:4px 6px;font-size:12px;font-weight:600}
+ .rv-seg button.on.presente{background:#14532d;color:#fff;border-color:#16a34a}
+ .rv-seg button.on.parcial{background:#713f12;color:#fff;border-color:#ca8a04}
+ .rv-seg button.on.ausente{background:#374151;color:#fff;border-color:#6b7280}
+ .rv-comp.must_not .rv-seg button.on.presente{background:#7f1d1d;border-color:#dc2626}
+ .rv-comp.must_not .rv-seg button.on.ausente{background:#14532d;border-color:#16a34a}
+ .rv-judge{font-size:12px;color:#9aa4b2;margin-top:6px;padding-top:6px;border-top:1px dashed #2a2f3a}
+ .rv-judge.diff{color:#fca5a5}
+ .rv-stars{display:flex;align-items:center;gap:2px}
+ .rv-stars button{background:transparent;color:#4b5563;font-size:22px;padding:0 3px;line-height:1}
+ .rv-stars button.on{color:#facc15}
+ .rv-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid #2a2f3a;margin-top:12px;padding-top:10px}
  @media (max-width:900px){
    .bbar{position:static;margin-top:0}   /* en pantallas chicas la barra fija se comería media pantalla */
    .bsub{overflow-x:auto} .bsub button{white-space:nowrap;padding:9px 10px}
    .bmodal{padding:12px 8px} .cedit{flex-wrap:wrap} .cedit input[type=text]{flex:1 1 100%;order:3}
    #bench-runs,#bench-detail,#bench-compare-out{overflow-x:auto}
+   .rv-cols{flex-direction:column} .rv-side{max-height:none;min-width:0;width:100%} .rv-ans{width:100%}
  }
  /* ── Responsive / móvil ── */
  @media (max-width:760px){
@@ -529,6 +552,25 @@
    <div class="row"><button id="bq-save">Guardar pregunta</button><button class="ghost" id="bq-cancel">Cancelar</button></div>
  </div></div>
 
+
+ <div class="bmodal" id="bench-review" hidden><div class="bmodal-box xwide">
+   <div class="row" style="margin:0;justify-content:space-between">
+     <div id="rv-head"></div>
+     <div class="row" style="margin:0;gap:6px">
+       <button class="ghost" id="rv-prev" onclick="rvGo(-1)" title="← (flecha izquierda)">← Anterior</button>
+       <button class="ghost" id="rv-next" onclick="rvGo(+1)" title="→ (flecha derecha)">Siguiente →</button>
+       <button class="ghost" onclick="rvGo(0)" title="Salta a la siguiente pregunta que aún no revisaste">⏭ Sin revisar</button>
+       <button class="ghost" onclick="rvClose()" title="Esc">✕</button>
+     </div>
+   </div>
+   <div id="rv-body"></div>
+   <div class="rv-foot">
+     <button id="rv-save-next" onclick="rvSave(true)" title="Ctrl/⌘ + Enter">💾 Guardar y siguiente</button>
+     <button class="ghost" id="rv-save" onclick="rvSave(false)">Guardar</button>
+     <span id="rv-status"></span><span style="flex:1"></span>
+     <button class="danger" id="rv-del" onclick="rvDelete()" hidden>🗑 Borrar mi revisión</button>
+   </div>
+ </div></div>
  <div class="bmodal" id="bench-help" hidden><div class="bmodal-box wide">
    <h3>¿Cómo se califica?</h3>
    <p>Para cada pregunta el sistema responde con la configuración elegida y el <b>juez</b> (<span id="bench-judge">LLM</span>)
@@ -544,6 +586,10 @@
      dicen qué artículo necesita la respuesta. En cada corrida se revisa si el chunk de ese artículo llegó al contexto que vio el LLM.
      Así se separa <b>«la búsqueda no lo trajo»</b> (🔎✗, problema de recuperación) de <b>«lo tenía y respondió mal»</b>
      (filtro «🔎✓ pero no pasa», problema de prompt o del modelo). No depende del juez, así que no tiene ruido.</p>
+   <p><b>✍️ Revisión humana</b>: en el detalle de una corrida, «✍️ Revisar respuestas» muestra una pregunta a la vez.
+     Quien revisa marca cada componente igual que el juez y, si quiere, califica la respuesta de 1 a 5 y deja un comentario.
+     El veredicto del juez está <b>oculto</b> (👁 para verlo), para no sesgar. Con eso se calcula el <b>score humano</b> (misma fórmula)
+     y el <b>acuerdo con el juez</b>: si es alto (≈85 % o más), el score automático es creíble; si no, el filtro «✍️ ≠ juez» muestra dónde se equivoca.</p>
    <p><b>Dificultad de cada pregunta</b> (sirve para ver el score por nivel en los resultados y en la comparación):</p>
    <ul>
      <li><span class="tag d-facil">Fácil</span> pregunta directa sobre un artículo o caso específico bien definido de la ley (p. ej. «¿cuál es el plazo máximo de la prisión preventiva?»).</li>

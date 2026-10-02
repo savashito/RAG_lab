@@ -6,6 +6,8 @@
 // Estructura: barra fija (tema · set · menú ⋯ · ayuda) + tres sub-pestañas:
 //   ▶ Correr y resultados (default) · 📝 Preguntas · 📊 Comparar
 // Los formularios de set y de pregunta son ventanas emergentes (no hay que hacer scroll).
+// ✍️ Revisión humana: desde el detalle de una corrida, una persona marca cada componente de
+// cada respuesta (como el juez, que queda oculto tras un 👁) y la califica de 1 a 5.
 
 let BENCH = {sets: [], set: null, runs: [], editingQ: null, editingSet: null, poll: null, inited: false,
              sub: 'run', detail: null, dfilter: 'all', dsort: 'pos', open: new Set(), cmp: null, cmpOnlyDiff: false};
@@ -95,7 +97,7 @@ async function benchInit(){
     $('bench-refresh').addEventListener('click', loadBenchRuns);
     $('bench-compare').addEventListener('click', compareBenchRuns);
     // Modales: clic en el fondo o Esc cierran; el menú ⋯ se cierra al hacer clic fuera.
-    document.querySelectorAll('.bmodal').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m) m.hidden = true; }));
+    document.querySelectorAll('.bmodal').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m){ if(m.id==='bench-review') rvClose(); else m.hidden = true; } }));
     document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.bmodal').forEach(m=>m.hidden = true); });
     document.addEventListener('click', e=>{ const m=$('bench-menu'); if(m.open && !m.contains(e.target)) m.open = false; });
   }
@@ -377,7 +379,8 @@ async function loadBenchRuns(){
   $('bench-runs').innerHTML = runs.length ? `<table><tr><th title="marcar para comparar">☑</th><th>#</th><th>fecha</th><th>etiqueta / config</th><th>estado</th>
     <th title="promedio del score por pregunta">score</th><th title="% de preguntas con todos los must y ningún must_not">pasan</th>
     <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th>
-    <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th><th>s/preg</th><th></th></tr>`+
+    <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th><th>s/preg</th>
+    <th title="Preguntas con revisión humana">✍️</th><th></th></tr>`+
     runs.map(r=>{ const m=r.metrics||{}; return `<tr class="clk ${r.id===sel?'sel':''}" onclick="showBenchRun(${r.id})">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="bench-cmp" value="${r.id}" ${checked.has(r.id)?'checked':''}></td><td>${r.id}</td>
       <td style="white-space:nowrap">${esc((r.created_at||'').slice(5,16))}</td>
@@ -386,11 +389,12 @@ async function loadBenchRuns(){
       <td class="sc" style="background:${scoreColor(m.score)}">${pct(m.score)}</td>
       <td class="sc">${pct(m.pass_rate)}</td><td class="sc">${pct(m.must_coverage)}</td>
       <td class="sc">${m.violations??'—'}</td><td class="sc">${pct(m.retrieval_recall)}</td><td class="sc">${m.avg_seconds??'—'}</td>
-      <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
+      <td class="sc">${r.reviewed ? `${r.reviewed}/${r.done}` : '<span class="muted">—</span>'}</td>
+      <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id}, ${r.reviewed||0})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
     : '<p class="muted">Aún no hay corridas de este set. Configura arriba y pulsa ▶ Correr benchmark.</p>';
 }
-async function deleteBenchRun(rid){
-  if(!confirm(`¿Borrar la corrida #${rid} (y su artefacto)?`)) return;
+async function deleteBenchRun(rid, reviewed){
+  if(!confirm(`¿Borrar la corrida #${rid} (y su artefacto)?` + (reviewed ? `\n\n⚠️ Tiene ${reviewed} preguntas con revisión humana: también se borrarán.` : ''))) return;
   try{ await bjson('/api/bench/runs/'+rid, {method:'DELETE'});
     if(BENCH.detail && BENCH.detail.id===rid){ BENCH.detail=null; $('bench-detail').innerHTML=''; }
     loadBenchRuns(); }
@@ -410,11 +414,29 @@ const DFILTERS = [
   ['mediano', 'Mediano', x=>qDiff(x.question_id)==='mediano'],
   ['dificil', 'Difícil', x=>qDiff(x.question_id)==='dificil'],
   ['err', 'Errores', x=>!!x.error],
+  ['rv_no', '✍️ Sin revisar', x=>!x.error && !myReview(x.question_id)],
+  ['rv_yes', '✍️ Revisadas', x=>!x.error && revsOf(x.question_id).length>0],
+  ['rv_diff', '✍️ ≠ juez (pasa/no pasa)', x=>!x.error && revsOf(x.question_id).some(v=>v.passed!==x.passed)],
 ];
+// Revisiones humanas de la corrida en pantalla (BENCH.reviews = {me, reviews, stats}).
+const revsOf = qid => ((BENCH.reviews||{}).reviews||[]).filter(v=>v.question_id===qid);
+const myReview = qid => revsOf(qid).find(v=>v.reviewer===(BENCH.reviews||{}).me);
+async function loadReviews(rid){
+  try{ BENCH.reviews = await bjson(`/api/bench/runs/${rid}/reviews`); }
+  catch(e){ BENCH.reviews = {me:null, reviews:[], stats:{}}; }
+}
+// Celda ✍️ de la tabla de resultados: veredicto humano (pasa/no pasa) y calificación.
+function revCell(x){
+  if(x.error) return '';
+  const vs = revsOf(x.question_id); if(!vs.length) return '<span class="muted">—</span>';
+  return vs.map(v=>{ const diff = v.passed!==x.passed;
+    return `<span class="tag ${diff?'rv-diff':'rv-ok'}" title="${attr(v.reviewer+(diff?' · NO coincide con el juez':' · coincide con el juez')+(v.comment?'\n«'+v.comment+'»':''))}">${v.passed?'✅':'❌'}${v.rating?' '+v.rating+'★':''}${v.comment?' 💬':''}</span>`; }).join(' ');
+}
 async function showBenchRun(rid, quiet){
   let r; try{ r = await bjson('/api/bench/runs/'+rid); }catch(e){ bmsg(esc(e.message), false); return; }
   if(!BENCH.detail || BENCH.detail.id!==rid){ BENCH.dfilter = 'all'; }
   BENCH.detail = r;
+  await loadReviews(rid);
   document.querySelectorAll('#bench-runs tr.clk').forEach(tr=>tr.classList.toggle('sel', tr.getAttribute('onclick')===`showBenchRun(${rid})`));
   renderBenchDetail();
   if(!quiet) $('bench-detail').scrollIntoView({behavior:'smooth', block:'start'});
@@ -444,13 +466,22 @@ function renderBenchDetail(){
   const card = (t, v, sub) => `<div class="card"><h3>${t}</h3><div style="font-size:22px;font-weight:700">${v}</div>${sub?`<div class="muted" style="font-size:12px">${sub}</div>`:''}</div>`;
   const nPass = r.results.filter(x=>!x.error && x.passed).length;
   $('bench-detail').innerHTML = `<h2 style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">Corrida #${r.id} ${esc(r.label||'')}
-      <span class="runcfg">${esc(cfgSummary(r.config))}</span>${r.status==='running'?`<span class="tag gap">en curso ${r.done}/${r.n}</span>`:''}</h2>
+      <span class="runcfg">${esc(cfgSummary(r.config))}</span>${r.status==='running'?`<span class="tag gap">en curso ${r.done}/${r.n}</span>`:''}
+      <span style="flex:1"></span>${r.results.some(x=>!x.error)?`<button onclick="openReview()" title="Califica tú las respuestas, componente por componente">✍️ Revisar respuestas</button>`:''}</h2>
     <div class="cards">
       ${card('score medio', pct(m.score))}
       ${card('preguntas que pasan', pct(m.pass_rate), `${nPass} de ${r.results.length}`)}
       ${card('cobertura de must', pct(m.must_coverage))}
       ${card('violaciones must_not', m.violations??'—')}
       ${m.retrieval_recall!=null ? card('artículos recuperados 🔎', pct(m.retrieval_recall), `${pct(m.retrieval_full)} de las preguntas con todos`) : ''}
+      ${(()=>{ const st = (BENCH.reviews||{}).stats||{}; if(!st.n_reviews) return '';
+        return `<div class="card" title="Comparado en las mismas preguntas revisadas"><h3>✍️ revisión humana</h3>
+          <div class="m"><span>revisadas</span><b>${st.n_questions} de ${r.results.filter(x=>!x.error).length}</b></div>
+          <div class="m"><span>score humano / juez</span><b>${pct(st.human_score)} / ${pct(st.judge_score)}</b></div>
+          <div class="m"><span>pasan humano / juez</span><b>${pct(st.human_pass_rate)} / ${pct(st.judge_pass_rate)}</b></div>
+          <div class="m" title="% de componentes donde el juez marcó lo mismo que la persona"><span>acuerdo por componente</span><b>${pct(st.comp_agreement)}</b></div>
+          <div class="m" title="% de preguntas donde juez y persona coinciden en si pasa"><span>acuerdo pasa/no pasa</span><b>${pct(st.pass_agreement)}</b></div>
+          ${st.avg_rating!=null?`<div class="m"><span>calificación media</span><b>${st.avg_rating}★</b></div>`:''}</div>`; })()}
       ${(()=>{ const ds = diffStats(r.results); if(!DIFFS.some(([d])=>ds[d])) return '';
         return `<div class="card"><h3>score por dificultad</h3>${DIFFS.map(([d,l])=>ds[d]
           ? `<div class="m"><span>${diffTag(d)} <span class="muted" style="font-size:11px">${ds[d].n}</span></span><b>${pct(ds[d].score)}</b></div>` : '').join('')}</div>`; })()}
@@ -463,7 +494,8 @@ function renderBenchDetail(){
         <option value="worst" ${BENCH.dsort==='worst'?'selected':''}>peor score primero</option></select>
     </div>
     <p class="muted" style="font-size:12px;margin:4px 0">Clic en una fila → respuesta completa, todos los veredictos con evidencia, fuentes y salida cruda del juez.</p>
-    <table><tr><th>#</th><th>pregunta</th><th>score</th><th>pasa</th><th title="must/should no presentes (✗ ausente · ◐ parcial · · should) y must_not que aparecieron (⚠️)">qué faltó / qué sobró</th><th>s</th></tr>`+
+    <table><tr><th>#</th><th>pregunta</th><th>score</th><th>pasa</th><th title="must/should no presentes (✗ ausente · ◐ parcial · · should) y must_not que aparecieron (⚠️)">qué faltó / qué sobró</th>
+      <th title="Revisión humana: ✅/❌ según la persona, ★ calificación; en rojo si no coincide con el juez">✍️</th><th>s</th></tr>`+
     (rows.length ? rows.map(x=>{ const miss = missesOf(x); return `<tr class="clk" onclick="toggleBenchAnswer(${r.id}, ${x.question_id}, this)">
       <td>${x.position+1}</td>
       <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))} ${retBadge(x.retrieval)}${isGap(qNotes(x.question_id))?' <span class="tag gap">HUECO</span>':''}</td>
@@ -473,18 +505,19 @@ function renderBenchDetail(){
         : (miss.length || retMiss(x).length) ? `<ul class="miss" style="margin:0;padding-left:0;list-style:none">${miss.map(([ic,v])=>
             `<li title="${attr((v.verdict||'sin veredicto')+(v.evidence?' — «'+v.evidence+'»':''))}">${ic} ${esc(v.text)}</li>`).join('')}${retMiss(x).join('')}</ul>`
         : '<span class="muted" style="font-size:12px">todo presente</span>'}</td>
-      <td class="sc">${x.seconds??''}</td></tr>`; }).join('') : '<tr><td colspan="6" class="muted">Ninguna pregunta en este filtro.</td></tr>')+'</table>';
+      <td class="sc" onclick="event.stopPropagation();${x.error?'':`openReview(${x.question_id})`}" title="Revisar esta respuesta">${revCell(x)}</td>
+      <td class="sc">${x.seconds??''}</td></tr>`; }).join('') : '<tr><td colspan="7" class="muted">Ninguna pregunta en este filtro.</td></tr>')+'</table>';
 }
 async function toggleBenchAnswer(rid, qid, tr){
   const next = tr.nextElementSibling;
   if(next && next.classList.contains('bench-ans')){ next.remove(); return; }
   const row = document.createElement('tr'); row.className = 'bench-ans';
-  row.innerHTML = `<td colspan="6" class="muted">cargando…</td>`;
+  row.innerHTML = `<td colspan="7" class="muted">cargando…</td>`;
   tr.after(row);
   try{
     const d = await bjson(`/api/bench/runs/${rid}/artifact?question_id=${qid}`);
     const md = s => (window.marked ? marked.parse(s||'') : `<pre>${esc(s)}</pre>`);
-    row.innerHTML = `<td colspan="6">
+    row.innerHTML = `<td colspan="7">
       <div class="comps" style="margin:4px 0 8px">${(d.verdicts||[]).map(v=>compChip(v, v.verdict)).join('')}</div>
       ${(d.subqueries||[]).length>1?`<details open><summary>🧩 Buscó por partes (${d.subqueries.length} sub-búsquedas)</summary><ol style="margin:4px 0;padding-left:20px">${d.subqueries.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`:''}
       <details open><summary>💬 Respuesta del sistema</summary><div class="ans">${md(d.answer)}</div></details>
@@ -495,8 +528,130 @@ async function toggleBenchAnswer(rid, qid, tr){
       <details><summary>🧾 Salida cruda del juez</summary><pre class="hyde-p">${esc(d.judge_raw)}</pre></details>
       ${d.hyde_passage?`<details><summary>🧪 Borrador HyDE</summary><div class="hyde-p">${esc(d.hyde_passage)}</div></details>`:''}
     </td>`;
-  }catch(e){ row.innerHTML = `<td colspan="6" style="color:#f87171">${esc(e.message)}</td>`; }
+  }catch(e){ row.innerHTML = `<td colspan="7" style="color:#f87171">${esc(e.message)}</td>`; }
 }
+
+// ── ✍️ Revisión humana ──────────────────────────────────────────────────────────
+// Una pregunta a la vez. El veredicto del juez está OCULTO por default (👁 para verlo) para
+// no sesgar a quien revisa; se vuelve a ocultar al cambiar de pregunta.
+const RV_OPTS = [['presente','Presente'], ['parcial','Parcial'], ['ausente','Ausente']];
+function rvList(){ return BENCH.detail.results.filter(x=>!x.error); }
+async function openReview(qid){
+  const list = rvList(); if(!list.length) return;
+  let i = qid!=null ? list.findIndex(x=>x.question_id===qid) : list.findIndex(x=>!myReview(x.question_id));
+  BENCH.rv = {i: Math.max(i,0), dirty: false};
+  openModal('bench-review');
+  await rvShow(BENCH.rv.i);
+}
+async function rvShow(i){
+  const list = rvList(), x = list[i]; if(!x) return;
+  const rv = BENCH.rv; rv.i = i; rv.dirty = false; rv.eye = false;
+  const mine = myReview(x.question_id);
+  rv.verdicts = mine ? [...mine.verdicts] : (x.verdicts||[]).map(()=>null);
+  rv.rating = mine ? mine.rating : null;
+  const done = list.filter(y=>myReview(y.question_id)).length;
+  $('rv-head').innerHTML = `<b>Pregunta ${i+1} de ${list.length}</b> <span class="muted">· corrida #${BENCH.detail.id} · revisadas por ti: ${done}/${list.length}</span>
+    ${mine?'<span class="tag rv-ok">ya la revisaste</span>':''}`;
+  $('rv-prev').disabled = i===0; $('rv-next').disabled = i===list.length-1;
+  $('rv-body').innerHTML = '<p class="muted">cargando…</p>';
+  let d; try{ d = await bjson(`/api/bench/runs/${BENCH.detail.id}/artifact?question_id=${x.question_id}`); }
+  catch(e){ $('rv-body').innerHTML = `<p style="color:#f87171">${esc(e.message)}</p>`; return; }
+  if(BENCH.rv.i!==i) return;   // se navegó a otra mientras cargaba
+  rv.d = d;
+  const md = s => (window.marked ? marked.parse(s||'') : `<pre>${esc(s)}</pre>`);
+  const others = revsOf(x.question_id).filter(v=>v!==mine);
+  $('rv-body').innerHTML = `
+    <div class="rv-q">${esc(x.question)} ${diffTag(qDiff(x.question_id))}</div>
+    <div class="rv-cols">
+      <div class="rv-ans"><div class="muted" style="font-size:12px;margin-bottom:4px">💬 Respuesta del sistema</div><div class="ans">${md(d.answer)}</div>
+        ${d.expected_answer?`<details><summary>🎯 Respuesta esperada</summary><div class="ref">${esc(d.expected_answer)}</div></details>`:''}
+        ${d.chunks?renderChunks(d.chunks, d.score_kind||'score').replace('<details open>','<details>'):''}
+      </div>
+      <div class="rv-side">
+        <div class="row" style="margin:0 0 6px;justify-content:space-between"><b>¿Qué contiene la respuesta?</b>
+          <button class="ghost" id="rv-eye" onclick="rvToggleEye()" title="Mostrar u ocultar lo que marcó el juez (Gemma)">👁 ver juez</button></div>
+        <p class="muted" style="font-size:11px;margin:0 0 6px">En <b>must not</b>, «Presente» = el error SÍ aparece (eso es malo).</p>
+        <div id="rv-comps"></div>
+        <label class="f">Calificación global de la respuesta</label>
+        <div class="rv-stars" id="rv-stars"></div>
+        <label class="f">Comentario (qué está mal, qué falta, qué sobra)</label>
+        <textarea id="rv-comment" style="min-height:80px">${esc(mine ? (mine.comment||'') : '')}</textarea>
+        ${others.length?`<details style="margin-top:8px"><summary>Otras revisiones (${others.length})</summary>${others.map(v=>`<div class="muted" style="font-size:12px;margin:4px 0">${esc(v.reviewer)}: ${v.passed?'✅':'❌'} ${v.rating?v.rating+'★':''} ${v.comment?'— «'+esc(v.comment)+'»':''}</div>`).join('')}</details>`:''}
+      </div>
+    </div>`;
+  $('rv-comment').addEventListener('input', ()=>{ BENCH.rv.dirty = true; });
+  rvRenderComps(); rvRenderStars(); rvStatus();
+  $('rv-del').hidden = !mine;
+}
+function rvRenderComps(){
+  const rv = BENCH.rv, x = rvList()[rv.i], jv = (rv.d && rv.d.verdicts) || x.verdicts || [];
+  $('rv-comps').innerHTML = jv.map((c,k)=>{
+    const h = rv.verdicts[k], j = c.verdict || 'ausente';
+    const judge = rv.eye ? `<div class="rv-judge ${h && h!==j ? 'diff':''}">🤖 juez: <b>${esc(j)}</b>${c.evidence?` — «${esc(c.evidence)}»`:''}</div>` : '';
+    return `<div class="rv-comp ${c.kind}">
+      <div><span class="comp ${c.kind}"><span class="k">${c.kind.replace('_',' ')}</span></span> ${esc(c.text)}</div>
+      <div class="rv-seg">${RV_OPTS.map(([v,l])=>`<button class="${h===v?'on '+v:''}" onclick="rvSet(${k},'${v}')">${l}</button>`).join('')}</div>
+      ${judge}</div>`; }).join('');
+  $('rv-eye').textContent = rv.eye ? '🙈 ocultar juez' : '👁 ver juez';
+}
+function rvRenderStars(){
+  const r = BENCH.rv.rating;
+  $('rv-stars').innerHTML = [1,2,3,4,5].map(n=>`<button class="${r&&n<=r?'on':''}" onclick="rvRate(${n})" title="${['','Muy mala','Mala','Aceptable','Buena','Excelente'][n]}">★</button>`).join('') +
+    `<span class="muted" style="font-size:12px;margin-left:8px">${r?['','Muy mala','Mala','Aceptable','Buena','Excelente'][r]:'sin calificar (opcional)'}</span>`;
+}
+function rvSet(k, v){ BENCH.rv.verdicts[k] = v; BENCH.rv.dirty = true; rvRenderComps(); rvStatus(); }
+function rvRate(n){ BENCH.rv.rating = BENCH.rv.rating===n ? null : n; BENCH.rv.dirty = true; rvRenderStars(); }
+function rvToggleEye(){ BENCH.rv.eye = !BENCH.rv.eye; rvRenderComps(); }
+function rvStatus(msg, ok){
+  const left = BENCH.rv.verdicts.filter(v=>!v).length;
+  $('rv-status').innerHTML = msg ? `<span style="color:${ok===false?'#f87171':'#4ade80'}">${msg}</span>`
+    : left ? `<span class="muted">faltan ${left} componente${left>1?'s':''} por marcar</span>` : '<span class="muted">listo para guardar</span>';
+  $('rv-save').disabled = $('rv-save-next').disabled = left>0;
+}
+async function rvSave(next){
+  const rv = BENCH.rv, x = rvList()[rv.i];
+  try{
+    const r = await bpost(`/api/bench/runs/${BENCH.detail.id}/reviews/${x.question_id}`,
+                          {verdicts: rv.verdicts, rating: rv.rating, comment: $('rv-comment').value});
+    rv.dirty = false;
+    await loadReviews(BENCH.detail.id);
+    const same = r.passed===x.passed;
+    if(next && rv.i < rvList().length-1){ await rvGo(+1, true); return; }
+    rvStatus(`Guardada · score ${pct(r.score)} ${r.passed?'✅ pasa':'❌ no pasa'}${same?'':' (el juez dijo lo contrario)'}`);
+    $('rv-del').hidden = false;
+  }catch(e){ rvStatus(esc(e.message), false); }
+}
+async function rvDelete(){
+  const x = rvList()[BENCH.rv.i];
+  if(!confirm('¿Borrar tu revisión de esta pregunta?')) return;
+  try{ await bjson(`/api/bench/runs/${BENCH.detail.id}/reviews/${x.question_id}`, {method:'DELETE'});
+    await loadReviews(BENCH.detail.id); await rvShow(BENCH.rv.i); }
+  catch(e){ rvStatus(esc(e.message), false); }
+}
+async function rvGo(step, force){
+  if(!force && BENCH.rv.dirty && !confirm('Tienes cambios sin guardar en esta pregunta. ¿Descartarlos?')) return;
+  const n = rvList().length; let i = BENCH.rv.i + step;
+  if(step===0){   // siguiente sin revisar (después de la actual, y si no, desde el inicio)
+    const list = rvList(), pend = k => !myReview(list[k].question_id);
+    i = -1; for(let k=1; k<=n; k++){ const j=(BENCH.rv.i+k)%n; if(pend(j)){ i=j; break; } }
+    if(i<0){ rvStatus('¡Ya revisaste todas las preguntas de esta corrida! 🎉'); return; }
+  }
+  if(i<0 || i>=n) return;
+  await rvShow(i);
+}
+function rvClose(){
+  if(BENCH.rv && BENCH.rv.dirty && !confirm('Tienes cambios sin guardar. ¿Cerrar de todos modos?')) return;
+  closeModal('bench-review');
+  renderBenchDetail(); loadBenchRuns();
+}
+document.addEventListener('keydown', e=>{
+  if($('bench-review').hidden) return;
+  const typing = /^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName);
+  if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation(); rvClose(); }
+  else if((e.metaKey||e.ctrlKey) && e.key==='Enter'){ e.preventDefault(); if(!$('rv-save-next').disabled) rvSave(true); }
+  else if(!typing && e.key==='ArrowLeft') rvGo(-1);
+  else if(!typing && e.key==='ArrowRight') rvGo(+1);
+}, true);
 
 // ── Comparación ─────────────────────────────────────────────────────────────────
 async function compareBenchRuns(){

@@ -12,6 +12,9 @@ Modelo de datos (Postgres, porque se edita desde la UI y se filtra):
   bench_runs        una corrida: config (método, k, HyDE, rerank, prompt), métricas,
                     y la llave del artefacto en el object store
   bench_results     por pregunta: score, pasa/no, veredicto por componente (snapshot)
+  bench_reviews     revisión HUMANA de un resultado (una por revisor): veredicto por
+                    componente, calificación 1–5 y comentario. Sirve para evaluar las
+                    respuestas y para medir cuánto coincide el juez con una persona.
 
 El detalle pesado de cada corrida (respuesta completa, chunks, prompt, salida cruda del
 juez) va al object store (MinIO) en `bench/runs/<id>.json`; ver shared/object_store.py.
@@ -316,6 +319,77 @@ def _retrieval_agg(ok: list[dict]) -> dict:
             'retrieval_n': len(rs)}
 
 
+# ── Revisión humana ──────────────────────────────────────────────────────────────
+# Una persona marca cada componente del resultado (presente/parcial/ausente), igual que el
+# juez, y califica la respuesta de 1 a 5. Con eso se calcula el score humano (misma fórmula)
+# y el ACUERDO con el juez: si es alto, el benchmark automático es creíble.
+
+def clean_review(payload, n_components: int) -> tuple[dict | None, str | None]:
+    """Valida el cuerpo de una revisión → (revisión limpia, error)."""
+    if not isinstance(payload, dict):
+        return None, 'cuerpo inválido'
+    vs = payload.get('verdicts')
+    if not isinstance(vs, list) or len(vs) != n_components:
+        return None, f'se esperaban {n_components} veredictos'
+    verdicts = [_norm_verdict(v) for v in vs]
+    if any(v is None for v in verdicts):
+        return None, 'marca todos los componentes (presente / parcial / ausente)'
+    rating = payload.get('rating')
+    if rating in ('', None):
+        rating = None
+    else:
+        try:
+            rating = int(rating)
+        except (TypeError, ValueError):
+            return None, 'calificación inválida'
+        if not 1 <= rating <= 5:
+            return None, 'la calificación va de 1 a 5'
+    return {'verdicts': verdicts, 'rating': rating,
+            'comment': str(payload.get('comment') or '').strip()[:4000]}, None
+
+
+def score_review(judge_verdicts: list[dict], human: list[str]) -> dict:
+    """Score humano con la misma fórmula que el juez. `judge_verdicts` son los del resultado
+    (traen kind/weight de cada componente, congelados en la corrida)."""
+    return score_question(judge_verdicts, [{'verdict': v} for v in human])
+
+
+def review_stats(results: list[dict], reviews: list[dict]) -> dict:
+    """Métricas de las revisiones humanas de una corrida y su acuerdo con el juez.
+    Con varios revisores por pregunta, cada revisión cuenta por separado."""
+    by_q = {r['question_id']: r for r in results if not r.get('error')}
+    revs = [rv for rv in reviews if rv.get('question_id') in by_q]
+    if not revs:
+        return {'n_reviews': 0, 'n_questions': 0}
+    comp_n = comp_same = pass_same = 0
+    judge_scores, human_scores, ratings = [], [], []
+    confusion = {}   # (juez, humano) → n, para ver hacia dónde se equivoca el juez
+    for rv in revs:
+        res = by_q[rv['question_id']]
+        for jv, hv in zip(res.get('verdicts') or [], rv['verdicts']):
+            j = jv.get('verdict') or 'ausente'
+            comp_n += 1
+            comp_same += j == hv
+            confusion[f'{j}→{hv}'] = confusion.get(f'{j}→{hv}', 0) + 1
+        pass_same += bool(res.get('passed')) == bool(rv['passed'])
+        judge_scores.append(res['score'])
+        human_scores.append(rv['score'])
+        if rv.get('rating'):
+            ratings.append(rv['rating'])
+    n = len(revs)
+    return {
+        'n_reviews': n, 'n_questions': len({rv['question_id'] for rv in revs}),
+        'human_score': round(sum(human_scores) / n, 4),
+        'human_pass_rate': round(sum(bool(rv['passed']) for rv in revs) / n, 4),
+        'judge_score': round(sum(judge_scores) / n, 4),      # del juez, en las MISMAS preguntas
+        'judge_pass_rate': round(sum(bool(by_q[rv['question_id']].get('passed')) for rv in revs) / n, 4),
+        'comp_agreement': round(comp_same / comp_n, 4) if comp_n else None,
+        'pass_agreement': round(pass_same / n, 4),
+        'avg_rating': round(sum(ratings) / len(ratings), 2) if ratings else None,
+        'confusion': confusion,
+    }
+
+
 def validate_set_payload(payload, existing_ids=frozenset()) -> list[str]:
     """Errores del JSON de un set tal como lo edita /benchmark/editor (estricto: el editor no
     "arregla" en silencio como el import). `existing_ids` = ids de preguntas del set; un
@@ -398,6 +472,12 @@ CREATE INDEX IF NOT EXISTS bench_results_run ON bench_results (run_id, position)
 ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS retrieval jsonb;   -- ¿llegó el artículo correcto al contexto?
 -- Latido de la corrida: se actualiza con cada pregunta terminada (ver STALE_MINUTES).
 ALTER TABLE bench_runs ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+CREATE TABLE IF NOT EXISTS bench_reviews (
+    id serial PRIMARY KEY, run_id int NOT NULL REFERENCES bench_runs(id) ON DELETE CASCADE,
+    question_id int NOT NULL, reviewer text NOT NULL,
+    verdicts jsonb NOT NULL, score real, passed boolean, rating int, comment text,
+    created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now(),
+    UNIQUE (run_id, question_id, reviewer));
 """
 
 # Una corrida 'running' sin avance en este tiempo se da por muerta (el proceso que la corría
@@ -907,11 +987,13 @@ class Bench:
                 cur.execute(_STALE_SQL, (STALE_MINUTES,))
                 c.commit()
                 cur.execute("SELECT id, set_id, set_name, topic, label, config, status, n, done, metrics, "
-                            "error, created_by, created_at::text, finished_at::text FROM bench_runs "
+                            "error, created_by, created_at::text, finished_at::text, "
+                            "(SELECT count(DISTINCT question_id) FROM bench_reviews v WHERE v.run_id = bench_runs.id) "
+                            "FROM bench_runs "
                             + ("WHERE set_id = %s " if set_id else "") + "ORDER BY id DESC LIMIT 200",
                             (set_id,) if set_id else ())
                 cols = ['id', 'set_id', 'set_name', 'topic', 'label', 'config', 'status', 'n', 'done',
-                        'metrics', 'error', 'created_by', 'created_at', 'finished_at']
+                        'metrics', 'error', 'created_by', 'created_at', 'finished_at', 'reviewed']
                 return [dict(zip(cols, x)) for x in cur.fetchall()]
 
         @r.get('/runs/{rid}')
@@ -950,6 +1032,63 @@ class Bench:
                 hit = next((x for x in art.get('results', []) if x.get('question_id') == question_id), None)
                 return hit or JSONResponse({'error': 'pregunta no está en la corrida'}, status_code=404)
             return art
+
+        # ── revisión humana ──
+        def _load_reviews(cur, rid):
+            cur.execute("SELECT question_id, reviewer, verdicts, score, passed, rating, comment, updated_at::text "
+                        "FROM bench_reviews WHERE run_id = %s ORDER BY question_id, reviewer", (rid,))
+            cols = ['question_id', 'reviewer', 'verdicts', 'score', 'passed', 'rating', 'comment', 'updated_at']
+            return [dict(zip(cols, x)) for x in cur.fetchall()]
+
+        def _results(cur, rid):
+            cur.execute("SELECT question_id, score, passed, verdicts, error FROM bench_results WHERE run_id = %s",
+                        (rid,))
+            return [dict(zip(['question_id', 'score', 'passed', 'verdicts', 'error'], x)) for x in cur.fetchall()]
+
+        @r.get('/runs/{rid}/reviews')
+        def reviews_get(rid: int, request: Request):
+            with self.connect() as c, c.cursor() as cur:
+                revs = _load_reviews(cur, rid)
+                stats = review_stats(_results(cur, rid), revs)
+            return {'me': self.current_email(request), 'reviews': revs, 'stats': stats}
+
+        @r.post('/runs/{rid}/reviews/{qid}')
+        async def review_save(rid: int, qid: int, req: Request):
+            email = self.current_email(req)
+            if not email:
+                return deny('Inicia sesión para revisar.')
+            with self.connect() as c, c.cursor() as cur:
+                cur.execute("SELECT verdicts, error FROM bench_results WHERE run_id = %s AND question_id = %s",
+                            (rid, qid))
+                row = cur.fetchone()
+                if not row:
+                    return JSONResponse({'error': 'esa pregunta no está en la corrida'}, status_code=404)
+                if row[1]:
+                    return bad('esta pregunta falló en la corrida: no hay respuesta que revisar')
+                rv, err = clean_review(await req.json(), len(row[0] or []))
+                if err:
+                    return bad(err)
+                sc = score_review(row[0], rv['verdicts'])
+                cur.execute(
+                    "INSERT INTO bench_reviews (run_id, question_id, reviewer, verdicts, score, passed, rating, comment) "
+                    "VALUES (%s,%s,%s,%s::jsonb,%s,%s,%s,%s) ON CONFLICT (run_id, question_id, reviewer) DO UPDATE SET "
+                    "verdicts = EXCLUDED.verdicts, score = EXCLUDED.score, passed = EXCLUDED.passed, "
+                    "rating = EXCLUDED.rating, comment = EXCLUDED.comment, updated_at = now()",
+                    (rid, qid, email, json.dumps(rv['verdicts']), sc['score'], sc['passed'], rv['rating'],
+                     rv['comment'] or None))
+                c.commit()
+            return {'ok': True, 'score': sc['score'], 'passed': sc['passed']}
+
+        @r.delete('/runs/{rid}/reviews/{qid}')
+        def review_delete(rid: int, qid: int, request: Request):
+            email = self.current_email(request)
+            if not email:
+                return deny('Inicia sesión para revisar.')
+            with self.connect() as c, c.cursor() as cur:   # cada quien borra solo la suya
+                cur.execute("DELETE FROM bench_reviews WHERE run_id = %s AND question_id = %s AND reviewer = %s",
+                            (rid, qid, email))
+                c.commit()
+            return {'ok': True}
 
         @r.delete('/runs/{rid}')
         def run_delete(rid: int, request: Request):

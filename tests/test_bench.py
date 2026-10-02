@@ -296,3 +296,48 @@ def test_gold_refs_family_codes_not_confused():
     srcs = [g[0]['source'] for g in gold_refs('q', comps)]
     assert srcs == ['Código Nacional de Procedimientos Civiles y Familiares.md', 'CPROFAMEM.md', 'CFAMILIAREM.md',
                     'Código Nacional de Procedimientos Penales.md', 'Código PENALEM.md']
+
+
+# ── Revisión humana ──────────────────────────────────────────────────────────────
+from bench import clean_review, review_stats, score_review  # noqa: E402
+
+
+def test_clean_review_requires_every_component():
+    rv, err = clean_review({'verdicts': ['presente', None], 'rating': 4}, 2)
+    assert rv is None and 'todos' in err
+    rv, err = clean_review({'verdicts': ['presente'], 'rating': 4}, 2)
+    assert rv is None and '2' in err
+
+
+def test_clean_review_normalizes_and_bounds_rating():
+    rv, err = clean_review({'verdicts': ['Presente', 'parcial.'], 'rating': '5', 'comment': '  ok '}, 2)
+    assert err is None and rv == {'verdicts': ['presente', 'parcial'], 'rating': 5, 'comment': 'ok'}
+    assert clean_review({'verdicts': ['ausente'], 'rating': 9}, 1)[0] is None
+    assert clean_review({'verdicts': ['ausente'], 'rating': ''}, 1)[0]['rating'] is None
+
+
+def test_score_review_uses_judge_kinds_and_weights():
+    jv = [dict(C('must'), **V('ausente')), dict(C('must_not'), **V('ausente'))]
+    sc = score_review(jv, ['presente', 'presente'])   # el humano ve el must, pero también la violación
+    assert sc['passed'] is False and sc['violations'] == 1 and sc['score'] == 0.0
+
+
+def test_review_stats_agreement_on_same_questions():
+    results = [
+        {'question_id': 1, 'score': 1.0, 'passed': True, 'error': None,
+         'verdicts': [dict(C('must'), **V('presente')), dict(C('should'), **V('presente'))]},
+        {'question_id': 2, 'score': 0.0, 'passed': False, 'error': None,
+         'verdicts': [dict(C('must'), **V('ausente'))]},
+        {'question_id': 3, 'score': 0.0, 'passed': False, 'error': 'boom', 'verdicts': []},
+    ]
+    reviews = [
+        {'question_id': 1, 'verdicts': ['presente', 'ausente'], 'score': 0.5, 'passed': True, 'rating': 4},
+        {'question_id': 3, 'verdicts': [], 'score': 0, 'passed': False, 'rating': 1},   # resultado con error: se ignora
+    ]
+    st = review_stats(results, reviews)
+    assert st['n_reviews'] == 1 and st['n_questions'] == 1
+    assert st['comp_agreement'] == 0.5 and st['pass_agreement'] == 1.0
+    assert st['judge_score'] == 1.0 and st['human_score'] == 0.5   # comparados en la MISMA pregunta
+    assert st['confusion'] == {'presente→presente': 1, 'presente→ausente': 1}
+    assert st['avg_rating'] == 4
+    assert review_stats(results, [])['n_reviews'] == 0
