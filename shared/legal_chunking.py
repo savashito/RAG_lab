@@ -19,6 +19,7 @@ Las pruebas viven en `tests/test_legal_chunking.py` (pytest).
 from __future__ import annotations
 
 import re
+import unicodedata
 from collections import Counter
 from pathlib import Path
 
@@ -694,12 +695,50 @@ def split_by_paragraphs(text: str, max_words: int = MAX_WORDS, overlap_words: in
     return chunks
 
 
-def make_chunks(units: pd.DataFrame) -> pd.DataFrame:
+# ── Título del documento ─────────────────────────────────────────────────────────
+# El prefijo "Fuente:" de cada chunk llevaba solo el nombre del ARCHIVO. Para "Código Penal
+# de la Ciudad de México.md" basta, pero "CPROFAMEM.md" no dice qué ley es: las preguntas
+# ("el Código Procesal Familiar de Morelos…") no encontraban sus artículos salvo en los
+# chunks donde, por accidente, quedaba pegado el encabezado de página con el nombre (medido:
+# al limpiar ese encabezado el art. 493 cayó del rank 33 al 377). Las leyes abren con su
+# nombre como primer título ("# **CÓDIGO FAMILIAR PARA EL ESTADO LIBRE Y SOBERANO DE
+# MORELOS**"); se toma de ahí y va en TODOS los chunks del documento.
+_DOC_TITLE_RE = re.compile(r'(?m)^#{1,2}[ \t]+(.+?)[ \t]*$')
+
+
+def document_title(text: str, max_chars: int = 4000) -> str | None:
+    """Nombre de la ley según su primer título (en los primeros `max_chars`), o None."""
+    for m in _DOC_TITLE_RE.finditer(text[:max_chars]):
+        # "SE EXPIDE EL CÓDIGO NACIONAL…" (decreto de expedición) → "CÓDIGO NACIONAL…"
+        title = re.sub(r'(?i)^(?:decreto\s+por\s+el\s+que\s+)?se\s+expide\s+(?:el|la)\s+', '', _clean_heading(m.group(1)))
+        n = len(title.split())
+        # Debe EMPEZAR con el tipo de norma: "LA LEY PENAL" o "TÍTULO PRIMERO" son títulos internos.
+        if 2 <= n <= 30 and re.match(r'(?i)(c[óo]digo|ley|reglamento|constituci[óo]n|estatuto)\b', title):
+            return title
+    return None
+
+
+def _fold(s: str) -> str:
+    return unicodedata.normalize('NFKD', normalize_line(s)).encode('ascii', 'ignore').decode().lower()
+
+
+def _source_label(document: str, title: str | None) -> str:
+    """'CÓDIGO PROCESAL FAMILIAR … DE MORELOS (CPROFAMEM.md)'; si el archivo ya se llama
+    como la ley ('Código Penal Federal.md'), solo el archivo."""
+    stem = re.sub(r'\.md$', '', document, flags=re.I)
+    if not title or _fold(title) == _fold(stem):
+        return document
+    return f'{title} ({document})'
+
+
+def make_chunks(units: pd.DataFrame, titles: dict[str, str | None] | None = None) -> pd.DataFrame:
     rows = []
+    titles = titles or {}
     for unit in units.itertuples(index=False):
         parts = [unit.text] if unit.words <= MAX_WORDS else split_by_paragraphs(unit.text)
+        source_label = _source_label(unit.document, titles.get(unit.document))
         for part_number, part in enumerate(parts, start=1):
-            prefix = f'Fuente: {unit.document}\nSección: {unit.hierarchy or unit.title}\n\n'
+            prefix = f'Fuente: {source_label}\nSección: {unit.hierarchy or unit.title}\n\n'
             rows.append({
                 'source': unit.document, 'unit_type': unit.unit_type, 'title': unit.title,
                 'hierarchy': unit.hierarchy, 'position': unit.position,
@@ -731,4 +770,7 @@ def chunk_documents(documents: dict[str, str]) -> pd.DataFrame:
     """Pipeline completo sobre texto YA limpio: unidades → fusión → chunks."""
     units = extract_units(documents)
     merged = merge_small_siblings(units)
-    return make_chunks(merged)
+    # Solo las leyes/códigos: en un libro el primer título suele ser un capítulo, no la obra.
+    titles = {name: document_title(text) for name, text in documents.items()
+              if document_strategy(text) == 'article'}
+    return make_chunks(merged, titles)

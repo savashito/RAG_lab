@@ -307,3 +307,28 @@ def test_repeated_transitorios_block_is_kept():
            'SEGUNDA. El presente Decreto entrará en vigor al día siguiente de su publicación.\n\n')
     out = lc.clean_document(dec * 6)['clean_text']
     assert out.count('SEGUNDA. El presente Decreto') == 6
+
+
+# ── Título del documento en el prefijo "Fuente:" ──
+def test_document_title_from_first_heading():
+    assert lc.document_title('# **CÓDIGO FAMILIAR PARA EL ESTADO LIBRE Y SOBERANO DE MORELOS**\n\ntexto') == \
+        'CÓDIGO FAMILIAR PARA EL ESTADO LIBRE Y SOBERANO DE MORELOS'
+    assert lc.document_title('# SE EXPIDE EL CÓDIGO NACIONAL DE PROCEDIMIENTOS PENALES\n') == \
+        'CÓDIGO NACIONAL DE PROCEDIMIENTOS PENALES'
+    # Títulos internos no son el nombre de la ley.
+    assert lc.document_title('# LA LEY PENAL\n\n# TÍTULO PRIMERO\n') is None
+
+
+def test_source_label_adds_title_only_when_filename_is_not_the_name():
+    assert lc._source_label('CPROFAMEM.md', 'CÓDIGO PROCESAL FAMILIAR DE MORELOS') == \
+        'CÓDIGO PROCESAL FAMILIAR DE MORELOS (CPROFAMEM.md)'
+    assert lc._source_label('Código Penal Federal.md', 'CÓDIGO PENAL FEDERAL') == 'Código Penal Federal.md'
+    assert lc._source_label('LEY GENERAL DEL EQUILIBRIO ECOLÓGICO.md', 'LEY GENERAL DEL EQUILIBRIO ECOLOGICO') == \
+        'LEY GENERAL DEL EQUILIBRIO ECOLÓGICO.md'   # sin acentos también es el mismo nombre
+
+
+def test_chunks_of_a_code_carry_the_law_name():
+    md = ('# **CÓDIGO PENAL PARA EL ESTADO DE MORELOS**\n\n'
+          + ''.join(f'**ARTÍCULO {n}.-** Texto del artículo {n} con varias palabras.\n\n' for n in range(1, 30)))
+    df = lc.chunk_documents({'Código PENALEM.md': md})
+    assert df.text_for_embedding.str.startswith('Fuente: CÓDIGO PENAL PARA EL ESTADO DE MORELOS (Código PENALEM.md)\n').all()
