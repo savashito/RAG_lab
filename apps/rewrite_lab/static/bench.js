@@ -49,10 +49,40 @@ function diffStats(results){
 }
 
 // ── Navegación ──────────────────────────────────────────────────────────────────
+// La URL refleja lo que se ve, para recargar o compartir el enlace:
+//   /benchmark?set=3&vista=preguntas · ?set=3&corrida=12 · ?set=3&vista=comparar&comparar=11,12
+const SUB_URL = {run: '', questions: 'preguntas', compare: 'comparar'};
 function benchSub(name){
   BENCH.sub = name;
   document.querySelectorAll('.bsub button').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
   for(const s of ['run','questions','compare']) $('bsub-'+s).hidden = (s!==name);
+  benchUrlSync();
+}
+function benchUrlSync(){
+  if(location.pathname !== '/benchmark') return;
+  const p = new URLSearchParams();
+  if(BENCH.set) p.set('set', BENCH.set.id);
+  if(SUB_URL[BENCH.sub]) p.set('vista', SUB_URL[BENCH.sub]);
+  if(BENCH.sub==='run' && BENCH.detail) p.set('corrida', BENCH.detail.id);
+  if(BENCH.sub==='compare' && BENCH.cmp) p.set('comparar', BENCH.cmp.map(r=>r.id).join(','));
+  const url = '/benchmark' + (p.toString() ? '?' + p.toString().replace(/%2C/g, ',') : '');
+  if(location.pathname + location.search !== url) history.replaceState(history.state, '', url);
+}
+// Lo que pide la URL al abrir la página (se aplica una vez, cuando carga ese set).
+function benchUrlWanted(){
+  const p = new URLSearchParams(location.search);
+  const sub = Object.keys(SUB_URL).find(k=>SUB_URL[k] && SUB_URL[k]===p.get('vista')) || 'run';
+  return {set: p.get('set'), sub, run: +p.get('corrida') || null,
+          cmp: (p.get('comparar')||'').split(',').map(Number).filter(Boolean)};
+}
+// El sub-tab «Comparar» solo aparece con ☑ dos o más corridas marcadas.
+const checkedRuns = () => [...document.querySelectorAll('.bench-cmp:checked')].map(c=>+c.value).sort((a,b)=>a-b);
+function syncCompareTab(){
+  const n = checkedRuns().length, btn = document.querySelector('.bsub button[data-sub="compare"]');
+  btn.hidden = n < 2 && !(BENCH.sub==='compare' && BENCH.cmp);
+  $('bench-ccount').textContent = n; $('bench-ccount').hidden = n < 2;
+  $('bench-compare').hidden = n < 2;
+  $('bench-compare').textContent = `📊 Comparar ${n} corridas`;
 }
 function openModal(id){ $(id).hidden = false; }
 function closeModal(id){ $(id).hidden = true; }
@@ -60,7 +90,10 @@ function closeModal(id){ $(id).hidden = true; }
 async function benchInit(){
   if(!BENCH.inited){
     BENCH.inited = true;
-    document.querySelectorAll('.bsub button').forEach(b=>b.addEventListener('click', ()=>benchSub(b.dataset.sub)));
+    document.querySelectorAll('.bsub button').forEach(b=>b.addEventListener('click', ()=>
+      b.dataset.sub==='compare' ? compareBenchRuns() : benchSub(b.dataset.sub)));
+    $('bench-runs').addEventListener('change', e=>{ if(e.target.classList.contains('bench-cmp')) syncCompareTab(); });
+    BENCH.want = benchUrlWanted();
     $('bench-set').addEventListener('change', ()=>loadBenchSet($('bench-set').value));
     $('bench-topic-filter').addEventListener('change', ()=>renderSetOptions());
     // Menú ⋯: cada acción cierra el menú.
@@ -106,7 +139,7 @@ async function benchInit(){
     if(info.running) watchBenchRun(info.running);
   }catch(e){}
   benchFillTopics();
-  await loadBenchSets();
+  await loadBenchSets(BENCH.want && BENCH.want.set);
 }
 // Selectores de tema del tab. Se llama también desde loadTopics() (index.html), porque
 // /api/topics puede llegar DESPUÉS de abrir el tab en la carga inicial.
@@ -145,16 +178,29 @@ async function loadBenchSet(id){
   closeQForm();
   BENCH.detail = null; BENCH.open.clear();
   $('bench-detail').innerHTML = '';
-  $('bench-compare-out').innerHTML = '<p class="muted">Marca dos o más corridas en «▶ Correr y resultados» y pulsa «📊 Comparar marcadas».</p>';
-  $('bench-ccount').hidden = true;
+  $('bench-compare-out').innerHTML = '';
+  BENCH.cmp = null;
   $('bench-json-editor').disabled = !id;
+  if(BENCH.sub==='compare') benchSub('run');
   if(!id){ BENCH.set=null; $('bench-questions').innerHTML='<p class="muted">Crea un set para empezar (menú ⋯ Set).</p>';
-    $('bench-qcount').textContent=''; $('bench-runs').innerHTML=''; return; }
+    $('bench-qcount').textContent=''; $('bench-runs').innerHTML=''; syncCompareTab(); benchUrlSync(); return; }
   try{ BENCH.set = await bjson('/api/bench/sets/'+id); }catch(e){ bmsg(esc(e.message), false); return; }
   const t = (window.__topics||[]).find(x=>x.topic===BENCH.set.topic);
   $('bench-system').value = (t && t.system_prompt) || '';
   renderQuestions();
-  loadBenchRuns();
+  await loadBenchRuns();
+  // Primera carga: aplica lo que pedía la URL (vista, corrida abierta, corridas comparadas).
+  const w = BENCH.want; BENCH.want = null;
+  if(w && String(w.set)===String(id)){
+    if(w.cmp.length >= 2){
+      document.querySelectorAll('.bench-cmp').forEach(c=>{ c.checked = w.cmp.includes(+c.value); });
+      syncCompareTab();
+    }
+    if(w.sub==='compare' && checkedRuns().length >= 2){ await compareBenchRuns(); return; }
+    if(w.run) await showBenchRun(w.run, true);
+    if(w.sub!=='run') benchSub(w.sub);
+  }
+  benchUrlSync();
 }
 function openSetForm(s){
   BENCH.editingSet = s;
@@ -387,11 +433,12 @@ async function loadBenchRuns(){
       <td class="sc">${r.reviewed ? `${r.reviewed}/${r.done}` : '<span class="muted">—</span>'}</td>
       <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id}, ${r.reviewed||0})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
     : '<p class="muted">Aún no hay corridas de este set. Configura arriba y pulsa ▶ Correr benchmark.</p>';
+  syncCompareTab();
 }
 async function deleteBenchRun(rid, reviewed){
   if(!confirm(`¿Borrar la corrida #${rid} (y su artefacto)?` + (reviewed ? `\n\n⚠️ Tiene ${reviewed} preguntas con revisión humana: también se borrarán.` : ''))) return;
   try{ await bjson('/api/bench/runs/'+rid, {method:'DELETE'});
-    if(BENCH.detail && BENCH.detail.id===rid){ BENCH.detail=null; $('bench-detail').innerHTML=''; }
+    if(BENCH.detail && BENCH.detail.id===rid){ BENCH.detail=null; $('bench-detail').innerHTML=''; benchUrlSync(); }
     loadBenchRuns(); }
   catch(e){ bmsg(esc(e.message), false); }
 }
@@ -434,6 +481,7 @@ async function showBenchRun(rid, quiet){
   await loadReviews(rid);
   document.querySelectorAll('#bench-runs tr.clk').forEach(tr=>tr.classList.toggle('sel', tr.getAttribute('onclick')===`showBenchRun(${rid})`));
   renderBenchDetail();
+  benchUrlSync();
   if(!quiet) $('bench-detail').scrollIntoView({behavior:'smooth', block:'start'});
 }
 // Lo que falló de una pregunta: must/should no presentes y must_not que aparecieron.
@@ -650,11 +698,10 @@ document.addEventListener('keydown', e=>{
 
 // ── Comparación ─────────────────────────────────────────────────────────────────
 async function compareBenchRuns(){
-  const ids = [...document.querySelectorAll('.bench-cmp:checked')].map(c=>+c.value).sort((a,b)=>a-b);
+  const ids = checkedRuns();
   if(ids.length < 2){ bmsg('Marca ☑ al menos 2 corridas en la tabla para comparar.', false); return; }
   try{ BENCH.cmp = await Promise.all(ids.map(id=>bjson('/api/bench/runs/'+id))); }
   catch(e){ bmsg(esc(e.message), false); return; }
-  $('bench-ccount').textContent = ids.length; $('bench-ccount').hidden = false;
   renderCompare();
   benchSub('compare');
 }

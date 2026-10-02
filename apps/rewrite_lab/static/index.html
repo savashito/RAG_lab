@@ -140,7 +140,9 @@
  .pill{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#232833;color:#c7cdd6;font-size:11px;text-align:center}
  .bsubpage[hidden]{display:none}
  .bcard{background:#171a21;border:1px solid #2a2f3a;border-radius:10px;padding:12px 14px}
- .ghostbtn{list-style:none;cursor:pointer;background:#232833;color:#fff;border-radius:8px;padding:8px 12px;font-weight:600;white-space:nowrap}
+ /* mismas medidas que un <button> (fuente, padding) y sin el margin-top de `details summary`: alineado con los botones vecinos */
+ .ghostbtn{display:block;list-style:none;cursor:pointer;background:#232833;color:#fff;border-radius:8px;padding:9px 16px;margin:0;
+   font:600 13.3333px Arial,sans-serif;line-height:normal;white-space:nowrap}
  .ghostbtn::-webkit-details-marker{display:none}
  details.bmenu{position:relative}
  .bmenu-items{position:absolute;z-index:40;top:40px;left:0;display:flex;flex-direction:column;gap:4px;background:#171a21;
@@ -460,7 +462,7 @@
    <div class="bsub">
      <button data-sub="run" class="active">▶ Correr y resultados</button>
      <button data-sub="questions">📝 Preguntas <span id="bench-qcount" class="pill"></span></button>
-     <button data-sub="compare">📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
+     <button data-sub="compare" hidden>📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
    </div>
  </div>
  <div id="bench-msg" class="muted"></div>
@@ -491,7 +493,7 @@
      <b>Corridas de este set</b>
      <span class="muted" style="font-size:12px">— clic en una fila para ver sus resultados · marca ☑ dos o más para comparar</span>
      <span style="flex:1"></span>
-     <button class="ghost" id="bench-compare">📊 Comparar marcadas</button>
+     <button class="ghost" id="bench-compare" hidden>📊 Comparar</button>
      <button class="ghost" id="bench-refresh" title="Recargar">↻</button>
    </div>
    <div id="bench-runs"></div>
@@ -517,7 +519,7 @@
 
  <!-- 📊 Comparar -->
  <div id="bsub-compare" class="bsubpage" hidden>
-   <div id="bench-compare-out"><p class="muted">Marca dos o más corridas en «▶ Correr y resultados» y pulsa «📊 Comparar marcadas».</p></div>
+   <div id="bench-compare-out"></div>
  </div>
 
  <!-- Ventanas emergentes -->
@@ -672,6 +674,7 @@ function showTab(name, push=true){
   if(name==='bench') benchInit();
   const path=TAB_PATH[name]||'/consulta';
   if(push && location.pathname!==path) history.pushState({tab:name}, '', path);
+  if(name==='bench' && typeof benchUrlSync==='function') benchUrlSync();
 }
 // Botones atrás/adelante del navegador sincronizan el tab (sin apilar historial).
 window.addEventListener('popstate', ()=>showTab(tabFromPath(location.pathname), false));
@@ -1515,7 +1518,8 @@ loadConfig(); loadHistory();
   await loadMe();
   const initTab=tabFromPath(location.pathname);
   const tab=tabAllowed(initTab)?initTab:'ask';
-  history.replaceState({tab}, '', TAB_PATH[tab]);
+  // /benchmark conserva su ?set=…&vista=… (lo lee bench.js); los demás tabs no usan query.
+  history.replaceState({tab}, '', TAB_PATH[tab] + (tab==='bench' ? location.search : ''));
   showTab(tab, false);
 })();
 </script>
