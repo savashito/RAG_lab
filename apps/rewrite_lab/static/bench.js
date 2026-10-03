@@ -360,6 +360,10 @@ async function saveQ(){
     weight: parseFloat(r.querySelector('.cw').value)||1})).filter(c=>c.text);
   const body = {question:$('bq-question').value, expected_answer:$('bq-expected').value,
                 notes:$('bq-notes').value, difficulty:$('bq-difficulty').value, components};
+  // must_not en negativo = doble negación: "No omitir el artículo" aparece justo en las respuestas
+  // correctas y el juez lo cuenta como violación (ver NEGATED_MUST_NOT en bench_editor.html).
+  const neg = components.filter(c=>c.kind==='must_not' && /^\s*(?:no|nunca|jamás|evitar|evita|sin)\b/i.test(c.text));
+  if(neg.length && !confirm(`⚠️ Este must_not está redactado en negativo:\n\n«${neg[0].text}»\n\nEl must_not describe lo que NO debe aparecer en la respuesta. Redáctalo en positivo (p. ej. «Omite el artículo aplicable» en vez de «No omitir el artículo»); así como está, una respuesta correcta contará como violación.\n\n¿Guardar de todos modos?`)) return;
   try{
     if(BENCH.editingQ) await bpost('/api/bench/questions/'+BENCH.editingQ.id, body);
     else await bpost(`/api/bench/sets/${BENCH.set.id}/questions`, body);

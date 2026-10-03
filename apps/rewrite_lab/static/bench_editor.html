@@ -162,6 +162,7 @@
           <span class="chip should"><span class="k">should</span>deseable</span>
           <span class="chip must_not"><span class="k">must not</span>no debe aparecer</span>
           — y <code>"weight"</code> (número ≥ 0, por defecto 1).</li>
+        <li>El <i>must_not</i> se escribe <b>en positivo</b>, describiendo el error que no debe aparecer: <code>"Cita un artículo equivocado"</code>, <code>"Omite el nombre de la ley"</code>. Nunca <code>"No omitir…"</code>: el juez detecta si lo descrito aparece, y una respuesta correcta contaría como violación (el editor lo marca con ⚠).</li>
         <li>Si una pregunta no tiene componentes, se califica contra <code>"expected_answer"</code> como un único <i>must</i>.</li>
       </ul>
       <h3>Plantilla</h3>
@@ -293,6 +294,10 @@ function fmt(d){
 }
 
 // ── Validación (espejo de validate_set_payload en bench.py, con línea) ─────────
+// must_not redactado en negativo ("No omitir…", "Evitar…"): doble negación. El juez solo detecta
+// si lo descrito APARECE; "No omitir el artículo" aparece justo cuando la respuesta es correcta, y
+// se cuenta como violación (le pasó al set «Derecho Penal Segunda»: 0 de 56 pasaban).
+const NEGATED_MUST_NOT = /^\s*(?:no|nunca|jamás|evitar|evita|sin)\b/i;
 function validate(text){
   const errs = [];   // {line, msg, path, warn?}
   let d;
@@ -335,6 +340,8 @@ function validate(text){
       if (!String(c.text || '').trim()) add(CP + '.text', `${CW}: "text" está vacío.`);
       const w = c.weight == null ? 1 : c.weight;
       if (typeof w !== 'number' || w < 0) add(CP + '.weight', `${CW}: "weight" debe ser un número ≥ 0.`);
+      if (c.kind === 'must_not' && NEGATED_MUST_NOT.test(String(c.text || '')))
+        add(CP + '.text', `${CW}: el must_not describe lo que NO debe aparecer; redáctalo en positivo, sin "no…" (p. ej. "Omite el artículo aplicable" en vez de "No omitir el artículo"). Así como está, una respuesta correcta cuenta como violación.`, true);
     });
     if (!comps.length && !String(q.expected_answer || '').trim()) add(P, `${W}: sin componentes ni "expected_answer": no se podría calificar.`);
     if (comps.length && !comps.some(c => c && c.kind === 'must')) add(P + '.components', `${W}: no tiene ningún "must": siempre pasará si no hay must_not.`, true);

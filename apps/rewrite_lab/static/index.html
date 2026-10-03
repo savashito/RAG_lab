@@ -623,7 +623,8 @@
    <ul>
      <li><span class="comp must"><span class="k">must</span></span> obligatorio: si no está <b>presente</b>, la pregunta <b>no pasa</b>.</li>
      <li><span class="comp should"><span class="k">should</span></span> deseable: suma al score pero no reprueba.</li>
-     <li><span class="comp must_not"><span class="k">must not</span></span> no debe aparecer (artículo equivocado, dato inventado): si aparece, reprueba y resta.</li>
+     <li><span class="comp must_not"><span class="k">must not</span></span> no debe aparecer (artículo equivocado, dato inventado): si aparece, reprueba y resta.
+       Se redacta <b>en positivo</b>, describiendo el error: «Cita un artículo equivocado», «Omite el nombre de la ley». Nunca «No omitir…»: el juez detecta si lo descrito aparece, y una respuesta correcta contaría como violación.</li>
    </ul>
    <p><b>score</b> = (Σ peso·valor de must/should − Σ peso·valor de must_not) / Σ peso de must/should, con presente=1, parcial=0.5, ausente=0.<br>
      <b>pasa</b> = todos los must presentes y ningún must_not presente. <b>cobertura de must</b> = % de must presentes en todo el set.</p>
