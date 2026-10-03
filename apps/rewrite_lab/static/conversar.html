@@ -155,7 +155,7 @@ function sourcesHTML(chunks, searchq){
   for (const c of chunks){ const key = c.source || ''; if (key && !seen.has(key)){ seen.add(key); refs.push(c.citation || key.replace(/\.md$/, '')); } }
   const refList = '<ol class="refs">' + refs.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>';
   const cards = chunks.map(c => {
-    const src = (c.source || '').replace(/\.md$/, ''), sec = c.hierarchy || c.title || '';
+    const src = c.doc_label || (c.source || '').replace(/\.md$/, ''), sec = c.hierarchy || c.title || '';
     let head = esc(src);
     if (sec) head += ' <span class="tag">· ' + esc(sec) + '</span>';
     if (c.neighbor) head += ' <span class="tag">· vecino</span>';

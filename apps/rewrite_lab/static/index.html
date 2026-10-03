@@ -855,7 +855,7 @@ function askModeChange(){
 function renderChunks(chunks, skind){
   const fmt=v=>v==null?'vecino':((skind==='dist'||skind==='rrf')?(+v).toFixed(4):(+v).toFixed(2));
   return `<details open><summary>📄 ${chunks.length} chunks usados como contexto (score = ${esc(skind)})</summary>`+
-    chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
+    chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.doc_label||ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
       <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
       <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details>`;
 }
@@ -1398,7 +1398,7 @@ function msgBubble(m,isLastAssistant){
       (m.setting?` · <span class="muted">${esc(m.setting)}</span>`:'')+
       (m.search_query?` · 🔎 búsqueda: <span class="rw">${esc(m.search_query)}</span>`:'')+
       (m.rewrite?` · reescritura: <span class="rw">${esc(m.rewrite)}</span>`:'')+`</summary>`+
-      m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
+      m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.doc_label||ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
         <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
         <div class="body">${esc(ch.text)}</div></div>`).join('')+`</details></div>`;
   }

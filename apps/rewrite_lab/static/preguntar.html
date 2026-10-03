@@ -173,7 +173,7 @@ form.addEventListener('submit', async e => {
             const refList = '<ol class="refs">' + refs.map(r => '<li>' + esc(r) + '</li>').join('') + '</ol>';
             // Fragmentos con su texto
             const cards = chunks.map(c => {
-              const src = (c.source || '').replace(/\.md$/, '');
+              const src = c.doc_label || (c.source || '').replace(/\.md$/, '');
               const sec = c.hierarchy || c.title || '';
               let head = esc(src);
               if (sec) head += ' <span class="tag">· ' + esc(sec) + '</span>';

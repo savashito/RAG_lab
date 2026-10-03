@@ -286,6 +286,40 @@ CITATIONS_TABLE = 'rewrite_lab_citations'
 CITATIONS: dict[str, str] = {}
 
 
+# Nombre legible de cada documento para mostrarlo y para el encabezado que ve el LLM. El
+# chunker antepone a cada chunk "Fuente: <NOMBRE DE LA LEY> (<archivo>)" cuando el archivo no
+# se llama como la ley (p. ej. "CÓDIGO PENAL PARA EL ESTADO DE MORELOS (Código PENALEM.md)");
+# de ahí se toma. Sin ese nombre, se muestra el archivo sin ".md".
+DOC_LABELS: dict[str, str] = {}
+_LABEL_SMALL = {'de', 'del', 'la', 'las', 'el', 'los', 'para', 'y', 'e', 'en', 'por', 'a', 'al', 'o', 'u', 'contra', 'sobre'}
+
+
+def nice_title(title: str) -> str:
+    """'CÓDIGO PENAL PARA EL ESTADO DE MORELOS' → 'Código Penal para el Estado de Morelos'
+    (solo si viene en mayúsculas; respeta números romanos como XXI)."""
+    letters = [ch for ch in title if ch.isalpha()]
+    if not letters or sum(ch.isupper() for ch in letters) / len(letters) < 0.8:
+        return title
+    words = []
+    for i, w in enumerate(title.split()):
+        if re.fullmatch(r'[IVXLCDM]+[,.;]?', w):
+            words.append(w)
+        elif i and w.lower() in _LABEL_SMALL:
+            words.append(w.lower())
+        else:
+            words.append(w[:1].upper() + w[1:].lower())
+    return ' '.join(words)
+
+
+def doc_label(source: str) -> str:
+    return DOC_LABELS.get(source) or re.sub(r'\.md$', '', source or '')
+
+
+def citation_for(source: str) -> str | None:
+    """Cita curada (tabla de citas) o, si no hay, el nombre de la ley; None = solo el archivo."""
+    return CITATIONS.get(source) or DOC_LABELS.get(source)
+
+
 def load_citations():
     global CITATIONS
     try:
@@ -539,6 +573,13 @@ def load_corpus_index():
         ids = [r[0] for r in rows]
         docs = {r[0]: {'source': r[1], 'title': r[2], 'hierarchy': r[3], 'text': r[4],
                        'topic': r[5], 'jurisdiction': r[6]} for r in rows}
+        labels = {}
+        for r in rows:
+            if r[1] not in labels:
+                m = re.match(r'Fuente: (.+) \((.+)\)[ \t]*(?:\n|$)', r[4] or '')
+                labels[r[1]] = nice_title(m.group(1)) if m and m.group(2) == r[1] else None
+        DOC_LABELS.clear()
+        DOC_LABELS.update({k: v for k, v in labels.items() if v})
         index = BM25([tokenize(r[4]) for r in rows])
         DOC_BY_ID = {**DOC_BY_ID, **docs}   # los ids viejos siguen resolviendo mientras
         BM25_CORPUS = (index, ids)          # ← la búsqueda BM25 ya no los devuelve
@@ -888,7 +929,7 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
-            'score_kind': score_kind, 'neighbor': cid in extra, 'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
+            'score_kind': score_kind, 'neighbor': cid in extra, 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
            for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
         f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
@@ -969,7 +1010,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
         ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
-            'score_kind': score_kind, 'neighbor': cid in extra, 'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
+            'score_kind': score_kind, 'neighbor': cid in extra, 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
            for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
         f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
@@ -1387,7 +1428,7 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
-                'score_kind': score_kind, 'neighbor': cid in extra, 'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
+                'score_kind': score_kind, 'neighbor': cid in extra, 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
                for rank, cid in enumerate(ids, 1)]
         if hyde:
             yield sse({'stage': 'hyde', 'passage': dbg.get('hyde_passage', ''),
@@ -1465,7 +1506,7 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
                 'score_kind': score_kind, 'neighbor': cid in extra,
-                'citation': CITATIONS.get((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
+                'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
                for rank, cid in enumerate(ids, 1)]
         if hyde:
             yield sse({'stage': 'hyde', 'passage': dbg.get('hyde_passage', ''),
