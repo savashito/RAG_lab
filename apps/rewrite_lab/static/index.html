@@ -1258,8 +1258,13 @@ async function loadDiagSummary(){
     const r=await fetch('/ingest/diagnostics/summary'); if(!r.ok) return;
     const sum=await r.json();
     document.querySelectorAll('.cdiag').forEach(b=>{ const d=sum[b.dataset.src]; if(!d) return;
-      b.textContent=`${DIAG_ICON[d.status]} ${DIAG_LABEL[d.status]}`;
-      b.title=d.issues.length ? 'Avisos: '+d.issues.map(i=>i.name).join(' · ')+'\nClic para revisar' : 'Sin avisos. Clic para ver los chunks';
+      // Con visto bueno humano vigente, el semáforo dice «revisado»; «corregir» si alguien lo marcó.
+      const who=(d.reviewers||[]).join(', ');
+      if(d.review==='reviewed') b.textContent='✅ revisado';
+      else if(d.review==='fix') b.textContent='🔧 corregir';
+      else b.textContent=`${DIAG_ICON[d.status]} ${DIAG_LABEL[d.status]}`;
+      b.title=(d.issues.length ? 'Avisos: '+d.issues.map(i=>i.name).join(' · ') : 'Sin avisos')+
+        (who ? `\nVisto bueno: ${who}` : '')+'\nClic para revisar';
     });
   }catch(e){}
 }
@@ -1282,15 +1287,55 @@ async function openDiag(source){
     DIAG=d; renderDiag();
   }catch(e){ $('diag-body').innerHTML=`<p style="color:#f87171">${esc(e.message)}</p>`; }
 }
-function closeDiag(){ $('diag-modal').style.display='none'; }
+function closeDiag(){ $('diag-modal').style.display='none'; loadDiagSummary(); }
+// ── Visto bueno humano (shared/diag_reviews.py): por aviso o del documento entero ('').
+function reviewTag(r){
+  if(!r) return '';
+  const when=(r.updated_at||'').slice(0,16), who=esc(r.reviewer||'?');
+  const what=r.decision==='ok' ? '✔ revisado, está bien' : '🔧 hay que corregir';
+  return `<span class="tag" style="border:1px solid ${r.stale?'#854d0e':r.decision==='ok'?'#166534':'#991b1b'};color:#e5e7eb" title="${esc(r.note||'')}">${r.stale?'⏳ vencido · ':''}${what} · ${who} · ${esc(when)}</span>`+
+    (r.note?` <span class="muted" style="font-size:12px">«${esc(r.note)}»</span>`:'')+
+    (r.stale?` <span class="muted" style="font-size:12px">(el documento cambió desde esa revisión)</span>`:'');
+}
+function reviewButtons(cid, r){
+  if(!DIAG.can_review) return '';
+  const id=JSON.stringify(cid).replace(/"/g,'&quot;');
+  return ` <span style="white-space:nowrap"><button class="ghost" style="padding:2px 8px" onclick="event.preventDefault();saveReview(${id},'ok')">✔ está bien</button>`+
+    ` <button class="ghost" style="padding:2px 8px" onclick="event.preventDefault();saveReview(${id},'fix')">🔧 corregir</button>`+
+    (r?` <button class="ghost" style="padding:2px 8px" title="Quitar este visto bueno" onclick="event.preventDefault();undoReview(${id})">↶</button>`:'')+`</span>`;
+}
+async function saveReview(cid, decision){
+  const note=prompt(decision==='ok' ? 'Nota (opcional): ¿por qué está bien? p. ej. "son artículos derogados"' : '¿Qué hay que corregir? (opcional)', '');
+  if(note===null) return;
+  try{
+    const r=await fetch('/ingest/reviews',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({source:DIAG.source, check_id:cid, decision, note})});
+    const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||('HTTP '+r.status));
+    DIAG.review=d.review; renderDiag();
+  }catch(e){ alert(e.message); }
+}
+async function undoReview(cid){
+  try{
+    const r=await fetch('/ingest/reviews?source='+encodeURIComponent(DIAG.source)+'&check_id='+encodeURIComponent(cid),{method:'DELETE'});
+    const d=await r.json(); if(!r.ok||d.error) throw new Error(d.error||('HTTP '+r.status));
+    await openDiag(DIAG.source);
+  }catch(e){ alert(e.message); }
+}
 function renderDiag(){
   const d=DIAG, st=d.stats;
   const nFlag=d.chunks.filter(c=>c.flags.length).length;
-  const checks=d.checks.map(c=>`<details class="dcheck ${c.level}" ${c.level!=='ok'?'open':''}><summary>${DIAG_ICON[c.level]} <b>${esc(c.name)}</b> — ${esc(c.summary)}</summary>`+
+  const rv=d.review||{checks:{}}, rc=id=>rv.checks[id];
+  const STATE={reviewed:'✅ Revisado', fix:'🔧 Hay que corregir', ok:'✅ Sin avisos', pending:'⏳ Pendiente de revisión'};
+  const docBlock=`<div class="legend" style="margin:0 0 10px;border-color:${rv.state==='fix'?'#991b1b':rv.state==='pending'?'#854d0e':'#166534'}">
+      <b>${STATE[rv.state]||''}</b> <span class="muted" style="font-size:12px">— da el visto bueno a cada aviso, o a todo el documento de una vez</span>
+      <div style="margin-top:6px">📄 <b>Todo el documento</b>${reviewButtons('', rv.doc)} ${reviewTag(rv.doc)}</div></div>`;
+  const checks=d.checks.map(c=>`<details class="dcheck ${c.level}" ${c.level!=='ok'?'open':''}><summary>${DIAG_ICON[c.level]} <b>${esc(c.name)}</b> — ${esc(c.summary)}`+
+    (c.level!=='ok' ? `<div style="margin:4px 0 0 22px">${reviewButtons(c.id, rc(c.id))} ${reviewTag(rc(c.id))}</div>` : '')+`</summary>`+
     (c.examples.length ? `<ul>${c.examples.map(e=>`<li>${e.chunk!=null?`<a href="#" onclick="diagGo(${e.chunk});return false">${esc(e.label||'chunk '+e.chunk)}</a>: `:''}${e.article!=null&&e.chunk==null?`<b>Art. ${esc(e.article)}</b>: `:''}${e.line?`«${esc(e.line)}» `:''}${esc(e.detail||'')}</li>`).join('')}`+
       (c.n_examples>c.examples.length?`<li class="muted">…y ${c.n_examples-c.examples.length} más</li>`:'')+`</ul>` : '')+`</details>`).join('');
   $('diag-body').innerHTML=`
     <div class="muted" style="margin-bottom:8px">${st.chunks} chunks · ${st.article_chunks} de tipo artículo · ${st.article_starts} inicios de artículo en el texto · ${st.words_mean} palabras por chunk en promedio</div>
+    ${docBlock}
     ${checks}
     <h3 style="margin:14px 0 6px">Chunks <span class="muted" style="font-weight:400;font-size:13px">— verifica que cada etiqueta corresponda a su texto</span></h3>
     <div class="row" style="margin:0 0 8px">

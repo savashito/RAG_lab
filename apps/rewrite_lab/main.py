@@ -42,6 +42,7 @@ from shared.chunk_diagnostics import body_of, diagnose_chunks
 from shared.db import connect
 from shared.legal_chunking import find_article_ref
 from shared.code_routes import codes_in
+from shared.diag_reviews import DOC as REVIEW_DOC, review_state, signature_for
 from shared.lexical import BM25, interleave_scored, rank_indices_by_score, rrf, tokenize
 from shared.llm_client import HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient
 from shared.rerank_client import RerankClient
@@ -241,6 +242,14 @@ with connect() as _c, _c.cursor() as _cur:
         _clean = _task_only(_ins)
         if _clean != _ins:
             _cur.execute(f"UPDATE {TOPICS_TABLE} SET instruct = %s WHERE topic = %s", (_clean, _t))
+
+    # Visto bueno humano sobre el diagnóstico de chunking: por aviso (check_id) o del
+    # documento entero (check_id = ''). `signature` = lo que se revisó (shared/diag_reviews).
+    _cur.execute("""CREATE TABLE IF NOT EXISTS ingest_reviews (
+        id serial PRIMARY KEY, source text NOT NULL, check_id text NOT NULL DEFAULT '',
+        decision text NOT NULL CHECK (decision IN ('ok', 'fix')), note text,
+        signature text NOT NULL, reviewer text, updated_at timestamptz DEFAULT now(),
+        UNIQUE (source, check_id))""")
 
     # ── Usuarios / roles / permisos de subida por tópico ────────────────────────────
     _cur.execute(f"""CREATE TABLE IF NOT EXISTS {USERS_TABLE} (
@@ -1363,7 +1372,11 @@ def ingest_delete(request: Request, source: str):
         return JSONResponse({'error': f'No existe el documento {source!r}.'}, status_code=404)
     if not can_upload_topic(email, topic):
         return JSONResponse({'error': f'No tienes permiso sobre el tópico {topic!r}.'}, status_code=403)
-    return ingest_mgr.delete(source)
+    out = ingest_mgr.delete(source)
+    with connect() as c, c.cursor() as cur:   # sus vistos buenos ya no aplican a nada
+        cur.execute("DELETE FROM ingest_reviews WHERE source = %s", (source,))
+        c.commit()
+    return out
 
 
 @app.get('/ingest/clean')
@@ -1398,20 +1411,75 @@ def _diagnose_source(cur, source: str, signature) -> dict:
     return d
 
 
+def _reviews_of(cur, source=None) -> dict:
+    """{source: [revisión…]} de ingest_reviews (todas, o las de un documento)."""
+    cur.execute("SELECT source, check_id, decision, note, signature, reviewer, updated_at::text FROM ingest_reviews"
+                + (" WHERE source = %s" if source else ""), (source,) if source else ())
+    out: dict = {}
+    for src, cid, dec, note, sig, who, at in cur.fetchall():
+        out.setdefault(src, []).append({'check_id': cid, 'decision': dec, 'note': note, 'signature': sig,
+                                        'reviewer': who, 'updated_at': at})
+    return out
+
+
 @app.get('/ingest/diagnostics/summary')
 def ingest_diagnostics_summary(request: Request):
-    """Semáforo de chunking por documento (para la tabla «Corpus actual»)."""
+    """Semáforo de chunking por documento (para la tabla «Corpus actual»), con el estado de
+    la revisión humana (pending / reviewed / fix / ok) y quién dio el visto bueno."""
     if not can_ingest(current_email(request)):
         return JSONResponse({'error': 'Sin permiso.'}, status_code=403)
     out = {}
     with connect() as c, c.cursor() as cur:
+        reviews = _reviews_of(cur)
         cur.execute(f"SELECT source, count(*), max(id) FROM {TABLE} GROUP BY source")
         for source, n, mx in cur.fetchall():
             d = _diagnose_source(cur, source, (n, mx))
-            out[source] = {'status': d['status'],
+            rs = review_state(d, reviews.get(source, []))
+            who = sorted({r['reviewer'] for r in [rs['doc'], *rs['checks'].values()] if r and not r['stale']} - {None})
+            out[source] = {'status': d['status'], 'review': rs['state'], 'reviewers': who,
                            'issues': [{'id': k['id'], 'name': k['name'], 'level': k['level']}
                                       for k in d['checks'] if k['level'] != 'ok']}
     return out
+
+
+@app.post('/ingest/reviews')
+async def ingest_review_save(request: Request):
+    """Visto bueno de un aviso ({source, check_id, decision: ok|fix, note}) o del documento
+    entero (check_id = ''). La firma la calcula el servidor con el diagnóstico ACTUAL."""
+    b = await request.json()
+    email, source = current_email(request), (b.get('source') or '').strip()
+    check_id, decision = str(b.get('check_id') or ''), b.get('decision')
+    topic = ingest_mgr.topic_of(source)
+    if topic is None:
+        return JSONResponse({'error': f'No existe el documento {source!r}.'}, status_code=404)
+    if not (can_ingest(email) and can_upload_topic(email, topic)):
+        return JSONResponse({'error': f'No tienes permiso sobre el tópico {topic!r}.'}, status_code=403)
+    if decision not in ('ok', 'fix'):
+        return JSONResponse({'error': 'decision debe ser "ok" o "fix".'}, status_code=400)
+    with connect() as c, c.cursor() as cur:
+        rows = _doc_chunks(cur, source)
+        d = _diagnose_source(cur, source, (len(rows), max(r['id'] for r in rows)))
+        sig = signature_for(d, check_id)
+        if sig is None:
+            return JSONResponse({'error': f'El aviso {check_id!r} no existe en el diagnóstico actual.'}, status_code=400)
+        cur.execute("INSERT INTO ingest_reviews (source, check_id, decision, note, signature, reviewer) "
+                    "VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (source, check_id) DO UPDATE SET "
+                    "decision = EXCLUDED.decision, note = EXCLUDED.note, signature = EXCLUDED.signature, "
+                    "reviewer = EXCLUDED.reviewer, updated_at = now()",
+                    (source, check_id, decision, (b.get('note') or '').strip() or None, sig, email))
+        c.commit()
+        return {'ok': True, 'review': review_state(d, _reviews_of(cur, source).get(source, []))}
+
+
+@app.delete('/ingest/reviews')
+def ingest_review_delete(request: Request, source: str, check_id: str = ''):
+    email, topic = current_email(request), ingest_mgr.topic_of(source)
+    if topic is None or not (can_ingest(email) and can_upload_topic(email, topic)):
+        return JSONResponse({'error': 'Sin permiso.'}, status_code=403)
+    with connect() as c, c.cursor() as cur:
+        cur.execute("DELETE FROM ingest_reviews WHERE source = %s AND check_id = %s", (source, check_id))
+        c.commit()
+    return {'ok': True}
 
 
 @app.get('/ingest/diagnostics')
@@ -1424,8 +1492,12 @@ def ingest_diagnostics(request: Request, source: str):
         if not rows:
             return JSONResponse({'error': f'No existe el documento {source!r}.'}, status_code=404)
         d = _diagnose_source(cur, source, (len(rows), max(r['id'] for r in rows)))
+        rs = review_state(d, _reviews_of(cur, source).get(source, []))
     rows.sort(key=lambda r: (r['position'] or 0, r['part'] or 1))   # mismo orden que diagnose_chunks
+    me = current_email(request)
+    can_review = can_upload_topic(me, ingest_mgr.topic_of(source))
     return {'source': source, 'status': d['status'], 'checks': d['checks'], 'stats': d['stats'],
+            'review': rs, 'can_review': can_review,
             'chunks': [{'i': i, 'id': r['id'], 'position': r['position'], 'part': r['part'], 'title': r['title'],
                         'hierarchy': r['hierarchy'], 'unit_type': r['unit_type'], 'words': r['words'],
                         'text': body_of(r['text']), 'flags': d['flags'].get(i, [])}
