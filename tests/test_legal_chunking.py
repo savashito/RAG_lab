@@ -250,6 +250,16 @@ def test_letter_after_delimiter_is_text_not_subindex():
     assert _titles('ARTÍCULO 148 bis.- A quien cometa…\n') == ['Artículo 148 bis']
 
 
+def test_single_capital_letter_suffix_before_delimiter():
+    # Códigos Civil y de Procedimientos Civiles del DF: "ARTÍCULO 24 A. -", "737 B.-".
+    md = ('**ARTICULO 24.-** Texto.\n\n**ARTÍCULO 24 A. -** Texto.\n\n**ARTÍCULO 24 B.-** Texto.\n\n'
+          '**Artículo 737 E.-** Texto.\n\n**Artículo 5.- A la persona** que…\n')
+    assert _titles(md) == ['Artículo 24', 'Artículo 24 A', 'Artículo 24 B', 'Artículo 737 E', 'Artículo 5']
+    md = ('## ARTÍCULO 737 \nTexto.\n\n## ARTÍCULO 737 A \nTexto.\n\nARTÍCULO 737 B \nTexto.\n\n'
+          'ARTÍCULO 737 F (DEROGADO, G.O. 19 DE DICIEMBRE)\n')
+    assert _titles(md) == ['Artículo 737', 'Artículo 737 A', 'Artículo 737 B', 'Artículo 737 F']
+
+
 def test_unknown_suffix_word_before_delimiter_is_kept():
     # Erratas reales: "quarter" (quáter), "osties" (octies), "CUARTER", "séptimus".
     md = ('**ARTÍCULO *148 quarter.-** Texto.\n\n**Artículo *455 osties.-** Texto.\n\n'

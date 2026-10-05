@@ -260,6 +260,11 @@ _ARTICLE_LABEL = (
     # su sufijo, aunque sea una errata del documento: "148 séptimus.-", "356 CUARTER.-",
     # "455 osties.-" (Morelos, CDMX). Sin esto colapsan con el artículo base (148, 356, 455).
     + r'|[ \t]+[A-Za-zÁÉÍÓÚáéíóú]{3,14}(?=[ \t]*\.?[ \t]*\**[ \t]*[-–])'
+    # Una sola MAYÚSCULA separada por espacio y seguida del delimitador, del fin de la línea
+    # o de una nota entre paréntesis: "24 A. -", "## ARTÍCULO 737 A" (texto en la línea de
+    # abajo), "737 F (DEROGADO…" (Códigos Civil y de Procedimientos Civiles del DF). Exigirlo
+    # evita tomar como sufijo la "A" de "Artículo 5.- A la persona…" (delimitador ANTES).
+    + r'|[ \t]+(?-i:[A-Z])(?=[ \t]*\.?[ \t]*\**[ \t]*(?:[-–(]|$))'
     + r')*'
     + r')'
 )
