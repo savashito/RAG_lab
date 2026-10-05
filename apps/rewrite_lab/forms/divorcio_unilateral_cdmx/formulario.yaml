@@ -1,0 +1,218 @@
+# Formulario: solicitud de divorcio unilateral (incausado) — Ciudad de México.
+# Lo lee el asistente de trámites (máquina de estados): las INSTRUCCIONES y el TRIAJE los usa
+# Gemma; los CAMPOS definen qué se pregunta, en qué orden y bajo qué condición; la PLANTILLA
+# (plantilla.md) la llena el código con las respuestas. Ver forms/README.md.
+
+id: divorcio_unilateral_cdmx
+titulo: Solicitud de divorcio unilateral (incausado) — Ciudad de México
+version: 2026-10-05
+estado: borrador          # borrador → revisado (por Karen) → publicado
+basado_en: >-
+  Formulario Práctico Forense en Materia Familiar (modelos de 2008-2009, DF), actualizado al Código
+  Civil para el Distrito Federal vigente y al Código Nacional de Procedimientos Civiles y Familiares
+  (vigente en materia familiar en la CDMX desde el 1 de junio de 2026).
+
+# Para qué sirve, en palabras sencillas (se le muestra a la persona y lo usa Gemma).
+descripcion: >-
+  Escrito con el que UNA de las personas casadas le pide a la Jueza o Juez de lo Familiar el
+  divorcio, sin tener que explicar ni probar la causa. Se acompaña de una propuesta de convenio
+  sobre hijas e hijos, alimentos, domicilio y bienes.
+
+# Triaje: el asistente lo revisa ANTES de empezar a preguntar.
+cuando_aplica:
+  - Una sola de las personas casadas quiere divorciarse (la otra no está de acuerdo o no se le puede localizar para firmar juntos).
+  - El matrimonio se celebró o tuvo su último domicilio conyugal en la Ciudad de México.
+cuando_no_aplica:
+  - si: Ambos están de acuerdo en divorciarse y en las condiciones.
+    sugerir: >-
+      Divorcio bilateral (artículos 655 a 662 del CNPCF). Si además no tienen hijas o hijos menores
+      (o que requieran alimentos) ni bienes o deudas en común, puede hacerse ante el Registro Civil
+      (art. 662) o ante notaría (art. 661), que suele ser más rápido y barato.
+  - si: El último domicilio conyugal no está en la Ciudad de México.
+    sugerir: El trámite corresponde a la entidad del último domicilio conyugal; este formulario es solo para la CDMX.
+
+# Avisos que el asistente muestra a la persona (no son negociables).
+avisos:
+  - Este asistente te ayuda a preparar un borrador; no sustituye la asesoría de una abogada o abogado.
+  - En los juicios familiares necesitas una defensa técnica (abogada o abogado). Si no tienes, la
+    Defensoría Pública de la Ciudad de México te asiste gratis (art. 666 del CNPCF).
+  - Tus datos se quedan en tu navegador; no se guardan en el servidor.
+  - Si vives violencia familiar, puedes pedir medidas de protección desde la presentación del escrito.
+    En una emergencia llama al 911 o a la Línea Mujeres (55 5658 1111).
+
+# Instrucciones para Gemma en el estado ENTREVISTA.
+instrucciones_entrevista: >-
+  Estás ayudando a una persona a llenar una solicitud de divorcio unilateral en la Ciudad de México.
+  Pregunta un dato a la vez, con lenguaje sencillo y amable. Si la persona da varios datos juntos,
+  tómalos todos. No des por hecho ningún dato que no te haya dicho. No redactes el escrito: solo
+  recaba los datos; el documento lo arma el sistema con la plantilla revisada. Si pregunta algo
+  jurídico, contesta brevemente con base en los artículos citados y vuelve a la pregunta pendiente.
+
+campos:
+  # ── Quien solicita ──────────────────────────────────────────────────────────
+  - id: nombre_solicitante
+    pregunta: "¿Cuál es tu nombre completo?"
+    tipo: texto
+  - id: domicilio_notificaciones
+    pregunta: "¿En qué domicilio de la Ciudad de México quieres recibir notificaciones del juzgado?"
+    tipo: texto
+    ayuda: Calle, número, colonia, alcaldía y código postal. Puede ser el despacho de tu abogada o abogado.
+  - id: telefono
+    pregunta: "¿Qué número de teléfono quieres dar para el juicio?"
+    tipo: texto
+  - id: correo
+    pregunta: "¿Y qué correo electrónico?"
+    tipo: texto
+  - id: representante_autorizado
+    pregunta: "¿Quién te va a representar? Escribe el nombre de tu abogada o abogado, o «Defensoría Pública» si no tienes."
+    tipo: texto
+  - id: grupo_vulnerable
+    pregunta: "¿Perteneces a algún grupo en situación de vulnerabilidad que quieras señalar (por ejemplo, persona con discapacidad, persona indígena, adulta mayor)? Si no, déjalo en blanco."
+    tipo: texto
+    obligatorio: false
+
+  # ── El otro cónyuge ─────────────────────────────────────────────────────────
+  - id: nombre_conyuge
+    pregunta: "¿Cuál es el nombre completo de tu esposa o esposo?"
+    tipo: texto
+  - id: domicilio_conyuge
+    pregunta: "¿En qué domicilio se le puede buscar para notificarle (emplazarle)?"
+    tipo: texto
+    ayuda: "Si no sabes dónde vive, díselo al asistente: tu abogada o abogado puede pedir que se le busque por otros medios."
+
+  # ── El matrimonio ───────────────────────────────────────────────────────────
+  - id: fecha_matrimonio
+    pregunta: "¿En qué fecha se casaron?"
+    tipo: fecha
+  - id: lugar_matrimonio
+    pregunta: "¿Ante qué juzgado u oficina del Registro Civil se casaron? (viene en el acta de matrimonio)"
+    tipo: texto
+    obligatorio: false
+  - id: numero_acta_matrimonio
+    pregunta: "¿Tienes el número del acta de matrimonio?"
+    tipo: texto
+    obligatorio: false
+  - id: regimen
+    pregunta: "¿Se casaron por sociedad conyugal (bienes mancomunados) o por separación de bienes?"
+    tipo: opcion
+    opciones: {sociedad_conyugal: Sociedad conyugal (bienes mancomunados), separacion_bienes: Separación de bienes}
+    ayuda: Viene en el acta de matrimonio.
+  - id: ultimo_domicilio_conyugal
+    pregunta: "¿Cuál fue el último domicilio donde vivieron juntos?"
+    tipo: texto
+
+  # ── Hijas e hijos ───────────────────────────────────────────────────────────
+  - id: hay_hijos_menores
+    pregunta: "¿Tienen hijas o hijos menores de edad en común?"
+    tipo: si_no
+  - id: hijos
+    si: hay_hijos_menores
+    pregunta: Dime el nombre y la fecha de nacimiento de cada hija o hijo menor de edad.
+    tipo: lista
+    subcampos:
+      - {id: nombre, tipo: texto}
+      - {id: fecha_nacimiento, tipo: fecha}
+  - id: hijos_mayores_con_apoyo
+    si: NO hay_hijos_menores
+    pregunta: "¿Tienen alguna hija o hijo mayor de edad que requiera apoyo (por ejemplo, por una discapacidad)?"
+    tipo: si_no
+    # REVISAR (Karen): si es «sí», el convenio debe regularlo (art. 267-I y 283-VI); falta su cláusula.
+  - id: guarda_custodia
+    si: hay_hijos_menores
+    pregunta: "¿Con quién propones que vivan (guarda y custodia)? ¿Contigo, con tu esposa o esposo, o compartida?"
+    tipo: texto
+  - id: domicilio_custodia
+    si: hay_hijos_menores
+    pregunta: "¿En qué domicilio vivirían?"
+    tipo: texto
+  - id: regimen_convivencias
+    si: hay_hijos_menores
+    pregunta: "¿Qué días y horarios propones para que convivan con el otro progenitor?"
+    tipo: texto_largo
+    ayuda: Por ejemplo, fines de semana alternos de sábado 10:00 a domingo 18:00, y la mitad de las vacaciones.
+  - id: deudor_alimentario
+    si: hay_hijos_menores
+    pregunta: "¿Quién pagaría la pensión alimenticia de las hijas e hijos?"
+    tipo: texto
+  - id: monto_alimentos
+    si: hay_hijos_menores
+    pregunta: "¿Cuánto propones de pensión? Puede ser una cantidad mensual o un porcentaje del salario."
+    tipo: texto
+  - id: forma_pago_alimentos
+    si: hay_hijos_menores
+    pregunta: "¿Cómo y cuándo se pagaría? (por ejemplo, depósito los días 1 de cada mes, o descuento por nómina)"
+    tipo: texto
+  - id: garantia_alimentos
+    si: hay_hijos_menores
+    pregunta: "¿Cómo se garantizaría que se pague? (por ejemplo, fianza, depósito o descuento por nómina)"
+    tipo: texto
+
+  # ── Alimentos entre cónyuges ────────────────────────────────────────────────
+  - id: alimentos_conyuge
+    pregunta: "¿Necesitas pedir pensión alimenticia para ti? (por ejemplo, si te dedicaste al hogar o no puedes trabajar)"
+    tipo: si_no
+  - id: monto_alimentos_conyuge
+    si: alimentos_conyuge
+    pregunta: "¿Cuánto propones?"
+    tipo: texto
+  - id: motivo_alimentos_conyuge
+    si: alimentos_conyuge
+    pregunta: "¿Por qué la necesitas? (por ejemplo, te dedicaste al hogar y al cuidado de los hijos, tu edad o salud)"
+    tipo: texto_largo
+
+  # ── Domicilio y bienes ──────────────────────────────────────────────────────
+  - id: uso_domicilio_conyugal
+    pregunta: "¿Quién propones que se quede en el domicilio conyugal y con los muebles (menaje)?"
+    tipo: texto
+  - id: fecha_desocupacion
+    pregunta: Si la otra persona debe salir del domicilio, ¿a más tardar en qué fecha?
+    tipo: fecha
+    obligatorio: false
+  - id: bienes
+    si: regimen = sociedad_conyugal
+    pregunta: "¿Qué bienes adquirieron durante el matrimonio? (casa, departamento, auto, cuentas…) Si sabes su valor aproximado, inclúyelo."
+    tipo: lista
+    subcampos:
+      - {id: descripcion, tipo: texto}
+      - {id: valor, tipo: texto, obligatorio: false}
+  - id: administrador_bienes
+    si: regimen = sociedad_conyugal
+    pregunta: Mientras dura el juicio, ¿quién administraría esos bienes?
+    tipo: texto
+  - id: propuesta_liquidacion
+    si: regimen = sociedad_conyugal
+    pregunta: "¿Cómo propones repartirlos? (por ejemplo, vender la casa y dividir 50 %-50 %, o que cada quien se quede con ciertos bienes)"
+    tipo: texto_largo
+  - id: pide_compensacion
+    si: regimen = separacion_bienes
+    pregunta: "¿Te dedicaste principalmente al hogar o al cuidado de los hijos, o adquiriste muchos menos bienes que tu esposa o esposo? Si es así, puedes pedir una compensación de hasta el 50 % de sus bienes. ¿La quieres pedir?"
+    tipo: si_no
+  - id: porcentaje_compensacion
+    si: pide_compensacion
+    pregunta: "¿Qué porcentaje propones? (máximo 50 %)"
+    tipo: texto
+  - id: motivo_compensacion
+    si: pide_compensacion
+    pregunta: Cuéntame brevemente por qué te corresponde.
+    tipo: texto_largo
+  - id: hay_animales_compania
+    pregunta: "¿Tienen mascotas (animales de compañía) en común?"
+    tipo: si_no
+  - id: responsable_animales
+    si: hay_animales_compania
+    pregunta: "¿Quién se quedaría a cargo de ellas?"
+    tipo: texto
+  - id: plan_cuidados_animales
+    si: hay_animales_compania
+    pregunta: "¿Cómo se cubrirían sus cuidados y gastos?"
+    tipo: texto_largo
+
+  # ── Violencia ───────────────────────────────────────────────────────────────
+  - id: hay_violencia
+    pregunta: "¿Existe violencia familiar (física, psicológica, económica, sexual) de la que quieras que el juzgado sepa para protegerte o proteger a tus hijas e hijos?"
+    tipo: si_no
+    ayuda: Si respondes que sí, el escrito pedirá medidas de protección. En una emergencia llama al 911.
+
+  - id: fecha_firma
+    automatico: hoy      # lo llena el sistema con la fecha del día
+    tipo: fecha

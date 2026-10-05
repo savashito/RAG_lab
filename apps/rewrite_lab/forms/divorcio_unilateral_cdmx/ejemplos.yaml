@@ -1,0 +1,60 @@
+# Datos FICTICIOS para ver la plantilla llenada (los genera forms/plantilla.py en ejemplo_*.md).
+con_hijos_sociedad_conyugal:
+  nombre_solicitante: María Fernanda López Ruiz
+  domicilio_notificaciones: Calle Fresno 12, Col. Santa María la Ribera, Alcaldía Cuauhtémoc, C.P. 06400, Ciudad de México
+  telefono: 55 1234 5678
+  correo: mf.lopez@example.com
+  representante_autorizado: la Defensoría Pública de la Ciudad de México
+  nombre_conyuge: Jorge Alberto Méndez Torres
+  domicilio_conyuge: Av. Revolución 450, depto. 3, Col. San Pedro de los Pinos, Alcaldía Benito Juárez, C.P. 03800, Ciudad de México
+  fecha_matrimonio: 14 de febrero de 2012
+  lugar_matrimonio: el Juzgado 14 del Registro Civil de la Ciudad de México
+  numero_acta_matrimonio: "00123"
+  regimen: sociedad_conyugal
+  ultimo_domicilio_conyugal: Calle Fresno 12, Col. Santa María la Ribera, Alcaldía Cuauhtémoc, C.P. 06400, Ciudad de México
+  hay_hijos_menores: true
+  hijos:
+    - {nombre: Sofía Méndez López, fecha_nacimiento: 3 de mayo de 2014}
+    - {nombre: Diego Méndez López, fecha_nacimiento: 21 de agosto de 2017}
+  guarda_custodia: la suscrita, María Fernanda López Ruiz
+  domicilio_custodia: Calle Fresno 12, Col. Santa María la Ribera, Alcaldía Cuauhtémoc, C.P. 06400, Ciudad de México
+  regimen_convivencias: fines de semana alternos, del sábado a las 10:00 horas al domingo a las 18:00 horas, y la mitad de los periodos vacacionales escolares
+  deudor_alimentario: Jorge Alberto Méndez Torres
+  monto_alimentos: el 30 % de sus percepciones ordinarias y extraordinarias
+  forma_pago_alimentos: mediante descuento vía nómina, que se entregará quincenalmente a la suscrita
+  garantia_alimentos: el propio descuento vía nómina ordenado a su centro de trabajo
+  alimentos_conyuge: false
+  uso_domicilio_conyugal: la suscrita y nuestras hijas e hijos
+  fecha_desocupacion: 30 de noviembre de 2026
+  bienes:
+    - {descripcion: "Departamento ubicado en Calle Fresno 12, Col. Santa María la Ribera", valor: "$2,100,000.00"}
+    - {descripcion: "Automóvil Nissan Versa 2019"}
+  administrador_bienes: la suscrita
+  propuesta_liquidacion: que el departamento quede a favor de nuestras hijas e hijos, y el automóvil a favor de Jorge Alberto Méndez Torres
+  hay_animales_compania: false
+  hay_violencia: false
+  fecha_firma: 5 de octubre de 2026
+
+sin_hijos_separacion_bienes:
+  nombre_solicitante: Roberto Sánchez Díaz
+  domicilio_notificaciones: Av. Insurgentes Sur 1000, despacho 501, Col. Del Valle, Alcaldía Benito Juárez, C.P. 03100, Ciudad de México
+  telefono: 55 8765 4321
+  correo: r.sanchez@example.com
+  representante_autorizado: la licenciada Ana Paula Torres Vega
+  nombre_conyuge: Laura Patricia Gómez Herrera
+  domicilio_conyuge: Calle Pino 8, Col. Del Carmen, Alcaldía Coyoacán, C.P. 04100, Ciudad de México
+  fecha_matrimonio: 2 de julio de 2019
+  regimen: separacion_bienes
+  ultimo_domicilio_conyugal: Calle Pino 8, Col. Del Carmen, Alcaldía Coyoacán, C.P. 04100, Ciudad de México
+  hay_hijos_menores: false
+  hijos_mayores_con_apoyo: false
+  alimentos_conyuge: false
+  uso_domicilio_conyugal: Laura Patricia Gómez Herrera, por ser de su propiedad
+  pide_compensacion: true
+  porcentaje_compensacion: 20 %
+  motivo_compensacion: durante el matrimonio me dediqué preponderantemente al cuidado de mi madre enferma y no adquirí bienes propios
+  hay_animales_compania: true
+  responsable_animales: Roberto Sánchez Díaz
+  plan_cuidados_animales: Roberto Sánchez Díaz cubrirá la alimentación y la atención veterinaria del perro «Canelo»
+  hay_violencia: false
+  fecha_firma: 5 de octubre de 2026
