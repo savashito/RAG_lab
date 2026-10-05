@@ -160,9 +160,9 @@
         <li><code>"kind"</code> del componente:
           <span class="chip must"><span class="k">must</span>obligatorio</span>
           <span class="chip should"><span class="k">should</span>deseable</span>
-          <span class="chip must_not"><span class="k">must not</span>no debe aparecer</span>
+          <span class="chip must_not"><span class="k">❌ error</span>describe el error; si aparece, reprueba</span>
           — y <code>"weight"</code> (número ≥ 0, por defecto 1).</li>
-        <li>El <i>must_not</i> se escribe <b>en positivo</b>, describiendo el error que no debe aparecer: <code>"Cita un artículo equivocado"</code>, <code>"Omite el nombre de la ley"</code>. Nunca <code>"No omitir…"</code>: el juez detecta si lo descrito aparece, y una respuesta correcta contaría como violación (el editor lo marca con ⚠).</li>
+        <li>El <i>must_not</i> (en pantalla «❌ error») se escribe <b>en positivo</b>, describiendo el error que no debe aparecer: <code>"Cita un artículo equivocado"</code>, <code>"Omite el nombre de la ley"</code>. Nunca <code>"No omitir…"</code>: el juez detecta si lo descrito aparece, y una respuesta correcta contaría como violación (el editor lo marca con ⚠).</li>
         <li>Si una pregunta no tiene componentes, se califica contra <code>"expected_answer"</code> como un único <i>must</i>.</li>
       </ul>
       <h3>Plantilla</h3>
@@ -355,7 +355,7 @@ function validate(text){
 function chip(c){
   const w = (c.weight != null && +c.weight !== 1) ? ` ×${+c.weight}` : '';
   const k = KINDS.includes(c.kind) ? c.kind : 'must';
-  return `<span class="chip ${k}"><span class="k">${esc(String(c.kind).replace('_', ' '))}${w}</span>${esc(c.text)}</span>`;
+  return `<span class="chip ${k}"><span class="k">${c.kind === 'must_not' ? '❌ error' : esc(String(c.kind))}${w}</span>${esc(c.text)}</span>`;
 }
 function refresh(){
   const text = cm.getValue();
@@ -390,7 +390,7 @@ function refresh(){
     `<span><b>${qs.length}</b> preguntas</span>`,
     `<span class="chip must"><span class="k">must</span>${n('must')}</span>`,
     `<span class="chip should"><span class="k">should</span>${n('should')}</span>`,
-    `<span class="chip must_not"><span class="k">must not</span>${n('must_not')}</span>`,
+    `<span class="chip must_not"><span class="k">❌ error</span>${n('must_not')}</span>`,
     Object.entries(DIFFS).map(([d, l]) => `<span class="badge d-${d}">${l} ${qs.filter(q => normDiff(q.difficulty) === d).length}</span>`).join(' '),
     qs.some(q => !normDiff(q.difficulty)) ? `<span class="badge d-none">sin dificultad ${qs.filter(q => !normDiff(q.difficulty)).length}</span>` : '',
     nNew ? `<span class="st-ok">+${nNew} nueva${nNew > 1 ? 's' : ''}</span>` : '',

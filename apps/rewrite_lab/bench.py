@@ -172,7 +172,7 @@ LAW_SOURCES = [   # (patrón en el texto, documento del corpus o None si no est�
     (r'Procedimientos Civiles y Familiares|\bCNPCF\b', 'Código Nacional de Procedimientos Civiles y Familiares.md'),
     (r'C[óo]digo Procesal Familiar|\bCPROFAMEM\b', 'CPROFAMEM.md'),
     (r'C[óo]digo Familiar|\bCFAMILIAREM\b', 'CFAMILIAREM.md'),
-    (r'Ciudad de M[ée]xico|\bCDMX\b|\bCPCDMX\b', 'Código Penal de la Ciudad de México.md'),
+    (r'Ciudad de M[ée]xico|Distrito Federal|\bCDMX\b|\bCPCDMX\b', 'Código Penal de la Ciudad de México.md'),
     (r'Estado de M[ée]xico|\bCPEM\b|\bEdomex\b', 'Código Penal del Estado de México.md'),
     (r'C[óo]digo Penal Federal|\bCPF\b', 'Código Penal Federal.md'),
     (r'Procedimientos Penales|\bCNPP\b', 'Código Nacional de Procedimientos Penales.md'),

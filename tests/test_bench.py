@@ -341,3 +341,12 @@ def test_review_stats_agreement_on_same_questions():
     assert st['confusion'] == {'presente→presente': 1, 'presente→ausente': 1}
     assert st['avg_rating'] == 4
     assert review_stats(results, [])['n_reviews'] == 0
+
+
+def test_gold_refs_distrito_federal_is_cdmx():
+    # "Distrito Federal" es el nombre viejo del código de CDMX: el artículo no debe atribuirse a
+    # la siguiente ley que aparezca en el must.
+    from bench import gold_refs
+    comps = [{'kind': 'must', 'text': 'Señalar el artículo 148 Bis del Código Penal para el Distrito Federal '
+                                      'y el artículo 126 Bis del Código Penal para el Estado de Querétaro.'}]
+    assert [x['label'] for grp in gold_refs('q', comps) for x in grp] == ['CDMX 148 Bis', 'Querétaro 126 Bis']

@@ -284,11 +284,14 @@ function compChip(c, verdict){
   }
   const w = (c.weight!=null && +c.weight!==1) ? ` ×${+c.weight}` : '';
   const title = verdict!==undefined ? `${verdict||'sin veredicto'}${c.evidence?' — «'+c.evidence+'»':''}` : '';
-  return `<span class="comp ${c.kind} ${cls}" title="${attr(title)}"><span class="k">${c.kind.replace('_',' ')}${w}</span>${esc(c.text)}</span>`;
+  return `<span class="comp ${c.kind} ${cls}" title="${attr(title)}"><span class="k">${kindLabel(c.kind)}${w}</span>${esc(c.text)}</span>`;
 }
+// En la BD el tipo sigue siendo 'must_not'; en pantalla se llama «error» para que se redacte
+// describiendo el error ("Omite…", "Confunde…") y no en negativo ("No omitir…").
+const kindLabel = k => k==='must_not' ? '❌ error' : k;
 function compCounts(comps){
   const n = k => comps.filter(c=>c.kind===k).length;
-  return `<span class="cnt"><b>${n('must')}</b> must · <b>${n('should')}</b> should · <b>${n('must_not')}</b> must not</span>`;
+  return `<span class="cnt"><b>${n('must')}</b> must · <b>${n('should')}</b> should · <b>${n('must_not')}</b> error</span>`;
 }
 function renderQuestions(){
   if(!BENCH.set) return;
@@ -331,7 +334,7 @@ function toggleExpandAll(){
 function addCompRow(c){
   c = c || {kind:'must', text:'', weight:1};
   const row = document.createElement('div'); row.className = 'cedit';
-  row.innerHTML = `<select class="ck">${['must','should','must_not'].map(k=>`<option ${k===c.kind?'selected':''}>${k}</option>`).join('')}</select>
+  row.innerHTML = `<select class="ck">${['must','should','must_not'].map(k=>`<option value="${k}" ${k===c.kind?'selected':''}>${kindLabel(k)}</option>`).join('')}</select>
     <input type="text" class="ct" placeholder="p. ej. «Cita el art. 146 del CNPP»" value="${attr(c.text)}">
     <input type="number" class="cw" min="0" step="0.5" value="${c.weight??1}" title="peso">
     <button class="danger" title="quitar">✕</button>`;
@@ -735,7 +738,7 @@ async function rvShow(i){
       <div class="rv-side">
         <div class="row" style="margin:0 0 6px;justify-content:space-between"><b>¿Qué contiene la respuesta?</b>
           <button class="ghost" id="rv-eye" onclick="rvToggleEye()" title="Mostrar u ocultar lo que marcó el juez (Gemma)">👁 ver juez</button></div>
-        <p class="muted" style="font-size:11px;margin:0 0 6px">En <b>must not</b>, «Presente» = el error SÍ aparece (eso es malo).</p>
+        <p class="muted" style="font-size:11px;margin:0 0 6px">En <b>❌ error</b>, «Presente» = el error SÍ aparece (eso es malo).</p>
         <div id="rv-comps"></div>
         <label class="f">Calificación global de la respuesta</label>
         <div class="rv-stars" id="rv-stars"></div>
@@ -754,7 +757,7 @@ function rvRenderComps(){
     const h = rv.verdicts[k], j = c.verdict || 'ausente';
     const judge = rv.eye ? `<div class="rv-judge ${h && h!==j ? 'diff':''}">🤖 juez: <b>${esc(j)}</b>${c.evidence?` — «${esc(c.evidence)}»`:''}</div>` : '';
     return `<div class="rv-comp ${c.kind}">
-      <div><span class="comp ${c.kind}"><span class="k">${c.kind.replace('_',' ')}</span></span> ${esc(c.text)}</div>
+      <div><span class="comp ${c.kind}"><span class="k">${kindLabel(c.kind)}</span></span> ${esc(c.text)}</div>
       <div class="rv-seg">${RV_OPTS.map(([v,l])=>`<button class="${h===v?'on '+v:''}" onclick="rvSet(${k},'${v}')">${l}</button>`).join('')}</div>
       ${judge}</div>`; }).join('');
   $('rv-eye').textContent = rv.eye ? '🙈 ocultar juez' : '👁 ver juez';
