@@ -102,6 +102,14 @@ JUDGE_SYSTEM = (
 )
 
 
+def judge_system(notes: str = '') -> str:
+    """Prompt de sistema del juez: la base fija (formato del veredicto, no editable) más los
+    «criterios para el juez» del set (bench_sets.judge_notes): equivalencias y trampas conocidas
+    de la materia, editables desde el frontend. Cada corrida guarda los criterios que usó."""
+    notes = (notes or '').strip()
+    return JUDGE_SYSTEM + (f'\n\nCRITERIOS DE ESTE SET (aplícalos al decidir cada veredicto):\n{notes}' if notes else '')
+
+
 # ── Lógica pura (probada en tests/test_bench.py) ──────────────────────────────────
 
 def effective_components(question: dict) -> list[dict]:
@@ -424,6 +432,8 @@ def validate_set_payload(payload, existing_ids=frozenset(), existing_errors=None
     for f in ('name', 'topic'):
         if not str(payload.get(f) or '').strip():
             errs.append(f'Falta "{f}".')
+    if payload.get('judge_notes') is not None and not isinstance(payload.get('judge_notes'), str):
+        errs.append('"judge_notes" debe ser un texto.')
     qs = payload.get('questions')
     if not isinstance(qs, list):
         return errs + ['"questions" debe ser una lista [ … ].']
@@ -500,6 +510,8 @@ CREATE INDEX IF NOT EXISTS bench_results_run ON bench_results (run_id, position)
 ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS retrieval jsonb;   -- ¿llegó el artículo correcto al contexto?
 -- Latido de la corrida: se actualiza con cada pregunta terminada (ver STALE_MINUTES).
 ALTER TABLE bench_runs ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
+-- Criterios para el juez del set (equivalencias, trampas conocidas): se añaden a JUDGE_SYSTEM.
+ALTER TABLE bench_sets ADD COLUMN IF NOT EXISTS judge_notes text;
 CREATE TABLE IF NOT EXISTS bench_reviews (
     id serial PRIMARY KEY, run_id int NOT NULL REFERENCES bench_runs(id) ON DELETE CASCADE,
     question_id int NOT NULL, reviewer text NOT NULL,
@@ -558,12 +570,12 @@ class Bench:
 
     # ── lectura ───────────────────────────────────────────────────────────────────
     def load_set(self, cur, set_id: int) -> dict | None:
-        cur.execute("SELECT id, name, topic, description, created_by, created_at::text, updated_at::text "
+        cur.execute("SELECT id, name, topic, description, created_by, created_at::text, updated_at::text, judge_notes "
                     "FROM bench_sets WHERE id = %s", (set_id,))
         row = cur.fetchone()
         if not row:
             return None
-        s = dict(zip(['id', 'name', 'topic', 'description', 'created_by', 'created_at', 'updated_at'], row))
+        s = dict(zip(['id', 'name', 'topic', 'description', 'created_by', 'created_at', 'updated_at', 'judge_notes'], row))
         s['topic_label'] = self.topic_label(s['topic'])
         cur.execute("SELECT id, position, question, expected_answer, notes, difficulty FROM bench_questions "
                     "WHERE set_id = %s ORDER BY position, id", (set_id,))
@@ -641,7 +653,8 @@ class Bench:
                                  for c in q['components']])
             return d
         return {'format': 'rag-lab-bench/v1', 'name': s['name'], 'topic': s['topic'],
-                'description': s.get('description') or '', 'questions': [q_out(q) for q in s['questions']]}
+                'description': s.get('description') or '', 'judge_notes': s.get('judge_notes') or '',
+                'questions': [q_out(q) for q in s['questions']]}
 
     def sync_set(self, cur, sid: int, payload: dict, dry_run: bool) -> dict:
         """Deja el set igual al JSON del editor: preguntas con `id` se actualizan (conservan su
@@ -658,12 +671,15 @@ class Bench:
         keep = {q['id'] for q in qs if q.get('id') is not None}
         plan = {'updated': len(keep), 'created': sum(q.get('id') is None for q in qs),
                 'deleted': [{'id': q['id'], 'question': q['question']} for q in s['questions'] if q['id'] not in keep],
-                'changed': sum(1 for q in qs if q.get('id') is not None and self._q_changed(existing[q['id']], q))}
+                'changed': sum(1 for q in qs if q.get('id') is not None and self._q_changed(existing[q['id']], q)),
+                'judge_notes_changed': (payload.get('judge_notes') or '').strip() != (s.get('judge_notes') or '').strip()}
         if dry_run:
             return plan
-        cur.execute("UPDATE bench_sets SET name = %s, topic = %s, description = %s, updated_at = now() WHERE id = %s",
+        cur.execute("UPDATE bench_sets SET name = %s, topic = %s, description = %s, judge_notes = %s, "
+                    "updated_at = now() WHERE id = %s",
                     (payload['name'].strip(), payload['topic'].strip(),
-                     (payload.get('description') or '').strip() or None, sid))
+                     (payload.get('description') or '').strip() or None,
+                     (payload.get('judge_notes') or '').strip() or None, sid))
         for d in plan['deleted']:
             cur.execute("DELETE FROM bench_questions WHERE id = %s AND set_id = %s", (d['id'], sid))
         for pos, q in enumerate(qs):
@@ -691,9 +707,10 @@ class Bench:
         except Exception:  # noqa: BLE001 — solo informativo
             return '?'
 
-    def grade(self, question: str, answer: str, components: list[dict], expected: str = '') -> dict:
+    def grade(self, question: str, answer: str, components: list[dict], expected: str = '',
+              notes: str = '') -> dict:
         prompt = build_judge_prompt(question, answer, components, expected)
-        raw = self.judge.chat(JUDGE_SYSTEM, prompt, temperature=0.0, max_tokens=1200, timeout=180,
+        raw = self.judge.chat(judge_system(notes), prompt, temperature=0.0, max_tokens=1200, timeout=180,
                               extra={'response_format': {'type': 'json_object'}})
         verdicts = parse_judge(raw, len(components))
         return {'prompt': prompt, 'raw': raw, 'verdicts': verdicts}
@@ -721,7 +738,7 @@ class Bench:
                         raise ValueError('ninguna de las preguntas elegidas está en el set (o no tiene criterios)')
                     cfg = dict(cfg, question_ids=[q['id'] for q in qs], set_total=len(s['questions']))
                 cfg = dict(cfg, system=(cfg.get('system') or '').strip() or self.system_for(s['topic']),
-                           judge_model=self.judge_model())
+                           judge_model=self.judge_model(), judge_notes=(s.get('judge_notes') or '').strip())
                 cur.execute("INSERT INTO bench_runs (set_id, set_name, topic, label, config, n, created_by) "
                             "VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s) RETURNING id",
                             (set_id, s['name'], s['topic'], label or None, json.dumps(cfg, ensure_ascii=False),
@@ -761,7 +778,8 @@ class Bench:
                     a = _retry(lambda: self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
                                                 cfg['rerank'], decompose=cfg.get('decompose', False)), self._cancel)
-                    g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or ''),
+                    g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or '',
+                                                  cfg.get('judge_notes') or ''),
                                self._cancel)
                     sc = score_question(comps, g['verdicts'])
                     row.update(sc)
@@ -847,9 +865,10 @@ class Bench:
             if not self.can_edit_topic(self.current_email(req), topic):
                 return deny('No tienes permiso sobre ese tema.')
             with self.connect() as c, c.cursor() as cur:
-                cur.execute("INSERT INTO bench_sets (name, topic, description, created_by) VALUES (%s,%s,%s,%s) "
-                            "RETURNING id", (name, topic, (b.get('description') or '').strip() or None,
-                                             self.current_email(req)))
+                cur.execute("INSERT INTO bench_sets (name, topic, description, judge_notes, created_by) "
+                            "VALUES (%s,%s,%s,%s,%s) RETURNING id",
+                            (name, topic, (b.get('description') or '').strip() or None,
+                             str(b.get('judge_notes') or '').strip() or None, self.current_email(req)))
                 sid = cur.fetchone()[0]
                 c.commit()
             return {'id': sid}
@@ -864,9 +883,10 @@ class Bench:
             if not self.can_edit_topic(self.current_email(req), topic):
                 return deny('No tienes permiso sobre ese tema.')
             with self.connect() as c, c.cursor() as cur:
-                cur.execute("INSERT INTO bench_sets (name, topic, description, created_by) VALUES (%s,%s,%s,%s) "
-                            "RETURNING id", (name, topic, (b.get('description') or '').strip() or None,
-                                             self.current_email(req)))
+                cur.execute("INSERT INTO bench_sets (name, topic, description, judge_notes, created_by) "
+                            "VALUES (%s,%s,%s,%s,%s) RETURNING id",
+                            (name, topic, (b.get('description') or '').strip() or None,
+                             str(b.get('judge_notes') or '').strip() or None, self.current_email(req)))
                 sid = cur.fetchone()[0]
                 try:
                     for q in qs:
@@ -898,6 +918,9 @@ class Bench:
                             "description = %s, updated_at = now() WHERE id = %s",
                             ((b.get('name') or '').strip(), new_topic,
                              (b.get('description') or '').strip() or None, sid))
+                if 'judge_notes' in b:
+                    cur.execute("UPDATE bench_sets SET judge_notes = %s WHERE id = %s",
+                                (str(b.get('judge_notes') or '').strip() or None, sid))
                 c.commit()
             return {'ok': True}
 

@@ -571,6 +571,8 @@
    <label class="f">Nombre del set</label><input type="text" id="bench-set-name" style="width:100%;box-sizing:border-box">
    <label class="f">Tema (las preguntas se responden buscando solo en este tema)</label><select id="bench-set-topic"></select>
    <label class="f">Descripción</label><textarea id="bench-set-desc" style="min-height:60px"></textarea>
+   <label class="f" title="Se añaden a las instrucciones del juez en cada corrida. Cada corrida guarda los criterios con que se calificó.">📋 Criterios para el juez <span class="muted" style="font-weight:normal">— equivalencias y trampas conocidas de la materia, una por línea (opcional)</span></label>
+   <textarea id="bench-set-judge" style="min-height:90px" placeholder="- &quot;Distrito Federal&quot; y &quot;Ciudad de México&quot; son la misma entidad.&#10;- 217 y 217 Bis son artículos distintos."></textarea>
    <div class="row"><button id="bench-set-save">Guardar</button>
      <button id="bench-set-save-json" class="ghost" title="Guarda el set y abre el editor JSON para escribir sus preguntas">📝 Guardar y editar JSON</button>
      <button class="ghost" id="bench-set-cancel">Cancelar</button>

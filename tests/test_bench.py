@@ -371,3 +371,17 @@ def test_error_kind_alias_and_negated_lock():
     assert Bench._clean_components([{'kind': 'error', 'text': 'No confundir robo con fraude'}],
                                    frozenset({'No confundir robo con fraude'}))
     assert export_kind('must_not') == 'error' and export_kind('must') == 'must'
+
+
+def test_judge_system_appends_set_notes():
+    from bench import judge_system, JUDGE_SYSTEM
+    assert judge_system('') == JUDGE_SYSTEM and judge_system(None) == JUDGE_SYSTEM
+    s = judge_system('  - Distrito Federal = Ciudad de México  ')
+    assert s.startswith(JUDGE_SYSTEM) and s.endswith('CRITERIOS DE ESTE SET (aplícalos al decidir cada veredicto):\n- Distrito Federal = Ciudad de México')
+
+
+def test_validate_judge_notes_must_be_text():
+    from bench import validate_set_payload
+    base = {'name': 'n', 'topic': 't', 'questions': []}
+    assert validate_set_payload(dict(base, judge_notes='- x')) == []
+    assert validate_set_payload(dict(base, judge_notes=['- x'])) == ['"judge_notes" debe ser un texto.']

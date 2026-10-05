@@ -219,6 +219,7 @@ function openSetForm(s){
   $('bench-set-title').textContent = s ? `Editar set «${s.name}»` : 'Nuevo set';
   $('bench-set-name').value = s ? s.name : '';
   $('bench-set-desc').value = s ? (s.description||'') : '';
+  $('bench-set-judge').value = s ? (s.judge_notes||'') : '';
   if(s) $('bench-set-topic').value = s.topic;
   else if($('bench-topic-filter').value) $('bench-set-topic').value = $('bench-topic-filter').value;
   $('bench-set-delete').style.display = s ? '' : 'none';
@@ -226,7 +227,8 @@ function openSetForm(s){
   $('bench-set-name').focus();
 }
 async function saveSet(thenEditJson){
-  const body = {name:$('bench-set-name').value, topic:$('bench-set-topic').value, description:$('bench-set-desc').value};
+  const body = {name:$('bench-set-name').value, topic:$('bench-set-topic').value, description:$('bench-set-desc').value,
+                judge_notes:$('bench-set-judge').value};
   try{
     let id;
     if(BENCH.editingSet){ id = BENCH.editingSet.id; await bpost('/api/bench/sets/'+id, body); }
@@ -435,7 +437,7 @@ function watchBenchRun(rid){
 function cfgSummary(c){
   c = c||{};
   return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'',
-          (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'',
+          (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'', (c.judge_notes||'').trim()?'📋 criterios juez':'',
           (c.question_ids||[]).length ? `🎯 ${c.question_ids.length}${c.set_total?'/'+c.set_total:''} preg.${c.subset?' ('+c.subset+')':''}` : '']
     .filter(Boolean).join(' · ');
 }
@@ -888,6 +890,7 @@ function renderCompare(){
         <option value="pos">orden del set</option><option value="delta" ${BENCH.cmpSort==='delta'?'selected':''}>más empeoradas primero</option></select>`:''}
       <span class="muted" style="font-size:12px">${rows.length} de ${qs.length} preguntas</span>
     </div>
+    ${new Set(runs.map(r=>((r.config||{}).judge_notes||'').trim())).size > 1 ? `<p class="muted" style="font-size:12px;margin:4px 0;color:#fbbf24" title="${attr(runs.map(r=>'#'+r.id+': '+(((r.config||{}).judge_notes||'').trim()||'(sin criterios)')).join('\n\n'))}">📋 Las corridas se calificaron con <b>criterios para el juez distintos</b>: parte del Δ puede venir del juez y no del sistema (pasa el ratón para verlos).</p>` : ''}
     ${partial ? `<p class="muted" style="font-size:12px;margin:4px 0;color:#fbbf24">🎯 Hay corridas parciales: se comparan solo las <b>${common.length}</b> preguntas que están en todas (promedios incluidos).</p>` : ''}
     <table><tr><th>pregunta</th>${runs.map(r=>`<th>#${r.id} ${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>

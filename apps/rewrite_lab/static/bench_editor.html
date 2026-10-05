@@ -164,6 +164,7 @@
           — y <code>"weight"</code> (número ≥ 0, por defecto 1).</li>
         <li>El <i>error</i> (<code>"kind": "error"</code>; también se acepta el nombre viejo <code>"must_not"</code>) se escribe <b>en positivo</b>, describiendo el error que no debe aparecer: <code>"Cita un artículo equivocado"</code>, <code>"Atribuye la fracción II al código de CDMX"</code>. Nunca <code>"No omitir…"</code>: el juez detecta si lo descrito aparece, y una respuesta correcta contaría como violación (el editor y el servidor no lo dejan guardar). Úsalo para <b>afirmaciones incorrectas</b> que pueden aparecer aunque los must se cumplan ("Afirma que se persigue de oficio", "Confunde el 217 con el 217 Bis"); "Omite…" casi siempre repite un must. Es opcional.</li>
         <li>Si una pregunta no tiene componentes, se califica contra <code>"expected_answer"</code> como un único <i>must</i>.</li>
+        <li><code>"judge_notes"</code> (opcional, a nivel del set): <b>criterios para el juez</b> que se añaden a sus instrucciones en cada corrida — equivalencias y trampas de la materia, p. ej. <code>"- \"Distrito Federal\" y \"Ciudad de México\" son la misma entidad.\n- 217 y 217 Bis son artículos distintos."</code> Cada corrida guarda los criterios con que se calificó, y Comparar avisa si difieren. También se editan en ⚙️ Más → Editar set.</li>
       </ul>
       <h3>Plantilla</h3>
 <pre>{
@@ -262,7 +263,7 @@ const C_ORDER = ['kind', 'text', 'weight'];
 const ordered = (obj, order) => [...order.filter(k => k in obj), ...Object.keys(obj).filter(k => !order.includes(k))];
 function fmt(d){
   const J = v => JSON.stringify(v);
-  const top = ordered(d, ['format', 'name', 'topic', 'description', 'questions']);
+  const top = ordered(d, ['format', 'name', 'topic', 'description', 'judge_notes', 'questions']);
   const lines = ['{'];
   top.forEach((k, ti) => {
     const last = ti === top.length - 1;
@@ -317,6 +318,7 @@ function validate(text){
   const add = (path, msg, warn) => errs.push({line: at(path), msg, path, warn});
   if (!d || typeof d !== 'object' || Array.isArray(d)) return {data: null, errs: [{line: 0, msg: 'El JSON debe ser un objeto { … }.'}]};
   for (const f of ['name', 'topic']) if (!String(d[f] || '').trim()) add(f, `Falta "${f}".`);
+  if (d.judge_notes != null && typeof d.judge_notes !== 'string') add('judge_notes', '"judge_notes" debe ser un texto (usa \\n para separar líneas).');
   if (d.topic && S.topics.length && !S.topics.some(t => t.topic === d.topic))
     add('topic', `"topic": "${d.topic}" no existe. Temas: ${S.topics.map(t => t.topic).join(', ')}`);
   if (!Array.isArray(d.questions)){ add('questions', '"questions" debe ser una lista [ … ].'); return {data: d, errs}; }
@@ -416,7 +418,8 @@ function renderPreview(d, errs){
   const topic = S.topics.find(t => t.topic === d.topic);
   const qs = Array.isArray(d.questions) ? d.questions : [];
   $('p-preview').innerHTML = `<div class="meta"><div><b>${esc(d.name || '(sin nombre)')}</b></div>
-      <div class="lbl">tema: ${esc(topic ? topic.label : d.topic || '—')} ${d.description ? '· ' + esc(d.description) : ''}</div></div>` +
+      <div class="lbl">tema: ${esc(topic ? topic.label : d.topic || '—')} ${d.description ? '· ' + esc(d.description) : ''}</div>
+      ${String(d.judge_notes || '').trim() ? `<div class="lbl" style="white-space:pre-wrap">📋 criterios para el juez:\n${esc(d.judge_notes)}</div>` : ''}</div>` +
     (qs.length ? qs.map((q, i) => {
       if (!q || typeof q !== 'object') return '';
       const comps = Array.isArray(q.components) ? q.components.filter(c => c && typeof c === 'object') : [];
