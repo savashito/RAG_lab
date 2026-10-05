@@ -40,6 +40,8 @@ from typing import Callable
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from shared.code_routes import codes_in, short_label
+
 KINDS = ('must', 'should', 'must_not')
 # En pantalla y en el JSON el must_not se llama «error»: describe un error que, si aparece en la
 # respuesta, la reprueba. El nombre «must_not» invitaba a redactarlo en negativo ("No omitir…"),
@@ -194,19 +196,8 @@ def score_question(components: list[dict], verdicts: list[dict]) -> dict:
 # artículo necesita la respuesta. Aquí se convierten en referencias (documento, artículo) y,
 # en cada corrida, se mide si ese chunk llegó al contexto del LLM: separa "la búsqueda no lo
 # trajo" de "lo tenía y respondió mal", y no depende del juez (no tiene ruido).
-LAW_SOURCES = [   # (patrón en el texto, documento del corpus o None si no está ingestado)
-    # Los más específicos primero: "Código Nacional de Procedimientos Civiles y Familiares" contiene
-    # "Nacional de Procedimientos" (CNPP) y los códigos familiares de Morelos contienen "Morelos".
-    (r'Procedimientos Civiles y Familiares|\bCNPCF\b', 'Código Nacional de Procedimientos Civiles y Familiares.md'),
-    (r'C[óo]digo Procesal Familiar|\bCPROFAMEM\b', 'CPROFAMEM.md'),
-    (r'C[óo]digo Familiar|\bCFAMILIAREM\b', 'CFAMILIAREM.md'),
-    (r'Ciudad de M[ée]xico|Distrito Federal|\bCDMX\b|\bCPCDMX\b', 'Código Penal de la Ciudad de México.md'),
-    (r'Estado de M[ée]xico|\bCPEM\b|\bEdomex\b', 'Código Penal del Estado de México.md'),
-    (r'C[óo]digo Penal Federal|\bCPF\b', 'Código Penal Federal.md'),
-    (r'Procedimientos Penales|\bCNPP\b', 'Código Nacional de Procedimientos Penales.md'),
-    (r'Morelos', 'Código PENALEM.md'),
-    (r'Quer[ée]taro', 'Código Penal del Estado de Querétaro.md'),
-]
+# Qué ley es cada artículo de un must: misma detección (sin LLM, tolerante a acentos y erratas)
+# que el routing por código de la búsqueda; ver shared/code_routes.py.
 _SUFFIX = r'(?:\s*(?:o\b|bis\b|ter\b|qu[aá]ter\b|quintus\b|quinquies\b))?'
 _ART_LIST_RE = re.compile(   # "art. 179", "arts. 269 y 269 Bis", "artículos 261, 262 y 266"
     r'(?i)\bart(?:[íi]culos?|s?\.)\s*(\d+' + _SUFFIX + r'(?:\s*(?:,|\by\b)\s*\d+' + _SUFFIX + r')*)')
@@ -214,13 +205,8 @@ _ART_ONE_RE = re.compile(r'(?i)\d+' + _SUFFIX)
 
 
 def _laws_in(text: str) -> list:
-    """Leyes mencionadas, en orden de aparición, como (patrón, documento)."""
-    hits = []
-    for rx, src in LAW_SOURCES:
-        m = re.search('(?i)' + rx, text or '')
-        if m:
-            hits.append((m.start(), rx, src))
-    return [(rx, src) for _, rx, src in sorted(hits)]
+    """Leyes mencionadas, en orden de aparición, como (etiqueta, documento)."""
+    return [(h['label'], h['source']) for h in codes_in(text)]
 
 
 def _label(raw: str) -> str:
@@ -230,7 +216,7 @@ def _label(raw: str) -> str:
 def gold_refs(question: str, components: list[dict]) -> list[list[dict]]:
     """Grupos de artículos que la respuesta necesita, leídos de los MUST. Cada grupo es una
     lista de alternativas [{'source', 'article', 'label'}]: basta con recuperar una ("Cita al
-    menos uno…"). `source` None = ley que no está en LAW_SOURCES; si el documento no está
+    menos uno…"). `source` None = ley que no está en CODE_ROUTES; si el documento no está
     ingestado, resolve_gold no le encuentra chunks y cuenta como fuera del corpus."""
     q_laws = _laws_in(question)
     groups, seen = [], set()
@@ -265,12 +251,7 @@ def gold_refs(question: str, components: list[dict]) -> list[list[dict]]:
                 groups.append(g)
     for g in groups:
         for x in g:
-            short = next((k for k, v in (('CNPCF', 'Civiles y Familiares'), ('CFM', 'CFAMILIAREM'),
-                                         ('CPFM', 'CPROFAMEM'), ('CDMX', 'Ciudad'), ('CPEM', 'Estado de M'),
-                                         ('CPF', 'Federal'), ('CNPP', 'Procedimientos Penales'),
-                                         ('Morelos', 'PENALEM'), ('Querétaro', 'Querétaro'))
-                          if x['source'] and v in x['source']),
-                         '?')
+            short = short_label(x['source'])
             x['label'] = f"{short} {x['article']}"
     return groups
 
@@ -777,7 +758,8 @@ class Bench:
                 try:
                     a = _retry(lambda: self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
-                                                cfg['rerank'], decompose=cfg.get('decompose', False)), self._cancel)
+                                                cfg['rerank'], decompose=cfg.get('decompose', False),
+                                                route=cfg.get('route', False)), self._cancel)
                     g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or '',
                                                   cfg.get('judge_notes') or ''),
                                self._cancel)
@@ -792,7 +774,7 @@ class Bench:
                                                            for ch in a.get('chunks', [])],
                                rewrite=a.get('rewrite'), score_kind=a.get('score_kind'), hyde_passage=a.get('hyde_passage'),
                                judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'),
-                               retrieval=row['retrieval'], subqueries=a.get('subqueries'))
+                               retrieval=row['retrieval'], subqueries=a.get('subqueries'), routes=a.get('routes'))
                 except Exception as e:  # noqa: BLE001 — una pregunta que falla no tumba la corrida
                     row['error'] = det['error'] = f'{type(e).__name__}: {e}'
                 row['seconds'] = round(time.time() - t0, 1)
@@ -1046,6 +1028,7 @@ class Bench:
                 cfg = {'setting': b.get('setting') or 'híbrido', 'k': int(b.get('k') or 10),
                        'neighbors': bool(b.get('neighbors', True)), 'hyde': bool(b.get('hyde', False)),
                        'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
+                       'route': bool(b.get('route', False)),
                        'system': b.get('system') or '',
                        'jurisdictions': b.get('jurisdictions') or []}
                 qids = [int(x) for x in (b.get('question_ids') or [])]

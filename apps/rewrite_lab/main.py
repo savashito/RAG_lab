@@ -41,6 +41,7 @@ load_dotenv(HERE / '.env')
 from shared.chunk_diagnostics import body_of, diagnose_chunks
 from shared.db import connect
 from shared.legal_chunking import find_article_ref
+from shared.code_routes import codes_in
 from shared.lexical import BM25, interleave_scored, rank_indices_by_score, rrf, tokenize
 from shared.llm_client import HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient
 from shared.rerank_client import RerankClient
@@ -593,25 +594,27 @@ def load_corpus_index():
 #   dist  → distancia coseno de pgvector (menor = más cercano)
 #   bm25  → score léxico BM25 (mayor = mejor)
 #   rrf   → score de Reciprocal Rank Fusion (mayor = mejor)
-def _scope_sql(topic, jset):
-    """WHERE + params combinando tópico y el set de lugares (ambos opcionales)."""
+def _scope_sql(topic, jset, source=None):
+    """WHERE + params combinando tópico, el set de lugares y un documento (todos opcionales)."""
     clauses, params = [], []
     if topic:
         clauses.append("topic = %s"); params.append(topic)
+    if source:
+        clauses.append("source = %s"); params.append(source)
     frag, p = _jur_sql(jset)
     if frag:
         clauses.append(frag); params += p
     return (" WHERE " + " AND ".join(clauses)) if clauses else "", params
 
 
-def dense_ranked(cur, qvec, topic=None, jset=None):
-    where, params = _scope_sql(topic, jset)
+def dense_ranked(cur, qvec, topic=None, jset=None, source=None):
+    where, params = _scope_sql(topic, jset, source)
     cur.execute(f"SELECT id, (embedding <=> %s) AS dist FROM {TABLE}{where} ORDER BY 2 LIMIT %s",
                 [qvec, *params, N_DENSE])
     return [(r[0], float(r[1])) for r in cur.fetchall()]
 
 
-def bm25_ranked(question, topic=None, jset=None):
+def bm25_ranked(question, topic=None, jset=None, source=None):
     index, ids = BM25_CORPUS
     scores = index.scores(tokenize(question))
     out = []
@@ -621,6 +624,8 @@ def bm25_ranked(question, topic=None, jset=None):
         if topic and meta.get('topic') != topic:
             continue   # BM25 es un índice global; filtramos por tópico/lugar con la metadata
         if not _jur_match(jset, meta.get('jurisdiction')):
+            continue
+        if source and meta.get('source') != source:
             continue
         out.append((cid, float(scores[i])))
     return out
@@ -801,7 +806,7 @@ def select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors
 
 
 def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
-                    neighbors=True, hyde=False, debug=None):
+                    neighbors=True, hyde=False, debug=None, source=None, passage=None):
     """Devuelve (lista[(id, score)], etiqueta_de_score, reescritura_o_None). Filtra por
     `topic` y por el conjunto de lugares `jurisdictions` (lista; vacío/'todos' = todo). Usa
     el `instruct` del tópico para embeber. Si la pregunta cita un artículo por número, ese
@@ -810,20 +815,26 @@ def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
     `hyde`: enriquece el vector denso con un borrador hipotético del pasaje (arregla el
     desajuste de vocabulario: la pregunta nombra el delito, el artículo lo define).
     `debug`: si es un dict, se rellena con {hyde_passage, embed_text} para exponer el
-    proceso en la UI (qué se generó y qué se envió a embeber)."""
+    proceso en la UI (qué se generó y qué se envió a embeber).
+    `source`: busca SOLO dentro de ese documento (routing por código; sin match exacto por
+    número, que ya lo hace la búsqueda normal). `passage`: borrador HyDE ya generado, para no
+    pedirle otro al LLM."""
     prefix = query_prefix(instruct_for(topic))   # "Instruct: <tarea del tópico>\nQuery: "
     jset = _jur_set(jurisdictions)               # set de lugares (o None = todos)
-    exact = article_lookup(cur, question, topic, jset)   # match exacto por número
-    # Consolida la familia (bis/adendums) y —si `neighbors`— trae ±2 artículos vecinos.
-    exact = expand_article_context(cur, exact, topic, jset, around=2 if neighbors else 0)
+    if source:
+        exact = []
+    else:
+        exact = article_lookup(cur, question, topic, jset)   # match exacto por número
+        # Consolida la familia (bis/adendums) y —si `neighbors`— trae ±2 artículos vecinos.
+        exact = expand_article_context(cur, exact, topic, jset, around=2 if neighbors else 0)
     if setting == 'bm25':
-        return _prepend_exact(bm25_ranked(question, topic, jset), exact), 'bm25', None
+        return _prepend_exact(bm25_ranked(question, topic, jset, source), exact), 'bm25', None
     # HyDE: embebe pregunta + borrador del pasaje. El léxico (BM25) sigue con la pregunta
     # real; el borrador solo mueve el vector denso hacia la conducta descrita.
     dense_text = question
     if hyde:
         try:
-            passage = llm.hyde_passage(question, system=hyde_for(topic))
+            passage = passage or llm.hyde_passage(question, system=hyde_for(topic))
             if passage:
                 dense_text = f'{question}\n\n{passage}'
                 if debug is not None:
@@ -832,11 +843,11 @@ def retrieve_scored(cur, question, setting, topic=None, jurisdictions=None,
             pass
     if debug is not None:
         debug['embed_text'] = prefix + dense_text
-    d_orig = dense_ranked(cur, tei.embed([prefix + dense_text], use_cache=False)[0], topic, jset)
+    d_orig = dense_ranked(cur, tei.embed([prefix + dense_text], use_cache=False)[0], topic, jset, source)
     if setting == 'orig':
         return _prepend_exact(d_orig, exact), 'dist', None
-    if setting == 'híbrido':
-        fused = rrf_scored([[i for i, _ in d_orig], [i for i, _ in bm25_ranked(question, topic, jset)]])
+    if setting == 'híbrido' or source:   # routing: sin reescritura (otra llamada al LLM por código)
+        fused = rrf_scored([[i for i, _ in d_orig], [i for i, _ in bm25_ranked(question, topic, jset, source)]])
         return _prepend_exact(fused, exact), 'rrf', None
     # reescribir / multiquery necesitan la reescritura del LLM
     rw = llm.rewrite_legal(question)
@@ -878,13 +889,33 @@ def _rerank_scored(question, scored, top_n=RERANK_TOP_N):
     return [(cid, smap.get(cid, 0.0)) for cid in new_ids], True
 
 
+_TOPIC_SOURCES: dict = {}   # tópico → documentos que tiene (el corpus en memoria no cambia sin reinicio)
+
+
+def topic_sources(topic) -> set:
+    if topic not in _TOPIC_SOURCES:
+        _TOPIC_SOURCES[topic] = {m.get('source') for m in DOC_BY_ID.values() if not topic or m.get('topic') == topic}
+    return _TOPIC_SOURCES[topic]
+
+
+def routed_codes(question, topic=None) -> list[dict]:
+    """Códigos que menciona la pregunta y que existen en el tópico (ver shared/code_routes)."""
+    have = topic_sources(topic)
+    return [h for h in codes_in(question) if h['source'] in have]
+
+
 def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neighbors=True,
-                    hyde=False, rerank=False, decompose=False, debug=None):
+                    hyde=False, rerank=False, decompose=False, debug=None, route=False):
     """Búsqueda completa de una pregunta: retrieve_scored + reranker opcional y, con
     `decompose`, query decomposition: el LLM divide la pregunta comparativa en sub-preguntas
     (una por entidad: ley, estado, autor, enfoque…), se busca cada una con la MISMA config y
     se intercalan los resultados. Si la pregunta no es comparativa queda una sola sub-pregunta
-    y el resultado es idéntico al de no descomponer. Devuelve (scored, score_kind, rewrite)."""
+    y el resultado es idéntico al de no descomponer.
+    `route` (routing por código): si la pregunta menciona un código o entidad ("Ciudad de
+    México", "CNPP", "Querétaro"), además de la búsqueda normal se busca la pregunta SOLO dentro
+    de cada código mencionado y todo se intercala: cada código tiene lugares asegurados y la
+    búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Sin LLM: la
+    detección es por nombre (tolera acentos y erratas). Devuelve (scored, score_kind, rewrite)."""
     subqs = llm.decompose(question) if decompose else [question]
     if debug is not None and decompose:
         debug['subqueries'] = subqs
@@ -893,17 +924,30 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
     # que la búsqueda normal encontraba sigue en el contexto.
     queries = [question] + [q for q in subqs if q.strip().lower() != question.strip().lower()]
     lists, kind, rw, passages = [], None, None, []
+    base_passage = None
     for q in queries:
-        d = {} if debug is not None else None
+        d = {}
         scored, sk, r = retrieve_scored(cur, q, setting, topic, jurisdictions, neighbors, hyde, debug=d)
+        if q is question:
+            base_passage = d.get('hyde_passage')
         if rerank and not find_article_ref(q):
             scored, did = _rerank_scored(q, scored)
             if did:
                 sk = 'rerank'
         lists.append(scored)
         kind, rw = kind or sk, rw or r
-        if d:
+        if d and debug is not None:
             passages.append((q, d))
+    if route:
+        codes = routed_codes(question, topic)
+        if debug is not None:
+            debug['routes'] = [{k: h[k] for k in ('label', 'source', 'match')} for h in codes]
+        for h in codes:   # reusa el borrador HyDE de la pregunta: sin llamadas extra al LLM
+            scored, _, _ = retrieve_scored(cur, question, setting, topic, jurisdictions, neighbors, hyde,
+                                           source=h['source'], passage=base_passage)
+            if rerank and not find_article_ref(question):
+                scored, _ = _rerank_scored(question, scored)
+            lists.append(scored)
     if debug is not None and passages:
         if len(passages) == 1:
             debug.update(passages[0][1])
@@ -914,7 +958,7 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
 
 
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
-        neighbors=True, hyde=False, rerank=False, decompose=False):
+        neighbors=True, hyde=False, rerank=False, decompose=False, route=False):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -925,7 +969,7 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     dbg: dict = {}
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions, neighbors,
-                                                 hyde, rerank, decompose, debug=dbg)
+                                                 hyde, rerank, decompose, debug=dbg, route=route)
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -940,7 +984,7 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
             'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
             'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
-            'subqueries': dbg.get('subqueries')}
+            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes')}
 
 
 # ── Tab "Conversacional" ──────────────────────────────────────────────────────────
@@ -992,7 +1036,7 @@ def condense_question(msgs, max_turns=6, max_answer_chars=500) -> str:
 
 
 def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=None,
-                neighbors=True, hyde=False, rerank=False, decompose=False):
+                neighbors=True, hyde=False, rerank=False, decompose=False, route=False):
     if setting not in ASK_SETTINGS:
         raise ValueError(f'setting desconocido: {setting!r} (usa {ASK_SETTINGS})')
     msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
@@ -1006,7 +1050,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
     dbg: dict = {}
     with connect() as c, c.cursor() as cur:   # retrieval sobre la consulta CONDENSADA
         scored, score_kind, rw = retrieve_ranked(cur, search_q, setting, topic, jurisdictions, neighbors,
-                                                 hyde, rerank, decompose, debug=dbg)
+                                                 hyde, rerank, decompose, debug=dbg, route=route)
         ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -1026,7 +1070,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
             'search_query': search_q if search_q != question else '',
             'chunks': top, 'seconds': round(time.time() - t0, 1),
             'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
-            'subqueries': dbg.get('subqueries')}
+            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes')}
 
 
 load_corpus_index()   # índice BM25 en memoria para la tab de RAG (bm25 / híbrido)
@@ -1396,12 +1440,14 @@ async def ask_route(req: Request):
                    int(body.get('k', 5)), body.get('system'), body.get('topic'),
                    body.get('jurisdictions') or body.get('jurisdiction'),
                    bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                   bool(body.get('rerank', False)), bool(body.get('decompose', False)))
+                   bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                   bool(body.get('route', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
 
-def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False):
+def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False,
+                route=False):
     """Generador SSE que transparenta el PROCESO paso a paso en lugar de esperar al final:
     1) 'hyde' (borrador hipotético + texto exacto que se embebe),
     2) 'context' (las referencias recuperadas, ya con su jerarquía),
@@ -1421,10 +1467,12 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         dbg: dict = {}
         with connect() as c, c.cursor() as cur:
             scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions,
-                                                     neighbors, hyde, rerank, decompose, debug=dbg)
+                                                     neighbors, hyde, rerank, decompose, debug=dbg, route=route)
             ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
         if len(dbg.get('subqueries') or []) > 1:
             yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
+        if dbg.get('routes'):
+            yield sse({'stage': 'route', 'routes': dbg['routes']})
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -1455,7 +1503,8 @@ async def ask_stream_route(req: Request):
                       int(body.get('k', 5)), body.get('system'), body.get('topic'),
                       body.get('jurisdictions') or body.get('jurisdiction'),
                       bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                      bool(body.get('rerank', False)), bool(body.get('decompose', False)))
+                      bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                   bool(body.get('route', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
@@ -1470,12 +1519,14 @@ async def chat_route(req: Request):
                            int(body.get('k', 5)), body.get('system'), body.get('topic'),
                            body.get('jurisdictions') or body.get('jurisdiction'),
                            bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                           bool(body.get('rerank', False)), bool(body.get('decompose', False)))
+                           bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                   bool(body.get('route', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
 
 
-def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False):
+def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False,
+                 route=False):
     """Igual que `chat_answer` pero en streaming (SSE): condensa la consulta, transparenta
     el proceso (search → retrieving → hyde → context → token* → done) y streamea la
     respuesta. La generación recibe todos los turnos; la búsqueda usa la consulta condensada."""
@@ -1498,10 +1549,12 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
         dbg: dict = {}
         with connect() as c, c.cursor() as cur:
             scored, score_kind, rw = retrieve_ranked(cur, search_q, setting, topic, jurisdictions,
-                                                     neighbors, hyde, rerank, decompose, debug=dbg)
+                                                     neighbors, hyde, rerank, decompose, debug=dbg, route=route)
             ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
         if len(dbg.get('subqueries') or []) > 1:
             yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
+        if dbg.get('routes'):
+            yield sse({'stage': 'route', 'routes': dbg['routes']})
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
@@ -1534,7 +1587,8 @@ async def chat_stream_route(req: Request):
                        int(body.get('k', 5)), body.get('system'), body.get('topic'),
                        body.get('jurisdictions') or body.get('jurisdiction'),
                        bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                       bool(body.get('rerank', False)), bool(body.get('decompose', False)))
+                       bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                   bool(body.get('route', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 

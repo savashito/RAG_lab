@@ -396,7 +396,7 @@ async function startBenchRun(){
   if(!BENCH.set) return;
   const body = {set_id: BENCH.set.id, label: $('bench-label').value, setting: $('bench-setting').value,
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
-    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked,
+    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked, route: $('bench-route').checked,
     system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
   const sub = currentSubset();
   if(!sub.ids.length){ bmsg('No hay preguntas seleccionadas en «🎯 Qué preguntas correr».', false); return; }
@@ -436,7 +436,7 @@ function watchBenchRun(rid){
 }
 function cfgSummary(c){
   c = c||{};
-  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'',
+  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'', c.route?'🧭 routing':'',
           (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'', (c.judge_notes||'').trim()?'📋 criterios juez':'',
           (c.question_ids||[]).length ? `🎯 ${c.question_ids.length}${c.set_total?'/'+c.set_total:''} preg.${c.subset?' ('+c.subset+')':''}` : '']
     .filter(Boolean).join(' · ');
@@ -567,7 +567,7 @@ async function rerunFailed(rid){
     const c = r.config;
     if([...$('bench-setting').options].some(o=>o.value===c.setting)) $('bench-setting').value = c.setting;
     $('bench-k').value = String(c.k); $('bench-neighbors').checked = !!c.neighbors; $('bench-hyde').checked = !!c.hyde;
-    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose;
+    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose; $('bench-route').checked = !!c.route;
   }
   $('bench-subset').open = true;
   $('bench-subset').scrollIntoView({behavior:'smooth', block:'center'});
@@ -694,6 +694,7 @@ async function toggleBenchAnswer(rid, qid, tr){
     const md = s => (window.marked ? marked.parse(s||'') : `<pre>${esc(s)}</pre>`);
     row.innerHTML = `<td colspan="7">
       <div class="comps" style="margin:4px 0 8px">${(d.verdicts||[]).map(v=>compChip(v, v.verdict)).join('')}</div>
+      ${(d.routes||[]).length?`<details open><summary>🧭 Routing por código</summary><ul style="margin:4px 0;padding-left:20px">${d.routes.map(r=>`<li>«${esc(r.match)}» → ${esc(r.source.replace(/\.md$/,''))}</li>`).join('')}</ul></details>`:''}
       ${(d.subqueries||[]).length>1?`<details open><summary>🧩 Buscó por partes (${d.subqueries.length} sub-búsquedas)</summary><ol style="margin:4px 0;padding-left:20px">${d.subqueries.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`:''}
       <details open><summary>💬 Respuesta del sistema</summary><div class="ans">${md(d.answer)}</div></details>
       ${d.expected_answer?`<details><summary>🎯 Respuesta esperada</summary><div class="ref">${esc(d.expected_answer)}</div></details>`:''}

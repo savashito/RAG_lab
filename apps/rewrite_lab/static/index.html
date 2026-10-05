@@ -331,6 +331,7 @@
    <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="ask-hyde" checked> HyDE 🧪</label>
    <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="ask-rerank"> rerank 🎯</label>
    <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="ask-decompose"> descomponer 🧩</label>
+   <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="ask-route"> routing por código 🧭</label>
  </div>
  <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
  <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
@@ -360,6 +361,7 @@
    <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="chat-hyde"> HyDE 🧪</label>
    <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="chat-rerank"> rerank 🎯</label>
    <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="chat-decompose"> descomponer 🧩</label>
+   <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="chat-route"> routing por código 🧭</label>
    <details id="chat-prompt-box" style="margin:0">
      <summary>⚙️ System prompt</summary>
      <textarea id="chat-system" style="min-height:120px;margin-top:8px"></textarea>
@@ -491,6 +493,7 @@
        <label class="chk"><input type="checkbox" id="bench-hyde" checked> HyDE 🧪</label>
        <label class="chk"><input type="checkbox" id="bench-rerank"> rerank 🎯</label>
        <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="bench-decompose"> descomponer 🧩</label>
+   <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="bench-route"> routing por código 🧭</label>
      </div>
      <div class="row">
        <input type="text" id="bench-label" placeholder="Etiqueta (ej. 'híbrido k10 + HyDE')" style="flex:1">
@@ -892,7 +895,7 @@ async function askRun(){
         system:$('ask-system').value, topic:$('ask-topic').value,
         jurisdictions:readJur('ask-jur'),
         neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked, rerank:$('ask-rerank').checked,
-        decompose:$('ask-decompose').checked})});
+        decompose:$('ask-decompose').checked, route:$('ask-route').checked})});
     await readSSE(resp, ev=>{
       if(ev.stage==='retrieving'){
         setStatus(ev.hyde?'🧪 generando respuesta hipotética (HyDE) + recuperando…':'⏳ recuperando…');
@@ -901,6 +904,9 @@ async function askRun(){
       }else if(ev.stage==='decompose'){
         $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>🧩 Pregunta descompuesta en ${ev.subqueries.length} sub-búsquedas (resultados intercalados)</summary>
           <ol style="margin:6px 0 0;padding-left:20px">${ev.subqueries.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`);
+      }else if(ev.stage==='route'){
+        $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>🧭 Routing por código: además buscó dentro de ${ev.routes.length===1?'1 código':ev.routes.length+' códigos'}</summary>
+          <ul style="margin:6px 0 0;padding-left:20px">${ev.routes.map(r=>`<li>«${esc(r.match)}» → ${esc(r.source.replace(/\.md$/,''))}</li>`).join('')}</ul></details>`);
       }else if(ev.stage==='hyde'){
         $('ax-hyde').innerHTML=`<details class="hyde-box"><summary>🧪 HyDE — respuesta hipotética y texto embebido</summary>
           <div class="muted" style="margin:6px 0 2px">Borrador generado por el LLM (no se muestra al usuario final; solo mueve el vector de búsqueda):</div>
@@ -1448,12 +1454,13 @@ async function chatSend(){
         system:$('chat-system').value, topic:$('chat-topic').value,
         jurisdictions:readJur('chat-jur'),
         neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked, rerank:$('chat-rerank').checked,
-        decompose:$('chat-decompose').checked})});
+        decompose:$('chat-decompose').checked, route:$('chat-route').checked})});
     if(resp.status===401){ throw new Error('Sesión expirada. Recarga la página.'); }
     if(!resp.ok||!resp.body){ throw new Error('HTTP '+resp.status); }
     await readSSE(resp, ev=>{
       if(ev.stage==='search'){ if(!answer) live.innerHTML='<span class="muted">🔎 buscando: '+esc(ev.query||'')+'</span>'; }
       else if(ev.stage==='retrieving'){ if(!answer) live.innerHTML='<span class="muted">⏳ recuperando…</span>'; }
+      else if(ev.stage==='route'){ meta.routes=ev.routes; if(!answer) live.innerHTML='<span class="muted">🧭 buscando también en: '+ev.routes.map(r=>esc(r.label)).join(' · ')+'</span>'; }
       else if(ev.stage==='decompose'){ meta.subqueries=ev.subqueries; if(!answer) live.innerHTML='<span class="muted">🧩 buscando por partes: '+ev.subqueries.map(esc).join(' · ')+'</span>'; }
       else if(ev.stage==='context'){ meta.chunks=ev.chunks||[]; meta.rewrite=ev.rewrite; meta.score_kind=ev.score_kind; meta.search_query=ev.search_query;
         if(!answer) live.innerHTML='<span class="muted">✍️ redactando…</span>'; }
