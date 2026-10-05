@@ -41,6 +41,26 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 KINDS = ('must', 'should', 'must_not')
+# En pantalla y en el JSON el must_not se llama «error»: describe un error que, si aparece en la
+# respuesta, la reprueba. El nombre «must_not» invitaba a redactarlo en negativo ("No omitir…"),
+# y el juez entonces marcaba «presente» justo en las respuestas correctas. Se aceptan los dos.
+KIND_ALIASES = {'error': 'must_not'}
+NEGATED_ERROR_RE = re.compile(r'(?i)^\s*(?:no|nunca|jam[aá]s|evitar|evita|sin)\b')
+NEGATED_ERROR_MSG = ('el «error» describe lo que NO debe aparecer, así que se redacta en positivo: '
+                     '"Confunde robo con fraude", no "No confundir robo con fraude". '
+                     'Así como está, una respuesta correcta contaría como error.')
+
+
+def norm_kind(kind):
+    return KIND_ALIASES.get(kind, kind)
+
+
+def export_kind(kind: str) -> str:
+    return 'error' if kind == 'must_not' else kind
+
+
+class ComponentError(ValueError):
+    pass
 # Dificultad de la pregunta (criterio del set penal):
 #   facil   — pregunta directa sobre un artículo o caso específico bien definido de la ley
 #   mediano — definición, clasificación o explicación de un tema específico
@@ -392,10 +412,12 @@ def review_stats(results: list[dict], reviews: list[dict]) -> dict:
     }
 
 
-def validate_set_payload(payload, existing_ids=frozenset()) -> list[str]:
+def validate_set_payload(payload, existing_ids=frozenset(), existing_errors=None) -> list[str]:
     """Errores del JSON de un set tal como lo edita /benchmark/editor (estricto: el editor no
     "arregla" en silencio como el import). `existing_ids` = ids de preguntas del set; un
-    `id` ajeno o repetido es error (evita mover preguntas entre sets o duplicarlas)."""
+    `id` ajeno o repetido es error (evita mover preguntas entre sets o duplicarlas).
+    `existing_errors` = {id de pregunta: textos de «error» ya guardados}: un error en negativo que
+    ya existía no bloquea (sets viejos se pueden seguir editando); uno nuevo o modificado sí."""
     errs = []
     if not isinstance(payload, dict):
         return ['El JSON debe ser un objeto { … }.']
@@ -431,10 +453,14 @@ def validate_set_payload(payload, existing_ids=frozenset()) -> list[str]:
             if not isinstance(c, dict):
                 errs.append(f'{cw}: debe ser un objeto.')
                 continue
-            if c.get('kind') not in KINDS:
-                errs.append(f'{cw}: "kind" debe ser "must", "should" o "must_not" (vino {c.get("kind")!r}).')
-            if not str(c.get('text') or '').strip():
+            if norm_kind(c.get('kind')) not in KINDS:
+                errs.append(f'{cw}: "kind" debe ser "must", "should" o "error" (vino {c.get("kind")!r}).')
+            text = str(c.get('text') or '').strip()
+            if not text:
                 errs.append(f'{cw}: "text" está vacío.')
+            elif (norm_kind(c.get('kind')) == 'must_not' and NEGATED_ERROR_RE.match(text)
+                  and text not in (existing_errors or {}).get(qid, ())):
+                errs.append(f'{cw}: {NEGATED_ERROR_MSG}')
             w = c.get('weight', 1)
             if isinstance(w, bool) or not isinstance(w, (int, float)) or w < 0:
                 errs.append(f'{cw}: "weight" debe ser un número ≥ 0.')
@@ -555,13 +581,19 @@ class Bench:
 
     # ── escritura ─────────────────────────────────────────────────────────────────
     @staticmethod
-    def _clean_components(comps) -> list[dict]:
+    def _clean_components(comps, keep_errors=frozenset()) -> list[dict]:
+        """Normaliza componentes. Un «error» en negativo se rechaza (ComponentError) salvo que
+        ya existiera tal cual en la pregunta (`keep_errors`): el candado vale para cualquier vía
+        de escritura (editor JSON, formulario, import), no solo para el aviso del frontend."""
         out = []
         for c in comps or []:
             text = (c.get('text') or '').strip()
             if not text:
                 continue
-            kind = c.get('kind') if c.get('kind') in KINDS else 'must'
+            kind = norm_kind(c.get('kind'))
+            kind = kind if kind in KINDS else 'must'
+            if kind == 'must_not' and NEGATED_ERROR_RE.match(text) and text not in keep_errors:
+                raise ComponentError(f'«{text}»: {NEGATED_ERROR_MSG}')
             try:
                 w = max(0.0, float(c.get('weight', 1) or 1))
             except (TypeError, ValueError):
@@ -570,8 +602,11 @@ class Bench:
         return out
 
     def _write_components(self, cur, qid: int, comps) -> None:
+        cur.execute("SELECT text FROM bench_components WHERE question_id = %s AND kind = 'must_not'", (qid,))
+        keep = frozenset(t for (t,) in cur.fetchall())
+        clean = self._clean_components(comps, keep)
         cur.execute("DELETE FROM bench_components WHERE question_id = %s", (qid,))
-        for pos, c in enumerate(self._clean_components(comps)):
+        for pos, c in enumerate(clean):
             cur.execute("INSERT INTO bench_components (question_id, position, text, kind, weight) "
                         "VALUES (%s, %s, %s, %s, %s)", (qid, pos, c['text'], c['kind'], c['weight']))
 
@@ -602,7 +637,7 @@ class Bench:
             d.update(question=q['question'], difficulty=q.get('difficulty') or '',
                      expected_answer=q.get('expected_answer') or '',
                      notes=q.get('notes') or '',
-                     components=[{'kind': c['kind'], 'text': c['text'], 'weight': c['weight']}
+                     components=[{'kind': export_kind(c['kind']), 'text': c['text'], 'weight': c['weight']}
                                  for c in q['components']])
             return d
         return {'format': 'rag-lab-bench/v1', 'name': s['name'], 'topic': s['topic'],
@@ -614,7 +649,9 @@ class Bench:
         vienen se borran. El orden del JSON define la posición. Valida antes de tocar nada."""
         s = self.load_set(cur, sid)
         existing = {q['id']: q for q in s['questions']}
-        errs = validate_set_payload(payload, frozenset(existing))
+        errs = validate_set_payload(payload, frozenset(existing),
+                                    {qid: {c['text'] for c in q['components'] if c['kind'] == 'must_not'}
+                                     for qid, q in existing.items()})
         if errs:
             return {'errors': errs}
         qs = payload['questions']
@@ -643,7 +680,8 @@ class Bench:
     def _q_changed(self, old: dict, new: dict) -> bool:
         norm = lambda q: (q['question'].strip(), (q.get('expected_answer') or '').strip(),  # noqa: E731
                           (q.get('notes') or '').strip(), norm_difficulty(q.get('difficulty')) or None,
-                          [(c['kind'], c['text'].strip(), float(c.get('weight', 1))) for c in q.get('components') or []])
+                          [(norm_kind(c['kind']), c['text'].strip(), float(c.get('weight', 1)))
+                           for c in q.get('components') or []])
         return norm(old) != norm(new)
 
     # ── corrida ───────────────────────────────────────────────────────────────────
@@ -830,8 +868,12 @@ class Bench:
                             "RETURNING id", (name, topic, (b.get('description') or '').strip() or None,
                                              self.current_email(req)))
                 sid = cur.fetchone()[0]
-                for q in qs:
-                    self._insert_question(cur, sid, q)
+                try:
+                    for q in qs:
+                        self._insert_question(cur, sid, q)
+                except ComponentError as e:
+                    c.rollback()
+                    return bad(str(e))
                 c.commit()
             return {'id': sid, 'questions': len(qs)}
 
@@ -922,7 +964,11 @@ class Bench:
                     return JSONResponse({'error': 'no existe'}, status_code=404)
                 if not self.can_edit_topic(self.current_email(req), topic):
                     return deny()
-                qid = self._insert_question(cur, sid, b)
+                try:
+                    qid = self._insert_question(cur, sid, b)
+                except ComponentError as e:
+                    c.rollback()
+                    return bad(str(e))
                 c.commit()
             return {'id': qid}
 
@@ -946,7 +992,11 @@ class Bench:
                             "difficulty = %s, updated_at = now() WHERE id = %s",
                             (b['question'].strip(), (b.get('expected_answer') or '').strip() or None,
                              (b.get('notes') or '').strip() or None, norm_difficulty(b.get('difficulty')) or None, qid))
-                self._write_components(cur, qid, b.get('components'))
+                try:
+                    self._write_components(cur, qid, b.get('components'))
+                except ComponentError as e:
+                    c.rollback()
+                    return bad(str(e))
                 cur.execute("UPDATE bench_sets SET updated_at = now() WHERE id = %s", (row[1],))
                 c.commit()
             return {'ok': True}

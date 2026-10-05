@@ -162,7 +162,7 @@
           <span class="chip should"><span class="k">should</span>deseable</span>
           <span class="chip must_not"><span class="k">❌ error</span>describe el error; si aparece, reprueba</span>
           — y <code>"weight"</code> (número ≥ 0, por defecto 1).</li>
-        <li>El <i>must_not</i> (en pantalla «❌ error») se escribe <b>en positivo</b>, describiendo el error que no debe aparecer: <code>"Cita un artículo equivocado"</code>, <code>"Omite el nombre de la ley"</code>. Nunca <code>"No omitir…"</code>: el juez detecta si lo descrito aparece, y una respuesta correcta contaría como violación (el editor lo marca con ⚠).</li>
+        <li>El <i>error</i> (<code>"kind": "error"</code>; también se acepta el nombre viejo <code>"must_not"</code>) se escribe <b>en positivo</b>, describiendo el error que no debe aparecer: <code>"Cita un artículo equivocado"</code>, <code>"Atribuye la fracción II al código de CDMX"</code>. Nunca <code>"No omitir…"</code>: el juez detecta si lo descrito aparece, y una respuesta correcta contaría como violación (el editor y el servidor no lo dejan guardar). Úsalo para <b>afirmaciones incorrectas</b> que pueden aparecer aunque los must se cumplan ("Afirma que se persigue de oficio", "Confunde el 217 con el 217 Bis"); "Omite…" casi siempre repite un must. Es opcional.</li>
         <li>Si una pregunta no tiene componentes, se califica contra <code>"expected_answer"</code> como un único <i>must</i>.</li>
       </ul>
       <h3>Plantilla</h3>
@@ -174,7 +174,7 @@
   "components": [
     {"kind": "must", "text": "…", "weight": 2},
     {"kind": "should", "text": "…", "weight": 1},
-    {"kind": "must_not", "text": "…", "weight": 1}
+    {"kind": "error", "text": "…", "weight": 1}
   ]
 }</pre>
       <h3>Atajos</h3>
@@ -198,7 +198,9 @@
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const KINDS = ['must', 'should', 'must_not'];
+// "error" es el nombre visible del must_not (que se sigue aceptando como sinónimo).
+const KINDS = ['must', 'should', 'error', 'must_not'];
+const isError = k => k === 'error' || k === 'must_not';
 const DIFFS = {facil: 'Fácil', mediano: 'Mediano', dificil: 'Difícil'};
 const DIFF_ALIASES = {'facil':'facil','fácil':'facil','easy':'facil','mediano':'mediano','medio':'mediano','media':'mediano',
                       'medium':'mediano','dificil':'dificil','difícil':'dificil','hard':'dificil'};
@@ -211,7 +213,7 @@ const S = {setId: null, saved: '', topics: [], canEdit: true, data: null, ranges
 CodeMirror.defineMode('benchjson', (config) => CodeMirror.overlayMode(
   CodeMirror.getMode(config, {name: 'javascript', json: true}), {
     token(stream){
-      if (stream.match(/^"must_not"/)) return 'kind-mustnot';
+      if (stream.match(/^"(?:must_not|error)"/)) return 'kind-mustnot';
       if (stream.match(/^"must"/)) return 'kind-must';
       if (stream.match(/^"should"/)) return 'kind-should';
       if (stream.match(/^"question"(?=\s*:)/)) return 'qkey';
@@ -336,15 +338,20 @@ function validate(text){
     comps.forEach((c, ci) => {
       const CP = `${P}.components.${ci}`, CW = `${W}, componente ${ci + 1}`;
       if (!c || typeof c !== 'object' || Array.isArray(c)){ add(CP, `${CW}: debe ser un objeto.`); return; }
-      if (!KINDS.includes(c.kind)) add(CP + '.kind', `${CW}: "kind" debe ser "must", "should" o "must_not" (vino ${JSON.stringify(c.kind)}).`);
+      if (!KINDS.includes(c.kind)) add(CP + '.kind', `${CW}: "kind" debe ser "must", "should" o "error" (vino ${JSON.stringify(c.kind)}).`);
       if (!String(c.text || '').trim()) add(CP + '.text', `${CW}: "text" está vacío.`);
       const w = c.weight == null ? 1 : c.weight;
       if (typeof w !== 'number' || w < 0) add(CP + '.weight', `${CW}: "weight" debe ser un número ≥ 0.`);
-      if (c.kind === 'must_not' && NEGATED_MUST_NOT.test(String(c.text || '')))
-        add(CP + '.text', `${CW}: el must_not describe lo que NO debe aparecer; redáctalo en positivo, sin "no…" (p. ej. "Omite el artículo aplicable" en vez de "No omitir el artículo"). Así como está, una respuesta correcta cuenta como violación.`, true);
+      const ct = String(c.text || '').trim();
+      if (isError(c.kind) && NEGATED_MUST_NOT.test(ct)){
+        // Bloquea (igual que el servidor) salvo que ya estuviera guardado así: sets viejos se pueden seguir editando.
+        const old = (S.oldErrors && S.oldErrors.get(q.id)) || new Set();
+        add(CP + '.text', `${CW}: el «error» describe lo que NO debe aparecer; redáctalo en positivo, sin "no…" (p. ej. "Confunde robo con fraude" en vez de "No confundir robo con fraude"). Así como está, una respuesta correcta cuenta como error.`, old.has(ct));
+      } else if (isError(c.kind) && /^\s*omite\b/i.test(ct))
+        add(CP + '.text', `${CW}: «Omite…» suele repetir un must (si falta lo pedido, el must ya reprueba). Usa el «error» para afirmaciones incorrectas que pueden aparecer aunque los must se cumplan: "Afirma que…", "Confunde X con Y", "Cita una fracción inexistente".`, true);
     });
     if (!comps.length && !String(q.expected_answer || '').trim()) add(P, `${W}: sin componentes ni "expected_answer": no se podría calificar.`);
-    if (comps.length && !comps.some(c => c && c.kind === 'must')) add(P + '.components', `${W}: no tiene ningún "must": siempre pasará si no hay must_not.`, true);
+    if (comps.length && !comps.some(c => c && c.kind === 'must')) add(P + '.components', `${W}: no tiene ningún "must": siempre pasará si no hay «error».`, true);
   });
   // Rangos de línea por pregunta (para sincronizar cursor ↔ tarjeta).
   S.ranges = d.questions.map((q, qi) => `questions.${qi}` in pos ? lineOf(pos[`questions.${qi}`]) : null);
@@ -354,8 +361,8 @@ function validate(text){
 // ── Render: estado, problemas y vista previa ───────────────────────────────────
 function chip(c){
   const w = (c.weight != null && +c.weight !== 1) ? ` ×${+c.weight}` : '';
-  const k = KINDS.includes(c.kind) ? c.kind : 'must';
-  return `<span class="chip ${k}"><span class="k">${c.kind === 'must_not' ? '❌ error' : esc(String(c.kind))}${w}</span>${esc(c.text)}</span>`;
+  const k = isError(c.kind) ? 'must_not' : KINDS.includes(c.kind) ? c.kind : 'must';
+  return `<span class="chip ${k}"><span class="k">${isError(c.kind) ? '❌ error' : esc(String(c.kind))}${w}</span>${esc(c.text)}</span>`;
 }
 function refresh(){
   const text = cm.getValue();
@@ -390,7 +397,7 @@ function refresh(){
     `<span><b>${qs.length}</b> preguntas</span>`,
     `<span class="chip must"><span class="k">must</span>${n('must')}</span>`,
     `<span class="chip should"><span class="k">should</span>${n('should')}</span>`,
-    `<span class="chip must_not"><span class="k">❌ error</span>${n('must_not')}</span>`,
+    `<span class="chip must_not"><span class="k">❌ error</span>${n('must_not') + n('error')}</span>`,
     Object.entries(DIFFS).map(([d, l]) => `<span class="badge d-${d}">${l} ${qs.filter(q => normDiff(q.difficulty) === d).length}</span>`).join(' '),
     qs.some(q => !normDiff(q.difficulty)) ? `<span class="badge d-none">sin dificultad ${qs.filter(q => !normDiff(q.difficulty)).length}</span>` : '',
     nNew ? `<span class="st-ok">+${nNew} nueva${nNew > 1 ? 's' : ''}</span>` : '',
@@ -470,7 +477,7 @@ $('btnFmt').onclick = formatDoc;
 $('btnAddQ').onclick = () => {
   if (!S.data || !Array.isArray(S.data.questions)){ toast('Primero arregla los errores del JSON', true); return; }
   S.data.questions.push({question: '¿…?', difficulty: '', expected_answer: '', notes: '',
-    components: [{kind: 'must', text: '…', weight: 2}, {kind: 'should', text: '…', weight: 1}, {kind: 'must_not', text: '…', weight: 1}]});
+    components: [{kind: 'must', text: '…', weight: 2}, {kind: 'should', text: '…', weight: 1}, {kind: 'error', text: '…', weight: 1}]});
   cm.setValue(fmt(S.data)); refresh();
   const i = S.data.questions.length - 1;
   if (S.ranges[i] != null){ jumpTo(S.ranges[i] + 1); const ln = cm.getLine(S.ranges[i] + 1); const ch = ln.indexOf('¿…?');
@@ -532,6 +539,7 @@ async function loadSet(id, force, keepPos){
   const scroll = cm.getScrollInfo(), cursor = cm.getCursor();
   const d = await api(`/api/bench/sets/${id}/export?ids=true`);
   S.setId = +id; S.knownIds = new Set(d.questions.map(q => q.id));
+  S.oldErrors = new Map(d.questions.map(q => [q.id, new Set((q.components || []).filter(c => isError(c.kind)).map(c => c.text.trim()))]));
   const me = window.__me || {};
   S.canEdit = !!(me.is_superadmin || (me.can_ingest && (me.allowed_topics || []).includes(d.topic)));
   S.saved = fmt(d); cm.setValue(S.saved); cm.clearHistory();

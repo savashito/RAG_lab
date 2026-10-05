@@ -350,3 +350,24 @@ def test_gold_refs_distrito_federal_is_cdmx():
     comps = [{'kind': 'must', 'text': 'Señalar el artículo 148 Bis del Código Penal para el Distrito Federal '
                                       'y el artículo 126 Bis del Código Penal para el Estado de Querétaro.'}]
     assert [x['label'] for grp in gold_refs('q', comps) for x in grp] == ['CDMX 148 Bis', 'Querétaro 126 Bis']
+
+
+def test_error_kind_alias_and_negated_lock():
+    from bench import validate_set_payload, Bench, ComponentError, export_kind
+    q = lambda *comps: {'name': 'n', 'topic': 't', 'questions': [{'id': 1, 'question': '¿q?', 'components': list(comps)}]}
+    must = {'kind': 'must', 'text': 'Cita el art. 1'}
+    assert validate_set_payload(q(must, {'kind': 'error', 'text': 'Omite el artículo'}), {1}) == []
+    errs = validate_set_payload(q(must, {'kind': 'error', 'text': 'No omitir el artículo'}), {1})
+    assert len(errs) == 1 and 'positivo' in errs[0]
+    errs = validate_set_payload(q(must, {'kind': 'must_not', 'text': 'Nunca cites el art. 2'}), {1})
+    assert len(errs) == 1
+    # Un error en negativo que ya estaba guardado no bloquea la edición del set.
+    assert validate_set_payload(q(must, {'kind': 'error', 'text': 'No omitir el artículo'}), {1},
+                                {1: {'No omitir el artículo'}}) == []
+    assert Bench._clean_components([{'kind': 'error', 'text': 'Confunde robo con fraude'}])[0]['kind'] == 'must_not'
+    import pytest
+    with pytest.raises(ComponentError):
+        Bench._clean_components([{'kind': 'error', 'text': 'No confundir robo con fraude'}])
+    assert Bench._clean_components([{'kind': 'error', 'text': 'No confundir robo con fraude'}],
+                                   frozenset({'No confundir robo con fraude'}))
+    assert export_kind('must_not') == 'error' and export_kind('must') == 'must'
