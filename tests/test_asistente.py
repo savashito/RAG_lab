@@ -251,3 +251,23 @@ def test_same_address_reference_uses_known_address_or_asks_which():
     assert v['mensaje'] == '¿Cuál de estos domicilios?' and [x['texto'] for x in v['botones']] == ['Roble 5, 03100', 'Pino 8, 04100']
     b, v = A.turno(b, cat, FakeIA(), mensaje='Pino 8, 04100')
     assert b['respuestas']['c'] == 'Pino 8, 04100'
+
+
+def test_pronoun_answers_become_names_without_llm():
+    spec = {'id': 'p', 'titulo': 'P', 'tema': 't', 'estado': 'publicado', 'descripcion': 'd', '_plantilla': '{yo}{otro}{casa}{paga}',
+            'personas': {'yo': 'yo', 'otra': 'otro'},
+            'campos': [{'id': 'yo', 'pregunta': 'yo', 'tipo': 'texto'}, {'id': 'otro', 'pregunta': 'otro', 'tipo': 'texto'},
+                       {'id': 'casa', 'pregunta': '¿quién se queda?', 'tipo': 'texto'},
+                       {'id': 'paga', 'pregunta': '¿quién paga?', 'tipo': 'texto'}]}
+    class SinLLM(FakeIA):
+        def extraer(self, *a, **k):
+            raise AssertionError('no debía llamar a Gemma')
+    cat = {'p': spec}
+    b = {**A.nuevo_borrador(), 'estado': A.ENTREVISTA, 'formulario': 'p', 'respuestas': {'yo': 'Ana Ruiz', 'otro': 'Pedro Gómez'}}
+    b, v = A.turno(b, cat, SinLLM(), mensaje='yo')
+    b, v = A.turno(b, cat, SinLLM(), mensaje='Él')
+    assert b['respuestas']['casa'] == 'Ana Ruiz' and b['respuestas']['paga'] == 'Pedro Gómez'
+    # Si Gemma devuelve el pronombre tal cual, también se resuelve.
+    b2 = {**A.nuevo_borrador(), 'estado': A.ENTREVISTA, 'formulario': 'p', 'respuestas': {'yo': 'Ana Ruiz', 'otro': 'Pedro Gómez'}}
+    b2, _ = A.turno(b2, cat, FakeIA({'me la quedo yo, claro': {'casa': 'yo'}}), mensaje='me la quedo yo, claro')
+    assert b2['respuestas']['casa'] == 'Ana Ruiz'

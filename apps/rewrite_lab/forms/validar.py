@@ -44,6 +44,9 @@ def validar(spec_yaml: str, plantilla: str, ejemplos_yaml: str = '') -> list[str
     if spec.get('estado', 'borrador') not in ESTADOS:
         errs.append(f'formulario.yaml: «estado» debe ser uno de {", ".join(ESTADOS)}.')
     campos = spec.get('campos') or []
+    for rol, cid in (spec.get('personas') or {}).items():
+        if rol not in ('yo', 'otra') or cid not in {c.get('id') for c in campos if isinstance(c, dict)}:
+            errs.append(f'formulario.yaml: «personas.{rol}: {cid}» debe ser yo/otra y apuntar a un campo existente.')
     ids = set()
     for i, c in enumerate(campos, 1):
         if not isinstance(c, dict) or not c.get('id'):

@@ -198,6 +198,24 @@ def domicilios_conocidos(spec: dict, respuestas: dict, excepto: str) -> list[str
     return vistos
 
 
+# «Yo», «él», «mi esposa»… como respuesta completa: se cambia por el nombre ya dado, sin LLM.
+# Cada formulario dice qué campo es «yo» y cuál «la otra persona» (`personas:` en formulario.yaml).
+_YO = {'yo', 'a mi', 'mi', 'conmigo', 'yo mismo', 'yo misma', 'la suscrita', 'el suscrito', 'me quedo yo',
+       'yo me quedo', 'yo me lo quedo', 'para mi', 'yo lo pago', 'yo pago', 'la que suscribe', 'el que suscribe'}
+_OTRA = {'el', 'ella', 'mi esposo', 'mi esposa', 'mi pareja', 'mi marido', 'mi mujer', 'mi conyuge', 'el otro',
+         'la otra', 'mi ex', 'el papa', 'la mama', 'su papa', 'su mama', 'a el', 'a ella', 'con el', 'con ella',
+         'el lo paga', 'ella lo paga', 'el paga', 'ella paga'}
+
+
+def resolver_persona(spec: dict, texto, respuestas: dict):
+    """Nombre de la persona a la que se refiere una respuesta como «yo» o «él», o None."""
+    if not isinstance(texto, str):
+        return None
+    personas, f = spec.get('personas') or {}, _fold(texto)
+    campo = personas.get('yo') if f in _YO else personas.get('otra') if f in _OTRA else None
+    return respuestas.get(campo) if campo and respuestas.get(campo) else None
+
+
 def parece_pregunta(texto: str) -> bool:
     """«¿…?» o empieza con qué/cómo/cuál/puedo… y es más que una frase corta («quién sabe» no cuenta)."""
     return '?' in texto or (bool(_PREGUNTA.match(_fold(texto))) and len(texto.split()) >= 4)
@@ -313,8 +331,11 @@ def turno(borrador: dict | None, catalogo: dict, ia, *, mensaje: str = '', event
                 b['omitidos'] = sorted(set(b['omitidos']) | {actual['id']})
             else:
                 rapida = respuesta_rapida(actual, mensaje)
+                persona = resolver_persona(spec, mensaje, b['respuestas']) if actual.get('tipo') in ('texto', 'texto_largo') else None
                 if rapida is not None:
                     datos = {actual['id']: rapida}
+                elif persona:   # «yo» / «él» → el nombre, sin llamar a Gemma
+                    datos = {actual['id']: persona}
                 else:
                     pend = [actual] + [c for c in pendientes(spec, b) if c['id'] != actual['id']]
                     datos, debug['llm'] = ia.extraer(spec, pend, mensaje, actual['id'], b['respuestas'])
@@ -385,6 +406,8 @@ def _guardar(spec: dict, b: dict, datos: dict) -> dict:
     r = dict(b['respuestas'])
     for k, v in (datos or {}).items():
         if k in por_id and not por_id[k].get('automatico') and not _vacio(v):
+            if por_id[k].get('tipo') in ('texto', 'texto_largo'):   # por si Gemma devolvió «yo» tal cual
+                v = resolver_persona(spec, v, r) or v
             limpio, _ = normalizar(por_id[k], v)
             if not _vacio(limpio):
                 r[k] = limpio

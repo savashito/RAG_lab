@@ -9,6 +9,12 @@ version: 2026-10-05
 estado: borrador          # borrador → revisado (por Karen) → publicado
 tema: derecho_familiar    # quién puede editarlo: admins con permiso sobre este tema
 
+# Quién es «yo» y quién «la otra persona»: si alguien responde solo «yo», «él» o «mi esposa», el
+# asistente pone el nombre que ya dio (sin LLM).
+personas:
+  yo: nombre_solicitante
+  otra: nombre_conyuge
+
 # Palabras que, si aparecen en una pregunta del chat RAG, hacen que se SUGIERA este formulario
 # (se comparan sin acentos ni mayúsculas; no usa LLM, para no hacer más lento el chat).
 disparadores:
