@@ -62,8 +62,10 @@ class IA:
             'de un dato, agrega "_es_duda": true.\n'
 
             'Los valores de texto van tal como deben aparecer en un escrito formal: en tercera persona y sin '
-            'muletillas; sustituye «yo», «conmigo», «mi casa» por el nombre de quien solicita y «él», «ella» por el '
-            'nombre del cónyuge, usando los DATOS YA CONOCIDOS. Fechas sin artículo («30 de noviembre de 2026»; si '
+            'muletillas; sustituye «yo», «conmigo» por el nombre de quien solicita y «él», «ella» por el nombre del '
+            'cónyuge, usando los DATOS YA CONOCIDOS. Si para un domicilio dice «en mi casa», «el mismo» o «donde '
+            'vivo», usa el domicilio que ya dio (DATOS YA CONOCIDOS); si no hay ninguno, devuelve lo que dijo. Cada '
+            'valor de texto es una sola cadena, nunca un objeto. Fechas sin artículo («30 de noviembre de 2026»; si '
             'no dijo el año, no lo inventes). Nunca agregues información que la persona no dio.')
         ya = {k: v for k, v in (conocidas or {}).items() if isinstance(v, str) and len(v) < 120}
         user = (('DATOS YA CONOCIDOS:\n' + '\n'.join(f'- {k}: {v}' for k, v in ya.items()) + '\n\n' if ya else '') +

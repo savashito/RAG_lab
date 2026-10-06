@@ -94,11 +94,20 @@ campos:
   - id: nombre_conyuge
     pregunta: "¿Cuál es el nombre completo de tu esposa o esposo?"
     tipo: texto
+  - id: conoce_domicilio_conyuge
+    pregunta: "¿Sabes en qué domicilio se le puede encontrar actualmente?"
+    tipo: si_no
+    ayuda: "Si no lo sabes, no pasa nada: el escrito pedirá al juzgado que lo busque en instituciones públicas y, si no aparece, que se le notifique por edictos."
+  - id: datos_busqueda_conyuge
+    si: NO conoce_domicilio_conyuge
+    pregunta: "¿Tienes algún dato que ayude a buscarle? Por ejemplo su CURP, RFC, fecha de nacimiento, número de seguridad social o dónde trabaja."
+    tipo: texto_largo
+    obligatorio: false
   - id: domicilio_conyuge
+    si: conoce_domicilio_conyuge
     pregunta: "¿En qué domicilio se le puede buscar para notificarle (emplazarle)?"
     tipo: texto
     requiere: [calle y número, colonia, alcaldía o municipio, código postal]
-    ayuda: "Si no sabes dónde vive, díselo al asistente: tu abogada o abogado puede pedir que se le busque por otros medios."
 
   # ── El matrimonio ───────────────────────────────────────────────────────────
   - id: fecha_matrimonio

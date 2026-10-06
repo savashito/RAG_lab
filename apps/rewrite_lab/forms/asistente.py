@@ -183,6 +183,21 @@ def _lista(xs: list[str]) -> str:
     return xs[0] if len(xs) == 1 else ', '.join(xs[:-1]) + ' y ' + xs[-1]
 
 
+# «En mi casa», «donde vivo», «el mismo»: en un campo de domicilio se refiere a un domicilio que ya
+# dio. Si hay uno, se usa; si hay varios, se pregunta cuál con botones (sin dejar que el LLM adivine).
+_MISMO_DOMICILIO = re.compile(r'^(en )?(mi casa|mi domicilio|donde vivo|el mismo|la misma|el mismo domicilio|'
+                              r'mismo domicilio|ahi mismo|aqui|el de arriba|el anterior|en el mismo)\b')
+
+
+def domicilios_conocidos(spec: dict, respuestas: dict, excepto: str) -> list[str]:
+    vistos = []
+    for c in spec.get('campos', []):
+        v = respuestas.get(c['id'])
+        if c.get('requiere') and c['id'] != excepto and isinstance(v, str) and v and v not in vistos:
+            vistos.append(v)
+    return vistos
+
+
 def parece_pregunta(texto: str) -> bool:
     """«¿…?» o empieza con qué/cómo/cuál/puedo… y es más que una frase corta («quién sabe» no cuenta)."""
     return '?' in texto or (bool(_PREGUNTA.match(_fold(texto))) and len(texto.split()) >= 4)
@@ -210,6 +225,10 @@ def normalizar(campo: dict, valor):
         subs = campo.get('subcampos') or []
         limpio = [{s['id']: str(x.get(s['id'], '') or '').strip() for s in subs} for x in valor]
         return [x for x in limpio if any(x.values())], None
+    if isinstance(valor, dict):   # Gemma a veces devuelve {"texto": "…"} en vez del texto
+        valor = ', '.join(str(x) for x in valor.values() if x not in (None, ''))
+    elif isinstance(valor, list):
+        valor = ', '.join(str(x) for x in valor if x not in (None, ''))
     texto = str(valor).strip().rstrip('.').strip() if valor is not None else ''   # el punto lo pone la plantilla
     return (texto or None), None
 
@@ -282,6 +301,14 @@ def turno(borrador: dict | None, catalogo: dict, ia, *, mensaje: str = '', event
             if inc and actual.get('requiere'):   # completa las partes que faltaban: se junta con lo anterior
                 mensaje = f"{inc['valor']}, {mensaje.strip()}"
             # (con `formato` —teléfono, correo, fecha— la nueva respuesta reemplaza a la anterior)
+            conocidos = domicilios_conocidos(spec, b['respuestas'], actual['id']) if actual.get('requiere') else []
+            if conocidos and _MISMO_DOMICILIO.match(_fold(mensaje)):
+                if len(conocidos) == 1:
+                    mensaje = conocidos[0]
+                else:
+                    v = _vista(b, catalogo, debug, '¿Cuál de estos domicilios?')
+                    v['botones'] = [{'enviar': d, 'texto': d} for d in conocidos] + v['botones']
+                    return b, v
             if quiere_omitir(actual, mensaje):
                 b['omitidos'] = sorted(set(b['omitidos']) | {actual['id']})
             else:

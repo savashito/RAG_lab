@@ -62,7 +62,11 @@ que conviene confirmar:
    Defensoría Pública. Confirmar el texto del aviso y el teléfono de Línea Mujeres.
 6. **Triaje:** si ambos están de acuerdo, el asistente sugiere divorcio bilateral (arts. 655-662
    CNPCF, incluso Registro Civil o notaría si no hay hijos menores ni bienes).
-7. Lenguaje: se modernizó (Jueza o Juez, «hijas e hijos», Ciudad de México). Las referencias al
+7. **Domicilio desconocido del cónyuge:** se manifiesta bajo protesta, se piden oficios de búsqueda
+   (IMSS, ISSSTE, SAT, INE, CFE y demás instituciones con registro de domicilios) y, si no se le
+   localiza, emplazamiento por edictos (arts. 203 y 209-II CNPCF). Confirmar la lista de
+   instituciones y si se pide algo sobre el costo de los edictos.
+8. Lenguaje: se modernizó (Jueza o Juez, «hijas e hijos», Ciudad de México). Las referencias al
    «Código Civil para el Distrito Federal, aplicable en la Ciudad de México» siguen el nombre del
    documento del corpus; confirmar la denominación correcta.
 

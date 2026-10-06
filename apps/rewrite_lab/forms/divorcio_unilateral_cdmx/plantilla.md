@@ -15,7 +15,7 @@ Los comentarios «REVISAR (Karen)» marcan lo que necesita confirmación jurídi
 
 **{nombre_solicitante}**, por mi propio derecho, señalando como domicilio para oír y recibir notificaciones el ubicado en {domicilio_notificaciones}; número telefónico {telefono} y correo electrónico {correo} para los mismos efectos procesales; [SI grupo_vulnerable]manifestando que pertenezco a un grupo en situación de vulnerabilidad: {grupo_vulnerable}; [/SI]y designando como persona representante autorizada a {representante_autorizado}, ante Usted, con el debido respeto, comparezco y expongo:
 
-Que por medio del presente escrito, por mi propio derecho y en la vía oral familiar, vengo a solicitar el **DIVORCIO** de **{nombre_conyuge}**, quien puede ser emplazada o emplazado en el domicilio ubicado en {domicilio_conyuge}, de conformidad con las siguientes:
+Que por medio del presente escrito, por mi propio derecho y en la vía oral familiar, vengo a solicitar el **DIVORCIO** de **{nombre_conyuge}**, [SI conoce_domicilio_conyuge]quien puede ser emplazada o emplazado en el domicilio ubicado en {domicilio_conyuge}[/SI][SI NO conoce_domicilio_conyuge]de quien, bajo protesta de decir verdad, manifiesto que desconozco su domicilio actual, siendo el último que le conocí el ubicado en {ultimo_domicilio_conyugal}[/SI], de conformidad con las siguientes:
 
 ## PRETENSIONES
 
@@ -29,23 +29,25 @@ Que por medio del presente escrito, por mi propio derecho y en la vía oral fami
 
 ## HECHOS
 
-**1.** Con fecha {fecha_matrimonio} contraje matrimonio civil con {nombre_conyuge}[SI lugar_matrimonio], ante {lugar_matrimonio}[/SI], bajo el régimen de [SI regimen = sociedad_conyugal]**sociedad conyugal**[/SI][SI regimen = separacion_bienes]**separación de bienes**[/SI], como lo acredito con la copia certificada del acta de matrimonio[SI numero_acta_matrimonio] número {numero_acta_matrimonio}[/SI], que anexo al presente.
+**{#hechos}.** Con fecha {fecha_matrimonio} contraje matrimonio civil con {nombre_conyuge}[SI lugar_matrimonio], ante {lugar_matrimonio}[/SI], bajo el régimen de [SI regimen = sociedad_conyugal]**sociedad conyugal**[/SI][SI regimen = separacion_bienes]**separación de bienes**[/SI], como lo acredito con la copia certificada del acta de matrimonio[SI numero_acta_matrimonio] número {numero_acta_matrimonio}[/SI], que anexo al presente.
 
-**2.** Establecimos nuestro último domicilio conyugal en {ultimo_domicilio_conyugal}.
+**{#hechos}.** Establecimos nuestro último domicilio conyugal en {ultimo_domicilio_conyugal}.
 
-[SI hay_hijos_menores]**3.** De nuestro matrimonio procreamos a:
+[SI hay_hijos_menores]**{#hechos}.** De nuestro matrimonio procreamos a:
 [CADA hijo EN hijos]
 - {hijo.nombre}, nacida o nacido el {hijo.fecha_nacimiento};
 [/CADA]
 como lo acredito con las copias certificadas de sus actas de nacimiento, que anexo al presente.
-[/SI][SI NO hay_hijos_menores]**3.** De nuestro matrimonio no procreamos ni adoptamos hijas o hijos menores de edad[SI hijos_mayores_con_apoyo], salvo lo que se precisa en la propuesta de convenio respecto de hijas o hijos mayores de edad que requieren algún apoyo o salvaguardia[/SI].
+[/SI][SI NO hay_hijos_menores]**{#hechos}.** De nuestro matrimonio no procreamos ni adoptamos hijas o hijos menores de edad[SI hijos_mayores_con_apoyo], salvo lo que se precisa en la propuesta de convenio respecto de hijas o hijos mayores de edad que requieren algún apoyo o salvaguardia[/SI].
 [/SI]
 
-**4.** [SI regimen = sociedad_conyugal]Durante el matrimonio adquirimos los bienes que se relacionan en el inventario de la propuesta de convenio, por lo que es procedente liquidar la sociedad conyugal.[/SI][SI regimen = separacion_bienes]Al haber celebrado el matrimonio bajo el régimen de separación de bienes, no existe sociedad conyugal que liquidar[SI pide_compensacion]; no obstante, solicito la compensación prevista en la fracción VI del artículo 267 del Código Civil, en los términos de la propuesta de convenio[/SI].[/SI]
+**{#hechos}.** [SI regimen = sociedad_conyugal]Durante el matrimonio adquirimos los bienes que se relacionan en el inventario de la propuesta de convenio, por lo que es procedente liquidar la sociedad conyugal.[/SI][SI regimen = separacion_bienes]Al haber celebrado el matrimonio bajo el régimen de separación de bienes, no existe sociedad conyugal que liquidar[SI pide_compensacion]; no obstante, solicito la compensación prevista en la fracción VI del artículo 267 del Código Civil, en los términos de la propuesta de convenio[/SI].[/SI]
 
-**5.** Es mi voluntad no continuar con el matrimonio, por lo que solicito su disolución sin que sea necesario señalar la causa por la que la solicito, en términos del artículo 266 del Código Civil para el Distrito Federal, aplicable en la Ciudad de México.
+**{#hechos}.** Es mi voluntad no continuar con el matrimonio, por lo que solicito su disolución sin que sea necesario señalar la causa por la que la solicito, en términos del artículo 266 del Código Civil para el Distrito Federal, aplicable en la Ciudad de México.
 
-[SI hay_violencia]**6.** Manifiesto que existen hechos de violencia familiar, por lo que solicito que se dicten de inmediato las medidas de protección que la persona juzgadora estime pertinentes, conforme a la fracción I del apartado A del artículo 282 del Código Civil.
+[SI NO conoce_domicilio_conyuge]**{#hechos}.** Bajo protesta de decir verdad, manifiesto que desconozco el domicilio actual de {nombre_conyuge}, siendo el último que le conocí el ubicado en {ultimo_domicilio_conyugal}[SI datos_busqueda_conyuge]. Para facilitar su localización, proporciono los siguientes datos: {datos_busqueda_conyuge}[/SI].
+
+[/SI][SI hay_violencia]**{#hechos}.** Manifiesto que existen hechos de violencia familiar, por lo que solicito que se dicten de inmediato las medidas de protección que la persona juzgadora estime pertinentes, conforme a la fracción I del apartado A del artículo 282 del Código Civil.
 [/SI]
 
 ## PROPUESTA DE CONVENIO
@@ -91,7 +93,7 @@ Con fundamento en el artículo 282 del Código Civil, solicito que, desde la adm
 
 En cuanto al fondo, son aplicables los artículos 266, 267, 282, 283, 287 y 288 del Código Civil para el Distrito Federal, aplicable en la Ciudad de México.
 
-En cuanto al procedimiento, son aplicables los artículos 235, 663, 664, 665 y 677 del Código Nacional de Procedimientos Civiles y Familiares, vigente en materia familiar en la Ciudad de México.
+En cuanto al procedimiento, son aplicables los artículos 235, 663, 664, 665 y 677[SI NO conoce_domicilio_conyuge], así como 203 y 209, fracción II,[/SI] del Código Nacional de Procedimientos Civiles y Familiares, vigente en materia familiar en la Ciudad de México.
 <!-- REVISAR (Karen): (1) artículo del CNPCF que fija la competencia en divorcio unilateral (el 654 es del bilateral);
      (2) si conviene citar otros del Juicio Oral Familiar; (3) que el CNPCF ya rige este trámite en CDMX
      (declaratoria del Congreso: familiar desde el 1 de junio de 2026). -->
@@ -101,6 +103,9 @@ En cuanto al procedimiento, son aplicables los artículos 235, 663, 664, 665 y 6
 Con fundamento en el artículo 664 del Código Nacional de Procedimientos Civiles y Familiares, ofrezco desde este momento las siguientes pruebas, que relaciono con los hechos de esta solicitud:
 
 **{#pruebas}. DOCUMENTAL PÚBLICA.** Copia certificada del acta de matrimonio, que relaciono con los hechos 1 y 2.
+[SI NO conoce_domicilio_conyuge]
+**{#pruebas}. INFORMES.** Los que rindan las autoridades e instituciones a las que se giren oficios para la búsqueda del domicilio de {nombre_conyuge}, que relaciono con el hecho relativo a su domicilio desconocido.
+[/SI]
 [SI hay_hijos_menores]
 **{#pruebas}. DOCUMENTAL PÚBLICA.** Copias certificadas de las actas de nacimiento de nuestras hijas e hijos, que relaciono con el hecho 3.
 [/SI][SI regimen = sociedad_conyugal]
@@ -119,7 +124,10 @@ Por lo antes expuesto,
 
 **PRIMERO.** Tenerme por presentada o presentado en los términos de este escrito, solicitando el divorcio de {nombre_conyuge}, con la propuesta de convenio que se acompaña.
 
-**SEGUNDO.** Ordenar el emplazamiento de {nombre_conyuge} en el domicilio señalado, corriéndole traslado con las copias exhibidas.
+[SI conoce_domicilio_conyuge]**SEGUNDO.** Ordenar el emplazamiento de {nombre_conyuge} en el domicilio señalado, corriéndole traslado con las copias exhibidas.[/SI][SI NO conoce_domicilio_conyuge]**SEGUNDO.** Toda vez que desconozco el domicilio de {nombre_conyuge}, girar oficios al Instituto Mexicano del Seguro Social, al Instituto de Seguridad y Servicios Sociales de los Trabajadores del Estado, al Servicio de Administración Tributaria, al Instituto Nacional Electoral, a la Comisión Federal de Electricidad y a las demás autoridades o instituciones públicas que cuenten con registro oficial de personas y sus domicilios, para que informen si en sus registros existe algún domicilio a su nombre; y, de no ser localizado, ordenar su emplazamiento por edictos, en términos de la fracción II del artículo 209 del Código Nacional de Procedimientos Civiles y Familiares.[/SI]
+<!-- REVISAR (Karen): lista de instituciones para los oficios de búsqueda (¿agregar Telmex/telefónicas, Registro Público
+     de la Propiedad, Secretaría de Movilidad?) y si conviene pedir expresamente que la publicación de edictos sea a costa
+     de la parte actora o solicitar que se exima por la Defensoría. -->
 
 **TERCERO.** Decretar las medidas provisionales solicitadas.
 

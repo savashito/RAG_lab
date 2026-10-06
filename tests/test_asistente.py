@@ -230,3 +230,24 @@ def test_format_fields_replace_instead_of_merging():
     assert b['incompleto']['campo'] == 'tel'
     b, v = A.turno(b, cat, ia, mensaje='55 1234 5678')
     assert b['respuestas']['tel'] == '55 1234 5678' and b['incompleto'] is None
+
+
+def test_llm_object_values_become_text():
+    assert A.normalizar({'tipo': 'texto'}, {'texto': 'Av. Universidad 100'}) == ('Av. Universidad 100', None)
+    assert A.normalizar({'tipo': 'texto'}, ['Calle 1', 'Col. Centro']) == ('Calle 1, Col. Centro', None)
+
+
+def test_same_address_reference_uses_known_address_or_asks_which():
+    spec = {'id': 'h', 'titulo': 'H', 'tema': 't', 'estado': 'publicado', 'descripcion': 'd', '_plantilla': '{a}{b}{c}',
+            'campos': [{'id': 'a', 'pregunta': 'a', 'tipo': 'texto', 'requiere': ['código postal']},
+                       {'id': 'b', 'pregunta': 'b', 'tipo': 'texto', 'requiere': ['código postal']},
+                       {'id': 'c', 'pregunta': 'c', 'tipo': 'texto', 'requiere': ['código postal']}]}
+    cat = {'h': spec}
+    b = {**A.nuevo_borrador(), 'estado': A.ENTREVISTA, 'formulario': 'h', 'respuestas': {'a': 'Roble 5, 03100'}}
+    b, v = A.turno(b, cat, FakeIA(), mensaje='en mi casa')          # un solo domicilio conocido → se usa
+    assert b['respuestas']['b'] == 'Roble 5, 03100'
+    b['respuestas']['b'] = 'Pino 8, 04100'
+    b, v = A.turno(b, cat, FakeIA(), mensaje='en mi casa')          # varios → pregunta cuál
+    assert v['mensaje'] == '¿Cuál de estos domicilios?' and [x['texto'] for x in v['botones']] == ['Roble 5, 03100', 'Pino 8, 04100']
+    b, v = A.turno(b, cat, FakeIA(), mensaje='Pino 8, 04100')
+    assert b['respuestas']['c'] == 'Pino 8, 04100'
