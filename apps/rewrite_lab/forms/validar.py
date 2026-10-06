@@ -13,7 +13,7 @@ from forms.plantilla import fill
 
 TIPOS = {'texto', 'texto_largo', 'fecha', 'si_no', 'opcion', 'lista'}
 ESTADOS = ('borrador', 'revisado', 'publicado')
-FORMATOS = ('telefono', 'correo', 'fecha_completa')
+FORMATOS = ('telefono', 'correo', 'fecha_completa', 'nombre_completo', 'monto', 'porcentaje')
 
 
 def cargar(spec_yaml: str, ejemplos_yaml: str = '') -> tuple[dict | None, dict, list[str]]:

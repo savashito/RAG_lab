@@ -60,7 +60,7 @@ avisos:
 
 # Revisión de respuestas incompletas (si falta algo, el asistente lo dice y ofrece «Dejarlo así»):
 #   requiere: [partes]  → Gemma revisa que la respuesta traiga esas partes (p. ej. un domicilio)
-#   formato: telefono | correo | fecha_completa → lo revisa el código
+#   formato: telefono | correo | fecha_completa | nombre_completo | monto | porcentaje → lo revisa el código
 
 # Instrucciones para Gemma en el estado ENTREVISTA.
 instrucciones_entrevista: >-
@@ -75,6 +75,7 @@ campos:
   - id: nombre_solicitante
     pregunta: "¿Cuál es tu nombre completo?"
     tipo: texto
+    formato: nombre_completo
   - id: domicilio_notificaciones
     pregunta: "¿En qué domicilio de la Ciudad de México quieres recibir notificaciones del juzgado?"
     tipo: texto
@@ -100,6 +101,7 @@ campos:
   - id: nombre_conyuge
     pregunta: "¿Cuál es el nombre completo de tu esposa o esposo?"
     tipo: texto
+    formato: nombre_completo
   - id: conoce_domicilio_conyuge
     pregunta: "¿Sabes en qué domicilio se le puede encontrar actualmente?"
     tipo: si_no
@@ -176,6 +178,7 @@ campos:
     si: hay_hijos_menores
     pregunta: "¿Cuánto propones de pensión? Puede ser una cantidad mensual o un porcentaje del salario."
     tipo: texto
+    formato: monto
   - id: forma_pago_alimentos
     si: hay_hijos_menores
     pregunta: "¿Cómo y cuándo se pagaría? (por ejemplo, depósito los días 1 de cada mes, o descuento por nómina)"
@@ -193,6 +196,7 @@ campos:
     si: alimentos_conyuge
     pregunta: "¿Cuánto propones?"
     tipo: texto
+    formato: monto
   - id: motivo_alimentos_conyuge
     si: alimentos_conyuge
     pregunta: "¿Por qué la necesitas? (por ejemplo, te dedicaste al hogar y al cuidado de los hijos, tu edad o salud)"
@@ -230,6 +234,7 @@ campos:
     si: pide_compensacion
     pregunta: "¿Qué porcentaje propones? (máximo 50 %)"
     tipo: texto
+    formato: porcentaje
   - id: motivo_compensacion
     si: pide_compensacion
     pregunta: Cuéntame brevemente por qué te corresponde.

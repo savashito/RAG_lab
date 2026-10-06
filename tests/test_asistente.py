@@ -271,3 +271,26 @@ def test_pronoun_answers_become_names_without_llm():
     b2 = {**A.nuevo_borrador(), 'estado': A.ENTREVISTA, 'formulario': 'p', 'respuestas': {'yo': 'Ana Ruiz', 'otro': 'Pedro Gómez'}}
     b2, _ = A.turno(b2, cat, FakeIA({'me la quedo yo, claro': {'casa': 'yo'}}), mensaje='me la quedo yo, claro')
     assert b2['respuestas']['casa'] == 'Ana Ruiz'
+
+
+def test_name_amount_and_percentage_formats():
+    nc = {'formato': 'nombre_completo'}
+    assert A.faltan_formato(nc, 'Sergio') == ['los apellidos']
+    assert A.faltan_formato(nc, 'Sergio López') == ['el segundo apellido (si lo tienes)']
+    assert A.faltan_formato(nc, 'Sergio López Ramírez') == []
+    assert A.faltan_formato(nc, 'María de la Luz Pérez') == []   # «de la» no cuenta como palabra
+    assert A.faltan_formato({'formato': 'monto'}, 'lo que se pueda') != [] and A.faltan_formato({'formato': 'monto'}, '6 mil pesos') == []
+    assert A.faltan_formato({'formato': 'porcentaje'}, '20 %') == [] and A.faltan_formato({'formato': 'porcentaje'}, '60%') != []
+
+
+def test_missing_surnames_are_joined_with_the_first_name():
+    spec = {'id': 'n', 'titulo': 'N', 'tema': 't', 'estado': 'publicado', 'descripcion': 'd', '_plantilla': '{nom}{x}',
+            'campos': [{'id': 'nom', 'pregunta': '¿Nombre?', 'tipo': 'texto', 'formato': 'nombre_completo'},
+                       {'id': 'x', 'pregunta': 'x', 'tipo': 'texto'}]}
+    cat = {'n': spec}
+    ia = FakeIA({'Sergio': {'nom': 'Sergio'}, 'Sergio López Ramírez': {'nom': 'Sergio López Ramírez'}})
+    b = {**A.nuevo_borrador(), 'estado': A.ENTREVISTA, 'formulario': 'n'}
+    b, v = A.turno(b, cat, ia, mensaje='Sergio')
+    assert 'los apellidos' in v['mensaje']
+    b, v = A.turno(b, cat, ia, mensaje='López Ramírez')
+    assert b['respuestas']['nom'] == 'Sergio López Ramírez'

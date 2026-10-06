@@ -135,6 +135,19 @@ def faltan_formato(campo: dict, valor) -> list[str]:
         return [] if len(digitos) == 10 else ['el número completo a 10 dígitos']
     if fmt == 'correo':
         return [] if re.search(r'^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$', v.strip()) else ['un correo válido (por ejemplo nombre@dominio.com)']
+    if fmt == 'nombre_completo':
+        # Nombre(s) + apellidos. Partículas como «de», «del», «la» no cuentan como palabra.
+        palabras = [w for w in re.findall(r"[A-Za-zÁÉÍÓÚÜÑáéíóúüñ'-]+", v) if _fold(w) not in {'de', 'del', 'la', 'las', 'los', 'y'}]
+        if len(palabras) <= 1:
+            return ['los apellidos']
+        return ['el segundo apellido (si lo tienes)'] if len(palabras) == 2 else []
+    if fmt == 'monto':
+        return [] if re.search(r'\d', v) else ['la cantidad (por ejemplo «6,000 pesos al mes» o «30 % del salario»)']
+    if fmt == 'porcentaje':
+        m = re.search(r'\d+(?:[.,]\d+)?', v)
+        if not m:
+            return ['el porcentaje (un número, máximo 50 %)']
+        return [] if float(m.group(0).replace(',', '.')) <= 50 else ['un porcentaje de máximo 50 % (es el límite del art. 267-VI)']
     if fmt == 'fecha_completa':
         f = _fold(v)
         tiene_anio = bool(re.search(r'\b(19|20)\d\d\b', f))
@@ -318,7 +331,10 @@ def turno(borrador: dict | None, catalogo: dict, ia, *, mensaje: str = '', event
         elif actual and mensaje.strip():
             if inc and actual.get('requiere'):   # completa las partes que faltaban: se junta con lo anterior
                 mensaje = f"{inc['valor']}, {mensaje.strip()}"
-            # (con `formato` —teléfono, correo, fecha— la nueva respuesta reemplaza a la anterior)
+            elif inc and actual.get('formato') == 'nombre_completo' and len(mensaje.split()) <= 3 \
+                    and _fold(inc['valor']).split()[0] not in _fold(mensaje).split():
+                mensaje = f"{inc['valor']} {mensaje.strip()}"   # «Sergio» + «López Ramírez»
+            # (con teléfono, correo, fecha, monto… la nueva respuesta reemplaza a la anterior)
             conocidos = domicilios_conocidos(spec, b['respuestas'], actual['id']) if actual.get('requiere') else []
             if conocidos and _MISMO_DOMICILIO.match(_fold(mensaje)):
                 if len(conocidos) == 1:
