@@ -1116,6 +1116,18 @@ bench = Bench(connect=connect, ask=ask, judge=judge_llm, store=store, system_for
 app.include_router(bench.router)
 print(f'Benchmark: artefactos en {store.describe()} · juez en {judge_llm.url}')
 
+# Asistente de trámites (/tramites) y administración de formularios (/formularios): ver forms/.
+# Los formularios viven en la tabla `formularios` (no en el corpus); su fuente y versiones
+# publicadas, en el object store. La máquina de estados está en forms/asistente.py.
+from forms.api import make_router as forms_router  # noqa: E402
+from forms.ia import IA as FormsIA  # noqa: E402
+from forms.store import FormStore  # noqa: E402
+
+forms_store = FormStore(connect, store, Path(__file__).resolve().parent / 'forms')
+app.include_router(forms_router(forms=forms_store, ia=FormsIA(llm, ask), static_dir=STATIC,
+                                current_email=current_email, can_ingest=can_ingest,
+                                can_upload_topic=can_upload_topic))
+
 
 @app.get('/healthz')
 def healthz():

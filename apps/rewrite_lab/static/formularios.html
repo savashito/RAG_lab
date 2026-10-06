@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formularios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --ink:#1a1d24; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --warn:#b45309; --bad:#b91c1c; --ok:#15803d; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b0d12; --card:#12151c; --ink:#e8eaed; --muted:#9aa0ac; --line:#232833; --accent:#3b82f6; --warn:#f59e0b; --bad:#f87171; --ok:#22c55e; } }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  header{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  h1{font-size:17px;margin:0;flex:1}
+  a{color:var(--accent)}
+  button,select{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 12px}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .wrap{padding:16px;max-width:1500px;margin:0 auto}
+  table{border-collapse:collapse;width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px}
+  th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);font-size:14px}
+  th{border-top:0;color:var(--muted);font-weight:600}
+  tr.row{cursor:pointer} tr.row:hover td{background:var(--bg)}
+  .est{font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid}
+  .est.borrador{color:var(--warn)} .est.revisado{color:var(--accent)} .est.publicado{color:var(--ok)}
+  .muted{color:var(--muted)}
+  .editor{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .tabs{display:flex;gap:4px;margin-bottom:6px} .tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  textarea{width:100%;height:62vh;font:13px/1.45 ui-monospace,Menlo,monospace;padding:10px;border:1px solid var(--line);border-radius:8px;
+    background:var(--card);color:var(--ink);resize:vertical;tab-size:2}
+  .doc{background:#fff;color:#111;border-radius:6px;padding:22px 30px;height:62vh;overflow:auto;font:14px/1.6 Georgia,serif}
+  .errs{margin:8px 0;padding:8px 12px;border-radius:8px;border:1px solid var(--bad);color:var(--bad);font-size:13px}
+  .errs.ok{border-color:var(--ok);color:var(--ok)}
+  .bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .msg{font-size:14px}
+  @media (max-width: 1000px){ .editor{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <h1>📝 Formularios <span class="muted" style="font-weight:400;font-size:14px">— paquetes del asistente de trámites (no son parte del corpus del RAG)</span></h1>
+  <a href="/tramites">Abrir el asistente →</a>
+  <a href="/">← App</a>
+</header>
+<div class="wrap">
+  <div id="lista"></div>
+  <div id="edit" hidden>
+    <div class="bar">
+      <b id="e-title" style="font-size:16px"></b> <span id="e-estado"></span> <span class="muted" id="e-meta"></span>
+    </div>
+    <div class="editor">
+      <div>
+        <div class="tabs">
+          <button data-t="spec_yaml" class="on" onclick="tab(this)">formulario.yaml</button>
+          <button data-t="plantilla" onclick="tab(this)">plantilla.md</button>
+          <button data-t="ejemplos_yaml" onclick="tab(this)">ejemplos.yaml</button>
+          <a href="https://github.com" onclick="ayuda();return false" style="margin-left:auto;font-size:13px;align-self:center">¿Cómo se escribe?</a>
+        </div>
+        <textarea id="ta" spellcheck="false"></textarea>
+      </div>
+      <div>
+        <div class="tabs"><span class="muted" style="align-self:center;font-size:13px">Vista previa con el ejemplo:</span>
+          <select id="ej" onchange="previa()"></select></div>
+        <div class="doc" id="doc"></div>
+      </div>
+    </div>
+    <div id="errs"></div>
+    <div class="bar">
+      <button class="primary" onclick="guardar()">💾 Guardar</button>
+      <span class="muted">Estado:</span>
+      <button onclick="estado('borrador')">borrador</button>
+      <button onclick="estado('revisado')" title="Revisado jurídicamente">✔ revisado</button>
+      <button onclick="estado('publicado')" title="Visible para el público en /tramites; se guarda una copia en MinIO">🚀 publicar</button>
+      <span style="flex:1"></span>
+      <label class="muted" style="font-size:13px">Documento fuente: <input type="file" id="fuente" onchange="subirFuente()"></label>
+      <a id="fuente-link" style="font-size:13px" hidden>descargar fuente</a>
+      <span class="msg" id="msg"></span>
+    </div>
+  </div>
+</div>
+<script>
+// Administración de formularios: el paquete (formulario.yaml + plantilla.md + ejemplos.yaml) vive en la
+// BD (tabla `formularios`); el documento fuente y las versiones publicadas, en MinIO. Ver forms/README.md.
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let F = null, cur = 'spec_yaml', timer = null;
+
+async function api(url, opts){
+  const r = await fetch(url, opts); const d = await r.json().catch(() => ({}));
+  if(!r.ok){ const e = new Error(d.error || (d.errores || []).join('\n') || 'HTTP ' + r.status); e.data = d; throw e; }
+  return d;
+}
+async function lista(){
+  const fs = await api('/api/formularios');
+  $('lista').innerHTML = `<table><tr><th>Formulario</th><th>Tema</th><th>Estado</th><th>Versión</th><th>Editado</th><th>Revisó</th></tr>` +
+    fs.map(f => `<tr class="row" onclick='abrir(${JSON.stringify(f.id)})'><td><b>${esc(f.titulo)}</b><br><span class="muted">${esc(f.id)}</span></td>
+      <td>${esc(f.tema)}</td><td><span class="est ${f.estado}">${f.estado}</span></td><td>v${f.version}</td>
+      <td class="muted">${esc(f.updated_by)}<br>${esc((f.updated_at || '').slice(0, 16))}</td><td class="muted">${esc(f.revisado_por || '—')}</td></tr>`).join('') +
+    `</table><p class="muted" style="font-size:13px">Para crear uno nuevo: abre uno existente, cambia su «id» y «titulo» en formulario.yaml y guarda.</p>`;
+}
+async function abrir(id){
+  F = await api('/api/formularios/' + encodeURIComponent(id));
+  F._orig = F.id;
+  $('edit').hidden = false;
+  $('e-title').textContent = F.titulo;
+  $('e-estado').innerHTML = `<span class="est ${F.estado}">${F.estado}</span>`;
+  $('e-meta').textContent = `v${F.version} · editado por ${F.updated_by || '?'} ${(F.updated_at || '').slice(0, 16)}` + (F.revisado_por ? ` · revisó ${F.revisado_por}` : '');
+  $('fuente-link').hidden = !F.fuente_key; $('fuente-link').href = `/api/formularios/${encodeURIComponent(F.id)}/fuente`;
+  cur = 'spec_yaml'; document.querySelectorAll('.tabs button[data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === cur));
+  $('ta').value = F[cur]; previa(); $('edit').scrollIntoView({behavior: 'smooth'});
+}
+function tab(btn){
+  F[cur] = $('ta').value; cur = btn.dataset.t;
+  document.querySelectorAll('.tabs button[data-t]').forEach(b => b.classList.toggle('on', b === btn));
+  $('ta').value = F[cur] || '';
+}
+$('ta').addEventListener('input', () => { F[cur] = $('ta').value; clearTimeout(timer); timer = setTimeout(previa, 500); });
+
+async function previa(){
+  const d = await api('/api/formularios/vista_previa', {method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({spec_yaml: F.spec_yaml, plantilla: F.plantilla, ejemplos_yaml: F.ejemplos_yaml, ejemplo: $('ej').value})});
+  $('ej').innerHTML = d.ejemplos.map(e => `<option ${e === d.ejemplo ? 'selected' : ''}>${esc(e)}</option>`).join('');
+  $('doc').innerHTML = window.marked ? marked.parse(d.documento || '') : esc(d.documento);
+  $('errs').innerHTML = d.errores.length ? `<div class="errs">✗ ${d.errores.map(esc).join('<br>✗ ')}</div>`
+                                        : '<div class="errs ok">✓ El paquete es válido.</div>';
+}
+async function guardar(){
+  F[cur] = $('ta').value;
+  try{
+    // Si se cambió el «id» en formulario.yaml, se crea un formulario NUEVO con ese id (copia).
+    const nuevoId = ((F.spec_yaml.match(/^id:\s*([a-z0-9_]+)/m) || [])[1]) || F._orig;
+    if(nuevoId !== F._orig && !confirm(`El id cambió a «${nuevoId}»: se creará un formulario nuevo (el original no se toca). ¿Continuar?`)) return;
+    const d = await api('/api/formularios/' + encodeURIComponent(nuevoId), {method: 'PUT', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({spec_yaml: F.spec_yaml, plantilla: F.plantilla, ejemplos_yaml: F.ejemplos_yaml, version: F.version})});
+    msg(`Guardado (v${d.version}). ${d.estado === 'borrador' ? 'Quedó en borrador: hay que revisarlo y publicarlo de nuevo.' : ''}`);
+    await lista(); await abrir(d.id || nuevoId);
+  }catch(e){ msg('✗ ' + e.message, true); }
+}
+async function estado(e){
+  if(e === 'publicado' && !confirm('¿Publicar? Quedará visible para el público en /tramites.')) return;
+  try{ await api(`/api/formularios/${encodeURIComponent(F._orig)}/estado`, {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({estado: e})}); msg('Estado: ' + e); await lista(); await abrir(F._orig); }
+  catch(err){ msg('✗ ' + err.message, true); }
+}
+async function subirFuente(){
+  const f = $('fuente').files[0]; if(!f) return;
+  const fd = new FormData(); fd.append('archivo', f);
+  try{ await api(`/api/formularios/${encodeURIComponent(F._orig)}/fuente`, {method: 'POST', body: fd}); msg('Fuente guardada en MinIO.'); await abrir(F._orig); }
+  catch(e){ msg('✗ ' + e.message, true); }
+}
+function msg(t, bad){ $('msg').textContent = t; $('msg').style.color = bad ? 'var(--bad)' : ''; }
+function ayuda(){ alert('{campo} · [SI campo] … [/SI] · [SI NO campo] · [SI campo = valor] · [CADA x EN lista] … [/CADA] · {#serie} {#R serie} {#A serie}\n\nVer forms/README.md en el repositorio.'); }
+lista().catch(e => { $('lista').innerHTML = `<p class="errs">${esc(e.message)}</p>`; });
+</script>
+</body>
+</html>

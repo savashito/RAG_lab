@@ -7,6 +7,18 @@ id: divorcio_unilateral_cdmx
 titulo: Solicitud de divorcio unilateral (incausado) — Ciudad de México
 version: 2026-10-05
 estado: borrador          # borrador → revisado (por Karen) → publicado
+tema: derecho_familiar    # quién puede editarlo: admins con permiso sobre este tema
+
+# Palabras que, si aparecen en una pregunta del chat RAG, hacen que se SUGIERA este formulario
+# (se comparan sin acentos ni mayúsculas; no usa LLM, para no hacer más lento el chat).
+disparadores:
+  - divorcio
+  - divorciarme
+  - divorciar
+  - divorcie
+  - separarme de mi esposo
+  - separarme de mi esposa
+  - disolver el matrimonio
 basado_en: >-
   Formulario Práctico Forense en Materia Familiar (modelos de 2008-2009, DF), actualizado al Código
   Civil para el Distrito Federal vigente y al Código Nacional de Procedimientos Civiles y Familiares

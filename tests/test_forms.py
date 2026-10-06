@@ -80,3 +80,17 @@ def test_examples_fill_completely(form):
     for name, data in yaml.safe_load(examples.read_text()).items():
         _, missing = fill(tpl, data)
         assert missing == [], f'{name}: faltan {missing}'
+
+
+@pytest.mark.parametrize('form', FORMS, ids=lambda p: p.name)
+def test_repo_packages_pass_the_editor_validator(form):
+    from forms.validar import validar
+    ej = (form / 'ejemplos.yaml').read_text() if (form / 'ejemplos.yaml').is_file() else ''
+    assert validar((form / 'formulario.yaml').read_text(), (form / 'plantilla.md').read_text(), ej) == []
+
+
+def test_validator_reports_readable_errors():
+    from forms.validar import validar
+    errs = validar('id: X\ntitulo: t\ntema: x\ndescripcion: d\ncampos:\n  - {id: a, tipo: raro}\n', 'Hola {b} [SI c]x[/SI]')
+    joined = ' | '.join(errs)
+    assert 'minúsculas' in joined and '«tipo»' in joined and '{b}' in joined and '«c» no existe' in joined

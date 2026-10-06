@@ -258,6 +258,8 @@
   <button id="tabbtn-ingest"  onclick="showTab('ingest')" hidden>📥 Ingestar documentos</button>
   <button id="tabbtn-bench"  onclick="showTab('bench')" hidden>🧪 Benchmark</button>
   <button id="tabbtn-admin"  onclick="showTab('admin')" hidden>👑 Usuarios</button>
+  <button onclick="location.href='/tramites'" title="Asistente que te guía para llenar un trámite (p. ej. divorcio)">📝 Trámites</button>
+  <button id="tabbtn-forms" onclick="location.href='/formularios'" hidden title="Administrar los formularios del asistente de trámites">🗂 Formularios</button>
   <span style="flex:1"></span>
   <span id="me-badge" class="muted" style="align-self:center;padding-right:12px;font-size:12px"></span>
 </div>
@@ -377,6 +379,7 @@
    </aside>
    <div class="chat-main">
      <div id="chat-log" class="chat-log"></div>
+     <div id="chat-tramite" style="padding:0 12px"></div>
      <div class="chat-input">
        <textarea id="chat-input" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)"></textarea>
        <div class="row" style="justify-content:space-between">
@@ -807,6 +810,7 @@ async function loadMe(){
     $('tabbtn-ingest').hidden=!me.can_ingest;
     $('tabbtn-bench').hidden=!me.can_ingest;
     $('tabbtn-admin').hidden=!me.is_superadmin;
+    $('tabbtn-forms').hidden=!me.can_ingest;
     $('me-badge').innerHTML=(me.email?esc(me.email):'—')+' · '+(ROLE_LABEL[me.role]||me.role)+
       ' · <a style="color:#3b82f6" href="/logout">salir</a>';
   }catch(e){ window.__me={}; }
@@ -881,12 +885,26 @@ async function readSSE(resp, onEvent){
   }
 }
 
+// ── Sugerencia de trámite: si la pregunta suena a un trámite con formulario (p. ej. «me quiero
+// divorciar»), se ofrece el asistente /tramites. Detección por palabras clave en el servidor (sin
+// LLM). Lo escrito pasa por sessionStorage, nunca por la URL.
+async function sugerirTramite(texto, host){
+  try{
+    const r=await fetch('/api/tramites/sugerir',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto})});
+    const d=await r.json(); const s=(d.sugerencias||[])[0]; if(!s||!host) return;
+    host.innerHTML=`<div class="legend" style="margin-top:10px;border-color:#2563eb">📝 Parece que podrías necesitar: <b>${esc(s.titulo)}</b>${s.borrador?' <span class="muted">(borrador)</span>':''}.
+      <button class="ghost" style="margin-left:8px">Que el asistente me guíe →</button></div>`;
+    host.querySelector('button').onclick=()=>{ try{ sessionStorage.setItem('tramite_contexto', texto); }catch(e){}
+      location.href='/tramites?formulario='+encodeURIComponent(s.id); };
+  }catch(e){}
+}
+
 async function askRun(){
   const b=$('ask-run'), s=$('ask-spin'); b.disabled=true; s.style.display='inline';
   const question=$('ask-mode').value==='golden' ? $('ask-golden-q').value : $('ask-question').value;
   // Andamiaje: paneles que se van llenando conforme llegan los eventos del proceso.
   $('ask-out').innerHTML=`<div id="ax-status" class="row muted" style="margin-top:14px">⏳ recuperando…</div>
-    <div id="ax-hyde"></div><div id="ax-answer" class="ans"></div><div id="ax-refs"></div>`;
+    <div id="ax-hyde"></div><div id="ax-answer" class="ans"></div><div id="ax-tramite"></div><div id="ax-refs"></div>`;
   const setStatus=t=>{const el=$('ax-status'); if(el) el.innerHTML=t;};
   let answer='', skind='', started=performance.now();
   try{
@@ -921,6 +939,7 @@ async function askRun(){
       }else if(ev.stage==='token'){
         answer+=ev.text; $('ax-answer').innerHTML=marked.parse(answer);
       }else if(ev.stage==='done'){
+        sugerirTramite(question, $('ax-tramite'));
         setStatus(`método: <b>${esc($('ask-setting').value)}</b> · score: <b>${esc(skind||'—')}</b> · ${ev.seconds}s ✓`);
       }else if(ev.stage==='error'){
         $('ax-answer').innerHTML='<p style="color:#f87171">Error: '+esc(ev.error)+'</p>';
@@ -1514,6 +1533,7 @@ async function chatSend(){
       else if(ev.stage==='error'){ errMsg=ev.error||'error'; }
     });
     if(errMsg) throw new Error(errMsg);
+    sugerirTramite(text, $('chat-tramite'));
     await dbAdd('messages',{convId:curConv,role:'assistant',content:answer||'(sin respuesta)',ts:Date.now(),
       chunks:meta.chunks,rewrite:meta.rewrite,setting:$('chat-setting').value,score_kind:meta.score_kind,seconds:meta.seconds,search_query:meta.search_query});
     const c2=(await listConvs()).find(c=>c.id===curConv);
