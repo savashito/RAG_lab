@@ -25,6 +25,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 HERE = Path(__file__).resolve().parent
@@ -1520,7 +1521,9 @@ def ingest_diagnostics(request: Request, source: str):
 async def ask_route(req: Request):
     body = await req.json()
     try:
-        return ask(body.get('question', ''), body.get('setting', 'orig'),
+        # En un hilo: ask() hace llamadas bloqueantes (LLM, TEI, BD). Llamarla directo aquí bloquea
+        # el event loop y TODA la app espera (otras personas incluidas) mientras responde.
+        return await run_in_threadpool(ask, body.get('question', ''), body.get('setting', 'orig'),
                    int(body.get('k', 5)), body.get('system'), body.get('topic'),
                    body.get('jurisdictions') or body.get('jurisdiction'),
                    bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
@@ -1599,7 +1602,7 @@ async def chat_route(req: Request):
     última pregunta. El historial se guarda en el browser (IndexedDB), no aquí."""
     body = await req.json()
     try:
-        return chat_answer(body.get('messages', []), body.get('setting', 'orig'),
+        return await run_in_threadpool(chat_answer, body.get('messages', []), body.get('setting', 'orig'),
                            int(body.get('k', 5)), body.get('system'), body.get('topic'),
                            body.get('jurisdictions') or body.get('jurisdiction'),
                            bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
@@ -1681,7 +1684,7 @@ async def chat_stream_route(req: Request):
 async def run(req: Request):
     body = await req.json()
     try:
-        return eval_prompt(body.get('prompt') or REWRITE_SYSTEM,
+        return await run_in_threadpool(eval_prompt, body.get('prompt') or REWRITE_SYSTEM,
                            body.get('subset', 'hard'),
                            body.get('golden') or DEFAULT_GOLDEN)
     except Exception as e:

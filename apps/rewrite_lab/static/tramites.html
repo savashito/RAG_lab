@@ -98,7 +98,10 @@ function cargarLocal(){ try{ return JSON.parse(localStorage.getItem(KEY) || 'nul
 async function turno(payload, textoUsuario){
   if(busy) return; busy = true; $('send').disabled = true;
   if(textoUsuario) S.mensajes.push({rol: 'user', texto: textoUsuario});
-  render(true);
+  S.pensando = null; render(true);
+  // Si tarda, que se note que sigue trabajando (las dudas legales consultan el RAG y tardan más).
+  const avisos = [setTimeout(() => { S.pensando = '⏳ sigo trabajando…'; const p = $('pensando'); if(p) p.textContent = S.pensando; }, 4000),
+                  setTimeout(() => { S.pensando = '🔎 consultando las leyes, esto puede tardar unos segundos más…'; const p = $('pensando'); if(p) p.textContent = S.pensando; }, 9000)];
   try{
     const r = await fetch('/api/tramites/turno', {method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({borrador: S.borrador, ...payload})});
@@ -107,6 +110,7 @@ async function turno(payload, textoUsuario){
     S.borrador = d.borrador; S.vista = d.vista;
     registrar(d.vista);
   }catch(e){ S.mensajes.push({rol: 'bot', texto: '⚠️ ' + e.message}); }
+  avisos.forEach(clearTimeout); S.pensando = null;
   busy = false; $('send').disabled = false;
   guardarLocal(); render();
 }
@@ -152,7 +156,7 @@ function toggleDebug(){
 function render(cargando){
   const v = S.vista || {};
   let html = S.mensajes.map(m => `<div class="msg ${m.rol === 'user' ? 'user' : ''}">${m.rol === 'user' ? esc(m.texto) : md(m.texto)}</div>`).join('');
-  if(cargando){ html += '<div class="msg muted">…</div>'; }
+  if(cargando){ html += `<div class="msg muted" id="pensando">${S.pensando || '✍️ leyendo tu respuesta…'}</div>`; }
   else html += vistaEstado(v);
   $('msgs').innerHTML = html;
   $('msgs').scrollTop = $('msgs').scrollHeight;
@@ -216,6 +220,8 @@ function renderDebug(d){
     ${d.incompleto ? `<h3>Incompleto</h3><div><span class="chip">${esc(d.incompleto.campo)}</span> falta: ${esc(d.incompleto.faltan.join(', '))}</div>` : ''}
     <h3>Omitidos</h3><div>${(d.omitidos || []).map(p => `<span class="chip">${esc(p)}</span>`).join('') || '—'}</div>
     <h3>Respuestas</h3><pre>${esc(JSON.stringify(d.respuestas || {}, null, 1))}</pre>
+    <h3>Tiempo de este turno</h3>${d.tiempo ? `<div><b>${d.tiempo.total_s} s</b> · <b>${d.tiempo.llamadas_llm}</b> llamada(s) a Gemma</div>
+      ${(d.tiempo.detalle || []).map(x => `<div><span class="chip">${esc(x.tarea)}</span> ${x.segundos} s${x.llm > 1 ? ` <span class="muted">(${x.llm} llamadas: búsqueda + respuesta)</span>` : ''}</div>`).join('') || '<div class="muted">sin llamadas a Gemma (respuesta directa)</div>'}` : '—'}
     <h3>Gemma en este turno</h3><pre>${esc(llm)}</pre>
     ${d.rag ? `<h3>RAG (duda)</h3><pre>${esc(JSON.stringify(d.rag, null, 1))}</pre>` : ''}`;
 }

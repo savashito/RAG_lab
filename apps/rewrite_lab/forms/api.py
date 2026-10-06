@@ -8,10 +8,14 @@ from __future__ import annotations
 import re
 import unicodedata
 
+import time
+
 from fastapi import APIRouter, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from forms import asistente
+from forms.ia import Medidor
 from forms.store import Conflicto
 from forms.validar import ESTADOS, cargar, validar
 from forms.plantilla import fill
@@ -48,12 +52,23 @@ def make_router(*, forms, ia, static_dir, current_email, can_ingest, can_upload_
     @r.post('/api/tramites/turno')
     async def tramite_turno(request: Request):
         b = await request.json()
+        catalogo = catalogo_para(request)
+        medidor, t0 = Medidor(ia), time.time()
         try:
-            borrador, vista = asistente.turno(b.get('borrador'), catalogo_para(request), ia,
-                                              mensaje=str(b.get('mensaje') or '')[:4000],
-                                              evento=str(b.get('evento') or ''), campo=str(b.get('campo') or ''))
+            # En un hilo: las llamadas a Gemma bloquean; así un turno lento (p. ej. una duda que va
+            # al RAG) no hace esperar a las demás personas que usan la app.
+            borrador, vista = await run_in_threadpool(
+                asistente.turno, b.get('borrador'), catalogo, medidor,
+                mensaje=str(b.get('mensaje') or '')[:4000], evento=str(b.get('evento') or ''),
+                campo=str(b.get('campo') or ''))
         except ValueError as e:
             return err(str(e))
+        total = round(time.time() - t0, 2)
+        llm = sum(x['llm'] for x in medidor.llamadas)
+        vista['debug']['tiempo'] = {'total_s': total, 'llamadas_llm': llm, 'detalle': medidor.llamadas}
+        # Registro sin datos personales: estado, duración y llamadas.
+        print(f"tramites: turno {vista['estado']} {total}s · {llm} llamada(s) LLM "
+              f"[{', '.join(f'{x['tarea']} {x['segundos']}s' for x in medidor.llamadas)}]", flush=True)
         return {'borrador': borrador, 'vista': vista}
 
     @r.post('/api/tramites/sugerir')

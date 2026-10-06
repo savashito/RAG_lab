@@ -95,3 +95,27 @@ class IA:
         r = self.ask(texto, 'híbrido', 6, system, spec.get('tema'), None, True, False, False, False, route=True)
         fuentes = [f"{c.get('doc_label') or c.get('source')} — {c.get('title')}" for c in (r.get('chunks') or [])[:4]]
         return r.get('answer', ''), {'tarea': 'responder_duda', 'fuentes': fuentes}
+
+
+class Medidor:
+    """Envuelve a IA para UN turno y anota cada llamada (tarea y segundos). El panel de depuración
+    y el registro del servidor muestran cuántas llamadas hizo el turno y cuánto tardó cada una."""
+    TAREAS = ('elegir_formulario', 'extraer', 'revisar_partes', 'responder_duda')
+
+    def __init__(self, ia):
+        self._ia, self.llamadas = ia, []
+
+    def __getattr__(self, nombre):
+        fn = getattr(self._ia, nombre)
+        if nombre not in self.TAREAS:
+            return fn
+        def medido(*a, **kw):
+            import time
+            t0 = time.time()
+            try:
+                return fn(*a, **kw)
+            finally:
+                self.llamadas.append({'tarea': nombre, 'segundos': round(time.time() - t0, 2),
+                                      # responder_duda = búsqueda RAG (con HyDE) + respuesta: 2 llamadas al LLM
+                                      'llm': 2 if nombre == 'responder_duda' else 1})
+        return medido
