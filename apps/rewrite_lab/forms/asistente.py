@@ -18,6 +18,7 @@ El «borrador» es un dict:
     {'estado': 'ENTREVISTA', 'formulario': 'divorcio_unilateral_cdmx',
      'respuestas': {...}, 'omitidos': [...],          # campos opcionales que la persona saltó
      'corrigiendo': None | 'campo',                     # en REVISIÓN se pidió corregir este campo
+     'incompleto': None | {'campo', 'valor', 'faltan'}, # respuesta a la que le faltan partes (p. ej. la colonia)
      'contexto': 'lo que contó en el chat', 'transicion': {...}}   # la última, para depurar
 """
 from __future__ import annotations
@@ -57,7 +58,7 @@ def transicion(borrador: dict, evento: str, motivo: str = '') -> dict:
 
 def nuevo_borrador(contexto: str = '') -> dict:
     return {'estado': INICIO, 'formulario': None, 'respuestas': {}, 'omitidos': [], 'corrigiendo': None,
-            'contexto': contexto, 'transicion': None}
+            'incompleto': None, 'contexto': contexto, 'transicion': None}
 
 
 # ── Campos: cuáles aplican, cuál sigue, cómo se normaliza una respuesta ──────────
@@ -115,6 +116,71 @@ def respuesta_rapida(campo: dict, texto: str):
 def quiere_omitir(campo: dict, texto: str) -> bool:
     """En un campo opcional, «no», «no me acuerdo», «no lo tengo»… significan saltarlo."""
     return campo.get('obligatorio') is False and _fold(texto) in {_fold(x) for x in OMITIR}
+
+
+# ── ¿Está completa la respuesta? ─────────────────────────────────────────────────
+# Dos fuentes: `formato:` (lo revisa el código: teléfono, correo, fecha con año) y `requiere:`
+# (partes que debe traer, p. ej. un domicilio: calle y número, colonia, alcaldía, código postal;
+# lo revisa Gemma en la misma llamada en la que extrae el dato y lo devuelve en «_faltan»).
+_MESES_RX = r'(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)'
+
+
+def faltan_formato(campo: dict, valor) -> list[str]:
+    v = str(valor or '')
+    fmt = campo.get('formato')
+    if fmt == 'telefono':
+        digitos = re.sub(r'\D', '', v)
+        if digitos.startswith('52') and len(digitos) == 12:
+            digitos = digitos[2:]
+        return [] if len(digitos) == 10 else ['el número completo a 10 dígitos']
+    if fmt == 'correo':
+        return [] if re.search(r'^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$', v.strip()) else ['un correo válido (por ejemplo nombre@dominio.com)']
+    if fmt == 'fecha_completa':
+        f = _fold(v)
+        tiene_anio = bool(re.search(r'\b(19|20)\d\d\b', f))
+        tiene_dia_mes = bool(re.search(r'\b\d{1,2}\b.*' + _MESES_RX, f)) or bool(re.search(r'\b\d{1,2}[/-]\d{1,2}\b', v))
+        return ([] if tiene_dia_mes else ['el día y el mes']) + ([] if tiene_anio else ['el año'])
+    return []
+
+
+# Partes conocidas que se detectan con reglas (instantáneo y confiable); las demás de `requiere`
+# las revisa Gemma con una llamada corta (ia.revisar_partes).
+_ALCALDIAS = ('alvaro obregon', 'azcapotzalco', 'benito juarez', 'coyoacan', 'cuajimalpa', 'cuauhtemoc',
+              'gustavo a madero', 'iztacalco', 'iztapalapa', 'magdalena contreras', 'miguel hidalgo', 'milpa alta',
+              'tlahuac', 'tlalpan', 'venustiano carranza', 'xochimilco')
+# Cada detector devuelve True (está), False (seguro que falta) o None (no se sabe → lo revisa Gemma):
+# una colonia o un municipio pueden escribirse sin la palabra «colonia» o «municipio» («Narvarte»).
+DETECTORES = {
+    'calle y numero': lambda f: bool(re.search(r'\d', f)) and bool(re.search(r'[a-z]{3,}', f)),
+    'colonia': lambda f: True if re.search(r'\b(col|colonia|fracc|fraccionamiento|barrio|pueblo|unidad|uh|residencial|conjunto)\b', f) else None,
+    'codigo postal': lambda f: bool(re.search(r'\b\d{5}\b', f)),
+    'alcaldia o municipio': lambda f: True if (re.search(r'\b(alcaldia|delegacion|municipio|mpio)\b', f)
+                                               or any(a in f for a in _ALCALDIAS)) else None,
+}
+
+
+def faltan_partes(campo: dict, valor, ia=None) -> tuple[list[str], dict | None]:
+    """(partes que faltan, debug de Gemma). Formato y partes conocidas: código; el resto: Gemma."""
+    faltan, f = faltan_formato(campo, valor), _fold(valor)
+    desconocidas = []
+    for parte in campo.get('requiere') or []:
+        detector = DETECTORES.get(_fold(parte))
+        hay = detector(f) if detector else None
+        if hay is False:
+            faltan.append(parte)
+        elif hay is None:
+            desconocidas.append(parte)
+    debug = None
+    if desconocidas and ia is not None:
+        faltan_ia, debug = ia.revisar_partes(campo, str(valor), desconocidas)
+        norm = {_fold(p): p for p in desconocidas}
+        faltan += [norm[_fold(x)] for x in faltan_ia if _fold(x) in norm]
+    orden = {p: i for i, p in enumerate(campo.get('requiere') or [])}   # en el orden en que se declararon
+    return sorted(dict.fromkeys(faltan), key=lambda p: orden.get(p, -1)), debug
+
+
+def _lista(xs: list[str]) -> str:
+    return xs[0] if len(xs) == 1 else ', '.join(xs[:-1]) + ' y ' + xs[-1]
 
 
 def parece_pregunta(texto: str) -> bool:
@@ -205,9 +271,17 @@ def turno(borrador: dict | None, catalogo: dict, ia, *, mensaje: str = '', event
     if estado == ENTREVISTA:
         actual = siguiente_campo(spec, b)
         aviso = None
-        if actual and evento == 'omitir' and actual.get('obligatorio') is False:
+        inc = b.get('incompleto') if actual and (b.get('incompleto') or {}).get('campo') == actual['id'] else None
+        if inc and evento == 'aceptar_incompleto':
+            # La persona prefiere dejar la respuesta como está.
+            b = {**b, 'respuestas': {**b['respuestas'], actual['id']: inc['valor']}, 'incompleto': None}
+        elif actual and evento == 'omitir' and actual.get('obligatorio') is False:
             b['omitidos'] = sorted(set(b['omitidos']) | {actual['id']})
+            b['incompleto'] = None
         elif actual and mensaje.strip():
+            if inc and actual.get('requiere'):   # completa las partes que faltaban: se junta con lo anterior
+                mensaje = f"{inc['valor']}, {mensaje.strip()}"
+            # (con `formato` —teléfono, correo, fecha— la nueva respuesta reemplaza a la anterior)
             if quiere_omitir(actual, mensaje):
                 b['omitidos'] = sorted(set(b['omitidos']) | {actual['id']})
             else:
@@ -236,6 +310,18 @@ def turno(borrador: dict | None, catalogo: dict, ia, *, mensaje: str = '', event
                         b = _guardar(spec, b, {actual['id']: mensaje.strip()})
                     else:
                         aviso = normalizar(actual, mensaje)[1] or 'No entendí tu respuesta.'
+                # ¿Le faltan partes a la respuesta de ESTE campo? Se aparta (no cuenta como contestada)
+                # y se pide completarla o dejarla así.
+                valor = b['respuestas'].get(actual['id'])
+                faltan = []
+                if not _vacio(valor):
+                    faltan, debug['llm_partes'] = faltan_partes(actual, valor, ia)
+                if faltan:
+                    r = dict(b['respuestas']); r.pop(actual['id'])
+                    b = {**b, 'respuestas': r, 'incompleto': {'campo': actual['id'], 'valor': valor, 'faltan': faltan}}
+                    aviso = f'Anoté: «{valor}». Me falta {_lista(faltan)}. ¿Me lo das, o prefieres dejarlo así?'
+                else:
+                    b['incompleto'] = None
             if b.get('corrigiendo') and not _vacio(b['respuestas'].get(b['corrigiendo'])):
                 b['corrigiendo'] = None
                 if not pendientes(spec, b):
@@ -299,6 +385,8 @@ def _vista(b: dict, catalogo: dict, debug: dict, mensaje: str | None = None, rep
                 v['botones'] = [{'enviar': 'Sí', 'texto': 'Sí'}, {'enviar': 'No', 'texto': 'No'}]
             elif c.get('tipo') == 'opcion':
                 v['botones'] = [{'enviar': clave, 'texto': t} for clave, t in (c.get('opciones') or {}).items()]
+            if (b.get('incompleto') or {}).get('campo') == c['id']:
+                v['botones'].append({'evento': 'aceptar_incompleto', 'texto': 'Dejarlo así'})
             if c.get('obligatorio') is False:
                 v['botones'].append({'evento': 'omitir', 'texto': 'Saltar'})
         v['repetir'] = repetir
@@ -320,7 +408,7 @@ def _vista(b: dict, catalogo: dict, debug: dict, mensaje: str | None = None, rep
         'siguiente_campo': (siguiente_campo(spec, b) or {}).get('id') if spec and b['estado'] == ENTREVISTA else None,
         'pendientes': [c['id'] for c in pendientes(spec, b)] if spec else [],
         'omitidos': b.get('omitidos', []), 'respuestas': b.get('respuestas', {}),
-        'corrigiendo': b.get('corrigiendo'), **debug}
+        'corrigiendo': b.get('corrigiendo'), 'incompleto': b.get('incompleto'), **debug}
     return v
 
 

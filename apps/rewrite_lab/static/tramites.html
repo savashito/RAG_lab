@@ -105,10 +105,29 @@ async function turno(payload, textoUsuario){
     const d = await r.json();
     if(!r.ok || d.error) throw new Error(d.error || ('HTTP ' + r.status));
     S.borrador = d.borrador; S.vista = d.vista;
-    if(d.vista.mensaje) S.mensajes.push({rol: 'bot', texto: d.vista.mensaje});
+    registrar(d.vista);
   }catch(e){ S.mensajes.push({rol: 'bot', texto: '⚠️ ' + e.message}); }
   busy = false; $('send').disabled = false;
   guardarLocal(); render();
+}
+
+// Todo lo que dice el asistente queda en el historial: avisos, respuestas a dudas y cada pregunta.
+// Una pregunta solo se vuelve a escribir si cambió de campo/estado o tras responder una duda.
+function registrar(v){
+  const t = (v.debug || {}).transicion;
+  if(v.mensaje) S.mensajes.push({rol: 'bot', texto: v.mensaje});
+  if(v.estado === 'TRIAJE' && t && t.a === 'TRIAJE')
+    S.mensajes.push({rol: 'bot', texto: `📝 **${v.triaje.titulo}**\n\n${v.triaje.descripcion}`});
+  const clave = v.estado + ':' + ((v.campo || {}).id || '');
+  if(v.pregunta && (clave !== S.ultimaClave || v.repetir)){
+    let txt = '**' + v.pregunta + '**';
+    const c = v.campo || {};
+    if(c.ayuda) txt += '\n\n_' + c.ayuda + '_';
+    if(c.tipo === 'fecha') txt += '\n\n_Por ejemplo: 14 de febrero de 2012._';
+    if(c.tipo === 'lista') txt += `\n\n_Puedes escribirlos todos juntos (${(c.subcampos || []).map(x => x.id).join(', ')} de cada uno)._`;
+    S.mensajes.push({rol: 'bot', texto: txt});
+  }
+  S.ultimaClave = clave;
 }
 
 function enviar(texto){
@@ -157,7 +176,7 @@ function vistaEstado(v){
       <h3>Aplica si…</h3><ul>${(t.cuando_aplica || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
       <h3>No es para ti si…</h3><ul>${(t.cuando_no_aplica || []).map(x => `<li><b>${esc(x.si)}</b><br><span class="muted">${esc(x.sugerir)}</span></li>`).join('')}</ul>
       <h3>Antes de empezar</h3>${(t.avisos || []).map(a => `<div class="aviso">${esc(a)}</div>`).join('')}
-      <p class="q" style="margin-top:12px">${esc(v.pregunta)}</p>${botones(v.botones)}</div>`;
+      ${botones(v.botones)}</div>`;
   }
   if(v.estado === 'REVISION'){
     const fila = r => {
@@ -167,22 +186,18 @@ function vistaEstado(v){
       return `<tr><td>${esc(r.pregunta)}</td><td class="v">${val}</td>
         <td class="a"><button class="ghost" onclick='evento("corregir", ${JSON.stringify(r.id)}, ${JSON.stringify('Corregir: ' + r.pregunta)})'>✏️</button></td></tr>`;
     };
-    return `<div class="card"><p class="q">${esc(v.pregunta)}</p><table>${(v.resumen || []).map(fila).join('')}</table>${botones(v.botones)}</div>`;
+    return `<div class="card"><table>${(v.resumen || []).map(fila).join('')}</table>${botones(v.botones)}</div>`;
   }
   if(v.estado === 'DOCUMENTO'){
-    return `<div class="card"><p class="q">${esc(v.pregunta)}</p>
+    return `<div class="card">
       ${(v.faltan || []).length ? `<div class="aviso">Faltan datos: ${v.faltan.map(esc).join(', ')}</div>` : ''}
       <div class="btns"><button class="go" onclick="descargarWord()">⬇️ Descargar Word</button>
         <button onclick="window.print()">🖨 Imprimir / PDF</button><button onclick="copiar()">📋 Copiar texto</button>
         ${botones(v.botones).replace('<div class="btns">', '').replace(/<\/div>$/, '')}</div></div>
       <div class="doc" id="doc">${md(v.documento)}</div>`;
   }
-  // INICIO y ENTREVISTA: una pregunta con ayuda y botones de respuesta rápida.
-  const c = v.campo || {};
-  let ayuda = c.ayuda ? `<div class="help">${esc(c.ayuda)}</div>` : '';
-  if(c.tipo === 'lista') ayuda += `<div class="help">Puedes escribirlos todos juntos, por ejemplo: «${esc((c.subcampos || []).map(s => s.id).join(', '))}» de cada uno.</div>`;
-  if(c.tipo === 'fecha') ayuda += '<div class="help">Por ejemplo: 14 de febrero de 2012.</div>';
-  return v.pregunta ? `<div class="msg"><div class="q">${esc(v.pregunta)}</div>${ayuda}${botones(v.botones)}</div>` : '';
+  // INICIO y ENTREVISTA: la pregunta ya está en el historial; aquí solo los botones de respuesta rápida.
+  return botones(v.botones);
 }
 
 const ESTADOS = ['INICIO', 'TRIAJE', 'ENTREVISTA', 'REVISION', 'DOCUMENTO'];
@@ -198,6 +213,7 @@ function renderDebug(d){
     <h3>Formulario</h3><div>${esc(d.formulario || '—')} ${d.formulario_estado ? `<span class="tag">${esc(d.formulario_estado)}</span>` : ''}</div>
     <h3>Siguiente campo</h3><div>${d.siguiente_campo ? `<span class="chip">${esc(d.siguiente_campo)}</span>` : '—'} ${d.corrigiendo ? `(corrigiendo <span class="chip">${esc(d.corrigiendo)}</span>)` : ''}</div>
     <h3>Pendientes (${(d.pendientes || []).length})</h3><div>${(d.pendientes || []).map(p => `<span class="chip">${esc(p)}</span>`).join('') || '—'}</div>
+    ${d.incompleto ? `<h3>Incompleto</h3><div><span class="chip">${esc(d.incompleto.campo)}</span> falta: ${esc(d.incompleto.faltan.join(', '))}</div>` : ''}
     <h3>Omitidos</h3><div>${(d.omitidos || []).map(p => `<span class="chip">${esc(p)}</span>`).join('') || '—'}</div>
     <h3>Respuestas</h3><pre>${esc(JSON.stringify(d.respuestas || {}, null, 1))}</pre>
     <h3>Gemma en este turno</h3><pre>${esc(llm)}</pre>

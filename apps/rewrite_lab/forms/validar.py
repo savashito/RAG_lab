@@ -13,6 +13,7 @@ from forms.plantilla import fill
 
 TIPOS = {'texto', 'texto_largo', 'fecha', 'si_no', 'opcion', 'lista'}
 ESTADOS = ('borrador', 'revisado', 'publicado')
+FORMATOS = ('telefono', 'correo', 'fecha_completa')
 
 
 def cargar(spec_yaml: str, ejemplos_yaml: str = '') -> tuple[dict | None, dict, list[str]]:
@@ -57,6 +58,10 @@ def validar(spec_yaml: str, plantilla: str, ejemplos_yaml: str = '') -> list[str
             errs.append(f'campo «{c["id"]}»: falta «pregunta».')
         if c.get('tipo') == 'opcion' and not isinstance(c.get('opciones'), dict):
             errs.append(f'campo «{c["id"]}»: un campo «opcion» necesita «opciones» (clave: texto).')
+        if c.get('formato') and c['formato'] not in FORMATOS:
+            errs.append(f'campo «{c["id"]}»: «formato» debe ser uno de {", ".join(FORMATOS)}.')
+        if c.get('requiere') is not None and not (isinstance(c['requiere'], list) and all(isinstance(x, str) for x in c['requiere'])):
+            errs.append(f'campo «{c["id"]}»: «requiere» debe ser una lista de textos.')
         if c.get('tipo') == 'lista' and not c.get('subcampos'):
             errs.append(f'campo «{c["id"]}»: un campo «lista» necesita «subcampos».')
     errs += _plantilla_vs_campos(plantilla, campos)

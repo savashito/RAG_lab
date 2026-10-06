@@ -52,6 +52,10 @@ avisos:
   - Si vives violencia familiar, puedes pedir medidas de protección desde la presentación del escrito.
     En una emergencia llama al 911 o a la Línea Mujeres (55 5658 1111).
 
+# Revisión de respuestas incompletas (si falta algo, el asistente lo dice y ofrece «Dejarlo así»):
+#   requiere: [partes]  → Gemma revisa que la respuesta traiga esas partes (p. ej. un domicilio)
+#   formato: telefono | correo | fecha_completa → lo revisa el código
+
 # Instrucciones para Gemma en el estado ENTREVISTA.
 instrucciones_entrevista: >-
   Estás ayudando a una persona a llenar una solicitud de divorcio unilateral en la Ciudad de México.
@@ -68,13 +72,16 @@ campos:
   - id: domicilio_notificaciones
     pregunta: "¿En qué domicilio de la Ciudad de México quieres recibir notificaciones del juzgado?"
     tipo: texto
+    requiere: [calle y número, colonia, alcaldía o municipio, código postal]
     ayuda: Calle, número, colonia, alcaldía y código postal. Puede ser el despacho de tu abogada o abogado.
   - id: telefono
     pregunta: "¿Qué número de teléfono quieres dar para el juicio?"
     tipo: texto
+    formato: telefono
   - id: correo
     pregunta: "¿Y qué correo electrónico?"
     tipo: texto
+    formato: correo
   - id: representante_autorizado
     pregunta: "¿Quién te va a representar? Escribe el nombre de tu abogada o abogado, o «Defensoría Pública» si no tienes."
     tipo: texto
@@ -90,12 +97,14 @@ campos:
   - id: domicilio_conyuge
     pregunta: "¿En qué domicilio se le puede buscar para notificarle (emplazarle)?"
     tipo: texto
+    requiere: [calle y número, colonia, alcaldía o municipio, código postal]
     ayuda: "Si no sabes dónde vive, díselo al asistente: tu abogada o abogado puede pedir que se le busque por otros medios."
 
   # ── El matrimonio ───────────────────────────────────────────────────────────
   - id: fecha_matrimonio
     pregunta: "¿En qué fecha se casaron?"
     tipo: fecha
+    formato: fecha_completa
   - id: lugar_matrimonio
     pregunta: "¿Ante qué juzgado u oficina del Registro Civil se casaron? (viene en el acta de matrimonio)"
     tipo: texto
@@ -112,6 +121,7 @@ campos:
   - id: ultimo_domicilio_conyugal
     pregunta: "¿Cuál fue el último domicilio donde vivieron juntos?"
     tipo: texto
+    requiere: [calle y número, colonia, alcaldía o municipio, código postal]
 
   # ── Hijas e hijos ───────────────────────────────────────────────────────────
   - id: hay_hijos_menores
@@ -137,6 +147,7 @@ campos:
     si: hay_hijos_menores
     pregunta: "¿En qué domicilio vivirían?"
     tipo: texto
+    requiere: [calle y número, colonia, alcaldía o municipio, código postal]
   - id: regimen_convivencias
     si: hay_hijos_menores
     pregunta: "¿Qué días y horarios propones para que convivan con el otro progenitor?"
@@ -179,6 +190,7 @@ campos:
   - id: fecha_desocupacion
     pregunta: Si la otra persona debe salir del domicilio, ¿a más tardar en qué fecha?
     tipo: fecha
+    formato: fecha_completa
     obligatorio: false
   - id: bienes
     si: regimen = sociedad_conyugal

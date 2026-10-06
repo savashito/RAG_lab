@@ -5,8 +5,10 @@
     de la tabla de chunks: un formulario NO es parte del corpus del RAG.
   · MinIO: el documento fuente del modelo (forms/<id>/fuente/…) y una copia congelada de cada
     versión publicada (forms/<id>/publicado-v<N>.json).
-  · Repo (forms/<id>/): siembra inicial. Al arrancar se insertan los formularios que aún no estén
-    en la BD; nunca se sobrescribe lo que ya se editó desde la app.
+  · Repo (forms/<id>/): siembra. Al arrancar se insertan los formularios que aún no estén en la BD
+    y se actualizan los que siguen en BORRADOR y NUNCA se han editado desde la app (updated_by =
+    'repo'). Si alguien lo editó en /formularios, o ya está revisado o publicado, el repo no lo toca:
+    un texto revisado no puede cambiar sin volver a revisión.
 """
 from __future__ import annotations
 
@@ -41,7 +43,8 @@ class FormStore:
         self.sembrar()
 
     def sembrar(self) -> list[str]:
-        """Inserta los formularios del repo que no estén en la BD (los válidos)."""
+        """Inserta los formularios del repo que no estén en la BD y actualiza los que siguen siendo
+        del repo (nadie los ha editado en la app). Solo paquetes válidos."""
         nuevos = []
         for d in sorted(p for p in self.seed_dir.iterdir() if (p / 'formulario.yaml').is_file()):
             spec_yaml, plantilla = (d / 'formulario.yaml').read_text(), (d / 'plantilla.md').read_text()
@@ -52,7 +55,12 @@ class FormStore:
             spec, _, _ = cargar(spec_yaml)
             with self.connect() as c, c.cursor() as cur:
                 cur.execute("INSERT INTO formularios (id, tema, titulo, estado, spec_yaml, plantilla, ejemplos_yaml, "
-                            "updated_by) VALUES (%s,%s,%s,%s,%s,%s,%s,'repo') ON CONFLICT (id) DO NOTHING",
+                            "updated_by) VALUES (%s,%s,%s,%s,%s,%s,%s,'repo') ON CONFLICT (id) DO UPDATE SET "
+                            "tema = EXCLUDED.tema, titulo = EXCLUDED.titulo, spec_yaml = EXCLUDED.spec_yaml, "
+                            "plantilla = EXCLUDED.plantilla, ejemplos_yaml = EXCLUDED.ejemplos_yaml, "
+                            "version = formularios.version + 1, updated_at = now() "
+                            "WHERE formularios.updated_by = 'repo' AND formularios.estado = 'borrador' AND (formularios.spec_yaml, formularios.plantilla, "
+                            "formularios.ejemplos_yaml) IS DISTINCT FROM (EXCLUDED.spec_yaml, EXCLUDED.plantilla, EXCLUDED.ejemplos_yaml)",
                             (spec['id'], spec['tema'], spec['titulo'], spec.get('estado', 'borrador'),
                              spec_yaml, plantilla, ejemplos))
                 if cur.rowcount:

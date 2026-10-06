@@ -50,6 +50,8 @@ class IA:
                 d += ' Valores posibles: ' + ', '.join(f'"{k}" = {v}' for k, v in (c.get('opciones') or {}).items())
             if c.get('tipo') == 'lista':
                 d += ' Lista de objetos con: ' + ', '.join(s['id'] for s in c.get('subcampos') or [])
+            if c.get('requiere'):
+                d += ' Debe incluir: ' + '; '.join(c['requiere']) + '.'
             return d
         system = (
             (spec.get('instrucciones_entrevista') or '') + '\n\n'
@@ -58,6 +60,7 @@ class IA:
             'la lista; lista → arreglo de objetos; fecha y texto → el texto tal como lo dijo. No incluyas campos '
             'que la persona no haya mencionado y no inventes datos. Si la RESPUESTA es una pregunta o duda en vez '
             'de un dato, agrega "_es_duda": true.\n'
+
             'Los valores de texto van tal como deben aparecer en un escrito formal: en tercera persona y sin '
             'muletillas; sustituye «yo», «conmigo», «mi casa» por el nombre de quien solicita y «él», «ella» por el '
             'nombre del cónyuge, usando los DATOS YA CONOCIDOS. Fechas sin artículo («30 de noviembre de 2026»; si '
@@ -71,6 +74,15 @@ class IA:
         datos = _json(raw)
         validos = {c['id'] for c in campos} | {'_es_duda'}
         return {k: v for k, v in datos.items() if k in validos}, {'tarea': 'extraer', 'raw': raw}
+
+    def revisar_partes(self, campo: dict, valor: str, partes: list[str]) -> tuple[list[str], dict]:
+        """¿Qué partes de la lista NO aparecen en el valor? Llamada corta y dedicada (un modelo chico
+        lo hace mejor así que mezclado con la extracción)."""
+        system = ('Revisas si un dato está completo. Devuelve SOLO un JSON {"faltan": [...]} con los elementos de '
+                  'la lista que NO aparecen en el dato. Si todos aparecen, {"faltan": []}.')
+        raw = self._chat(system, f'DATO ({campo.get("id")}): {valor}\nLISTA: {json.dumps(partes, ensure_ascii=False)}', 80)
+        faltan = _json(raw).get('faltan') or []
+        return [x for x in faltan if isinstance(x, str)], {'tarea': 'revisar_partes', 'raw': raw}
 
     def responder_duda(self, spec: dict, texto: str) -> tuple[str, dict]:
         if not self.ask:

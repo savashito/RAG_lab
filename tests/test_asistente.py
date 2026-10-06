@@ -27,6 +27,9 @@ CAT = {'f': SPEC}
 
 
 class FakeIA:
+    def revisar_partes(self, campo, valor, partes):   # por defecto: Gemma diría que falta todo lo dudoso
+        return list(partes), {}
+
     def __init__(self, extraer=None, elegir='f'):
         self._extraer, self._elegir, self.dudas = extraer or {}, elegir, []
 
@@ -160,3 +163,70 @@ def test_answer_that_opens_new_fields_is_reread_for_them():
     b, v = run([{'evento': 'elegir:f'}, {'evento': 'aplica'}, {'mensaje': 'Eva'},
                 {'mensaje': 'sí, tenemos dos: Ana y Luis'}], IA2())
     assert b['respuestas']['hijos'] == [{'nombre': 'Ana'}, {'nombre': 'Luis'}] and v['campo']['id'] == 'regimen'
+
+
+SPEC2 = {'id': 'g', 'titulo': 'G', 'tema': 't', 'estado': 'publicado', 'descripcion': 'd', '_plantilla': '{dom} {tel}',
+         'campos': [{'id': 'dom', 'pregunta': '¿Domicilio?', 'tipo': 'texto',
+                     'requiere': ['calle y número', 'colonia', 'código postal']},
+                    {'id': 'tel', 'pregunta': '¿Teléfono?', 'tipo': 'texto', 'formato': 'telefono'}]}
+
+
+def test_incomplete_answer_asks_for_missing_parts_then_completes():
+    ia = FakeIA({'Roble 5': {'dom': 'Roble 5'},
+                 'Roble 5, Col. Del Valle CP 03100': {'dom': 'Roble 5, Col. Del Valle, C.P. 03100'}})
+    cat = {'g': SPEC2}
+    b, v = A.turno(None, cat, ia, evento='elegir:g'); b, v = A.turno(b, cat, ia, evento='aplica')
+    b, v = A.turno(b, cat, ia, mensaje='Roble 5')
+    assert v['campo']['id'] == 'dom' and 'colonia y código postal' in v['mensaje'] and 'dom' not in b['respuestas']
+    assert {'evento': 'aceptar_incompleto', 'texto': 'Dejarlo así'} in v['botones']
+    b, v = A.turno(b, cat, ia, mensaje='Col. Del Valle CP 03100')   # se junta con lo anterior
+    assert b['respuestas']['dom'] == 'Roble 5, Col. Del Valle, C.P. 03100' and b['incompleto'] is None and v['campo']['id'] == 'tel'
+
+
+def test_incomplete_answer_can_be_left_as_is():
+    ia = FakeIA({'Roble 5': {'dom': 'Roble 5'}})
+    cat = {'g': SPEC2}
+    b, v = A.turno(None, cat, ia, evento='elegir:g'); b, v = A.turno(b, cat, ia, evento='aplica')
+    b, v = A.turno(b, cat, ia, mensaje='Roble 5')
+    b, v = A.turno(b, cat, ia, evento='aceptar_incompleto')
+    assert b['respuestas']['dom'] == 'Roble 5' and v['campo']['id'] == 'tel'
+
+
+def test_format_checks_without_llm():
+    assert A.faltan_formato({'formato': 'telefono'}, '55 1234 5678') == []
+    assert A.faltan_formato({'formato': 'telefono'}, '+52 55 1234 5678') == []
+    assert A.faltan_formato({'formato': 'telefono'}, '1234 5678') != []
+    assert A.faltan_formato({'formato': 'correo'}, 'ana@example.com') == []
+    assert A.faltan_formato({'formato': 'correo'}, 'ana@example') != []
+    assert A.faltan_formato({'formato': 'fecha_completa'}, '3 de marzo de 2015') == []
+    assert A.faltan_formato({'formato': 'fecha_completa'}, '30 de noviembre') == ['el año']
+    assert A.faltan_formato({'formato': 'fecha_completa'}, '2015') == ['el día y el mes']
+    dom = {'requiere': ['calle y número', 'colonia', 'alcaldía o municipio', 'código postal']}
+    sin_ia = A.faltan_partes(dom, 'Calle Roble 5')[0]          # sin IA, solo lo seguro
+    assert sin_ia == ['código postal']
+    class IA4(FakeIA):
+        def revisar_partes(self, campo, valor, partes):
+            return [p for p in partes if p == 'colonia' and 'Narvarte' not in valor] + \
+                   [p for p in partes if p == 'alcaldía o municipio'], {}
+    assert A.faltan_partes(dom, 'Calle Roble 5', IA4())[0] == ['colonia', 'alcaldía o municipio', 'código postal']
+    assert A.faltan_partes(dom, 'Roble 5, Col. Del Valle, Benito Juárez, C.P. 03100', IA4())[0] == []
+    assert A.faltan_partes(dom, 'Av. Universidad 100, Narvarte, Alcaldía Benito Juárez, 03020', IA4())[0] == []
+
+
+def test_unknown_required_parts_are_checked_by_the_llm():
+    class IA3(FakeIA):
+        def revisar_partes(self, campo, valor, partes):
+            return ['número de acta', 'inventada'], {}
+    faltan, _ = A.faltan_partes({'requiere': ['juzgado', 'número de acta']}, 'Juzgado 14', IA3())
+    assert faltan == ['número de acta']   # lo que Gemma invente fuera de la lista se ignora
+
+
+def test_format_fields_replace_instead_of_merging():
+    cat = {'g': SPEC2}
+    ia = FakeIA({'Roble 5, Col. Centro, 06000': {'dom': 'Roble 5, Col. Centro, 06000'}})
+    b, v = A.turno(None, cat, ia, evento='elegir:g'); b, v = A.turno(b, cat, ia, evento='aplica')
+    b, v = A.turno(b, cat, ia, mensaje='Roble 5, Col. Centro, 06000')
+    b, v = A.turno(b, cat, ia, mensaje='55 1234')
+    assert b['incompleto']['campo'] == 'tel'
+    b, v = A.turno(b, cat, ia, mensaje='55 1234 5678')
+    assert b['respuestas']['tel'] == '55 1234 5678' and b['incompleto'] is None
