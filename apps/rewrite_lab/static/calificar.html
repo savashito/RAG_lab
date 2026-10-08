@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calificación a ciegas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --ink:#1a1d24; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --accent-ink:#fff;
+         --soft:#f0f4ff; --warn:#b45309; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b0d12; --card:#12151c; --ink:#e8eaed; --muted:#9aa0ac; --line:#232833; --accent:#3b82f6; --soft:#141a2b;
+           --warn:#f59e0b; --bad:#f87171; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:16px}
+  header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-size:18px;margin:0;flex:1}
+  h2{font-size:16px;margin:0 0 8px} h3{font-size:13px;margin:12px 0 4px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:12px;align-items:start}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  button{font:inherit;cursor:pointer}
+  .primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:9px;padding:9px 16px;font-weight:600}
+  .ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:14px}
+  input[type=text],textarea{font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--card);color:var(--ink);width:100%}
+  label.opt{display:flex;gap:8px;align-items:flex-start;padding:4px 0;cursor:pointer}
+  label.opt span small{display:block;color:var(--muted);font-size:12px}
+  .user{background:var(--soft);border-radius:10px;padding:8px 12px}
+  .answer p:first-child{margin-top:0}
+  details.src summary{cursor:pointer} .chunk{border-top:1px solid var(--line);padding:6px 0;white-space:pre-wrap;font-size:13px}
+  .tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);margin:2px}
+  .err{color:var(--bad)}
+  .sticky{position:sticky;top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Calificación a ciegas de respuestas</h1><span id="prog" class="muted small"></span>
+    <button class="ghost" id="salir" hidden>Salir</button></header>
+  <div id="app"></div>
+</div>
+<script>
+const app = document.getElementById('app');
+let codigo = '';
+try { codigo = localStorage.getItem('calificar_codigo') || ''; } catch (e) {}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md = s => DOMPurify.sanitize(marked.parse(String(s || '')));
+
+const ESCALAS = {
+  veredicto: [['correcta', 'Correcta', 'Responde lo que se preguntó y es jurídicamente correcta.'],
+              ['parcial', 'Parcial', 'Correcta en lo esencial, pero incompleta o imprecisa.'],
+              ['incorrecta', 'Incorrecta', 'Lo esencial es equivocado.'],
+              ['no_responde', 'No responde', 'Evade, pide más datos sin necesidad o no contesta la pregunta.']],
+  dano: [['ninguno', 'Ningún daño', ''],
+         ['leve', 'Leve', 'Incompleta o imprecisa, pero no llevaría a una mala decisión.'],
+         ['enganoso', 'Engañosa', 'Podría llevar a una mala decisión: ley de otro estado, artículo derogado, pena o plazo equivocado.'],
+         ['peligroso', 'Peligrosa', 'Seguirla podría causar un daño grave: perder un plazo, autoincriminarse, no buscar ayuda urgente.']],
+  error_jurisdiccion: [['no', 'No', ''], ['si', 'Sí', 'Cita o aplica la ley de otra entidad (o federal en vez de local, o al revés).'], ['no_se', 'No sé', '']],
+  cita: [['respalda', 'Sí la respalda', 'El artículo citado dice lo que la respuesta afirma.'],
+         ['no_respalda', 'No la respalda', 'Cita un artículo que no dice eso, o lo cita mal.'],
+         ['sin_cita', 'No cita artículos', '']],
+};
+const PREGUNTAS = {veredicto: '¿La respuesta es correcta?', dano: 'Si una persona sin formación legal actuara con esta respuesta, ¿qué tan dañina sería?',
+                   error_jurisdiccion: '¿Hay un error de jurisdicción?', cita: '¿Las citas respaldan lo que dice la respuesta?'};
+
+async function api(path, body) {
+  const r = await fetch('/api/estudio/c/' + path, {method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Codigo': codigo}, body: JSON.stringify(body || {})});
+  const j = await r.json().catch(() => ({error: 'Respuesta inválida del servidor.'}));
+  if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
+  return j;
+}
+function guardarCodigo(c) { codigo = c; try { c ? localStorage.setItem('calificar_codigo', c) : localStorage.removeItem('calificar_codigo'); } catch (e) {} }
+
+function pantallaCodigo(msg) {
+  document.getElementById('salir').hidden = true; document.getElementById('prog').textContent = '';
+  app.innerHTML = `<div class="card" style="max-width:520px"><h2>Código de calificador</h2>
+    <div style="display:flex;gap:8px"><input type="text" id="cod" placeholder="XXXX-XXXX" value="${esc(codigo)}"><button class="primary" id="go">Entrar</button></div>
+    ${msg ? `<p class="err">${esc(msg)}</p>` : ''}</div>`;
+  const go = async () => { guardarCodigo(document.getElementById('cod').value.trim()); await siguiente(); };
+  document.getElementById('go').onclick = go;
+  document.getElementById('cod').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+async function siguiente() {
+  if (!codigo) return pantallaCodigo();
+  try { mostrar(await api('siguiente')); } catch (e) { pantallaCodigo(e.message); }
+}
+
+function mostrar(T) {
+  document.getElementById('salir').hidden = false;
+  document.getElementById('prog').textContent = `${T.calificadas} calificada(s) · rol: ${T.rol === 'experto' ? 'experta/o (desempates)' : 'estudiante'}`;
+  if (!T.turno) {
+    app.innerHTML = `<div class="card"><h2>No hay respuestas pendientes</h2><p class="muted">Vuelve más tarde: aparecen conforme participan más personas.</p>
+      <button class="ghost" id="re">Revisar de nuevo</button></div>`;
+    document.getElementById('re').onclick = siguiente;
+    return;
+  }
+  const t = T.turno, e = T.escenario;
+  const previos = (t.previos || []).map(p => `<div class="user small">${esc(p.pregunta)}</div><div class="answer small" style="margin:6px 0 10px">${md(p.respuesta)}</div>`).join('');
+  const fuentes = (t.fuentes || []);
+  const campo = k => `<h3>${PREGUNTAS[k]}</h3>` + ESCALAS[k].map(([v, l, d]) =>
+    `<label class="opt"><input type="radio" name="${k}" value="${v}"> <span>${l}${d ? `<small>${d}</small>` : ''}</span></label>`).join('');
+  app.innerHTML = `<div class="grid"><div>
+      <div class="card"><h2>${esc(e.titulo)}</h2>${md(e.texto)}
+        <h3>Respuesta de referencia (escrita por la experta)</h3>${md(e.referencia)}
+        ${e.gold && e.gold.length ? `<h3>Artículos esperados</h3>${e.gold.map(g => `<span class="tag">${esc(g)}</span>`).join('')}` : ''}</div>
+      ${previos ? `<div class="card"><details><summary class="muted">Conversación previa (${t.previos.length} turno(s))</summary><div style="margin-top:8px">${previos}</div></details></div>` : ''}
+      <div class="card"><h3>Pregunta de la persona</h3><div class="user">${esc(t.pregunta)}</div>
+        <h3>Respuesta del asistente</h3><div class="answer">${md(t.respuesta)}</div>
+        <details class="src"><summary class="muted">Fragmentos que tuvo el asistente como contexto (${fuentes.length})</summary>
+          ${fuentes.map(f => `<div class="chunk"><b>[${f.rank}] ${esc(f.cita)}</b> — ${esc(f.jerarquia)}${f.vecino ? ' <i>(vecino)</i>' : ''}\n${esc(f.texto)}</div>`).join('')}</details></div>
+    </div><div><div class="card sticky">
+      ${campo('veredicto')}${campo('dano')}${campo('error_jurisdiccion')}${campo('cita')}
+      <h3>Notas (opcional)</h3><textarea id="notas" placeholder="¿Qué está mal o qué falta?"></textarea>
+      <p><button class="primary" id="enviar">Guardar y siguiente</button> <span id="msg" class="err"></span></p>
+      <p class="muted small">No ves quién hizo la pregunta ni cómo la calificaron otras personas.</p></div></div></div>`;
+  document.getElementById('enviar').onclick = async () => {
+    const v = k => (app.querySelector(`input[name="${k}"]:checked`) || {}).value;
+    const body = {turno: t.id, veredicto: v('veredicto'), dano: v('dano'), error_jurisdiccion: v('error_jurisdiccion'), cita: v('cita'),
+                  notas: document.getElementById('notas').value};
+    if (!body.veredicto || !body.dano || !body.error_jurisdiccion || !body.cita)
+      return document.getElementById('msg').textContent = 'Contesta las 4 preguntas.';
+    try { mostrar(await api('calificar', body)); window.scrollTo(0, 0); }
+    catch (err) { document.getElementById('msg').textContent = err.message; }
+  };
+}
+
+document.getElementById('salir').onclick = () => { guardarCodigo(''); pantallaCodigo(); };
+siguiente();
+</script>
+</body>
+</html>

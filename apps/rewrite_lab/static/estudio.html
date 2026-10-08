@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estudio del asistente legal</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --ink:#1a1d24; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --accent-ink:#fff;
+         --soft:#f0f4ff; --warn:#b45309; --ok:#15803d; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b0d12; --card:#12151c; --ink:#e8eaed; --muted:#9aa0ac; --line:#232833; --accent:#3b82f6; --soft:#141a2b;
+           --warn:#f59e0b; --ok:#22c55e; --bad:#f87171; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:820px;margin:0 auto;padding:16px}
+  header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-size:18px;margin:0;flex:1;min-width:200px}
+  h2{font-size:17px;margin:0 0 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  button{font:inherit;cursor:pointer}
+  .primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:9px;padding:9px 16px;font-weight:600}
+  .primary:disabled{opacity:.5;cursor:default}
+  .ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:14px}
+  input[type=text],textarea,select{font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--card);color:var(--ink);width:100%}
+  textarea{resize:vertical;min-height:70px}
+  label.opt{display:flex;gap:8px;align-items:flex-start;padding:6px 0;cursor:pointer}
+  .q{font-weight:600;margin:14px 0 4px}
+  .msgs{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+  .msg{padding:10px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);max-width:100%}
+  .msg.user{align-self:flex-end;background:var(--soft);max-width:85%}
+  .msg p:first-child{margin-top:0} .msg p:last-child{margin-bottom:0}
+  details.src{font-size:13px;margin-top:8px} details.src summary{cursor:pointer;color:var(--muted)}
+  .src .chunk{border-top:1px solid var(--line);padding:6px 0;white-space:pre-wrap}
+  .composer{display:flex;gap:8px;align-items:flex-end}
+  .likert{display:flex;gap:6px;flex-wrap:wrap}
+  .likert label{border:1px solid var(--line);border-radius:8px;padding:4px 10px;cursor:pointer}
+  .likert input{margin-right:4px}
+  .steps{display:flex;gap:6px;flex-wrap:wrap;font-size:13px}
+  .step{border:1px solid var(--line);border-radius:99px;padding:2px 10px}
+  .step.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .step.done{border-color:var(--ok);color:var(--ok)}
+  .err{color:var(--bad)}
+  .aviso{border-left:3px solid var(--warn);padding:2px 0 2px 10px;font-size:14px}
+  .thinking{color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="titulo">Estudio del asistente legal</h1>
+    <button class="ghost" id="btnRetirar" hidden>Retirarme del estudio</button>
+  </header>
+  <div id="app"></div>
+</div>
+<script>
+const app = document.getElementById('app');
+let codigo = '';
+try { codigo = localStorage.getItem('estudio_codigo') || ''; } catch (e) {}
+let E = null;          // estado del servidor
+let intento = null;    // escenario en curso: {id, escenario}
+let fase = 'chat';     // chat | preguntas
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md = s => DOMPurify.sanitize(marked.parse(String(s || '')));
+
+async function api(path, body) {
+  const r = await fetch('/api/estudio/p/' + path, {method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Codigo': codigo}, body: JSON.stringify(body || {})});
+  const j = await r.json().catch(() => ({error: 'Respuesta inválida del servidor.'}));
+  if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
+  return j;
+}
+function guardarCodigo(c) { codigo = c; try { c ? localStorage.setItem('estudio_codigo', c) : localStorage.removeItem('estudio_codigo'); } catch (e) {} }
+
+// ── Pantallas ────────────────────────────────────────────────────────────────
+function pantallaCodigo(msg) {
+  document.getElementById('btnRetirar').hidden = true;
+  app.innerHTML = `<div class="card"><h2>Escribe tu código de participante</h2>
+    <p class="muted small">Te lo dio la persona que organiza el estudio (por ejemplo ABCD-EF23).</p>
+    <div class="composer"><input type="text" id="cod" autocomplete="off" placeholder="XXXX-XXXX" value="${esc(codigo)}">
+    <button class="primary" id="go">Entrar</button></div>
+    ${msg ? `<p class="err">${esc(msg)}</p>` : ''}</div>`;
+  const go = async () => { guardarCodigo(document.getElementById('cod').value.trim()); await cargar(); };
+  document.getElementById('go').onclick = go;
+  document.getElementById('cod').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+async function cargar() {
+  if (!codigo) return pantallaCodigo();
+  try { E = await api('estado'); } catch (e) { return pantallaCodigo(e.message); }
+  document.getElementById('titulo').textContent = E.titulo || 'Estudio';
+  document.getElementById('btnRetirar').hidden = false;
+  render();
+}
+
+function render() {
+  if (!E.consentido) return pantallaConsentimiento();
+  if (E.terminado) return pantallaGracias();
+  const hechos = new Set((E.intentos || []).filter(i => i.fin).map(i => i.escenario));
+  const pendiente = E.escenarios.find(s => !hechos.has(s.id));
+  if (!pendiente) return pantallaCierre();
+  pantallaEscenario(pendiente, hechos);
+}
+
+function pasos(actual, hechos) {
+  const ps = E.escenarios.map((s, i) => `<span class="step ${s.id === actual ? 'on' : hechos.has(s.id) ? 'done' : ''}">Situación ${i + 1}</span>`);
+  ps.push(`<span class="step ${actual === '_cierre' ? 'on' : ''}">Preguntas finales</span>`);
+  return `<div class="steps">${ps.join('')}</div>`;
+}
+
+function pantallaConsentimiento() {
+  const perfil = (E.perfil || []).map(p => `<div class="q">${esc(p.pregunta)}</div>
+    <select data-perfil="${esc(p.id)}"><option value="">— elige —</option>
+    ${Object.entries(p.opciones).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</select>`).join('');
+  app.innerHTML = `<div class="card">${md(E.consentimiento)}</div>
+    <div class="card"><h2>Sobre ti</h2><p class="muted small">Solo para comparar grupos. No pedimos tu nombre.</p>${perfil}
+    <label class="opt" style="margin-top:14px"><input type="checkbox" id="acepto"> <span>Leí la información y acepto participar.</span></label>
+    <button class="primary" id="go">Empezar</button> <span id="msg" class="err"></span></div>`;
+  document.getElementById('go').onclick = async () => {
+    const perfilVals = {};
+    app.querySelectorAll('[data-perfil]').forEach(s => { if (s.value) perfilVals[s.dataset.perfil] = s.value; });
+    if (!document.getElementById('acepto').checked) return document.getElementById('msg').textContent = 'Marca la casilla para aceptar.';
+    try { E = await api('consentir', {acepto: true, perfil: perfilVals}); render(); }
+    catch (e) { document.getElementById('msg').textContent = e.message; }
+  };
+}
+
+function burbujaRespuesta(t) {
+  const fuentes = (t.fuentes || []).filter(f => !f.vecino);
+  return `<div class="msg">${t.error ? '<span class="err">El asistente no pudo responder.</span>' : md(t.respuesta)}
+    ${fuentes.length ? `<details class="src"><summary>Fuentes que consultó el asistente (${fuentes.length})</summary>
+      ${fuentes.map(f => `<div class="chunk"><b>${esc(f.cita)}</b> — ${esc(f.jerarquia)}\n${esc(f.texto)}</div>`).join('')}</details>` : ''}</div>`;
+}
+
+async function pantallaEscenario(s, hechos) {
+  if (!intento || intento.escenario !== s.id) {
+    const r = await api('iniciar', {escenario: s.id});
+    intento = {...r.intento, turnos: r.turnos};
+    fase = 'chat';
+  }
+  const n = intento.turnos.length;
+  app.innerHTML = `${pasos(s.id, hechos)}
+    <div class="card" style="margin-top:12px"><h2>${esc(s.titulo)}</h2>${md(s.texto)}
+      <p class="aviso">Es una situación ficticia. No escribas datos personales.</p></div>
+    <div id="zona"></div>`;
+  const zona = document.getElementById('zona');
+  if (fase === 'chat') {
+    zona.innerHTML = `<div class="card"><div class="msgs" id="msgs">
+        ${intento.turnos.map(t => `<div class="msg user">${esc(t.pregunta)}</div>${burbujaRespuesta(t)}`).join('')}</div>
+      <div class="composer"><textarea id="txt" placeholder="Escribe tu pregunta al asistente…"></textarea>
+        <button class="primary" id="send">Enviar</button></div>
+      <p class="muted small">${n} de ${E.max_turnos} preguntas.</p>
+      <button class="primary" id="listo" ${n ? '' : 'disabled'}>Ya entendí la situación → pasar a las preguntas</button></div>`;
+    const send = async () => {
+      const txt = document.getElementById('txt'), msg = txt.value.trim();
+      if (!msg) return;
+      const msgs = document.getElementById('msgs');
+      msgs.insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking" id="pensando">El asistente está buscando en las leyes y escribiendo… (puede tardar unos segundos)</div>`);
+      txt.value = ''; document.getElementById('send').disabled = true;
+      try {
+        const r = await api('preguntar', {intento: intento.id, mensaje: msg});
+        intento.turnos.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes});
+      } catch (e) {
+        intento.turnos.push({pregunta: msg, error: e.message});
+      }
+      pantallaEscenario(s, hechos);
+    };
+    document.getElementById('send').onclick = send;
+    document.getElementById('txt').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+    document.getElementById('listo').onclick = () => { fase = 'preguntas'; pantallaEscenario(s, hechos); };
+  } else {
+    const preg = s.preguntas.map(p => `<div class="q">${esc(p.texto)}</div>
+      ${Object.entries(p.opciones).map(([k, v]) => `<label class="opt"><input type="radio" name="p_${esc(p.id)}" value="${esc(k)}"> <span>${esc(v)}</span></label>`).join('')}`).join('');
+    const likert = [1,2,3,4,5].map(v => `<label><input type="radio" name="confianza" value="${v}">${v}</label>`).join('');
+    zona.innerHTML = `<div class="card"><h2>Preguntas sobre la situación</h2>
+      <p class="muted small">Contesta con lo que entendiste. Si lo necesitas, puedes volver al chat antes de terminar.</p>${preg}
+      <div class="q">¿Qué tan seguro o segura estás de tus respuestas?</div>
+      <div class="likert">${likert}</div><div class="muted small">1 = nada seguro · 5 = totalmente seguro</div>
+      <div class="q">Si esto te pasara de verdad, ¿actuarías con base en lo que te dijo el asistente?</div>
+      ${[['si','Sí'],['no','No'],['no_se','No sé']].map(([k,v]) => `<label class="opt"><input type="radio" name="actuaria" value="${k}"> <span>${v}</span></label>`).join('')}
+      <p><button class="ghost" id="volver">← Volver al chat</button> <button class="primary" id="fin">Terminar esta situación</button> <span id="msg" class="err"></span></p></div>`;
+    document.getElementById('volver').onclick = () => { fase = 'chat'; pantallaEscenario(s, hechos); };
+    document.getElementById('fin').onclick = async () => {
+      const val = name => (app.querySelector(`input[name="${name}"]:checked`) || {}).value;
+      const respuestas = {};
+      for (const p of s.preguntas) {
+        const v = val('p_' + p.id);
+        if (!v) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
+        respuestas[p.id] = v;
+      }
+      const confianza = parseInt(val('confianza') || '0'), actuaria = val('actuaria');
+      if (!confianza || !actuaria) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
+      try { E = await api('terminar', {intento: intento.id, respuestas, confianza, actuaria}); intento = null; render(); window.scrollTo(0, 0); }
+      catch (e) { document.getElementById('msg').textContent = e.message; }
+    };
+  }
+}
+
+function pantallaCierre() {
+  const sus = (E.sus || []).map((t, i) => `<div class="q">${i + 1}. ${esc(t)}</div>
+    <div class="likert">${[1,2,3,4,5].map(v => `<label><input type="radio" name="sus_${i}" value="${v}">${v}</label>`).join('')}</div>`).join('');
+  const abiertas = (E.abiertas || []).map((t, i) => `<div class="q">${esc(t)}</div><textarea data-abierta="${i}"></textarea>`).join('');
+  app.innerHTML = `${pasos('_cierre', new Set(E.escenarios.map(s => s.id)))}
+    <div class="card" style="margin-top:12px"><h2>Preguntas finales</h2>
+    ${sus ? `<p class="muted small">1 = totalmente en desacuerdo · 5 = totalmente de acuerdo</p>${sus}` : ''}${abiertas}
+    <p><button class="primary" id="fin">Enviar y terminar</button> <span id="msg" class="err"></span></p></div>`;
+  document.getElementById('fin').onclick = async () => {
+    const susVals = (E.sus || []).map((_, i) => parseInt((app.querySelector(`input[name="sus_${i}"]:checked`) || {}).value || '0'));
+    if (susVals.some(v => !v)) return document.getElementById('msg').textContent = 'Contesta las 10 afirmaciones.';
+    const ab = {};
+    app.querySelectorAll('[data-abierta]').forEach(t => { ab[(E.abiertas || [])[t.dataset.abierta]] = t.value; });
+    try { E = await api('cierre', {sus: susVals, abiertas: ab}); render(); }
+    catch (e) { document.getElementById('msg').textContent = e.message; }
+  };
+}
+
+function pantallaGracias() {
+  app.innerHTML = `<div class="card"><h2>¡Gracias por participar!</h2>
+    <p>Terminaste el estudio. Recuerda: el asistente puede equivocarse y no sustituye a una abogada o abogado.
+    Si tienes un problema legal real, acude a la Defensoría Pública.</p></div>`;
+}
+
+document.getElementById('btnRetirar').onclick = async () => {
+  if (!confirm('¿Seguro que quieres retirarte? Se borrará todo lo que escribiste y tu código dejará de funcionar.')) return;
+  try { await api('retirar'); } catch (e) { alert(e.message); return; }
+  guardarCodigo(''); E = null; intento = null;
+  app.innerHTML = '<div class="card"><h2>Te retiraste del estudio</h2><p>Se borró todo lo que escribiste. Gracias.</p></div>';
+  document.getElementById('btnRetirar').hidden = true;
+};
+
+cargar();
+</script>
+</body>
+</html>

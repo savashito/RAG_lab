@@ -260,6 +260,7 @@
   <button id="tabbtn-admin"  onclick="showTab('admin')" hidden>👑 Usuarios</button>
   <button onclick="location.href='/tramites'" title="Asistente que te guía para llenar un trámite (p. ej. divorcio)">📝 Trámites</button>
   <button id="tabbtn-forms" onclick="location.href='/formularios'" hidden title="Administrar los formularios del asistente de trámites">🗂 Formularios</button>
+  <button id="tabbtn-estudios" onclick="location.href='/estudios'" hidden title="Estudio con usuarios: códigos, avance y resultados">🧪 Estudios</button>
   <span style="flex:1"></span>
   <span id="me-badge" class="muted" style="align-self:center;padding-right:12px;font-size:12px"></span>
 </div>
@@ -811,6 +812,7 @@ async function loadMe(){
     $('tabbtn-bench').hidden=!me.can_ingest;
     $('tabbtn-admin').hidden=!me.is_superadmin;
     $('tabbtn-forms').hidden=!me.can_ingest;
+    $('tabbtn-estudios').hidden=!me.can_ingest;
     $('me-badge').innerHTML=(me.email?esc(me.email):'—')+' · '+(ROLE_LABEL[me.role]||me.role)+
       ' · <a style="color:#3b82f6" href="/logout">salir</a>';
   }catch(e){ window.__me={}; }

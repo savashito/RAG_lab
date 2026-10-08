@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estudios con usuarios</title>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --ink:#1a1d24; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --accent-ink:#fff;
+         --ok:#15803d; --bad:#b91c1c; --warn:#b45309; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b0d12; --card:#12151c; --ink:#e8eaed; --muted:#9aa0ac; --line:#232833; --accent:#3b82f6; --ok:#22c55e; --bad:#f87171; --warn:#f59e0b; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1200px;margin:0 auto;padding:16px}
+  h1{font-size:18px;margin:0 0 12px} h2{font-size:15px;margin:0 0 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+  .muted{color:var(--muted)}
+  button,select,input{font:inherit}
+  button{cursor:pointer}
+  .primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:7px 14px;font-weight:600}
+  .ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 10px}
+  select,input{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--ink)}
+  textarea{width:100%;min-height:420px;font:12.5px/1.45 ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+  table{border-collapse:collapse;width:100%} td,th{border-top:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+  th{font-weight:600;color:var(--muted);font-size:12px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .err{color:var(--bad)} .ok{color:var(--ok)}
+  .estado{padding:1px 8px;border-radius:99px;border:1px solid var(--line)}
+  .estado.abierto{border-color:var(--ok);color:var(--ok)} .estado.cerrado{border-color:var(--bad);color:var(--bad)}
+  code{font:12px ui-monospace,Menlo,monospace}
+  .scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧪 Estudios con usuarios <a class="muted" href="/" style="font-size:13px;font-weight:400">← volver al app</a></h1>
+  <div class="card"><div class="row"><select id="sel"></select> <span id="info" class="muted"></span></div>
+    <p class="muted" style="margin:8px 0 0">Participantes entran en <code>/estudio</code> y calificadores en <code>/calificar</code>, con un código (sin cuenta de Google). El estudio debe estar <b>abierto</b>.</p></div>
+  <div id="det"></div>
+</div>
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function api(method, path, body) {
+  const r = await fetch(path, {method, headers: {'Content-Type': 'application/json'}, body: body ? JSON.stringify(body) : undefined});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok && !j.errores) throw new Error(j.error || ('Error ' + r.status));
+  return j;
+}
+let lista = [], actual = null;
+
+async function cargarLista(sel) {
+  lista = await api('GET', '/api/estudios');
+  const s = document.getElementById('sel');
+  s.innerHTML = lista.map(e => `<option value="${esc(e.id)}">${esc(e.titulo)} (${esc(e.id)})</option>`).join('');
+  if (sel) s.value = sel;
+  s.onchange = () => abrir(s.value);
+  if (s.value) abrir(s.value);
+}
+
+async function abrir(id) {
+  actual = await api('GET', '/api/estudios/' + encodeURIComponent(id));
+  const e = lista.find(x => x.id === id) || {};
+  document.getElementById('info').innerHTML = `<span class="estado ${esc(actual.estado)}">${esc(actual.estado)}</span>
+    v${actual.version} · ${e.participantes || 0} participante(s) · ${e.turnos || 0} turno(s) · ${e.calificaciones || 0} calificación(es)`;
+  document.getElementById('det').innerHTML = `
+    <div class="card"><h2>Estado</h2><div class="row">
+      ${['borrador', 'abierto', 'cerrado'].map(s => `<button class="ghost" data-estado="${s}" ${actual.estado === s ? 'disabled' : ''}>${s}</button>`).join('')}
+      <span class="muted">Abierto = los códigos funcionan. Cerrado = ya nadie puede entrar.</span></div></div>
+    <div class="card"><h2>Códigos de acceso</h2>
+      <div class="row">Crear <input type="number" id="n" value="5" min="1" max="200" style="width:70px">
+        <select id="tipo"><option value="participante">participante</option><option value="calificador">calificador</option></select>
+        <select id="grupo"></select> <input id="nota" placeholder="nota (p. ej. salón 3B)" style="width:200px">
+        <button class="primary" id="crear">Crear</button></div>
+      <p class="muted">Reparte cada código a una sola persona. No anotes aquí nombres; si necesitas saber quién tiene qué código, guárdalo fuera del sistema.</p>
+      <div class="scroll" id="codigos"></div></div>
+    <div class="card"><h2>Resultados</h2><div class="row"><button class="ghost" id="res">Calcular resumen</button>
+      <a class="ghost" href="/api/estudios/${encodeURIComponent(id)}/export" style="text-decoration:none">⬇ Exportar JSON (seudónimo)</a></div>
+      <div class="scroll" id="resumen"></div></div>
+    <div class="card"><h2>Definición (estudio.yaml)</h2><textarea id="yaml" spellcheck="false">${esc(actual.spec_yaml)}</textarea>
+      <div class="row"><button class="primary" id="guardar">Guardar</button> <span id="msg"></span></div></div>`;
+  const grupos = {participante: ['lego', 'estudiante', 'experto'], calificador: ['estudiante', 'experto']};
+  const setGrupos = () => { document.getElementById('grupo').innerHTML = grupos[document.getElementById('tipo').value].map(g => `<option>${g}</option>`).join(''); };
+  document.getElementById('tipo').onchange = setGrupos; setGrupos();
+  document.querySelectorAll('[data-estado]').forEach(b => b.onclick = async () => { await api('POST', `/api/estudios/${id}/estado`, {estado: b.dataset.estado}); cargarLista(id); });
+  document.getElementById('crear').onclick = async () => {
+    await api('POST', `/api/estudios/${id}/codigos`, {tipo: tipo.value, grupo: grupo.value, n: parseInt(n.value), nota: nota.value});
+    codigos(id);
+  };
+  document.getElementById('guardar').onclick = async () => {
+    const r = await api('PUT', '/api/estudios/' + id, {spec_yaml: yaml.value, version: actual.version});
+    const m = document.getElementById('msg');
+    if (r.errores && r.errores.length) { m.className = 'err'; m.innerHTML = r.errores.map(esc).join('<br>'); }
+    else { m.className = 'ok'; m.textContent = 'Guardado.'; actual = r; cargarLista(id); }
+  };
+  document.getElementById('res').onclick = () => resumen(id);
+  codigos(id);
+}
+
+async function codigos(id) {
+  const cs = await api('GET', `/api/estudios/${id}/codigos`);
+  document.getElementById('codigos').innerHTML = cs.length ? `<table><tr><th>Código</th><th>Tipo</th><th>Grupo</th><th>Nota</th><th>Avance</th><th>Activo</th></tr>
+    ${cs.map(c => `<tr><td><code>${esc(c.codigo)}</code></td><td>${esc(c.tipo)}</td><td>${esc(c.grupo)}</td><td>${esc(c.nota || '')}</td>
+      <td>${c.tipo === 'participante' ? (c.terminado_at ? '✅ terminó' : c.consentimiento_at ? `${c.escenarios_terminados} escenario(s)` : '—') : `${c.calificadas} calificada(s)`}</td>
+      <td><input type="checkbox" data-cod="${esc(c.codigo)}" ${c.activo ? 'checked' : ''}></td></tr>`).join('')}</table>` : '<p class="muted">Sin códigos todavía.</p>';
+  document.querySelectorAll('[data-cod]').forEach(x => x.onchange = () => api('POST', `/api/estudios/${id}/codigos/${x.dataset.cod}/activo`, {activo: x.checked}));
+}
+
+async function resumen(id) {
+  const r = await api('GET', `/api/estudios/${id}/resumen`);
+  const grupos = Object.keys(r).filter(k => !k.startsWith('_'));
+  const filas = [['participantes', 'Participantes'], ['recall@10_primer_turno', 'Recall@10 del artículo (1er turno)'], ['n_turnos_con_gold', '  turnos medidos'],
+    ['respuestas_correctas', 'Respuestas correctas (calificación final)'], ['respuestas_daninas', 'Respuestas engañosas o peligrosas'],
+    ['daninas_por_jurisdiccion', '  … de ellas, por error de jurisdicción'], ['comprension', 'Comprensión (aciertos)'],
+    ['comprension_con_confianza_alta', 'Comprensión cuando dijeron confianza 4–5'], ['n_confianza_alta', '  escenarios con confianza 4–5'], ['sus', 'SUS (0–100)']];
+  const a = r._acuerdo || {};
+  document.getElementById('resumen').innerHTML = grupos.length ? `<table><tr><th></th>${grupos.map(g => `<th>${esc(g)}</th>`).join('')}</tr>
+    ${filas.map(([k, l]) => `<tr><td>${esc(l)}</td>${grupos.map(g => `<td>${r[g][k] ?? '—'}</td>`).join('')}</tr>`).join('')}</table>
+    <p class="muted">Acuerdo entre estudiantes (κ de Cohen, veredicto): <b>${a.kappa_veredicto_estudiantes ?? '—'}</b> en ${a.pares || 0} par(es) ·
+    ${a.a_experta || 0} respuesta(s) para desempate de la experta.</p>` : '<p class="muted">Aún no hay datos.</p>';
+}
+
+cargarLista().catch(e => document.getElementById('det').innerHTML = `<p class="err">${esc(e.message)}</p>`);
+</script>
+</body>
+</html>

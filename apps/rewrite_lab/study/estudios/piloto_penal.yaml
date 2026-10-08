@@ -1,0 +1,73 @@
+# Estudio con usuarios — definición. Se edita en /estudios (o aquí, mientras siga en borrador).
+# ⚠️ El escenario de abajo es un EJEMPLO para probar el flujo: Karen debe reemplazarlo por los
+#    escenarios reales (8–10) y revisar el consentimiento.
+id: piloto_penal
+titulo: Estudio sobre un asistente de información legal
+asistente:                    # configuración FIJA: todas las personas usan el mismo sistema
+  tema: derecho_penal_mexicano
+  setting: híbrido
+  hyde: true
+  route: true                 # routing por código
+  descomponer: false
+  k: 5
+  max_turnos: 12              # preguntas máximas por escenario
+escenarios_por_persona: 1     # cuántos escenarios ve cada participante (balanceado por grupo)
+
+consentimiento: |
+  **Gracias por tu interés.** Este estudio evalúa qué tan útil y confiable es un asistente de
+  información legal basado en inteligencia artificial.
+
+  - Leerás situaciones **ficticias** y harás preguntas al asistente con tus propias palabras.
+    Después contestarás unas preguntas sobre la situación. Toma unos 30–40 minutos.
+  - **No escribas datos personales ni casos reales.** Lo que escribas en el estudio se guarda con
+    un código, sin tu nombre ni tu correo, y se usa solo para la investigación.
+  - El asistente **no da asesoría legal** y puede equivocarse. Si tienes un problema legal real,
+    acude a una abogada o abogado, o a la Defensoría Pública.
+  - Participar es voluntario. Puedes retirarte en cualquier momento con el botón «Retirarme» y se
+    borrará todo lo que hayas escrito. Si eres estudiante, participar o no, no afecta tu calificación.
+
+perfil:                       # sin nombres: solo datos para comparar grupos
+  - id: formacion
+    pregunta: ¿Tienes formación en derecho?
+    opciones: {ninguna: 'No', estudiante: 'Estudio derecho', titulada: 'Soy abogada o abogado'}
+  - id: edad
+    pregunta: Rango de edad
+    opciones: {'18_24': '18–24', '25_34': '25–34', '35_49': '35–49', '50_64': '50–64', '65': '65 o más'}
+  - id: escolaridad
+    pregunta: Último nivel de estudios terminado
+    opciones: {basica: 'Primaria o secundaria', media: 'Preparatoria o técnica', superior: 'Licenciatura', posgrado: 'Posgrado'}
+  - id: uso_ia
+    pregunta: ¿Con qué frecuencia usas asistentes de IA (ChatGPT, Gemini, etc.)?
+    opciones: {nunca: 'Nunca', a_veces: 'A veces', semanal: 'Cada semana', diario: 'Diario'}
+
+escenarios:
+  - id: ejemplo_acoso_cdmx
+    titulo: Comentarios en el trabajo (EJEMPLO)
+    texto: |
+      Ana trabaja en una oficina en la Ciudad de México. Desde hace meses un compañero le hace
+      comentarios de tipo sexual y le pide salir, aunque ella le ha dicho que no. Nunca la ha
+      tocado. Ana se siente muy mal y quiere saber si eso es un delito y qué puede hacer.
+
+      **Usa el asistente para averiguarlo.** Pregunta con tus propias palabras, todas las veces que
+      quieras. Cuando creas que ya entiendes la situación, pasa a las preguntas.
+    gold:                     # artículos que una buena respuesta debería encontrar (no se muestran)
+      - Cita el artículo 179 del Código Penal para el Distrito Federal
+    referencia: |             # solo la ven quienes califican
+      EJEMPLO — Karen debe revisar. Respuesta esperada: en la CDMX el acoso sexual es delito
+      (art. 179 del Código Penal para el D.F.) aunque no haya contacto físico;
+      puede denunciar ante el Ministerio Público (confirmar si es por querella).
+    preguntas:
+      - id: es_delito
+        texto: Según lo que averiguaste, ¿lo que le pasa a Ana puede ser un delito aunque no la haya tocado?
+        opciones: {si: 'Sí', no: 'No, porque no hubo contacto físico', no_se: 'No sé'}
+        correcta: si
+      - id: ley
+        texto: ¿Qué ley aplica a su caso?
+        opciones: {cdmx: 'El Código Penal de la Ciudad de México', federal: 'El Código Penal Federal', ninguna: 'Ninguna, es un asunto laboral', no_se: 'No sé'}
+        correcta: cdmx
+
+cierre:
+  sus: true                   # cuestionario de usabilidad SUS (10 preguntas)
+  preguntas_abiertas:
+    - ¿Hubo algo que no entendiste o que te pareció confuso de las respuestas?
+    - ¿Confiarías en este asistente para un problema real? ¿Por qué?

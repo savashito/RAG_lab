@@ -1079,6 +1079,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
             'question': question,
             'search_query': search_q if search_q != question else '',
             'chunks': top, 'seconds': round(time.time() - t0, 1),
+            'ranking': [cid for cid, _ in scored[:50]],   # para medir recall (estudio con usuarios)
             'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
             'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes')}
 
@@ -1128,6 +1129,34 @@ forms_store = FormStore(connect, store, Path(__file__).resolve().parent / 'forms
 app.include_router(forms_router(forms=forms_store, ia=FormsIA(llm, ask), static_dir=STATIC,
                                 current_email=current_email, can_ingest=can_ingest,
                                 can_upload_topic=can_upload_topic))
+
+# Estudio con usuarios (/estudio, /calificar, /estudios): ver study/. Las personas participantes
+# consultan el asistente con la configuración fija del estudio; cada respuesta se califica a ciegas.
+from bench import gold_refs as _gold_refs, resolve_gold as _resolve_gold  # noqa: E402
+from study.api import make_router as study_router  # noqa: E402
+from study.store import StudyStore  # noqa: E402
+
+
+def _study_gold_refs(texto):
+    return _gold_refs('', [{'kind': 'must', 'text': texto}])
+
+
+def _study_resolver(grupos):
+    with connect() as c, c.cursor() as cur:
+        return _resolve_gold(cur, TABLE, grupos)
+
+
+def _study_chat(messages, cfg):
+    return chat_answer(messages, cfg.get('setting', 'híbrido'), int(cfg.get('k', 5)), cfg.get('sistema'),
+                       cfg.get('tema'), cfg.get('jurisdicciones'), bool(cfg.get('vecinos', True)),
+                       bool(cfg.get('hyde', False)), False, bool(cfg.get('descomponer', False)),
+                       bool(cfg.get('route', False)))
+
+
+study_store = StudyStore(connect, Path(__file__).resolve().parent / 'study' / 'estudios', gold_refs=_study_gold_refs)
+app.include_router(study_router(store=study_store, chat=_study_chat, gold_refs=_study_gold_refs,
+                                resolver_gold=_study_resolver, static_dir=STATIC, current_email=current_email,
+                                es_admin=can_ingest))
 
 
 @app.get('/healthz')

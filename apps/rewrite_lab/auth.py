@@ -34,6 +34,10 @@ REDIRECT_URL = os.environ.get('OAUTH_REDIRECT_URL', '')
 
 # Rutas accesibles sin sesión (el propio flujo de login y un health check).
 PUBLIC_PATHS = {'/login', '/auth/callback', '/logout', '/healthz'}
+# Estudio con usuarios (study/): participantes y calificadores entran con un código de acceso, sin
+# cuenta de Google. Esas rutas validan el código ellas mismas (encabezado X-Codigo).
+PUBLIC_STUDY = {'/estudio', '/calificar'}
+PUBLIC_PREFIXES = ('/api/estudio/p/', '/api/estudio/c/')
 
 _DENIED = (
     '<html><body style="font:16px system-ui;background:#0f1115;color:#e6e6e6;padding:40px">'
@@ -87,7 +91,7 @@ def install_auth(app, is_allowed=None) -> bool:
         path = request.url.path
         # Revalida contra la lista blanca en cada request: si a alguien le quitan el
         # acceso, su sesión activa deja de servir de inmediato (no espera al logout).
-        if path in PUBLIC_PATHS:
+        if path in PUBLIC_PATHS or path in PUBLIC_STUDY or (path.startswith(PUBLIC_PREFIXES) and '..' not in path):
             return await call_next(request)
         email = _email(request)
         if email and allowed(email):
