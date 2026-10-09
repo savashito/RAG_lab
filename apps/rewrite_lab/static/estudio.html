@@ -31,6 +31,7 @@
   .ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:14px}
   input[type=text],textarea,select{font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--card);color:var(--ink);width:100%}
   textarea{resize:vertical;min-height:70px}
+  textarea:focus,input[type=text]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent)}
   label.opt{display:flex;gap:8px;align-items:flex-start;padding:6px 0;cursor:pointer}
   .q{font-weight:600;margin:14px 0 4px}
   .msgs{display:flex;flex-direction:column;gap:10px;margin:12px 0}
@@ -92,6 +93,13 @@ function siguientePersona() {
   guardarCodigo(''); E = null; intento = null; fase = 'chat'; practica = [];
   window.scrollTo(0, 0);
   cargar();
+}
+// Deja la caja de texto lista para escribir (cursor al final), sin mover la página: así la persona
+// sigue viendo la situación o la última respuesta.
+function enfocar(el) {
+  if (!el || el.disabled) return;
+  el.focus({preventScroll: true});
+  el.setSelectionRange(el.value.length, el.value.length);
 }
 // Respuesta en streaming: muestra el texto mientras el asistente lo escribe. Devuelve {respuesta, fuentes}.
 async function preguntarStream(path, body, burbuja) {
@@ -235,6 +243,7 @@ function pantallaTutorial() {
     pantallaTutorial();
   };
   const txtP = document.getElementById('txt');
+  enfocar(txtP);
   if (txtP) txtP.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send.onclick(); } };
   document.getElementById('listo').onclick = async () => {
     try { E = await api('tutorial_listo'); practica = []; render(); window.scrollTo(0, 0); } catch (e) { alert(e.message); }
@@ -284,6 +293,7 @@ async function pantallaEscenario(s, hechos) {
       pantallaEscenario(s, hechos);
     };
     document.getElementById('send').onclick = send;
+    enfocar(document.getElementById('txt'));
     document.getElementById('txt').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
     document.getElementById('listo').onclick = async () => {
       try { await api('a_preguntas', {intento: intento.id}); } catch (e) { alert(e.message); return; }
