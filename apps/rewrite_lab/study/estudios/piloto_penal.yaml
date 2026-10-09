@@ -94,15 +94,18 @@ escenarios:
     texto: (cada variante pone el suyo)
     referencia: (cada variante pone la suya)
     preguntas:
+      # Opciones con delito, código y artículo exactos, en el mismo formato. Distractores reales del corpus:
+      # Morelos 158 (lo citó el asistente en una prueba con una pregunta sin estado) y el CPF 259 Bis.
       - id: ley
-        texto: Según lo que averiguaste, ¿qué ley se aplica al caso de Alex?
+        texto: Según lo que averiguaste, ¿qué delito y qué ley se aplican al caso de Alex?
         opciones:
-          qro: El Código Penal de Querétaro
-          cdmx: El Código Penal de la Ciudad de México
-          federal: El Código Penal Federal
-          laboral: Ninguna penal, es un asunto laboral
+          qro_167ter: Hostigamiento sexual — Código Penal del Estado de Querétaro, art. 167 Ter
+          cdmx_179: Acoso sexual — Código Penal de la Ciudad de México, art. 179
+          morelos_158: Hostigamiento y acoso sexual — Código Penal para el Estado de Morelos, art. 158
+          cpf_259bis: Hostigamiento sexual — Código Penal Federal, art. 259 Bis
+          laboral: Ningún delito, es un asunto laboral
           no_se: No sé
-        correcta: qro          # la variante CDMX la cambia
+        correcta: qro_167ter    # la variante CDMX la cambia
       - id: superior
         texto: ¿Cambia algo que esa persona sea quien supervisa el trabajo de Alex?
         opciones:
@@ -134,7 +137,7 @@ escenarios:
           físico. Alex quiere saber si esto es un delito y qué puede hacer.
         gold:
           - Cita el artículo 179 del Código Penal de la Ciudad de México
-        correctas: {ley: cdmx}
+        correctas: {ley: cdmx_179}
         referencia: |
           (PENDIENTE KAREN) Puede ser **acoso sexual** (art. 179 del Código Penal de la Ciudad de México):
           solicitar favores sexuales o una conducta sexual indeseable que cause daño o sufrimiento
@@ -167,14 +170,16 @@ escenarios:
           publico: Solo si ya se publicaron
           no_se: No sé
         correcta: si
+      # Distractor: el art. 390 del Código Penal Federal (extorsión) está DEROGADO; mide si se usa ley vieja.
       - id: ley
-        texto: ¿Qué ley contempla lo que le está pasando a Cris?
+        texto: Según lo que averiguaste, ¿qué delito y qué ley se aplican al caso de Cris?
         opciones:
-          general: Una ley general que aplica en todo el país
-          estatal: Solo el código penal del estado
-          ninguna: Ninguna, es un problema entre particulares
+          lg_15: Extorsión — Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión, art. 15
+          cpf_390: Extorsión — Código Penal Federal, art. 390
+          qro_167quinquies: Amenaza de difundir imágenes íntimas — Código Penal del Estado de Querétaro, art. 167 Quinquies
+          ninguno: Ningún delito, es un problema entre particulares
           no_se: No sé
-        correcta: general     # PENDIENTE KAREN: ¿ley general, 167 Quinquies o ambas?
+        correcta: lg_15         # PENDIENTE KAREN: ¿ley general, 167 Quinquies o ambas?
 
   # ── 3. Domicilio vs. lugar de los hechos (y una pregunta procesal)
   - id: citatorio
