@@ -152,6 +152,9 @@ def validar(spec_yaml: str, gold_refs=None) -> list[str]:
                 if pid not in {p.get('id') for p in ef.get('preguntas') or []}:
                     errs.append(f'escenario «{eid}», variante «{v["id"]}»: «correctas» menciona la pregunta «{pid}», que no existe.')
             _validar_escenario(ef, f'escenario «{eid}», variante «{v["id"]}»', gold_refs, errs)
+    t = spec.get('tutorial')
+    if t is not None and (not isinstance(t, dict) or not t.get('texto')):
+        errs.append('«tutorial» necesita «texto» (y opcionalmente «ejemplo» y «max_preguntas»).')
     n = spec.get('escenarios_por_persona', len(escenarios))
     if not isinstance(n, int) or n < 1 or n > max(len(escenarios), 1):
         errs.append('«escenarios_por_persona» debe estar entre 1 y el número de escenarios.')
@@ -177,6 +180,8 @@ def vista_publica(spec: dict, asignados: list[str], variantes: dict | None = Non
         'sus': SUS if (spec.get('cierre') or {}).get('sus', True) else [],
         'abiertas': (spec.get('cierre') or {}).get('preguntas_abiertas') or [],
         'max_turnos': int((spec.get('asistente') or {}).get('max_turnos', 12)),
+        'tutorial': ({k: spec['tutorial'][k] for k in ('texto', 'ejemplo', 'max_preguntas') if k in spec['tutorial']}
+                     if isinstance(spec.get('tutorial'), dict) else None),
         'escenarios': vista,
     }
 

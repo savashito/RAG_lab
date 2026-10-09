@@ -67,6 +67,8 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
             out.update(vista_publica(a['spec'], p['asignados'], p['variantes']))
             out['intentos'] = store.intentos(a['codigo'])
             out['terminado'] = bool(p['terminado_at'])
+            out['tutorial_hecho'] = bool(p['tutorial_at']) or not out.get('tutorial')
+            out['practicas'] = p['practicas']
         else:
             out.update({k: v for k, v in vista_publica(a['spec'], []).items() if k != 'escenarios'})
         return out
@@ -125,6 +127,32 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if error:
             return _err('El asistente no pudo responder. Intenta de nuevo en un momento.', 502)
         return {'respuesta': out['answer'], 'fuentes': out['contexto']}
+
+    @r.post('/api/estudio/p/practica')
+    @guard
+    async def p_practica(request: Request):
+        """Pregunta de práctica del tutorial: responde el asistente real, pero no se guarda."""
+        a, b = acceso(request, 'participante'), await request.json()
+        if not store.participante(a['codigo']):
+            return _err('Primero acepta el consentimiento.')
+        mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
+        if not mensaje:
+            return _err('Escribe una pregunta.')
+        maximo = int((a['spec'].get('tutorial') or {}).get('max_preguntas', 2))
+        if not store.contar_practica(a['codigo'], maximo):
+            return _err('Ya hiciste las preguntas de práctica. Da clic en «Entendido, empezar».')
+        try:
+            out = await run_in_threadpool(chat, [{'role': 'user', 'content': mensaje}], a['spec'].get('asistente') or {})
+        except Exception:  # noqa: BLE001
+            return _err('El asistente no pudo responder. Intenta de nuevo en un momento.', 502)
+        return {'respuesta': out['answer'], 'fuentes': _fuentes(out.get('chunks'))}
+
+    @r.post('/api/estudio/p/tutorial_listo')
+    @guard
+    async def p_tutorial_listo(request: Request):
+        a = acceso(request, 'participante')
+        store.tutorial_listo(a['codigo'])
+        return estado_participante(a)
 
     @r.post('/api/estudio/p/terminar')
     @guard

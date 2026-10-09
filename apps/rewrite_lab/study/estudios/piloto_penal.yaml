@@ -26,6 +26,23 @@ consentimiento: |
   - Participar es voluntario y **no tiene relación con ninguna calificación ni materia**. Puedes
     retirarte en cualquier momento con el botón «Retirarme» y se borrará todo lo que hayas escrito.
 
+tutorial:                     # práctica antes de las situaciones (no se guarda como dato del estudio)
+  texto: |
+    ## Antes de empezar: ¿qué es el asistente?
+
+    - Es un programa de **inteligencia artificial** que busca en leyes mexicanas (códigos penales y leyes
+      generales) y responde citando los artículos que encontró.
+    - Le escribes **como le escribirías a una persona**, con tus propias palabras. No necesitas saber
+      términos legales.
+    - Debajo de cada respuesta puedes abrir **«Fuentes que consultó el asistente»** para ver los artículos
+      que usó.
+    - Tarda unos segundos en responder.
+    - **Puede equivocarse.** En este estudio queremos saber justamente cómo lo usan las personas.
+
+    Haz una pregunta de práctica para ver cómo funciona. Esta práctica no cuenta para el estudio.
+  ejemplo: ¿Qué es la legítima defensa?
+  max_preguntas: 2
+
 perfil:                       # sin nombres: solo lo necesario para comparar perfiles
   - id: unam
     pregunta: ¿Eres estudiante activo de la UNAM?

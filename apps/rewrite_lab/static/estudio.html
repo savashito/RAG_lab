@@ -85,7 +85,7 @@ async function apiKiosco(path) {
   return j;
 }
 function siguientePersona() {
-  guardarCodigo(''); E = null; intento = null; fase = 'chat';
+  guardarCodigo(''); E = null; intento = null; fase = 'chat'; practica = [];
   window.scrollTo(0, 0);
   cargar();
 }
@@ -133,6 +133,7 @@ async function cargar() {
 
 function render() {
   if (!E.consentido) return pantallaConsentimiento();
+  if (!E.tutorial_hecho) return pantallaTutorial();
   if (E.terminado) return pantallaGracias();
   const hechos = new Set((E.intentos || []).filter(i => i.fin).map(i => i.escenario));
   const pendiente = E.escenarios.find(s => !hechos.has(s.id));
@@ -168,6 +169,33 @@ function pantallaConsentimiento() {
     if (!document.getElementById('acepto').checked) return document.getElementById('msg').textContent = 'Marca la casilla para aceptar.';
     try { E = await api('consentir', {acepto: true, perfil: perfilVals}); render(); }
     catch (e) { document.getElementById('msg').textContent = e.message; }
+  };
+}
+
+let practica = [];   // preguntas de práctica de esta pantalla (no se guardan en el estudio)
+function pantallaTutorial() {
+  const T = E.tutorial || {};
+  const quedan = Math.max(0, (T.max_preguntas ?? 2) - (E.practicas || 0) - practica.length);
+  app.innerHTML = `<div class="steps"><span class="step on">Práctica</span>${E.escenarios.map((s, i) => `<span class="step">Situación ${i + 1}</span>`).join('')}<span class="step">Preguntas finales</span></div>
+    <div class="card" style="margin-top:12px">${md(T.texto)}</div>
+    <div class="card"><h2>Pruébalo</h2>
+      <div class="msgs" id="msgs">${practica.map(t => `<div class="msg user">${esc(t.pregunta)}</div>${burbujaRespuesta(t)}`).join('')}</div>
+      ${quedan ? `<div class="composer"><textarea id="txt">${practica.length ? '' : esc(T.ejemplo || '')}</textarea>
+        <button class="primary" id="send">Enviar</button></div>
+        <p class="muted small">${practica.length ? 'Puedes hacer una pregunta más de práctica, o empezar.' : 'Ya escribimos una pregunta de ejemplo: da clic en «Enviar» (o cámbiala por otra).'}</p>` : ''}
+      <button class="primary" id="listo" style="margin-top:8px">Entendido, empezar el estudio →</button></div>`;
+  const send = document.getElementById('send');
+  if (send) send.onclick = async () => {
+    const msg = document.getElementById('txt').value.trim();
+    if (!msg) return;
+    document.getElementById('msgs').insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking">El asistente está buscando en las leyes y escribiendo… (puede tardar unos segundos)</div>`);
+    send.disabled = true;
+    try { const r = await api('practica', {mensaje: msg}); practica.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes}); }
+    catch (e) { practica.push({pregunta: msg, error: e.message}); }
+    pantallaTutorial();
+  };
+  document.getElementById('listo').onclick = async () => {
+    try { E = await api('tutorial_listo'); practica = []; render(); window.scrollTo(0, 0); } catch (e) { alert(e.message); }
   };
 }
 

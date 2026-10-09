@@ -28,6 +28,7 @@ titulo: Prueba
 consentimiento: ok
 asistente: {tema: t, max_turnos: 2}
 escenarios_por_persona: 2
+tutorial: {texto: 'Así funciona', ejemplo: '¿Qué es la legítima defensa?', max_preguntas: 2}
 perfil:
   - {id: formacion, pregunta: '¿Formación?', opciones: {ninguna: 'No', estudiante: 'Sí'}}
   - {id: carrera, tipo: texto, pregunta: '¿Carrera?'}
@@ -195,11 +196,21 @@ def test_flujo_completo(cliente):
     H = {'X-Codigo': p1.lower().replace('-', '')}           # el código se normaliza
     assert c.post('/api/estudio/p/estado', headers=H).json()['error'] == 'El estudio no está abierto en este momento.'
     c.post('/api/estudios/prueba/estado', json={'estado': 'abierto'})
+    assert store.obtener('prueba')['updated_by'] == 'repo'      # abrir no cuenta como editar
 
     assert c.post('/api/estudio/p/consentir', headers=H, json={}).status_code == 400
     assert 'Carrera' in c.post('/api/estudio/p/consentir', headers=H, json={'acepto': True, 'perfil': {'formacion': 'ninguna'}}).json()['error']
     est = c.post('/api/estudio/p/consentir', headers=H, json={'acepto': True, 'perfil': {'formacion': 'ninguna', 'carrera': ' Física ', 'nombre': 'X'}}).json()
     assert len(est['escenarios']) == 2 and 'referencia' not in repr(est)
+    # Práctica: responde el asistente pero no se guarda; máximo 2; después de «listo» ya no.
+    assert est['tutorial_hecho'] is False and est['tutorial']['ejemplo']
+    n0 = len(llamadas)
+    assert c.post('/api/estudio/p/practica', headers=H, json={'mensaje': 'prueba'}).json()['respuesta']
+    c.post('/api/estudio/p/practica', headers=H, json={'mensaje': 'otra'})
+    assert c.post('/api/estudio/p/practica', headers=H, json={'mensaje': 'tercera'}).status_code == 400
+    assert len(llamadas) == n0 + 2 and store.participante(p1)['practicas'] == 2
+    assert c.post('/api/estudio/p/tutorial_listo', headers=H).json()['tutorial_hecho'] is True
+    llamadas.clear()
     assert store.participante(p1)['perfil'] == {'formacion': 'ninguna', 'carrera': 'Física'}   # campos desconocidos se descartan
     s1 = est['escenarios'][0]['id']
     it = c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': s1}).json()['intento']

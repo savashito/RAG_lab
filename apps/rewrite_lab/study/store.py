@@ -60,6 +60,9 @@ ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS variantes jsonb NOT N
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS variante text;
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto text;
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto_cual text;
+-- Práctica antes de las situaciones: cuándo la terminó y cuántas preguntas de práctica hizo (no se guardan).
+ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS tutorial_at timestamptz;
+ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS practicas int NOT NULL DEFAULT 0;
 -- Modo kiosco: una computadora autorizada por un admin crea un código nuevo por cada participante.
 -- Solo se guarda el hash del token; el token vive en el navegador de esa computadora.
 CREATE TABLE IF NOT EXISTS estudio_kioscos (
@@ -161,8 +164,9 @@ class StudyStore:
         return {'errores': [], **self.obtener(spec['id'])}
 
     def cambiar_estado(self, eid: str, estado: str, email: str) -> dict:
-        self._q("UPDATE estudio_estudios SET estado=%s, updated_by=%s, updated_at=now() WHERE id=%s",
-                (estado, email, eid), commit=True)
+        # Abrir o cerrar no es editar: no cambia updated_by (así el repo puede seguir actualizando un
+        # estudio en borrador que nadie ha editado desde la app).
+        self._q("UPDATE estudio_estudios SET estado=%s, updated_at=now() WHERE id=%s", (estado, eid), commit=True)
         return self.obtener(eid)
 
     # ── códigos ──────────────────────────────────────────────────────────────────
@@ -230,7 +234,8 @@ class StudyStore:
 
     # ── participante ─────────────────────────────────────────────────────────────
     def participante(self, codigo: str) -> dict | None:
-        return self._q("SELECT codigo, perfil, asignados, variantes, cierre, consentimiento_at::text, terminado_at::text "
+        return self._q("SELECT codigo, perfil, asignados, variantes, cierre, consentimiento_at::text, terminado_at::text, "
+                       "tutorial_at::text, practicas "
                        "FROM estudio_participantes WHERE codigo=%s", (codigo,), one=True)
 
     def consentir(self, acceso: dict, perfil: dict) -> dict:
@@ -301,6 +306,16 @@ class StudyStore:
                 "detecto=%s, detecto_cual=%s WHERE id=%s",
                 (json.dumps(respuestas), json.dumps(sc), confianza, actuaria, detecto, detecto_cual or None, intento_id),
                 commit=True)
+
+    def contar_practica(self, codigo: str, maximo: int) -> bool:
+        """Suma una pregunta de práctica si aún no llega al máximo. False = ya no puede."""
+        row = self._q("UPDATE estudio_participantes SET practicas = practicas + 1 WHERE codigo=%s AND practicas < %s "
+                      "AND tutorial_at IS NULL RETURNING practicas", (codigo, maximo), one=True, commit=True)
+        return row is not None
+
+    def tutorial_listo(self, codigo: str):
+        self._q("UPDATE estudio_participantes SET tutorial_at = coalesce(tutorial_at, now()) WHERE codigo=%s",
+                (codigo,), commit=True)
 
     def cerrar(self, codigo: str, cierre: dict):
         self._q("UPDATE estudio_participantes SET cierre=%s, terminado_at=now() WHERE codigo=%s",
@@ -373,7 +388,8 @@ class StudyStore:
 
     # ── export (seudónimo) ───────────────────────────────────────────────────────
     def export(self, eid: str) -> dict:
-        part = self._q("SELECT p.codigo, k.grupo, p.perfil, p.asignados, p.variantes, p.cierre, p.consentimiento_at::text, "
+        part = self._q("SELECT p.codigo, k.grupo, p.perfil, p.asignados, p.variantes, p.cierre, p.practicas, "
+                       "p.tutorial_at::text, p.consentimiento_at::text, "
                        "p.terminado_at::text FROM estudio_participantes p JOIN estudio_codigos k USING (codigo) "
                        "WHERE k.estudio = %s ORDER BY p.consentimiento_at", (eid,))
         intentos = self._q("SELECT i.id, i.codigo, i.escenario, i.variante, i.inicio::text, i.fin::text, i.respuestas, "
