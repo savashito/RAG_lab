@@ -117,7 +117,9 @@ async function resumen(id) {
   document.getElementById('resumen').innerHTML = grupos.length ? `<table><tr><th></th>${grupos.map(g => `<th>${esc(g)}</th>`).join('')}</tr>
     ${filas.map(([k, l]) => `<tr><td>${esc(l)}</td>${grupos.map(g => `<td>${r[g][k] ?? '—'}</td>`).join('')}</tr>`).join('')}</table>
     <p class="muted">Acuerdo entre estudiantes (κ de Cohen, veredicto): <b>${a.kappa_veredicto_estudiantes ?? '—'}</b> en ${a.pares || 0} par(es) ·
-    ${a.a_experta || 0} respuesta(s) para desempate de la experta.</p>` : '<p class="muted">Aún no hay datos.</p>';
+    ${a.a_experta || 0} respuesta(s) para desempate de la experta.</p>
+    <h2 style="margin-top:14px">Por situación</h2><table><tr><th>Situación / variante</th><th>Escenarios terminados</th><th>Recall@10 (1er turno)</th><th>Comprensión</th><th>Notaron un problema</th></tr>
+    ${Object.entries(r._por_escenario || {}).map(([k, m]) => `<tr><td>${esc(k)}</td><td>${m.intentos}</td><td>${m['recall@10_primer_turno'] ?? '—'}</td><td>${m.comprension ?? '—'}</td><td>${m.detecto_problema ?? '—'}</td></tr>`).join('')}</table>` : '<p class="muted">Aún no hay datos.</p>';
 }
 
 cargarLista().catch(e => document.getElementById('det').innerHTML = `<p class="err">${esc(e.message)}</p>`);

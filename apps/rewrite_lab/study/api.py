@@ -18,7 +18,8 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from study.analisis import rango_gold, resumen
 from study.store import NoPermitido
-from study.validar import CITA, DANOS, ESTADOS, GRUPOS, ROLES_CALIFICADOR, SI_NO_NS, VEREDICTOS, vista_publica
+from study.validar import (CITA, DANOS, ESTADOS, GRUPOS, ROLES_CALIFICADOR, SI_NO_NS, VEREDICTOS,
+                           escenario_efectivo, limpiar_perfil, vista_publica)
 
 MAX_MENSAJE = 2000
 
@@ -63,7 +64,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         p = store.participante(a['codigo'])
         out = {'grupo_es_estudiante': a['grupo'] == 'estudiante', 'consentido': bool(p)}
         if p:
-            out.update(vista_publica(a['spec'], p['asignados']))
+            out.update(vista_publica(a['spec'], p['asignados'], p['variantes']))
             out['intentos'] = store.intentos(a['codigo'])
             out['terminado'] = bool(p['terminado_at'])
         else:
@@ -81,8 +82,9 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         a, b = acceso(request, 'participante'), await request.json()
         if not b.get('acepto'):
             return _err('Para participar hay que aceptar el consentimiento.')
-        opciones = {p['id']: p['opciones'] for p in a['spec'].get('perfil') or []}
-        perfil = {k: v for k, v in (b.get('perfil') or {}).items() if k in opciones and v in opciones[k]}
+        perfil, faltan = limpiar_perfil(a['spec'], b.get('perfil') or {})
+        if faltan:
+            return _err('Falta contestar: ' + '; '.join(faltan))
         store.consentir(a, perfil)
         return estado_participante(a)
 
@@ -129,10 +131,10 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
     async def p_terminar(request: Request):
         a, b = acceso(request, 'participante'), await request.json()
         confianza = b.get('confianza')
-        if confianza not in (1, 2, 3, 4, 5) or b.get('actuaria') not in SI_NO_NS:
-            return _err('Contesta la confianza (1–5) y si actuarías con esta respuesta.')
+        if confianza not in (1, 2, 3, 4, 5) or b.get('actuaria') not in SI_NO_NS or b.get('detecto') not in SI_NO_NS:
+            return _err('Contesta todas las preguntas.')
         store.terminar(a['codigo'], int(b.get('intento') or 0), a['spec'], b.get('respuestas') or {},
-                       confianza, b['actuaria'])
+                       confianza, b['actuaria'], b['detecto'], str(b.get('detecto_cual') or '')[:2000])
         return estado_participante(a)
 
     @r.post('/api/estudio/p/cierre')
@@ -156,7 +158,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if turno_id is None:
             return {**out, 'turno': None}
         t = store.para_calificar(turno_id)
-        esc = next((e for e in a['spec']['escenarios'] if e['id'] == t['escenario']), {})
+        esc = escenario_efectivo(next((e for e in a['spec']['escenarios'] if e['id'] == t['escenario']), {}), t['variante'])
         gold = [x['label'] for g in esc.get('gold') or [] for grupo in gold_refs(g) for x in grupo]
         # Ciego: no se muestra el grupo de la persona ni ningún veredicto de un LLM.
         return {**out, 'turno': {'id': t['id'], 'n': t['n'], 'pregunta': t['pregunta'], 'respuesta': t['respuesta'],
@@ -247,9 +249,14 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
     def _export(eid: str) -> dict:
         datos = store.export(eid)
         spec = store.spec(eid)
-        gold = {e['id']: resolver_gold([grupo for g in e.get('gold') or [] for grupo in gold_refs(g)])
-                for e in spec.get('escenarios') or []}
-        esc_de = {i['id']: i['escenario'] for i in datos['intentos']}
+        por_id = {e['id']: e for e in spec.get('escenarios') or []}
+        gold = {}
+        for i in datos['intentos']:
+            clave = (i['escenario'], i['variante'])
+            if clave not in gold and i['escenario'] in por_id:
+                ef = escenario_efectivo(por_id[i['escenario']], i['variante'])
+                gold[clave] = resolver_gold([grupo for g in ef.get('gold') or [] for grupo in gold_refs(g)])
+        esc_de = {i['id']: (i['escenario'], i['variante']) for i in datos['intentos']}
         for t in datos['turnos']:
             grupos = gold.get(esc_de.get(t['intento_id'])) or []
             t['gold'] = [[x['label'] for x in g] for g in grupos]

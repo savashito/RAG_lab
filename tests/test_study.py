@@ -30,6 +30,8 @@ asistente: {tema: t, max_turnos: 2}
 escenarios_por_persona: 2
 perfil:
   - {id: formacion, pregunta: '¿Formación?', opciones: {ninguna: 'No', estudiante: 'Sí'}}
+  - {id: carrera, tipo: texto, pregunta: '¿Carrera?'}
+  - {id: confianza, tipo: escala, pregunta: '¿Confianza?', obligatorio: false}
 escenarios:
   - id: a
     titulo: A
@@ -44,9 +46,12 @@ escenarios:
     preguntas: [{id: p1, texto: '¿Pregunta?', opciones: {si: Sí, no: 'No'}, correcta: 'no'}]
   - id: c
     titulo: C
-    texto: texto C
-    referencia: ref C
+    texto: base
+    referencia: base
     preguntas: [{id: p1, texto: '¿Pregunta?', opciones: {si: Sí, no: 'No'}, correcta: si}]
+    variantes:
+      - {id: v1, texto: texto C1, referencia: ref C1}
+      - {id: v2, texto: texto C2, referencia: ref C2, correctas: {p1: no}}
 """
 
 
@@ -62,6 +67,28 @@ def test_validar_detecta_errores():
     assert any('«correcta»' in e for e in errs)
     assert any('id repetido' in e for e in errs)
     assert any('gold' in e for e in validar(SPEC_YAML, gold_refs=lambda t: []))
+
+
+def test_variantes():
+    import yaml
+    from study.validar import escenario_efectivo, limpiar_perfil
+    spec = yaml.safe_load(SPEC_YAML)
+    c = spec['escenarios'][2]
+    assert escenario_efectivo(c, 'v2')['texto'] == 'texto C2'
+    from study.validar import cargar
+    c = cargar(SPEC_YAML)[0]['escenarios'][2]
+    assert escenario_efectivo(c, 'v2')['preguntas'][0]['correcta'] == 'no'
+    assert escenario_efectivo(c, 'v1')['preguntas'][0]['correcta'] == 'si'
+    assert escenario_efectivo(c, None)['texto'] == 'base'
+    v = vista_publica(cargar(SPEC_YAML)[0], ['c'], {'c': 'v2'})
+    assert v['escenarios'][0]['texto'] == 'texto C2' and 'v1' not in repr(v) and 'ref C' not in repr(v)
+    assert validar(SPEC_YAML.replace('correctas: {p1: no}', 'correctas: {zz: no}'))
+    perfil, faltan = limpiar_perfil(cargar(SPEC_YAML)[0], {'formacion': 'x', 'confianza': 9})
+    assert perfil == {} and len(faltan) == 2                         # confianza no es obligatoria
+
+
+def test_asignar_variante():
+    assert A.asignar_variante(['qro', 'cdmx'], {'qro': 3, 'cdmx': 2}) == 'cdmx'
 
 
 def test_vista_publica_no_filtra_respuestas():
@@ -163,9 +190,10 @@ def test_flujo_completo(cliente):
     c.post('/api/estudios/prueba/estado', json={'estado': 'abierto'})
 
     assert c.post('/api/estudio/p/consentir', headers=H, json={}).status_code == 400
-    est = c.post('/api/estudio/p/consentir', headers=H, json={'acepto': True, 'perfil': {'formacion': 'ninguna', 'nombre': 'X'}}).json()
+    assert 'Carrera' in c.post('/api/estudio/p/consentir', headers=H, json={'acepto': True, 'perfil': {'formacion': 'ninguna'}}).json()['error']
+    est = c.post('/api/estudio/p/consentir', headers=H, json={'acepto': True, 'perfil': {'formacion': 'ninguna', 'carrera': ' Física ', 'nombre': 'X'}}).json()
     assert len(est['escenarios']) == 2 and 'referencia' not in repr(est)
-    assert store.participante(p1)['perfil'] == {'formacion': 'ninguna'}    # campos desconocidos se descartan
+    assert store.participante(p1)['perfil'] == {'formacion': 'ninguna', 'carrera': 'Física'}   # campos desconocidos se descartan
     s1 = est['escenarios'][0]['id']
     it = c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': s1}).json()['intento']
     assert c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': 'zzz'}).status_code == 403
@@ -175,7 +203,7 @@ def test_flujo_completo(cliente):
     assert len(llamadas[-1]) == 3                                        # historial: u, a, u
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400  # max_turnos 2
     assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}}).status_code == 400
-    c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si'})
+    c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si', 'detecto': 'no'})
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
 
     # Calificación: cada turno lo califican 2 estudiantes; un desacuerdo va a la experta.
@@ -198,6 +226,14 @@ def test_flujo_completo(cliente):
     exp = c.get('/api/estudios/prueba/export').json()
     if s1 == 'a':
         assert exp['turnos'][0]['rangos'] == [1]
+
+    # Variantes: dos participantes del mismo grupo reciben variantes distintas de «c».
+    qs = c.post('/api/estudios/prueba/codigos', json={'tipo': 'participante', 'grupo': 'estudiante', 'n': 4}).json()['codigos']
+    perfil = {'formacion': 'estudiante', 'carrera': 'Derecho'}
+    for q in qs:
+        c.post('/api/estudio/p/consentir', headers={'X-Codigo': q}, json={'acepto': True, 'perfil': perfil})
+    vs = [store.participante(q)['variantes']['c'] for q in qs if 'c' in store.participante(q)['asignados']]
+    assert len(vs) >= 2 and sorted(vs[:2]) == ['v1', 'v2']   # los dos primeros a quienes les toca «c»: una de cada
 
     # Retirarse borra todo y el código deja de servir.
     c.post('/api/estudio/p/retirar', headers=H)

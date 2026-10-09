@@ -26,6 +26,12 @@ def asignar(escenarios: list[str], conteos: dict[str, int], n: int, rng: random.
     return elegidos
 
 
+def asignar_variante(variantes: list[str], conteos: dict[str, int], rng: random.Random | None = None) -> str:
+    """La variante menos asignada en el grupo (empates al azar): mitad y mitad, sin que nadie vea dos."""
+    rng = rng or random.Random()
+    return min(variantes, key=lambda v: (conteos.get(v, 0), rng.random()))
+
+
 def puntuar_comprension(escenario: dict, respuestas: dict) -> dict:
     """{'aciertos', 'total', 'no_se', 'detalle': {pregunta: bool | None}} — None = contestó «no sé»."""
     detalle = {}
@@ -153,6 +159,22 @@ def resumen(datos: dict) -> dict:
         est = [c for c in cs if c['rol'] == 'estudiante'][:2]
         if len(est) == 2:
             pares.append((est[0]['veredicto'], est[1]['veredicto']))
+    # Por escenario (y variante): ¿en qué situación falla más? Separa p. ej. Querétaro vs CDMX.
+    esc = defaultdict(lambda: defaultdict(list))
+    clave_de = {i['id']: i['escenario'] + (f"/{i['variante']}" if i.get('variante') else '') for i in datos['intentos']}
+    for t in datos['turnos']:
+        k = clave_de.get(t['intento_id'])
+        if k and t['n'] == 1 and t.get('rangos'):
+            esc[k]['r10'].append(recall_at(t['rangos'], 10))
+    for it in datos['intentos']:
+        sc = it.get('comprension') or {}
+        if sc.get('total'):
+            esc[clave_de[it['id']]]['comprension'].append(sc['aciertos'] / sc['total'])
+        if it.get('detecto'):
+            esc[clave_de[it['id']]]['detecto'].append(it['detecto'] == 'si')
+    out['_por_escenario'] = {k: {'intentos': len(m['comprension']), 'recall@10_primer_turno': media(m['r10']),
+                                 'comprension': media(m['comprension']), 'detecto_problema': media(m['detecto'])}
+                             for k, m in sorted(esc.items())}
     out['_acuerdo'] = {'kappa_veredicto_estudiantes': kappa(pares), 'pares': len(pares),
                        'a_experta': sum(1 for cs in cal.values() if necesita_experto(cs))}
     return out

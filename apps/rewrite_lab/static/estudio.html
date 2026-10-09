@@ -113,16 +113,24 @@ function pasos(actual, hechos) {
 }
 
 function pantallaConsentimiento() {
-  const perfil = (E.perfil || []).map(p => `<div class="q">${esc(p.pregunta)}</div>
-    <select data-perfil="${esc(p.id)}"><option value="">— elige —</option>
-    ${Object.entries(p.opciones).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</select>`).join('');
+  const campoPerfil = p => {
+    const tipo = p.tipo || 'opcion';
+    const ayuda = p.ayuda ? `<div class="muted small">${esc(p.ayuda)}</div>` : '';
+    if (tipo === 'texto') return `<div class="q">${esc(p.pregunta)}</div>${ayuda}<input type="text" maxlength="120" data-perfil="${esc(p.id)}">`;
+    if (tipo === 'escala') return `<div class="q">${esc(p.pregunta)}</div>${ayuda}<div class="likert">${[1,2,3,4,5].map(v =>
+      `<label><input type="radio" name="perfil_${esc(p.id)}" value="${v}" data-escala="${esc(p.id)}">${v}</label>`).join('')}</div>`;
+    return `<div class="q">${esc(p.pregunta)}</div>${ayuda}<select data-perfil="${esc(p.id)}"><option value="">— elige —</option>
+      ${Object.entries(p.opciones).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</select>`;
+  };
+  const perfil = (E.perfil || []).map(campoPerfil).join('');
   app.innerHTML = `<div class="card">${md(E.consentimiento)}</div>
     <div class="card"><h2>Sobre ti</h2><p class="muted small">Solo para comparar grupos. No pedimos tu nombre.</p>${perfil}
     <label class="opt" style="margin-top:14px"><input type="checkbox" id="acepto"> <span>Leí la información y acepto participar.</span></label>
     <button class="primary" id="go">Empezar</button> <span id="msg" class="err"></span></div>`;
   document.getElementById('go').onclick = async () => {
     const perfilVals = {};
-    app.querySelectorAll('[data-perfil]').forEach(s => { if (s.value) perfilVals[s.dataset.perfil] = s.value; });
+    app.querySelectorAll('[data-perfil]').forEach(s => { if (s.value.trim()) perfilVals[s.dataset.perfil] = s.value.trim(); });
+    app.querySelectorAll('[data-escala]:checked').forEach(r => { perfilVals[r.dataset.escala] = parseInt(r.value); });
     if (!document.getElementById('acepto').checked) return document.getElementById('msg').textContent = 'Marca la casilla para aceptar.';
     try { E = await api('consentir', {acepto: true, perfil: perfilVals}); render(); }
     catch (e) { document.getElementById('msg').textContent = e.message; }
@@ -180,6 +188,9 @@ async function pantallaEscenario(s, hechos) {
       <p class="muted small">Contesta con lo que entendiste. Si lo necesitas, puedes volver al chat antes de terminar.</p>${preg}
       <div class="q">¿Qué tan seguro o segura estás de tus respuestas?</div>
       <div class="likert">${likert}</div><div class="muted small">1 = nada seguro · 5 = totalmente seguro</div>
+      <div class="q">¿Notaste algún problema o error en las respuestas del asistente?</div>
+      ${[['si','Sí'],['no','No'],['no_se','No estoy seguro/a']].map(([k,v]) => `<label class="opt"><input type="radio" name="detecto" value="${k}"> <span>${v}</span></label>`).join('')}
+      <textarea id="detecto_cual" placeholder="Si notaste algo, ¿qué fue? (opcional)" style="margin-top:4px"></textarea>
       <div class="q">Si esto te pasara de verdad, ¿actuarías con base en lo que te dijo el asistente?</div>
       ${[['si','Sí'],['no','No'],['no_se','No sé']].map(([k,v]) => `<label class="opt"><input type="radio" name="actuaria" value="${k}"> <span>${v}</span></label>`).join('')}
       <p><button class="ghost" id="volver">← Volver al chat</button> <button class="primary" id="fin">Terminar esta situación</button> <span id="msg" class="err"></span></p></div>`;
@@ -192,9 +203,10 @@ async function pantallaEscenario(s, hechos) {
         if (!v) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
         respuestas[p.id] = v;
       }
-      const confianza = parseInt(val('confianza') || '0'), actuaria = val('actuaria');
-      if (!confianza || !actuaria) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
-      try { E = await api('terminar', {intento: intento.id, respuestas, confianza, actuaria}); intento = null; render(); window.scrollTo(0, 0); }
+      const confianza = parseInt(val('confianza') || '0'), actuaria = val('actuaria'), detecto = val('detecto');
+      if (!confianza || !actuaria || !detecto) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
+      const detecto_cual = document.getElementById('detecto_cual').value;
+      try { E = await api('terminar', {intento: intento.id, respuestas, confianza, actuaria, detecto, detecto_cual}); intento = null; render(); window.scrollTo(0, 0); }
       catch (e) { document.getElementById('msg').textContent = e.message; }
     };
   }

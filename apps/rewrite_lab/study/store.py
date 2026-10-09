@@ -19,8 +19,8 @@ import random
 import secrets
 from pathlib import Path
 
-from study.analisis import asignar, necesita_experto, puntuar_comprension
-from study.validar import cargar, validar
+from study.analisis import asignar, asignar_variante, necesita_experto, puntuar_comprension
+from study.validar import cargar, escenario_efectivo, validar
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS estudio_estudios (
@@ -54,6 +54,11 @@ CREATE TABLE IF NOT EXISTS estudio_calificaciones (
     calificador text NOT NULL REFERENCES estudio_codigos(codigo), rol text NOT NULL,
     veredicto text NOT NULL, dano text NOT NULL, error_jurisdiccion text, cita text, notas text,
     ts timestamptz DEFAULT now(), UNIQUE (turno_id, calificador));
+-- Variante sorteada de cada escenario ({escenario: variante}) y pregunta de detección.
+ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS variantes jsonb NOT NULL DEFAULT '{}';
+ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS variante text;
+ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto text;
+ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto_cual text;
 """
 
 _ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'   # sin 0/O, 1/I/L
@@ -184,7 +189,7 @@ class StudyStore:
 
     # ── participante ─────────────────────────────────────────────────────────────
     def participante(self, codigo: str) -> dict | None:
-        return self._q("SELECT codigo, perfil, asignados, cierre, consentimiento_at::text, terminado_at::text "
+        return self._q("SELECT codigo, perfil, asignados, variantes, cierre, consentimiento_at::text, terminado_at::text "
                        "FROM estudio_participantes WHERE codigo=%s", (codigo,), one=True)
 
     def consentir(self, acceso: dict, perfil: dict) -> dict:
@@ -196,10 +201,19 @@ class StudyStore:
         filas = self._q("SELECT e.value #>> '{}' AS esc, count(*) AS n FROM estudio_participantes p "
                         "JOIN estudio_codigos k USING (codigo), jsonb_array_elements(p.asignados) e "
                         "WHERE k.estudio = %s AND k.grupo = %s GROUP BY 1", (acceso['estudio'], acceso['grupo']))
-        asignados = asignar(ids, {f['esc']: f['n'] for f in filas}, int(spec.get('escenarios_por_persona', len(ids))),
-                            random.Random())
-        self._q("INSERT INTO estudio_participantes (codigo, perfil, asignados) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
-                (acceso['codigo'], json.dumps(perfil or {}), json.dumps(asignados)), commit=True)
+        rng = random.Random()
+        asignados = asignar(ids, {f['esc']: f['n'] for f in filas}, int(spec.get('escenarios_por_persona', len(ids))), rng)
+        variantes = {}
+        for e in spec['escenarios']:
+            vs = [v['id'] for v in e.get('variantes') or []]
+            if vs and e['id'] in asignados:
+                usados = self._q("SELECT p.variantes->>%s AS v, count(*) AS n FROM estudio_participantes p "
+                                 "JOIN estudio_codigos k USING (codigo) WHERE k.estudio = %s AND k.grupo = %s "
+                                 "AND p.variantes ? %s GROUP BY 1", (e['id'], acceso['estudio'], acceso['grupo'], e['id']))
+                variantes[e['id']] = asignar_variante(vs, {u['v']: u['n'] for u in usados}, rng)
+        self._q("INSERT INTO estudio_participantes (codigo, perfil, asignados, variantes) VALUES (%s,%s,%s,%s) "
+                "ON CONFLICT DO NOTHING",
+                (acceso['codigo'], json.dumps(perfil or {}), json.dumps(asignados), json.dumps(variantes)), commit=True)
         return self.participante(acceso['codigo'])
 
     def intentos(self, codigo: str) -> list[dict]:
@@ -210,13 +224,13 @@ class StudyStore:
         p = self.participante(codigo)
         if not p or escenario not in p['asignados']:
             raise NoPermitido('Ese escenario no te tocó.')
-        self._q("INSERT INTO estudio_intentos (codigo, escenario) VALUES (%s,%s) ON CONFLICT DO NOTHING",
-                (codigo, escenario), commit=True)
+        self._q("INSERT INTO estudio_intentos (codigo, escenario, variante) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
+                (codigo, escenario, (p['variantes'] or {}).get(escenario)), commit=True)
         return self._q("SELECT id, escenario, fin::text FROM estudio_intentos WHERE codigo=%s AND escenario=%s",
                        (codigo, escenario), one=True)
 
     def intento_abierto(self, codigo: str, intento_id: int) -> dict:
-        it = self._q("SELECT id, escenario, fin FROM estudio_intentos WHERE id=%s AND codigo=%s",
+        it = self._q("SELECT id, escenario, variante, fin FROM estudio_intentos WHERE id=%s AND codigo=%s",
                      (intento_id, codigo), one=True)
         if not it:
             raise NoPermitido('Intento no encontrado.')
@@ -237,12 +251,15 @@ class StudyStore:
                        out.get('seconds'), error), one=True, commit=True)
         return row['id']
 
-    def terminar(self, codigo: str, intento_id: int, spec: dict, respuestas: dict, confianza: int, actuaria: str):
+    def terminar(self, codigo: str, intento_id: int, spec: dict, respuestas: dict, confianza: int, actuaria: str,
+                 detecto: str, detecto_cual: str):
         it = self.intento_abierto(codigo, intento_id)
-        esc = next(e for e in spec['escenarios'] if e['id'] == it['escenario'])
+        esc = escenario_efectivo(next(e for e in spec['escenarios'] if e['id'] == it['escenario']), it['variante'])
         sc = puntuar_comprension(esc, respuestas)
-        self._q("UPDATE estudio_intentos SET fin=now(), respuestas=%s, comprension=%s, confianza=%s, actuaria=%s "
-                "WHERE id=%s", (json.dumps(respuestas), json.dumps(sc), confianza, actuaria, intento_id), commit=True)
+        self._q("UPDATE estudio_intentos SET fin=now(), respuestas=%s, comprension=%s, confianza=%s, actuaria=%s, "
+                "detecto=%s, detecto_cual=%s WHERE id=%s",
+                (json.dumps(respuestas), json.dumps(sc), confianza, actuaria, detecto, detecto_cual or None, intento_id),
+                commit=True)
 
     def cerrar(self, codigo: str, cierre: dict):
         self._q("UPDATE estudio_participantes SET cierre=%s, terminado_at=now() WHERE codigo=%s",
@@ -288,7 +305,7 @@ class StudyStore:
         return min(cands)[2] if cands else None
 
     def para_calificar(self, turno_id: int) -> dict | None:
-        t = self._q("SELECT t.id, t.intento_id, t.n, t.pregunta, t.respuesta, t.contexto, i.escenario, k.estudio "
+        t = self._q("SELECT t.id, t.intento_id, t.n, t.pregunta, t.respuesta, t.contexto, i.escenario, i.variante, k.estudio "
                     "FROM estudio_turnos t JOIN estudio_intentos i ON i.id = t.intento_id "
                     "JOIN estudio_codigos k ON k.codigo = i.codigo WHERE t.id = %s", (turno_id,), one=True)
         if not t:
@@ -315,11 +332,12 @@ class StudyStore:
 
     # ── export (seudónimo) ───────────────────────────────────────────────────────
     def export(self, eid: str) -> dict:
-        part = self._q("SELECT p.codigo, k.grupo, p.perfil, p.asignados, p.cierre, p.consentimiento_at::text, "
+        part = self._q("SELECT p.codigo, k.grupo, p.perfil, p.asignados, p.variantes, p.cierre, p.consentimiento_at::text, "
                        "p.terminado_at::text FROM estudio_participantes p JOIN estudio_codigos k USING (codigo) "
                        "WHERE k.estudio = %s ORDER BY p.consentimiento_at", (eid,))
-        intentos = self._q("SELECT i.id, i.codigo, i.escenario, i.inicio::text, i.fin::text, i.respuestas, i.comprension, "
-                           "i.confianza, i.actuaria FROM estudio_intentos i JOIN estudio_codigos k USING (codigo) "
+        intentos = self._q("SELECT i.id, i.codigo, i.escenario, i.variante, i.inicio::text, i.fin::text, i.respuestas, "
+                           "i.comprension, i.confianza, i.actuaria, i.detecto, i.detecto_cual, "
+                           "extract(epoch FROM i.fin - i.inicio)::int AS segundos FROM estudio_intentos i JOIN estudio_codigos k USING (codigo) "
                            "WHERE k.estudio = %s ORDER BY i.id", (eid,))
         turnos = self._q("SELECT t.id, t.intento_id, t.n, t.ts::text, t.pregunta, t.busqueda, t.respuesta, t.contexto, "
                          "t.ranking, t.segundos, t.error FROM estudio_turnos t JOIN estudio_intentos i ON i.id = t.intento_id "
