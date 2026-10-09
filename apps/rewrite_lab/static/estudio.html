@@ -89,6 +89,32 @@ function siguientePersona() {
   window.scrollTo(0, 0);
   cargar();
 }
+// Respuesta en streaming: muestra el texto mientras el asistente lo escribe. Devuelve {respuesta, fuentes}.
+async function preguntarStream(path, body, burbuja) {
+  const r = await fetch('/api/estudio/p/' + path, {method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Codigo': codigo}, body: JSON.stringify(body)});
+  if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || ('Error ' + r.status)); }
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', texto = '', fuentes = [], pintar = false;
+  const repintar = () => { pintar = false; burbuja.classList.remove('thinking'); burbuja.innerHTML = md(texto); };
+  while (true) {
+    const {value, done} = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, {stream: true});
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0) {
+      const linea = buf.slice(0, i); buf = buf.slice(i + 2);
+      if (!linea.startsWith('data: ')) continue;
+      const ev = JSON.parse(linea.slice(6));
+      if (ev.stage === 'escribiendo' && !texto) burbuja.textContent = 'Escribiendo la respuesta…';
+      else if (ev.stage === 'token') { texto += ev.text; if (!pintar) { pintar = true; requestAnimationFrame(repintar); } }
+      else if (ev.stage === 'done') fuentes = ev.fuentes || [];
+      else if (ev.stage === 'error') throw new Error(ev.error);
+    }
+  }
+  if (!texto) throw new Error('El asistente no pudo responder. Intenta de nuevo en un momento.');
+  return {respuesta: texto, fuentes};
+}
 function guardarCodigo(c) { codigo = c; try { c ? localStorage.setItem('estudio_codigo', c) : localStorage.removeItem('estudio_codigo'); } catch (e) {} }
 
 // ── Pantallas ────────────────────────────────────────────────────────────────
@@ -189,9 +215,9 @@ function pantallaTutorial() {
   if (send) send.onclick = async () => {
     const msg = document.getElementById('txt').value.trim();
     if (!msg || send.disabled) return;
-    document.getElementById('msgs').insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking">El asistente está buscando en las leyes y escribiendo… (puede tardar unos segundos)</div>`);
+    document.getElementById('msgs').insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking" id="pensando">Buscando en las leyes… (unos segundos)</div>`);
     send.disabled = true;
-    try { const r = await api('practica', {mensaje: msg}); practica.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes}); }
+    try { const r = await preguntarStream('practica_stream', {mensaje: msg}, document.getElementById('pensando')); practica.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes}); }
     catch (e) { practica.push({pregunta: msg, error: e.message}); }
     pantallaTutorial();
   };
@@ -232,10 +258,11 @@ async function pantallaEscenario(s, hechos) {
       const txt = document.getElementById('txt'), msg = txt.value.trim();
       if (!msg || document.getElementById('send').disabled) return;
       const msgs = document.getElementById('msgs');
-      msgs.insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking" id="pensando">El asistente está buscando en las leyes y escribiendo… (puede tardar unos segundos)</div>`);
+      msgs.insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking" id="pensando">Buscando en las leyes… (unos segundos)</div>`);
       txt.value = ''; document.getElementById('send').disabled = true;
+      document.getElementById('listo').disabled = true;
       try {
-        const r = await api('preguntar', {intento: intento.id, mensaje: msg});
+        const r = await preguntarStream('preguntar_stream', {intento: intento.id, mensaje: msg}, document.getElementById('pensando'));
         intento.turnos.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes});
       } catch (e) {
         intento.turnos.push({pregunta: msg, error: e.message});

@@ -178,10 +178,19 @@ def cliente(tmp_path):
         return {'answer': f'respuesta {len(messages)}', 'chunks': [{'id': 7, 'rank': 1, 'source': 's', 'text': 'Art. 179'}],
                 'ranking': [7, 8, 9], 'seconds': 0.1}
 
+    def chat_stream(messages, cfg):
+        llamadas.append(messages)
+        yield {'stage': 'retrieving'}
+        yield {'stage': 'hyde', 'passage': 'borrador'}
+        yield {'stage': 'context', 'chunks': [{'id': 7, 'rank': 1, 'source': 's', 'text': 'Art. 179'}], 'ranking': [7, 8]}
+        for p in ('Sí, ', 'es ', 'delito.'):
+            yield {'stage': 'token', 'text': p}
+        yield {'stage': 'done', 'seconds': 0.1}
+
     gold_refs = lambda t: [[{'source': 's', 'article': '179', 'label': 'CDMX 179'}]] if '179' in t else []  # noqa: E731
     resolver = lambda grupos: [[dict(x, ids=[7]) for x in g] for g in grupos]  # noqa: E731
     app = FastAPI()
-    app.include_router(make_router(store=store, chat=chat, gold_refs=gold_refs, resolver_gold=resolver,
+    app.include_router(make_router(store=store, chat=chat, chat_stream=chat_stream, gold_refs=gold_refs, resolver_gold=resolver,
                                    static_dir=tmp_path, current_email=lambda r: 'admin@x', es_admin=lambda e: True))
     return TestClient(app), store, llamadas
 
@@ -222,6 +231,7 @@ def test_flujo_completo(cliente):
     t1 = store.export('prueba')['turnos'][0]
     assert t1['config']['tema'] == 't' and t1['ranking'] == [7, 8, 9]  # config y ranking por turno, para reanalizar
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400  # max_turnos 2
+    assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400
     assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}}).status_code == 400
     c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si', 'detecto': 'no'})
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
@@ -271,6 +281,26 @@ def test_flujo_completo(cliente):
     c.post('/api/estudio/p/retirar', headers=H)
     assert c.get('/api/estudios/prueba/export').json()['turnos'] == []
     assert c.post('/api/estudio/p/estado', headers=H).status_code == 403
+
+
+@db
+def test_streaming_guarda_el_turno_completo(cliente):
+    import json as _json
+    c, store, llamadas = cliente
+    c.post('/api/estudios/prueba/estado', json={'estado': 'abierto'})
+    [p] = c.post('/api/estudios/prueba/codigos', json={'tipo': 'participante', 'grupo': 'general', 'n': 1}).json()['codigos']
+    H = {'X-Codigo': p}
+    est = c.post('/api/estudio/p/consentir', headers=H, json={'acepto': True, 'perfil': {'formacion': 'ninguna', 'carrera': 'X'}}).json()
+    it = c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': est['escenarios'][0]['id']}).json()['intento']
+    r = c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': '¿es delito?'})
+    evs = [_json.loads(l[6:]) for l in r.text.split('\n\n') if l.startswith('data: ')]
+    assert ''.join(e['text'] for e in evs if e['stage'] == 'token') == 'Sí, es delito.'
+    assert evs[-1]['stage'] == 'done' and evs[-1]['fuentes'][0]['texto'] == 'Art. 179'
+    [t] = store.export('prueba')['turnos']
+    assert t['respuesta'] == 'Sí, es delito.' and t['ranking'] == [7, 8] and t['busqueda_debug']['hyde_passage'] == 'borrador'
+    # La práctica en streaming no se guarda como turno.
+    c.post('/api/estudio/p/practica_stream', headers=H, json={'mensaje': 'hola'})
+    assert len(store.export('prueba')['turnos']) == 1 and store.participante(p)['practicas'] == 1
 
 
 def test_auth_deja_pasar_solo_rutas_del_estudio():

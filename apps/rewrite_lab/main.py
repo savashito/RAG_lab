@@ -1146,6 +1146,13 @@ def _study_resolver(grupos):
         return _resolve_gold(cur, TABLE, grupos)
 
 
+def _study_chat_stream(messages, cfg):
+    return chat_event_dicts(messages, cfg.get('setting', 'híbrido'), int(cfg.get('k', 5)), cfg.get('sistema'),
+                            cfg.get('tema'), cfg.get('jurisdicciones'), bool(cfg.get('vecinos', True)),
+                            bool(cfg.get('hyde', False)), False, bool(cfg.get('descomponer', False)),
+                            bool(cfg.get('route', False)))
+
+
 def _study_chat(messages, cfg):
     return chat_answer(messages, cfg.get('setting', 'híbrido'), int(cfg.get('k', 5)), cfg.get('sistema'),
                        cfg.get('tema'), cfg.get('jurisdicciones'), bool(cfg.get('vecinos', True)),
@@ -1154,7 +1161,8 @@ def _study_chat(messages, cfg):
 
 
 study_store = StudyStore(connect, Path(__file__).resolve().parent / 'study' / 'estudios', gold_refs=_study_gold_refs)
-app.include_router(study_router(store=study_store, chat=_study_chat, gold_refs=_study_gold_refs,
+app.include_router(study_router(store=study_store, chat=_study_chat, chat_stream=_study_chat_stream,
+                                gold_refs=_study_gold_refs,
                                 resolver_gold=_study_resolver, static_dir=STATIC, current_email=current_email,
                                 es_admin=can_ingest))
 
@@ -1646,8 +1654,17 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
     """Igual que `chat_answer` pero en streaming (SSE): condensa la consulta, transparenta
     el proceso (search → retrieving → hyde → context → token* → done) y streamea la
     respuesta. La generación recibe todos los turnos; la búsqueda usa la consulta condensada."""
+    for ev in chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank,
+                               decompose, route):
+        yield f'data: {json.dumps(ev, ensure_ascii=False)}\n\n'
+
+
+def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False,
+                     decompose=False, route=False):
+    """Los eventos de `_chat_events` como diccionarios (los usa también el estudio con usuarios,
+    que guarda el turno completo al terminar)."""
     def sse(obj):
-        return f'data: {json.dumps(obj, ensure_ascii=False)}\n\n'
+        return obj
     try:
         msgs = [m for m in (messages or []) if m.get('role') in ('user', 'assistant') and (m.get('content') or '').strip()]
         if not msgs or msgs[-1]['role'] != 'user':
@@ -1681,7 +1698,8 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
             yield sse({'stage': 'hyde', 'passage': dbg.get('hyde_passage', ''),
                        'embed_text': dbg.get('embed_text', '')})
         yield sse({'stage': 'context', 'chunks': top, 'rewrite': rw, 'score_kind': score_kind,
-                   'search_query': search_q if search_q != question else ''})
+                   'search_query': search_q if search_q != question else '',
+                   'ranking': [cid for cid, _ in scored[:50]]})
         context = '\n\n'.join(
             f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
             for ch in top)

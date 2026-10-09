@@ -10,11 +10,12 @@ El código viaja en el encabezado `X-Codigo`, nunca en la URL. Las rutas /api/es
 """
 from __future__ import annotations
 
+import json
 import time
 
 from fastapi import APIRouter, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from study.analisis import rango_gold, resumen
 from study.store import NoPermitido
@@ -36,8 +37,10 @@ def _fuentes(chunks: list[dict]) -> list[dict]:
              'vecino': bool(ch.get('neighbor'))} for ch in chunks or []]
 
 
-def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_email, es_admin) -> APIRouter:
-    """`chat(messages, cfg)` = chat_answer del app con la configuración del estudio.
+def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_email, es_admin,
+                chat_stream=None) -> APIRouter:
+    """`chat(messages, cfg)` = chat_answer del app con la configuración del estudio; `chat_stream(messages, cfg)`,
+    lo mismo como eventos (retrieving → context → token* → done | error) para mostrar la respuesta mientras se escribe.
     `gold_refs(texto)` → grupos de artículos (sin BD); `resolver_gold(grupos)` les pone sus ids."""
     r = APIRouter()
 
@@ -127,6 +130,91 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if error:
             return _err('El asistente no pudo responder. Intenta de nuevo en un momento.', 502)
         return {'respuesta': out['answer'], 'fuentes': out['contexto']}
+
+    # ── Streaming: la respuesta aparece mientras se escribe ───────────────────────
+    def _sse(obj):
+        return f'data: {json.dumps(obj, ensure_ascii=False)}\n\n'
+
+    def _stream(messages, cfg, al_terminar):
+        """Reenvía al navegador solo lo que la persona necesita ver (estado, texto, fuentes) y, al terminar
+        o si se corta, llama `al_terminar(out, error)` con la respuesta completa para guardarla."""
+        t0, out, partes, error = time.time(), {}, [], None
+        try:
+            yield _sse({'stage': 'buscando'})
+            for ev in chat_stream(messages, cfg):
+                st = ev.get('stage')
+                if st == 'context':
+                    out.update(contexto=_fuentes(ev.get('chunks')), ranking=ev.get('ranking') or [],
+                               search_query=ev.get('search_query'), score_kind=ev.get('score_kind'),
+                               rewrite=ev.get('rewrite'))
+                    yield _sse({'stage': 'escribiendo'})
+                elif st == 'hyde':
+                    out['hyde_passage'] = ev.get('passage')
+                elif st == 'decompose':
+                    out['subqueries'] = ev.get('subqueries')
+                elif st == 'route':
+                    out['routes'] = ev.get('routes')
+                elif st == 'token':
+                    partes.append(ev.get('text') or '')
+                    yield _sse({'stage': 'token', 'text': ev.get('text') or ''})
+                elif st == 'error':
+                    error = ev.get('error') or 'error'
+                    yield _sse({'stage': 'error', 'error': 'El asistente no pudo responder. Intenta de nuevo en un momento.'})
+                    return
+            yield _sse({'stage': 'done', 'fuentes': out.get('contexto') or []})
+        except GeneratorExit:      # la persona cerró o recargó a media respuesta
+            error = error or 'interrumpido: la conexión se cerró antes de terminar'
+            raise
+        except Exception as e:     # noqa: BLE001
+            error = f'{type(e).__name__}: {e}'
+            yield _sse({'stage': 'error', 'error': 'El asistente no pudo responder. Intenta de nuevo en un momento.'})
+        finally:
+            out.update(answer=''.join(partes) or None, seconds=round(time.time() - t0, 1))
+            al_terminar(out, error)
+
+    def _respuesta_sse(gen):
+        return StreamingResponse(gen, media_type='text/event-stream',
+                                 headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
+
+    @r.post('/api/estudio/p/preguntar_stream')
+    @guard
+    async def p_preguntar_stream(request: Request):
+        a, b = acceso(request, 'participante'), await request.json()
+        it = store.intento_abierto(a['codigo'], int(b.get('intento') or 0))
+        mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
+        if not mensaje:
+            return _err('Escribe tu pregunta.')
+        cfg = a['spec'].get('asistente') or {}
+        previos = store.turnos(it['id'])
+        if len(previos) >= int(cfg.get('max_turnos', 12)):
+            return _err('Llegaste al máximo de preguntas para este escenario. Pasa a las preguntas finales.')
+        messages = []
+        for t in previos:
+            if t['respuesta'] and not t['error']:
+                messages += [{'role': 'user', 'content': t['pregunta']}, {'role': 'assistant', 'content': t['respuesta']}]
+        messages.append({'role': 'user', 'content': mensaje})
+        n = len(previos) + 1
+
+        def guardar(out, error):
+            store.guardar_turno(it['id'], n, mensaje, out, error, config=cfg)
+            print(f'estudio: turno {n} · {out.get("seconds")}s · streaming' + (' · error' if error else ''), flush=True)
+        return _respuesta_sse(_stream(messages, cfg, guardar))
+
+    @r.post('/api/estudio/p/practica_stream')
+    @guard
+    async def p_practica_stream(request: Request):
+        """Práctica del tutorial en streaming: no se guarda (solo cuenta cuántas preguntas)."""
+        a, b = acceso(request, 'participante'), await request.json()
+        if not store.participante(a['codigo']):
+            return _err('Primero acepta el consentimiento.')
+        mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
+        if not mensaje:
+            return _err('Escribe una pregunta.')
+        maximo = int((a['spec'].get('tutorial') or {}).get('max_preguntas', 2))
+        if not store.contar_practica(a['codigo'], maximo):
+            return _err('Ya hiciste las preguntas de práctica. Da clic en «Entendido, empezar».')
+        return _respuesta_sse(_stream([{'role': 'user', 'content': mensaje}], a['spec'].get('asistente') or {},
+                                      lambda out, error: None))
 
     @r.post('/api/estudio/p/practica')
     @guard
