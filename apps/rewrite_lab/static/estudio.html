@@ -200,10 +200,10 @@ function pantallaTutorial() {
 }
 
 function burbujaRespuesta(t) {
-  const fuentes = (t.fuentes || []).filter(f => !f.vecino);
+  const fuentes = t.fuentes || [];   // todas, también los artículos cercanos: lo mismo que leyó el asistente
   return `<div class="msg">${t.error ? '<span class="err">El asistente no pudo responder.</span>' : md(t.respuesta)}
     ${fuentes.length ? `<details class="src"><summary>Fuentes que consultó el asistente (${fuentes.length})</summary>
-      ${fuentes.map(f => `<div class="chunk"><b>${esc(f.cita)}</b> — ${esc(f.jerarquia)}\n${esc(f.texto)}</div>`).join('')}</details>` : ''}</div>`;
+      ${fuentes.map(f => `<div class="chunk"><b>${esc(f.cita)}</b> — ${esc(f.jerarquia)}${f.vecino ? ' <i class="muted">(artículo cercano)</i>' : ''}\n${esc(f.texto)}</div>`).join('')}</details>` : ''}</div>`;
 }
 
 async function pantallaEscenario(s, hechos) {
