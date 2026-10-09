@@ -245,7 +245,8 @@ def test_flujo_completo(cliente):
     assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
     assert c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': s1}).json()['intento']['preguntas_at']
     assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}}).status_code == 400
-    c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si', 'detecto': 'no'})
+    c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si', 'detecto': 'no',
+                                                     'comentario': 'todo claro'})
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
 
     # Calificación: cada turno lo califican 2 estudiantes; un desacuerdo va a la experta.
@@ -263,6 +264,7 @@ def test_flujo_completo(cliente):
     assert c.post('/api/estudio/c/calificar', headers=G(k1), json={'turno': u['turno']['id'], 'veredicto': 'x'}).status_code == 400
     assert c.post('/api/estudio/c/siguiente', headers=G(p1)).status_code == 403   # un código de participante no califica
 
+    assert [i['comentario'] for i in store.export('prueba')['intentos'] if i['fin']] == ['todo claro']
     res = c.get('/api/estudios/prueba/resumen').json()
     assert res['lego']['comprension'] is not None and res['_acuerdo']['pares'] == 1
     exp = c.get('/api/estudios/prueba/export').json()

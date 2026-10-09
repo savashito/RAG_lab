@@ -11,6 +11,7 @@ asistente:                    # configuración FIJA: todas las personas usan el 
   descomponer: true
   k: 10                       # igual que la app y las corridas del benchmark (+ vecinos aparte)
   max_turnos: 6               # preguntas máximas al asistente por situación
+  historial: 10               # mensajes previos que recuerda el asistente: con 6 preguntas, toda la conversación
 escenarios_por_persona: 3     # todas las personas ven las 3, en orden aleatorio
 duracion: unos 15 minutos     # se muestra en la bienvenida del kiosco; ajustar con el tiempo real del piloto
 

@@ -257,7 +257,8 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if confianza not in (1, 2, 3, 4, 5) or b.get('actuaria') not in SI_NO_NS or b.get('detecto') not in SI_NO_NS:
             return _err('Contesta todas las preguntas.')
         store.terminar(a['codigo'], int(b.get('intento') or 0), a['spec'], b.get('respuestas') or {},
-                       confianza, b['actuaria'], b['detecto'], str(b.get('detecto_cual') or '')[:2000])
+                       confianza, b['actuaria'], b['detecto'], str(b.get('detecto_cual') or '')[:2000],
+                       str(b.get('comentario') or '')[:3000])
         return estado_participante(a)
 
     @r.post('/api/estudio/p/cierre')

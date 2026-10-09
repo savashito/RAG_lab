@@ -266,7 +266,8 @@ async function pantallaEscenario(s, hechos) {
       <div class="composer"><textarea id="txt" placeholder="Escribe tu pregunta al asistente…"></textarea>
         <button class="primary" id="send">Enviar</button></div>
       <p class="muted small">${n} de ${E.max_turnos} preguntas · Enter envía · Shift+Enter hace un salto de línea.</p>
-      <button class="primary" id="listo" ${n ? '' : 'disabled'}>Ya entendí la situación → pasar a las preguntas</button></div>`;
+      <button class="primary" id="listo" ${n ? '' : 'disabled'}>Ya entendí la situación → pasar a las preguntas</button>
+      <p class="muted small">Después ya no podrás hacerle más preguntas al asistente en esta situación (pero sí releer la conversación).</p></div>`;
     const send = async () => {
       const txt = document.getElementById('txt'), msg = txt.value.trim();
       if (!msg || document.getElementById('send').disabled) return;
@@ -285,7 +286,6 @@ async function pantallaEscenario(s, hechos) {
     document.getElementById('send').onclick = send;
     document.getElementById('txt').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
     document.getElementById('listo').onclick = async () => {
-      if (!confirm('¿Pasar a las preguntas? Podrás releer la conversación, pero ya no podrás preguntarle más al asistente en esta situación.')) return;
       try { await api('a_preguntas', {intento: intento.id}); } catch (e) { alert(e.message); return; }
       fase = 'preguntas'; pantallaEscenario(s, hechos); window.scrollTo(0, 0);
     };
@@ -305,6 +305,8 @@ async function pantallaEscenario(s, hechos) {
       <textarea id="detecto_cual" placeholder="Si notaste algo, ¿qué fue? (opcional)" style="margin-top:4px"></textarea>
       <div class="q">Si esto te pasara de verdad, ¿actuarías con base en lo que te dijo el asistente?</div>
       ${[['si','Sí'],['no','No'],['no_se','No sé']].map(([k,v]) => `<label class="opt"><input type="radio" name="actuaria" value="${k}"> <span>${v}</span></label>`).join('')}
+      <div class="q">Comentarios adicionales <span class="muted small">(opcional)</span></div>
+      <textarea id="comentario" placeholder="¿Algo más que quieras decirnos sobre esta situación o las respuestas del asistente?"></textarea>
       <p><button class="primary" id="fin">Terminar esta situación</button> <span id="msg" class="err"></span></p></div></div>${chat}</div>`;
     document.getElementById('fin').onclick = async () => {
       const val = name => (app.querySelector(`input[name="${name}"]:checked`) || {}).value;
@@ -317,7 +319,8 @@ async function pantallaEscenario(s, hechos) {
       const confianza = parseInt(val('confianza') || '0'), actuaria = val('actuaria'), detecto = val('detecto');
       if (!confianza || !actuaria || !detecto) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
       const detecto_cual = document.getElementById('detecto_cual').value;
-      try { E = await api('terminar', {intento: intento.id, respuestas, confianza, actuaria, detecto, detecto_cual}); intento = null; render(); window.scrollTo(0, 0); }
+      const comentario = document.getElementById('comentario').value;
+      try { E = await api('terminar', {intento: intento.id, respuestas, confianza, actuaria, detecto, detecto_cual, comentario}); intento = null; render(); window.scrollTo(0, 0); }
       catch (e) { document.getElementById('msg').textContent = e.message; }
     };
   }

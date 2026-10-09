@@ -68,6 +68,7 @@ ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS config jsonb;
 -- Cuándo pasó a las preguntas de comprensión: desde ahí ya no puede preguntarle al asistente
 -- (ve la conversación solo para leer), para que las opciones no contaminen sus preguntas.
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS preguntas_at timestamptz;
+ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS comentario text;
 ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS busqueda_debug jsonb;
 ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS practicas int NOT NULL DEFAULT 0;
 -- Modo kiosco: una computadora autorizada por un admin crea un código nuevo por cada participante.
@@ -319,13 +320,14 @@ class StudyStore:
         return row['id']
 
     def terminar(self, codigo: str, intento_id: int, spec: dict, respuestas: dict, confianza: int, actuaria: str,
-                 detecto: str, detecto_cual: str):
+                 detecto: str, detecto_cual: str, comentario: str = ''):
         it = self.intento_abierto(codigo, intento_id)
         esc = escenario_efectivo(next(e for e in spec['escenarios'] if e['id'] == it['escenario']), it['variante'])
         sc = puntuar_comprension(esc, respuestas)
         self._q("UPDATE estudio_intentos SET fin=now(), respuestas=%s, comprension=%s, confianza=%s, actuaria=%s, "
-                "detecto=%s, detecto_cual=%s WHERE id=%s",
-                (json.dumps(respuestas), json.dumps(sc), confianza, actuaria, detecto, detecto_cual or None, intento_id),
+                "detecto=%s, detecto_cual=%s, comentario=%s WHERE id=%s",
+                (json.dumps(respuestas), json.dumps(sc), confianza, actuaria, detecto, detecto_cual or None,
+                 comentario or None, intento_id),
                 commit=True)
 
     def contar_practica(self, codigo: str, maximo: int) -> bool:
@@ -414,7 +416,7 @@ class StudyStore:
                        "p.terminado_at::text FROM estudio_participantes p JOIN estudio_codigos k USING (codigo) "
                        "WHERE k.estudio = %s ORDER BY p.consentimiento_at", (eid,))
         intentos = self._q("SELECT i.id, i.codigo, i.escenario, i.variante, i.inicio::text, i.fin::text, i.respuestas, "
-                           "i.comprension, i.confianza, i.actuaria, i.detecto, i.detecto_cual, i.preguntas_at::text, "
+                           "i.comprension, i.confianza, i.actuaria, i.detecto, i.detecto_cual, i.preguntas_at::text, i.comentario, "
                            "extract(epoch FROM i.fin - i.inicio)::int AS segundos FROM estudio_intentos i JOIN estudio_codigos k USING (codigo) "
                            "WHERE k.estudio = %s ORDER BY i.id", (eid,))
         turnos = self._q("SELECT t.id, t.intento_id, t.n, t.ts::text, t.pregunta, t.busqueda, t.respuesta, t.contexto, "

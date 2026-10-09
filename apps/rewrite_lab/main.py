@@ -1150,7 +1150,7 @@ def _study_chat_stream(messages, cfg):
     return chat_event_dicts(messages, cfg.get('setting', 'híbrido'), int(cfg.get('k', 5)), cfg.get('sistema'),
                             cfg.get('tema'), cfg.get('jurisdicciones'), bool(cfg.get('vecinos', True)),
                             bool(cfg.get('hyde', False)), False, bool(cfg.get('descomponer', False)),
-                            bool(cfg.get('route', False)))
+                            bool(cfg.get('route', False)), history=int(cfg.get('historial', 0)) or None)
 
 
 def _study_chat(messages, cfg):
@@ -1660,9 +1660,11 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
 
 
 def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False,
-                     decompose=False, route=False):
+                     decompose=False, route=False, history=None):
     """Los eventos de `_chat_events` como diccionarios (los usa también el estudio con usuarios,
-    que guarda el turno completo al terminar)."""
+    que guarda el turno completo al terminar). `history` = mensajes previos que ve el LLM
+    (default CHAT_HISTORY_MESSAGES)."""
+    history = history or CHAT_HISTORY_MESSAGES
     def sse(obj):
         return obj
     try:
@@ -1672,7 +1674,7 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
         if setting not in ASK_SETTINGS:
             raise ValueError(f'setting desconocido: {setting!r}')
         question = msgs[-1]['content'].strip()
-        search_q = condense_question(msgs)
+        search_q = condense_question(msgs, max_turns=history)
         if find_article_ref(search_q):
             k = max(k, 8)
         t0 = time.time()
@@ -1704,7 +1706,7 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
             f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
             for ch in top)
         llm_msgs = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)}]
-        llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1][-CHAT_HISTORY_MESSAGES:]]
+        llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1][-history:]]
         llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
         for piece in llm.chat_stream(llm_msgs, max_tokens=4096, timeout=180):
             yield sse({'stage': 'token', 'text': piece})
