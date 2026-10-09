@@ -239,7 +239,7 @@ async function pantallaEscenario(s, hechos) {
   if (!intento || intento.escenario !== s.id) {
     const r = await api('iniciar', {escenario: s.id});
     intento = {...r.intento, turnos: r.turnos};
-    fase = 'chat';
+    fase = r.intento.preguntas_at ? 'preguntas' : 'chat';
   }
   const n = intento.turnos.length;
   app.innerHTML = `${pasos(s.id, hechos)}
@@ -271,13 +271,19 @@ async function pantallaEscenario(s, hechos) {
     };
     document.getElementById('send').onclick = send;
     document.getElementById('txt').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
-    document.getElementById('listo').onclick = () => { fase = 'preguntas'; pantallaEscenario(s, hechos); };
+    document.getElementById('listo').onclick = async () => {
+      if (!confirm('¿Pasar a las preguntas? Podrás releer la conversación, pero ya no podrás preguntarle más al asistente en esta situación.')) return;
+      try { await api('a_preguntas', {intento: intento.id}); } catch (e) { alert(e.message); return; }
+      fase = 'preguntas'; pantallaEscenario(s, hechos); window.scrollTo(0, 0);
+    };
   } else {
     const preg = s.preguntas.map(p => `<div class="q">${esc(p.texto)}</div>
       ${Object.entries(p.opciones).map(([k, v]) => `<label class="opt"><input type="radio" name="p_${esc(p.id)}" value="${esc(k)}"> <span>${esc(v)}</span></label>`).join('')}`).join('');
     const likert = [1,2,3,4,5].map(v => `<label><input type="radio" name="confianza" value="${v}">${v}</label>`).join('');
-    zona.innerHTML = `<div class="card"><h2>Preguntas sobre la situación</h2>
-      <p class="muted small">Contesta con lo que entendiste. Si lo necesitas, puedes volver al chat antes de terminar.</p>${preg}
+    zona.innerHTML = `<div class="card"><h2>Tu conversación con el asistente <span class="muted small">(solo lectura)</span></h2>
+      <div class="msgs">${intento.turnos.map(t => `<div class="msg user">${esc(t.pregunta)}</div>${burbujaRespuesta(t)}`).join('')}</div></div>
+      <div class="card"><h2>Preguntas sobre la situación</h2>
+      <p class="muted small">Contesta con lo que entendiste. Puedes releer tu conversación (arriba), pero ya no hacerle más preguntas al asistente.</p>${preg}
       <div class="q">¿Qué tan seguro o segura estás de tus respuestas?</div>
       <div class="likert">${likert}</div><div class="muted small">1 = nada seguro · 5 = totalmente seguro</div>
       <div class="q">¿Notaste algún problema o error en las respuestas del asistente?</div>
@@ -285,8 +291,7 @@ async function pantallaEscenario(s, hechos) {
       <textarea id="detecto_cual" placeholder="Si notaste algo, ¿qué fue? (opcional)" style="margin-top:4px"></textarea>
       <div class="q">Si esto te pasara de verdad, ¿actuarías con base en lo que te dijo el asistente?</div>
       ${[['si','Sí'],['no','No'],['no_se','No sé']].map(([k,v]) => `<label class="opt"><input type="radio" name="actuaria" value="${k}"> <span>${v}</span></label>`).join('')}
-      <p><button class="ghost" id="volver">← Volver al chat</button> <button class="primary" id="fin">Terminar esta situación</button> <span id="msg" class="err"></span></p></div>`;
-    document.getElementById('volver').onclick = () => { fase = 'chat'; pantallaEscenario(s, hechos); };
+      <p><button class="primary" id="fin">Terminar esta situación</button> <span id="msg" class="err"></span></p></div>`;
     document.getElementById('fin').onclick = async () => {
       const val = name => (app.querySelector(`input[name="${name}"]:checked`) || {}).value;
       const respuestas = {};

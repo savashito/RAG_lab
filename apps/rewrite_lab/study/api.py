@@ -105,7 +105,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
     @guard
     async def p_preguntar(request: Request):
         a, b = acceso(request, 'participante'), await request.json()
-        it = store.intento_abierto(a['codigo'], int(b.get('intento') or 0))
+        it = store.intento_abierto(a['codigo'], int(b.get('intento') or 0), para_preguntar=True)
         mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
         if not mensaje:
             return _err('Escribe tu pregunta.')
@@ -180,7 +180,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
     @guard
     async def p_preguntar_stream(request: Request):
         a, b = acceso(request, 'participante'), await request.json()
-        it = store.intento_abierto(a['codigo'], int(b.get('intento') or 0))
+        it = store.intento_abierto(a['codigo'], int(b.get('intento') or 0), para_preguntar=True)
         mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
         if not mensaje:
             return _err('Escribe tu pregunta.')
@@ -241,6 +241,13 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         a = acceso(request, 'participante')
         store.tutorial_listo(a['codigo'])
         return estado_participante(a)
+
+    @r.post('/api/estudio/p/a_preguntas')
+    @guard
+    async def p_a_preguntas(request: Request):
+        a, b = acceso(request, 'participante'), await request.json()
+        store.a_preguntas(a['codigo'], int(b.get('intento') or 0))
+        return {'ok': True}
 
     @r.post('/api/estudio/p/terminar')
     @guard

@@ -65,6 +65,9 @@ ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS tutorial_at timestamp
 -- Por turno: configuración exacta del asistente y lo que hizo la búsqueda (borrador HyDE, sub-preguntas,
 -- routing), para poder reanalizar las preguntas de participantes en experimentos futuros.
 ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS config jsonb;
+-- Cuándo pasó a las preguntas de comprensión: desde ahí ya no puede preguntarle al asistente
+-- (ve la conversación solo para leer), para que las opciones no contaminen sus preguntas.
+ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS preguntas_at timestamptz;
 ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS busqueda_debug jsonb;
 ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS practicas int NOT NULL DEFAULT 0;
 -- Modo kiosco: una computadora autorizada por un admin crea un código nuevo por cada participante.
@@ -276,17 +279,28 @@ class StudyStore:
             raise NoPermitido('Ese escenario no te tocó.')
         self._q("INSERT INTO estudio_intentos (codigo, escenario, variante) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
                 (codigo, escenario, (p['variantes'] or {}).get(escenario)), commit=True)
-        return self._q("SELECT id, escenario, fin::text FROM estudio_intentos WHERE codigo=%s AND escenario=%s",
+        return self._q("SELECT id, escenario, fin::text, preguntas_at::text FROM estudio_intentos WHERE codigo=%s AND escenario=%s",
                        (codigo, escenario), one=True)
 
-    def intento_abierto(self, codigo: str, intento_id: int) -> dict:
-        it = self._q("SELECT id, escenario, variante, fin FROM estudio_intentos WHERE id=%s AND codigo=%s",
+    def intento_abierto(self, codigo: str, intento_id: int, para_preguntar: bool = False) -> dict:
+        it = self._q("SELECT id, escenario, variante, fin, preguntas_at FROM estudio_intentos WHERE id=%s AND codigo=%s",
                      (intento_id, codigo), one=True)
         if not it:
             raise NoPermitido('Intento no encontrado.')
         if it['fin']:
             raise NoPermitido('Este escenario ya se terminó.')
+        if para_preguntar and it['preguntas_at']:
+            raise NoPermitido('Ya pasaste a las preguntas: puedes releer la conversación, pero ya no preguntarle al asistente.')
         return it
+
+    def a_preguntas(self, codigo: str, intento_id: int):
+        """La persona terminó de conversar y pasa a las preguntas de comprensión (no hay vuelta atrás)."""
+        self.intento_abierto(codigo, intento_id)
+        if not self._q("SELECT 1 AS x FROM estudio_turnos WHERE intento_id=%s AND respuesta IS NOT NULL LIMIT 1",
+                       (intento_id,), one=True):
+            raise NoPermitido('Primero hazle al menos una pregunta al asistente.')
+        self._q("UPDATE estudio_intentos SET preguntas_at = coalesce(preguntas_at, now()) WHERE id=%s",
+                (intento_id,), commit=True)
 
     def turnos(self, intento_id: int) -> list[dict]:
         return self._q("SELECT id, n, pregunta, respuesta, contexto, error FROM estudio_turnos WHERE intento_id=%s "
@@ -400,7 +414,7 @@ class StudyStore:
                        "p.terminado_at::text FROM estudio_participantes p JOIN estudio_codigos k USING (codigo) "
                        "WHERE k.estudio = %s ORDER BY p.consentimiento_at", (eid,))
         intentos = self._q("SELECT i.id, i.codigo, i.escenario, i.variante, i.inicio::text, i.fin::text, i.respuestas, "
-                           "i.comprension, i.confianza, i.actuaria, i.detecto, i.detecto_cual, "
+                           "i.comprension, i.confianza, i.actuaria, i.detecto, i.detecto_cual, i.preguntas_at::text, "
                            "extract(epoch FROM i.fin - i.inicio)::int AS segundos FROM estudio_intentos i JOIN estudio_codigos k USING (codigo) "
                            "WHERE k.estudio = %s ORDER BY i.id", (eid,))
         turnos = self._q("SELECT t.id, t.intento_id, t.n, t.ts::text, t.pregunta, t.busqueda, t.respuesta, t.contexto, "

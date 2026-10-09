@@ -232,6 +232,10 @@ def test_flujo_completo(cliente):
     assert t1['config']['tema'] == 't' and t1['ranking'] == [7, 8, 9]  # config y ranking por turno, para reanalizar
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400  # max_turnos 2
     assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400
+    # Pasar a las preguntas: ya no se puede preguntar (ve la conversación solo para leer).
+    c.post('/api/estudio/p/a_preguntas', headers=H, json={'intento': it['id']})
+    assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
+    assert c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': s1}).json()['intento']['preguntas_at']
     assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}}).status_code == 400
     c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si', 'detecto': 'no'})
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
@@ -292,6 +296,7 @@ def test_streaming_guarda_el_turno_completo(cliente):
     H = {'X-Codigo': p}
     est = c.post('/api/estudio/p/consentir', headers=H, json={'acepto': True, 'perfil': {'formacion': 'ninguna', 'carrera': 'X'}}).json()
     it = c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': est['escenarios'][0]['id']}).json()['intento']
+    assert c.post('/api/estudio/p/a_preguntas', headers=H, json={'intento': it['id']}).status_code == 403   # sin preguntas aún
     r = c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': '¿es delito?'})
     evs = [_json.loads(l[6:]) for l in r.text.split('\n\n') if l.startswith('data: ')]
     assert ''.join(e['text'] for e in evs if e['stage'] == 'token') == 'Sí, es delito.'
