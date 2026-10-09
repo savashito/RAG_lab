@@ -145,6 +145,14 @@ def test_grupo_por_perfil():
     assert A.grupo_de({'grupo': 'lego', 'perfil': {'area': 'derecho'}}) == 'lego'
 
 
+def test_lugares_mencionados():
+    assert A.lugares_mencionados('mi jefe me manda mensajes, es delito?') == []
+    assert A.lugares_mencionados('trabajo en qro y me acosan') == ['Querétaro']
+    assert A.lugares_mencionados('me pasó en el df') == ['CDMX']
+    assert A.lugares_mencionados('en la Ciudad de Mexico') == ['CDMX']
+    assert A.lugares_mencionados('qué dice el cnpp') == []          # ley procesal: no fija el estado
+
+
 def test_sus():
     assert A.sus([5, 1] * 5) == 100.0
     assert A.sus([1, 5] * 5) == 0.0

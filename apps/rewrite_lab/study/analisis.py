@@ -13,7 +13,17 @@ from __future__ import annotations
 import random
 from collections import Counter, defaultdict
 
+from shared.code_routes import codes_in
 from study.validar import DANOS
+
+# Entidades o códigos penales que fijan la jurisdicción si la persona los nombra en su pregunta.
+LUGARES = {'CDMX', 'CPEM', 'Morelos', 'Querétaro', 'CPF'}
+
+
+def lugares_mencionados(pregunta: str) -> list[str]:
+    """Qué estado o código penal nombra la persona en su pregunta («en qro», «en la cdmx», «código
+    federal»…), con el mismo detector del routing por código. [] = no dijo dónde."""
+    return [h['label'] for h in codes_in(pregunta or '') if h['label'] in LUGARES]
 
 
 def asignar(escenarios: list[str], conteos: dict[str, int], n: int, rng: random.Random | None = None) -> list[str]:
@@ -175,8 +185,14 @@ def resumen(datos: dict) -> dict:
     clave_de = {i['id']: i['escenario'] + (f"/{i['variante']}" if i.get('variante') else '') for i in datos['intentos']}
     for t in datos['turnos']:
         k = clave_de.get(t['intento_id'])
-        if k and t['n'] == 1 and t.get('rangos'):
-            esc[k]['r10'].append(recall_at(t['rangos'], 10))
+        if not k or t['n'] != 1:
+            continue
+        lugar = bool(lugares_mencionados(t['pregunta']))
+        esc[k]['menciona_lugar'].append(lugar)
+        if t.get('rangos'):
+            r = recall_at(t['rangos'], 10)
+            esc[k]['r10'].append(r)
+            esc[k]['r10_con_lugar' if lugar else 'r10_sin_lugar'].append(r)
     for it in datos['intentos']:
         sc = it.get('comprension') or {}
         if sc.get('total'):
@@ -184,6 +200,10 @@ def resumen(datos: dict) -> dict:
         if it.get('detecto'):
             esc[clave_de[it['id']]]['detecto'].append(it['detecto'] == 'si')
     out['_por_escenario'] = {k: {'intentos': len(m['comprension']), 'recall@10_primer_turno': media(m['r10']),
+                                 # ¿La primera pregunta dice dónde pasó? Y cómo cambia la búsqueda si no.
+                                 'primera_pregunta_dice_lugar': media(m['menciona_lugar']),
+                                 'recall@10_con_lugar': media(m['r10_con_lugar']),
+                                 'recall@10_sin_lugar': media(m['r10_sin_lugar']),
                                  'comprension': media(m['comprension']), 'detecto_problema': media(m['detecto'])}
                              for k, m in sorted(esc.items())}
     out['_acuerdo'] = {'kappa_veredicto_estudiantes': kappa(pares), 'pares': len(pares),

@@ -17,7 +17,7 @@ from fastapi import APIRouter, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
-from study.analisis import rango_gold, resumen
+from study.analisis import lugares_mencionados, rango_gold, resumen
 from study.store import NoPermitido
 from study.validar import (CITA, DANOS, ESTADOS, GRUPOS, ROLES_CALIFICADOR, SI_NO_NS, VEREDICTOS,
                            escenario_efectivo, limpiar_perfil, vista_publica)
@@ -421,6 +421,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
             grupos = gold.get(esc_de.get(t['intento_id'])) or []
             t['gold'] = [[x['label'] for x in g] for g in grupos]
             t['rangos'] = rango_gold(grupos, t.get('ranking') or [])
+            t['lugares_mencionados'] = lugares_mencionados(t['pregunta'])
         datos['resumen'] = resumen(datos)
         return datos
 
