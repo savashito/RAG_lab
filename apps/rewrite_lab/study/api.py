@@ -185,7 +185,9 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
     @guard
     async def k_estado(request: Request):
         k = store.kiosco(request.headers.get('x-kiosco', ''))
-        return {'titulo': k['titulo']}
+        spec = store.spec(k['estudio'])
+        return {'titulo': k['titulo'], 'duracion': spec.get('duracion') or 'unos 15 minutos',
+                'situaciones': len(spec.get('escenarios') or [])}
 
     @r.post('/api/estudio/k/nuevo')
     @guard

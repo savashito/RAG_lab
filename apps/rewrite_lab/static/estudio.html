@@ -107,13 +107,14 @@ function pantallaCodigo(msg) {
 async function pantallaKiosco(msg) {
   document.getElementById('btnRetirar').hidden = true;
   document.getElementById('btnSalir').hidden = true;
-  let titulo = 'Estudio del asistente legal';
-  try { titulo = (await apiKiosco('estado')).titulo || titulo; } catch (e) { msg = msg || e.message; }
+  let titulo = 'Estudio del asistente legal', duracion = 'unos 15 minutos', n = 3;
+  try { const k = await apiKiosco('estado'); titulo = k.titulo || titulo; duracion = k.duracion || duracion; n = k.situaciones || n; }
+  catch (e) { msg = msg || e.message; }
   document.getElementById('titulo').textContent = titulo;
   app.innerHTML = `<div class="card" style="text-align:center;padding:40px 20px">
     <h2 style="font-size:22px">¡Hola! Gracias por participar</h2>
-    <p>Vas a leer 3 situaciones ficticias y a preguntarle a un asistente de inteligencia artificial con tus propias
-    palabras. Toma unos 25 minutos. <b>No te pediremos tu nombre.</b></p>
+    <p>Vas a leer ${n} situaciones ficticias y a preguntarle a un asistente de inteligencia artificial con tus propias
+    palabras. Toma ${esc(duracion)}. <b>No te pediremos tu nombre.</b></p>
     <button class="primary" id="empezar" style="font-size:18px;padding:12px 28px;margin-top:8px">Empezar</button>
     ${msg ? `<p class="err">${esc(msg)}</p>` : ''}</div>`;
   document.getElementById('empezar').onclick = async () => {

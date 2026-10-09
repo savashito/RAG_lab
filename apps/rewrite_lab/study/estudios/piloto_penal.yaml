@@ -12,13 +12,14 @@ asistente:                    # configuración FIJA: todas las personas usan el 
   k: 10                       # igual que la app y las corridas del benchmark (+ vecinos aparte)
   max_turnos: 6               # preguntas máximas al asistente por situación
 escenarios_por_persona: 3     # todas las personas ven las 3, en orden aleatorio
+duracion: unos 15 minutos     # se muestra en la bienvenida del kiosco; ajustar con el tiempo real del piloto
 
 consentimiento: |
   **Gracias por tu interés.** Este estudio forma parte de una investigación sobre cómo las personas
   usan herramientas de inteligencia artificial para buscar información jurídica.
 
   - Leerás **3 situaciones ficticias** y le harás preguntas a un asistente con tus propias palabras.
-    Después de cada una contestarás unas preguntas breves. Toma unos 25 minutos.
+    Después de cada una contestarás unas preguntas breves. Toma unos 15 minutos.
   - **No escribas datos personales ni casos reales.** Lo que escribas se guarda con un código, sin tu
     nombre, número de cuenta ni correo, y se usa solo para la investigación.
   - El asistente **no da asesoría legal** y puede equivocarse. Si tienes un problema legal real, acude
