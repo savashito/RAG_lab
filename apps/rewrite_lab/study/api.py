@@ -359,6 +359,13 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
             return _err(f'estado debe ser uno de {", ".join(ESTADOS)}')
         return store.cambiar_estado(eid, estado, email)
 
+    @r.get('/api/estudios/{eid}/participantes/{codigo}')
+    def adm_participante(eid: str, codigo: str, request: Request):
+        if not admin(request):
+            return _err('Solo administradores.', 403)
+        d = store.detalle_participante(eid, codigo)
+        return d or _err('Ese código no tiene datos (no ha empezado o se retiró).', 404)
+
     @r.get('/api/estudios/{eid}/codigos')
     def adm_codigos(eid: str, request: Request):
         if not admin(request):

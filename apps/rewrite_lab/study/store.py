@@ -410,6 +410,28 @@ class StudyStore:
         return {'calificadas': hechas}
 
     # ── export (seudónimo) ───────────────────────────────────────────────────────
+    def detalle_participante(self, eid: str, codigo: str) -> dict | None:
+        """Todo lo de un participante para revisarlo en /estudios: perfil, cada situación tal como la vio
+        (variante, preguntas con su respuesta correcta), lo que contestó y su conversación."""
+        p = self._q("SELECT p.codigo, k.grupo, k.nota, p.perfil, p.asignados, p.variantes, p.practicas, p.cierre, "
+                    "p.consentimiento_at::text, p.tutorial_at::text, p.terminado_at::text FROM estudio_participantes p "
+                    "JOIN estudio_codigos k USING (codigo) WHERE p.codigo=%s AND k.estudio=%s", (codigo, eid), one=True)
+        if not p:
+            return None
+        spec = self.spec(eid)
+        por_id = {e['id']: e for e in spec.get('escenarios') or []}
+        intentos = self._q("SELECT id, escenario, variante, inicio::text, preguntas_at::text, fin::text, respuestas, "
+                           "comprension, confianza, actuaria, detecto, detecto_cual, comentario FROM estudio_intentos "
+                           "WHERE codigo=%s ORDER BY id", (codigo,))
+        for it in intentos:
+            ef = escenario_efectivo(por_id.get(it['escenario']) or {}, it['variante'])
+            it['titulo'], it['texto'] = ef.get('titulo', it['escenario']), ef.get('texto', '')
+            it['preguntas'] = [{'id': q['id'], 'texto': q['texto'], 'opciones': q['opciones'], 'correcta': q.get('correcta')}
+                               for q in ef.get('preguntas') or []]
+            it['turnos'] = self._q("SELECT n, ts::text, pregunta, busqueda, respuesta, contexto, error, segundos "
+                                   "FROM estudio_turnos WHERE intento_id=%s ORDER BY n", (it['id'],))
+        return {**p, 'perfil_preguntas': spec.get('perfil') or [], 'intentos': intentos}
+
     def export(self, eid: str) -> dict:
         part = self._q("SELECT p.codigo, k.grupo, p.perfil, p.asignados, p.variantes, p.cierre, p.practicas, "
                        "p.tutorial_at::text, p.consentimiento_at::text, "

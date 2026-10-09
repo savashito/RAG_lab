@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Estudios con usuarios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <style>
   :root{ --bg:#f6f7f9; --card:#fff; --ink:#1a1d24; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --accent-ink:#fff;
          --ok:#15803d; --bad:#b91c1c; --warn:#b45309; }
@@ -30,9 +32,23 @@
   .estado.abierto{border-color:var(--ok);color:var(--ok)} .estado.cerrado{border-color:var(--bad);color:var(--bad)}
   code{font:12px ui-monospace,Menlo,monospace}
   .scroll{overflow-x:auto}
+  .small{font-size:12px}
+  a.cod{cursor:pointer;color:var(--accent);text-decoration:underline}
+  /* Vista de un participante */
+  .panel{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;justify-content:flex-end;z-index:10}
+  .panel[hidden]{display:none}
+  .panel .hoja{background:var(--bg);width:min(980px,100%);height:100%;overflow:auto;padding:16px;border-left:1px solid var(--line)}
+  .msg{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);margin:6px 0}
+  .msg.user{background:color-mix(in srgb, var(--accent) 12%, var(--card))}
+  .msg p:first-child{margin-top:0} .msg p:last-child{margin-bottom:0}
+  .ok-b{color:var(--ok);font-weight:600} .mal-b{color:var(--bad);font-weight:600}
+  details.src summary{cursor:pointer;color:var(--muted);font-size:12px}
+  .chunk{border-top:1px solid var(--line);padding:4px 0;white-space:pre-wrap;font-size:12px}
+  .kv{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px}
 </style>
 </head>
 <body>
+<div class="panel" id="panel" hidden><div class="hoja" id="hoja"></div></div>
 <div class="wrap">
   <h1>🧪 Estudios con usuarios <a class="muted" href="/" style="font-size:13px;font-weight:400">← volver al app</a></h1>
   <div class="card"><div class="row"><select id="sel"></select> <span id="info" class="muted"></span></div>
@@ -121,9 +137,10 @@ async function abrir(id) {
 async function codigos(id) {
   const cs = await api('GET', `/api/estudios/${id}/codigos`);
   document.getElementById('codigos').innerHTML = cs.length ? `<table><tr><th>Código</th><th>Tipo</th><th>Grupo</th><th>Nota</th><th>Avance</th><th>Activo</th></tr>
-    ${cs.map(c => `<tr><td><code>${esc(c.codigo)}</code></td><td>${esc(c.tipo)}</td><td>${esc(c.grupo)}</td><td>${esc(c.nota || '')}</td>
+    ${cs.map(c => `<tr><td>${c.tipo === 'participante' && c.consentimiento_at ? `<a class="cod" data-ver="${esc(c.codigo)}"><code>${esc(c.codigo)}</code></a>` : `<code>${esc(c.codigo)}</code>`}</td><td>${esc(c.tipo)}</td><td>${esc(c.grupo)}</td><td>${esc(c.nota || '')}</td>
       <td>${c.tipo === 'participante' ? (c.terminado_at ? '✅ terminó' : c.consentimiento_at ? `${c.escenarios_terminados} escenario(s)` : '—') : `${c.calificadas} calificada(s)`}</td>
       <td><input type="checkbox" data-cod="${esc(c.codigo)}" ${c.activo ? 'checked' : ''}></td></tr>`).join('')}</table>` : '<p class="muted">Sin códigos todavía.</p>';
+  document.querySelectorAll('[data-ver]').forEach(a => a.onclick = () => verParticipante(id, a.dataset.ver));
   document.querySelectorAll('[data-cod]').forEach(x => x.onchange = () => api('POST', `/api/estudios/${id}/codigos/${x.dataset.cod}/activo`, {activo: x.checked}));
 }
 
@@ -134,6 +151,61 @@ async function kioscos(id) {
       <td><input type="checkbox" data-kiosco="${k.id}" ${k.activo ? 'checked' : ''}></td></tr>`).join('')}</table>` : '';
   document.querySelectorAll('[data-kiosco]').forEach(x => x.onchange = () => api('POST', `/api/estudios/${id}/kioscos/${x.dataset.kiosco}/activo`, {activo: x.checked}));
 }
+
+const md = t => DOMPurify.sanitize(marked.parse(String(t || '')));
+// Fechas de PostgreSQL («2026-10-09 18:19:08.56+00») → hora de la Ciudad de México.
+const hora = t => {
+  if (!t) return '—';
+  const d = new Date(t.replace(' ', 'T').replace(/([+-]\d\d)$/, '$1:00'));
+  return isNaN(d) ? t : d.toLocaleString('es-MX', {dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Mexico_City'});
+};
+
+async function verParticipante(eid, codigo) {
+  const panel = document.getElementById('panel'), hoja = document.getElementById('hoja');
+  panel.hidden = false;
+  hoja.innerHTML = '<p class="muted">Cargando…</p>';
+  let d;
+  try { d = await api('GET', `/api/estudios/${eid}/participantes/${codigo}`); }
+  catch (e) { hoja.innerHTML = `<p class="err">${esc(e.message)}</p>`; return; }
+  const etq = {}; (d.perfil_preguntas || []).forEach(p => etq[p.id] = p);
+  const valor = (k, v) => (etq[k] && etq[k].opciones && etq[k].opciones[v]) || v;
+  const perfil = Object.entries(d.perfil || {}).map(([k, v]) =>
+    `<div class="muted">${esc((etq[k] || {}).pregunta || k)}</div><div>${esc(valor(k, v))}</div>`).join('');
+  const sit = (d.intentos || []).map(it => {
+    const sc = it.comprension || {};
+    const preg = (it.preguntas || []).map(q => {
+      const r = (it.respuestas || {})[q.id];
+      const marca = r == null ? '<span class="muted">sin contestar</span>' : r === q.correcta ? '<span class="ok-b">✔</span>' : r === 'no_se' ? '<span class="muted">no sé</span>' : '<span class="mal-b">✘</span>';
+      return `<div style="margin:6px 0"><b>${esc(q.texto)}</b><br>${marca} ${esc(q.opciones[r] || r || '')}
+        ${r != null && r !== q.correcta ? `<div class="muted small">Correcta: ${esc(q.opciones[q.correcta] || q.correcta)}</div>` : ''}</div>`;
+    }).join('');
+    const turnos = (it.turnos || []).map(t => `<div class="msg user">${esc(t.pregunta)} <span class="muted" style="font-size:11px">${hora(t.ts)}${t.segundos ? ' · ' + t.segundos + ' s' : ''}</span>
+        ${t.busqueda ? `<div class="muted" style="font-size:11px">búsqueda reescrita: ${esc(t.busqueda)}</div>` : ''}</div>
+      <div class="msg">${t.error && !t.respuesta ? `<span class="err">${esc(t.error)}</span>` : md(t.respuesta)}
+        <details class="src"><summary>Fuentes (${(t.contexto || []).length})</summary>${(t.contexto || []).map(f =>
+          `<div class="chunk"><b>[${f.rank}] ${esc(f.cita)}</b> — ${esc((f.jerarquia || '').split(' > ').pop())}${f.vecino ? ' <i>(cercano)</i>' : ''}</div>`).join('')}</details></div>`).join('');
+    return `<div class="card"><h2>${esc(it.titulo)}${it.variante ? ` <span class="muted">(${esc(it.variante)})</span>` : ''}</h2>
+      <div class="muted small">${hora(it.inicio)} → ${it.fin ? hora(it.fin) : '<b>sin terminar</b>'}</div>
+      <details style="margin:6px 0"><summary class="muted">Texto de la situación</summary>${md(it.texto)}</details>
+      <h3 style="font-size:13px;margin:10px 0 4px">Conversación (${(it.turnos || []).length})</h3>${turnos || '<p class="muted">Sin preguntas.</p>'}
+      ${it.fin ? `<h3 style="font-size:13px;margin:12px 0 4px">Respuestas — ${sc.aciertos ?? '?'} de ${sc.total ?? '?'} correctas</h3>${preg}
+        <div class="kv" style="margin-top:6px"><div class="muted">Confianza</div><div>${it.confianza ?? '—'} / 5</div>
+        <div class="muted">¿Notó un problema?</div><div>${esc(it.detecto || '—')}${it.detecto_cual ? ': ' + esc(it.detecto_cual) : ''}</div>
+        <div class="muted">¿Actuaría?</div><div>${esc(it.actuaria || '—')}</div>
+        <div class="muted">Comentarios</div><div>${esc(it.comentario || '—')}</div></div>` : ''}</div>`;
+  }).join('');
+  const cierre = d.cierre || {};
+  hoja.innerHTML = `<div class="row" style="justify-content:space-between"><h1 style="margin:0">Participante <code>${esc(d.codigo)}</code></h1>
+      <button class="ghost" id="cerrarPanel">Cerrar ✕</button></div>
+    <p class="muted">${esc(d.grupo)} · ${esc(d.nota || '')} · empezó ${hora(d.consentimiento_at)} · ${d.terminado_at ? 'terminó ' + hora(d.terminado_at) : '<b>no terminó</b>'} · ${d.practicas} pregunta(s) de práctica</p>
+    <div class="card"><h2>Perfil</h2><div class="kv">${perfil}</div></div>
+    ${sit || '<p class="muted">Aún no empieza ninguna situación.</p>'}
+    ${d.terminado_at ? `<div class="card"><h2>Cierre</h2><div class="kv"><div class="muted">SUS (respuestas 1–5)</div><div>${esc((cierre.sus || []).join(', '))}</div>
+      ${Object.entries(cierre.abiertas || {}).map(([q, a]) => `<div class="muted">${esc(q)}</div><div>${esc(a || '—')}</div>`).join('')}</div></div>` : ''}`;
+  document.getElementById('cerrarPanel').onclick = () => { panel.hidden = true; };
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('panel').hidden = true; });
+document.getElementById('panel').addEventListener('click', e => { if (e.target.id === 'panel') e.target.hidden = true; });
 
 async function resumen(id) {
   const r = await api('GET', `/api/estudios/${id}/resumen`);

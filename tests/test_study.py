@@ -265,6 +265,10 @@ def test_flujo_completo(cliente):
     assert c.post('/api/estudio/c/siguiente', headers=G(p1)).status_code == 403   # un código de participante no califica
 
     assert [i['comentario'] for i in store.export('prueba')['intentos'] if i['fin']] == ['todo claro']
+    d = c.get(f'/api/estudios/prueba/participantes/{p1}').json()
+    it_d = next(i for i in d['intentos'] if i['fin'])
+    assert it_d['preguntas'][0]['correcta'] and it_d['turnos'][0]['respuesta'] and it_d['comentario'] == 'todo claro'
+    assert c.get('/api/estudios/prueba/participantes/NADA-NADA').status_code == 404
     res = c.get('/api/estudios/prueba/resumen').json()
     assert res['lego']['comprension'] is not None and res['_acuerdo']['pares'] == 1
     exp = c.get('/api/estudios/prueba/export').json()
