@@ -62,6 +62,10 @@ ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto text;
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto_cual text;
 -- Práctica antes de las situaciones: cuándo la terminó y cuántas preguntas de práctica hizo (no se guardan).
 ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS tutorial_at timestamptz;
+-- Por turno: configuración exacta del asistente y lo que hizo la búsqueda (borrador HyDE, sub-preguntas,
+-- routing), para poder reanalizar las preguntas de participantes en experimentos futuros.
+ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS config jsonb;
+ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS busqueda_debug jsonb;
 ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS practicas int NOT NULL DEFAULT 0;
 -- Modo kiosco: una computadora autorizada por un admin crea un código nuevo por cada participante.
 -- Solo se guarda el hash del token; el token vive en el navegador de esa computadora.
@@ -288,13 +292,16 @@ class StudyStore:
         return self._q("SELECT id, n, pregunta, respuesta, contexto, error FROM estudio_turnos WHERE intento_id=%s "
                        "ORDER BY n", (intento_id,))
 
-    def guardar_turno(self, intento_id: int, n: int, pregunta: str, out: dict | None, error: str | None) -> int:
+    def guardar_turno(self, intento_id: int, n: int, pregunta: str, out: dict | None, error: str | None,
+                      config: dict | None = None) -> int:
         out = out or {}
-        row = self._q("INSERT INTO estudio_turnos (intento_id, n, pregunta, busqueda, respuesta, contexto, ranking, segundos, error) "
-                      "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+        dbg = {k: out[k] for k in ('hyde_passage', 'subqueries', 'routes', 'rewrite', 'score_kind') if out.get(k)}
+        row = self._q("INSERT INTO estudio_turnos (intento_id, n, pregunta, busqueda, respuesta, contexto, ranking, segundos, "
+                      "error, config, busqueda_debug) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
                       (intento_id, n, pregunta, out.get('search_query') or None, out.get('answer'),
                        json.dumps(out.get('contexto') or []), json.dumps(out.get('ranking') or []),
-                       out.get('seconds'), error), one=True, commit=True)
+                       out.get('seconds'), error, json.dumps(config or {}), json.dumps(dbg, ensure_ascii=False, default=str)),
+                      one=True, commit=True)
         return row['id']
 
     def terminar(self, codigo: str, intento_id: int, spec: dict, respuestas: dict, confianza: int, actuaria: str,
@@ -397,7 +404,7 @@ class StudyStore:
                            "extract(epoch FROM i.fin - i.inicio)::int AS segundos FROM estudio_intentos i JOIN estudio_codigos k USING (codigo) "
                            "WHERE k.estudio = %s ORDER BY i.id", (eid,))
         turnos = self._q("SELECT t.id, t.intento_id, t.n, t.ts::text, t.pregunta, t.busqueda, t.respuesta, t.contexto, "
-                         "t.ranking, t.segundos, t.error FROM estudio_turnos t JOIN estudio_intentos i ON i.id = t.intento_id "
+                         "t.ranking, t.segundos, t.error, t.config, t.busqueda_debug FROM estudio_turnos t JOIN estudio_intentos i ON i.id = t.intento_id "
                          "JOIN estudio_codigos k ON k.codigo = i.codigo WHERE k.estudio = %s ORDER BY t.id", (eid,))
         return {'estudio': self.obtener(eid), 'participantes': part, 'intentos': intentos, 'turnos': turnos,
                 'calificaciones': self._calificaciones(eid)}

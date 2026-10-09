@@ -8,7 +8,7 @@ asistente:                    # configuración FIJA: todas las personas usan el 
   setting: híbrido
   hyde: true
   route: true                 # routing por código
-  descomponer: false
+  descomponer: true
   k: 5
   max_turnos: 6               # preguntas máximas al asistente por situación
 escenarios_por_persona: 3     # todas las personas ven las 3, en orden aleatorio

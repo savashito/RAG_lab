@@ -120,7 +120,7 @@
 const P = new URLSearchParams(location.search);
 const bool = (v, def) => v == null ? def : String(v).toLowerCase() !== 'false';
 const SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido'];
-let metodo = (P.get('metodo') || P.get('setting') || 'orig').toLowerCase();
+let metodo = (P.get('metodo') || P.get('setting') || 'híbrido').toLowerCase();
 if (metodo === 'hibrido') metodo = 'híbrido';
 const kParam = Math.min(Math.max(parseInt(P.get('k'), 10) || 10, 1), 20);
 const jur = (P.get('jurisdiccion') || P.get('jurisdiction') || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -129,6 +129,7 @@ const CFG = {
   neighbors: bool(P.get('vecinos'), true),
   hyde: bool(P.get('HyDE') ?? P.get('hyde'), true),
   rerank: bool(P.get('rerank'), false),
+  decompose: bool(P.get('descomponer') ?? P.get('decompose'), true),
   setting: SETTINGS.includes(metodo) ? metodo : 'orig',
   k: kParam, jurisdictions: jur,
 };
@@ -297,7 +298,7 @@ form.addEventListener('submit', async e => {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: history, setting: CFG.setting, k: CFG.k, topic: CFG.topic,
-        jurisdictions: CFG.jurisdictions, neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank,
+        jurisdictions: CFG.jurisdictions, neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank, decompose: CFG.decompose,
       }),
     });
     if (resp.status === 401) throw new Error('Sesión expirada. <a href="' + loginHref() + '">Inicia sesión</a>.');

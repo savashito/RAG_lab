@@ -219,6 +219,8 @@ def test_flujo_completo(cliente):
     assert r['respuesta'] == 'respuesta 1' and r['fuentes'][0]['texto'] == 'Art. 179'
     c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'y luego'})
     assert len(llamadas[-1]) == 3                                        # historial: u, a, u
+    t1 = store.export('prueba')['turnos'][0]
+    assert t1['config']['tema'] == 't' and t1['ranking'] == [7, 8, 9]  # config y ranking por turno, para reanalizar
     assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400  # max_turnos 2
     assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}}).status_code == 400
     c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si', 'detecto': 'no'})

@@ -82,7 +82,7 @@ const P = new URLSearchParams(location.search);
 const bool = (v, def) => v == null ? def : String(v).toLowerCase() !== 'false';
 // Método de recuperación: acepta 'hibrido' sin acento y cae a 'orig' si no es válido.
 const SETTINGS = ['orig', 'reescribir', 'multiquery', 'bm25', 'híbrido'];
-let metodo = (P.get('metodo') || P.get('setting') || 'orig').toLowerCase();
+let metodo = (P.get('metodo') || P.get('setting') || 'híbrido').toLowerCase();
 if (metodo === 'hibrido') metodo = 'híbrido';
 // k: entero acotado a [1, 20].
 const k = Math.min(Math.max(parseInt(P.get('k'), 10) || 10, 1), 20);
@@ -94,6 +94,7 @@ const CFG = {
   neighbors: bool(P.get('vecinos'), true),
   hyde: bool(P.get('HyDE') ?? P.get('hyde'), true),
   rerank: bool(P.get('rerank'), false),
+  decompose: bool(P.get('descomponer') ?? P.get('decompose'), true),
   setting: SETTINGS.includes(metodo) ? metodo : 'orig',
   k, jurisdictions: jur,
 };
@@ -140,7 +141,7 @@ form.addEventListener('submit', async e => {
       body: JSON.stringify({
         question, setting: CFG.setting, k: CFG.k, topic: CFG.topic,
         jurisdictions: CFG.jurisdictions,
-        neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank,
+        neighbors: CFG.neighbors, hyde: CFG.hyde, rerank: CFG.rerank, decompose: CFG.decompose,
       }),
     });
     if (resp.status === 401){

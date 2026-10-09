@@ -333,7 +333,7 @@
    <label class="chk" title="Además del artículo encontrado, incluye su familia (bis) y ±2 artículos vecinos como contexto."><input type="checkbox" id="ask-neighbors" checked> vecinos ↕</label>
    <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="ask-hyde" checked> HyDE 🧪</label>
    <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="ask-rerank"> rerank 🎯</label>
-   <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="ask-decompose"> descomponer 🧩</label>
+   <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="ask-decompose" checked> descomponer 🧩</label>
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="ask-route"> routing por código 🧭</label>
  </div>
  <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
@@ -361,9 +361,9 @@
    <label>Método: <select id="chat-setting"></select></label>
    <label>Top-k: <select id="chat-k"><option>3</option><option>5</option><option>8</option><option selected>10</option></select></label>
    <label class="chk" title="Además del artículo encontrado, incluye su familia (bis) y ±2 artículos vecinos como contexto."><input type="checkbox" id="chat-neighbors" checked> vecinos ↕</label>
-   <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="chat-hyde"> HyDE 🧪</label>
+   <label class="chk" title="HyDE: el LLM redacta un borrador del pasaje buscado y se busca con eso. Ayuda cuando la pregunta usa el nombre del delito pero el artículo lo define con otras palabras (p. ej. estupro)."><input type="checkbox" id="chat-hyde" checked> HyDE 🧪</label>
    <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="chat-rerank"> rerank 🎯</label>
-   <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="chat-decompose"> descomponer 🧩</label>
+   <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="chat-decompose" checked> descomponer 🧩</label>
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="chat-route"> routing por código 🧭</label>
    <details id="chat-prompt-box" style="margin:0">
      <summary>⚙️ System prompt</summary>
@@ -749,6 +749,8 @@ async function loadConfig(){ try{ const c=await (await fetch('/api/config')).jso
   const settingOpts=(c.ask_settings||['orig']).map(s=>`<option>${s}</option>`).join('');
   $('ask-setting').innerHTML=settingOpts;
   $('chat-setting').innerHTML=settingOpts;
+  // Por default: búsqueda híbrida (la mejor en la ablación de recuperación, 06_evaluation/retrieval_ablation_2026-10-08).
+  for (const id of ['ask-setting','chat-setting']) if ((c.ask_settings||[]).includes('híbrido')) $(id).value='híbrido';
   $('bench-setting').innerHTML=settingOpts;
   ASK_SYSTEM_DEFAULT=c.ask_system||'';
   $('ask-system').value=ASK_SYSTEM_DEFAULT;

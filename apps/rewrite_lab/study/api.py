@@ -121,7 +121,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
             out['contexto'] = _fuentes(out.get('chunks'))
         except Exception as e:  # noqa: BLE001 — se registra el fallo; la persona puede reintentar
             error = f'{type(e).__name__}: {e}'
-        store.guardar_turno(it['id'], len(previos) + 1, mensaje, out, error)
+        store.guardar_turno(it['id'], len(previos) + 1, mensaje, out, error, config=cfg)
         print(f'estudio: turno {len(previos) + 1} · {round(time.time() - t0, 1)}s'
               + (' · error' if error else ''), flush=True)
         if error:
