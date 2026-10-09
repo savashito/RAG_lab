@@ -83,15 +83,18 @@ perfil:                       # sin nombres: solo lo necesario para comparar per
     pregunta: Rango de edad
     opciones: {'18_20': '18–20', '21_23': '21–23', '24_26': '24–26', '27_30': '27–30', '31': '31 o más'}
 
+# Situaciones SIN género: nombres unisex (Alex, Cris, Ariel) y construcciones sin marca de género
+# («quien supervisa su trabajo», «esa persona», «le pegó»), para que el género de víctima o agresor no
+# sesgue la forma de preguntar ni la confianza en la respuesta.
 escenarios:
   # ── 1. Jurisdicción: mismos hechos, distinto delito según el estado (a cada quien le toca UNA versión)
-  - id: jefe_mariana
-    titulo: El jefe de Mariana
+  - id: mensajes_trabajo
+    titulo: Mensajes en el trabajo
     texto: (cada variante pone el suyo)
     referencia: (cada variante pone la suya)
     preguntas:
       - id: ley
-        texto: Según lo que averiguaste, ¿qué ley se aplica al caso de Mariana?
+        texto: Según lo que averiguaste, ¿qué ley se aplica al caso de Alex?
         opciones:
           qro: El Código Penal de Querétaro
           cdmx: El Código Penal de la Ciudad de México
@@ -99,71 +102,72 @@ escenarios:
           laboral: Ninguna penal, es un asunto laboral
           no_se: No sé
         correcta: qro          # la variante CDMX la cambia
-      - id: jefe
-        texto: ¿Cambia algo que quien la acosa sea su jefe?
+      - id: superior
+        texto: ¿Cambia algo que esa persona sea quien supervisa el trabajo de Alex?
         opciones:
           igual: No, da igual quién sea
           grave: Sí, es más grave
-          contacto: Solo importaría si la hubiera tocado
+          contacto: Solo importaría si hubiera contacto físico
           no_se: No sé
         correcta: grave
     variantes:
       - id: qro
         texto: |
-          Mariana trabaja en una empresa en **Querétaro**. Desde hace semanas su jefe directo le manda
-          mensajes con insinuaciones sexuales, y le dijo que podía ayudarla a conseguir un ascenso si
-          aceptaba salir con él. Nunca la ha tocado. Mariana quiere saber si esto es un delito y qué
-          puede hacer.
+          Alex trabaja en una empresa en **Querétaro**. Desde hace semanas, la persona que supervisa
+          directamente su trabajo le manda mensajes con insinuaciones sexuales, y le dijo que podía
+          ayudarle a conseguir un ascenso si aceptaba tener una cita. Nunca ha habido contacto físico.
+          Alex quiere saber si esto es un delito y qué puede hacer.
         gold:
           - Cita el artículo 167 Ter del Código Penal del Estado de Querétaro
         referencia: |
           (PENDIENTE KAREN) Puede ser **hostigamiento sexual** (art. 167 Ter del Código Penal de
           Querétaro): asediar o solicitar favores sexuales valiéndose de la posición jerárquica o laboral;
-          4 a 8 años de prisión y 200 a 800 días multa. No requiere contacto físico. Sin jerarquía sería
-          acoso sexual (art. 167 Bis, 3 a 5 años). Puede denunciar ante la Fiscalía de Querétaro.
+          4 a 8 años de prisión y 200 a 800 días multa. No requiere contacto físico. Sin relación de
+          subordinación sería acoso sexual (art. 167 Bis, 3 a 5 años). Puede denunciar ante la Fiscalía de
+          Querétaro.
       - id: cdmx
         texto: |
-          Mariana trabaja en una empresa en la **Ciudad de México**. Desde hace semanas su jefe directo le
-          manda mensajes con insinuaciones sexuales, y le dijo que podía ayudarla a conseguir un ascenso
-          si aceptaba salir con él. Nunca la ha tocado. Mariana quiere saber si esto es un delito y qué
-          puede hacer.
+          Alex trabaja en una empresa en la **Ciudad de México**. Desde hace semanas, la persona que
+          supervisa directamente su trabajo le manda mensajes con insinuaciones sexuales, y le dijo que
+          podía ayudarle a conseguir un ascenso si aceptaba tener una cita. Nunca ha habido contacto
+          físico. Alex quiere saber si esto es un delito y qué puede hacer.
         gold:
           - Cita el artículo 179 del Código Penal de la Ciudad de México
         correctas: {ley: cdmx}
         referencia: |
           (PENDIENTE KAREN) Puede ser **acoso sexual** (art. 179 del Código Penal de la Ciudad de México):
           solicitar favores sexuales o una conducta sexual indeseable que cause daño o sufrimiento
-          psicoemocional; 1 a 3 años de prisión. Como es su jefe (relación jerárquica laboral), la pena
-          aumenta en una tercera parte. Se persigue por querella. No requiere contacto físico.
+          psicoemocional; 1 a 3 años de prisión. Como hay relación jerárquica laboral, la pena aumenta en
+          una tercera parte. Se persigue por querella. No requiere contacto físico.
 
   # ── 2. Lenguaje cotidiano ("chantaje", "fotos") vs. término jurídico; ley general de 2025
-  - id: fotos_daniela
-    titulo: Las fotos de Daniela
+  - id: fotos
+    titulo: Las fotos
     texto: |
-      Daniela, de 24 años, vive en Querétaro. Hace unos meses le mandó fotos íntimas a un chico que
-      conoció en una aplicación. Ahora él le escribe por WhatsApp: si no le deposita 5,000 pesos, va a
-      publicar las fotos y se las va a mandar a su familia. Daniela no sabe si puede hacer algo, porque
-      ella fue quien le mandó las fotos.
+      Cris tiene 24 años y vive en Querétaro. Hace unos meses le mandó fotos íntimas a una persona que
+      conoció en una aplicación. Ahora esa persona le escribe por WhatsApp: si no le deposita 5,000 pesos,
+      va a publicar las fotos y se las va a mandar a su familia. Cris no sabe si puede hacer algo, porque
+      fue quien mandó las fotos.
     gold:
       - Cita el artículo 15 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
       - Cita el artículo 17 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
     referencia: |
       (PENDIENTE KAREN) Puede ser **extorsión** (Ley General en materia de Extorsión, art. 15: 15 a 25
       años), agravada por usar imágenes privadas para coaccionar (art. 17 fr. IV) y por medios
-      electrónicos (fr. V). Que ella haya enviado las fotos no lo excluye; el art. 167 Quinquies del
-      Código Penal de Querétaro también castiga amenazar con difundir imágenes íntimas obtenidas con o sin
+      electrónicos (fr. V). Haber enviado las fotos no lo excluye; el art. 167 Quinquies del Código Penal
+      de Querétaro también castiga amenazar con difundir imágenes íntimas obtenidas con o sin
       consentimiento. No debe pagar; puede denunciar y conservar las conversaciones.
     preguntas:
       - id: consentimiento
-        texto: ¿Puede ser delito aunque Daniela haya mandado las fotos voluntariamente?
+        texto: ¿Puede ser delito aunque Cris haya mandado las fotos voluntariamente?
         opciones:
           si: 'Sí'
-          'no': No, porque ella las mandó
-          publico: Solo si él ya las publicó
+          'no': No, porque Cris las mandó
+          publico: Solo si ya se publicaron
           no_se: No sé
         correcta: si
       - id: ley
-        texto: ¿Qué ley contempla lo que le está pasando a Daniela?
+        texto: ¿Qué ley contempla lo que le está pasando a Cris?
         opciones:
           general: Una ley general que aplica en todo el país
           estatal: Solo el código penal del estado
@@ -172,13 +176,13 @@ escenarios:
         correcta: general     # PENDIENTE KAREN: ¿ley general, 167 Quinquies o ambas?
 
   # ── 3. Domicilio vs. lugar de los hechos (y una pregunta procesal)
-  - id: citatorio_jorge
-    titulo: Jorge y el citatorio
+  - id: citatorio
+    titulo: El citatorio
     texto: |
-      Jorge vive y trabaja en la Ciudad de México. Un fin de semana fue a Querétaro y, en un bar, se peleó
-      con otra persona y la golpeó. Ya regresó a la Ciudad de México y le llegó un citatorio de la Fiscalía
-      de Querétaro. Jorge cree que, como vive en la Ciudad de México, le aplican las leyes de la Ciudad de
-      México y su caso lo deben llevar allá.
+      Ariel vive y trabaja en la Ciudad de México. Un fin de semana fue a Querétaro y, en un bar, tuvo una
+      pelea con otra persona y le pegó. Ya regresó a la Ciudad de México y le llegó un citatorio de la
+      Fiscalía de Querétaro. Ariel cree que, como vive en la Ciudad de México, le aplican las leyes de la
+      Ciudad de México y su caso lo deben llevar allá.
     gold:
       - Cita el artículo 1 del Código Penal del Estado de Querétaro
       - Cita el artículo 20 del Código Nacional de Procedimientos Penales
@@ -186,11 +190,11 @@ escenarios:
       (PENDIENTE KAREN) Se aplica el **Código Penal de Querétaro**, porque el hecho ocurrió allá (art. 1:
       se aplica a los hechos realizados en el Estado de Querétaro); el de la Ciudad de México solo rige
       los delitos cometidos en su territorio (art. 7). Son competentes las autoridades de Querétaro (CNPP
-      art. 20 fr. I). Que viva en la CDMX no cambia eso. Debe atender el citatorio y buscar defensa
+      art. 20 fr. I). Vivir en la CDMX no cambia eso. Debe atender el citatorio y buscar defensa
       (particular o pública).
     preguntas:
       - id: codigo
-        texto: ¿Qué código penal se aplica al caso de Jorge?
+        texto: ¿Qué código penal se aplica al caso de Ariel?
         opciones:
           qro: El de Querétaro, donde ocurrió la pelea
           cdmx: El de la Ciudad de México, donde vive
@@ -198,11 +202,11 @@ escenarios:
           no_se: No sé
         correcta: qro
       - id: lugar
-        texto: ¿Puede Jorge pedir que su caso lo lleven en la Ciudad de México porque ahí vive?
+        texto: ¿Puede Ariel pedir que su caso lo lleven en la Ciudad de México porque ahí vive?
         opciones:
           'no': No; en general lo lleva Querétaro, donde ocurrió
-          si: Sí, siempre lo atienden donde vive
-          abogado: Sí, si contrata a un abogado en la Ciudad de México
+          si: Sí, los casos siempre se llevan donde vive la persona
+          abogado: Sí, si contrata defensa en la Ciudad de México
           no_se: No sé
         correcta: 'no'
 
