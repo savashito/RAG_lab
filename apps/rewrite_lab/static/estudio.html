@@ -182,18 +182,20 @@ function pantallaTutorial() {
       <div class="msgs" id="msgs">${practica.map(t => `<div class="msg user">${esc(t.pregunta)}</div>${burbujaRespuesta(t)}`).join('')}</div>
       ${quedan ? `<div class="composer"><textarea id="txt">${practica.length ? '' : esc(T.ejemplo || '')}</textarea>
         <button class="primary" id="send">Enviar</button></div>
-        <p class="muted small">${practica.length ? 'Puedes hacer una pregunta más de práctica, o empezar.' : 'Ya escribimos una pregunta de ejemplo: da clic en «Enviar» (o cámbiala por otra).'}</p>` : ''}
+        <p class="muted small">${practica.length ? 'Puedes hacer una pregunta más de práctica, o empezar.' : 'Ya escribimos una pregunta de ejemplo: da clic en «Enviar» o pulsa Enter (o cámbiala por otra).'} Enter envía · Shift+Enter hace un salto de línea.</p>` : ''}
       <button class="primary" id="listo" style="margin-top:8px">Entendido, empezar el estudio →</button></div>`;
   const send = document.getElementById('send');
   if (send) send.onclick = async () => {
     const msg = document.getElementById('txt').value.trim();
-    if (!msg) return;
+    if (!msg || send.disabled) return;
     document.getElementById('msgs').insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking">El asistente está buscando en las leyes y escribiendo… (puede tardar unos segundos)</div>`);
     send.disabled = true;
     try { const r = await api('practica', {mensaje: msg}); practica.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes}); }
     catch (e) { practica.push({pregunta: msg, error: e.message}); }
     pantallaTutorial();
   };
+  const txtP = document.getElementById('txt');
+  if (txtP) txtP.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send.onclick(); } };
   document.getElementById('listo').onclick = async () => {
     try { E = await api('tutorial_listo'); practica = []; render(); window.scrollTo(0, 0); } catch (e) { alert(e.message); }
   };
@@ -223,11 +225,11 @@ async function pantallaEscenario(s, hechos) {
         ${intento.turnos.map(t => `<div class="msg user">${esc(t.pregunta)}</div>${burbujaRespuesta(t)}`).join('')}</div>
       <div class="composer"><textarea id="txt" placeholder="Escribe tu pregunta al asistente…"></textarea>
         <button class="primary" id="send">Enviar</button></div>
-      <p class="muted small">${n} de ${E.max_turnos} preguntas.</p>
+      <p class="muted small">${n} de ${E.max_turnos} preguntas · Enter envía · Shift+Enter hace un salto de línea.</p>
       <button class="primary" id="listo" ${n ? '' : 'disabled'}>Ya entendí la situación → pasar a las preguntas</button></div>`;
     const send = async () => {
       const txt = document.getElementById('txt'), msg = txt.value.trim();
-      if (!msg) return;
+      if (!msg || document.getElementById('send').disabled) return;
       const msgs = document.getElementById('msgs');
       msgs.insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking" id="pensando">El asistente está buscando en las leyes y escribiendo… (puede tardar unos segundos)</div>`);
       txt.value = ''; document.getElementById('send').disabled = true;
