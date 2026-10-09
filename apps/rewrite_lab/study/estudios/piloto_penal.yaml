@@ -40,7 +40,9 @@ tutorial:                     # práctica antes de las situaciones (no se guarda
     - **Puede equivocarse.** En este estudio queremos saber justamente cómo lo usan las personas.
 
     Haz una pregunta de práctica para ver cómo funciona. Esta práctica no cuenta para el estudio.
-  ejemplo: ¿Qué es la legítima defensa?
+  # Ejemplo en lenguaje cotidiano y de un tema que NO aparece en ninguna situación (no adelanta respuestas
+  # ni enseña a usar términos legales: la forma de preguntar es justo lo que medimos).
+  ejemplo: Si me encuentro una cartera tirada en la calle y me quedo con el dinero, ¿eso es delito?
   max_preguntas: 2
 
 perfil:                       # sin nombres: solo lo necesario para comparar perfiles
