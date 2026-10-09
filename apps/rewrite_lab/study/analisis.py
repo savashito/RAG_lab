@@ -100,10 +100,21 @@ def sus(respuestas: list[int]) -> float | None:
     return sum((r - 1) if i % 2 == 0 else (5 - r) for i, r in enumerate(respuestas)) * 2.5
 
 
+def grupo_de(p: dict) -> str:
+    """Grupo para comparar. Los códigos del kiosco son «general»: se clasifican por lo que la persona dijo
+    de su formación (derecho = estudia o estudió Derecho, o trabaja en algo jurídico)."""
+    if p.get('grupo') != 'general':
+        return p.get('grupo', '?')
+    perfil = p.get('perfil') or {}
+    if perfil.get('area') == 'derecho' or perfil.get('formacion_juridica') in ('carrera', 'trabajo'):
+        return 'derecho'
+    return 'no_derecho'
+
+
 def resumen(datos: dict) -> dict:
     """Métricas por grupo a partir del export (ver store.export). `datos['turnos'][i]['rangos']`
     ya trae la posición de cada artículo gold en el ranking de ese turno."""
-    part = {p['codigo']: p for p in datos['participantes']}
+    part = {p['codigo']: dict(p, grupo=grupo_de(p)) for p in datos['participantes']}
     intentos = {i['id']: i for i in datos['intentos']}
     cal = defaultdict(list)
     for c in datos['calificaciones']:
@@ -131,7 +142,7 @@ def resumen(datos: dict) -> dict:
             g[grupo]['comprension'].append(acierto)
             if it.get('confianza'):
                 g[grupo]['confianza_vs_acierto'].append((it['confianza'], acierto))
-    for p in datos['participantes']:
+    for p in part.values():
         s = sus(((p.get('cierre') or {}).get('sus')) or [])
         if s is not None:
             g[p['grupo']]['sus'].append(s)
@@ -145,7 +156,7 @@ def resumen(datos: dict) -> dict:
         conf = m['confianza_vs_acierto']
         alta = [a for c, a in conf if c >= 4]
         out[grupo] = {
-            'participantes': sum(1 for p in datos['participantes'] if p['grupo'] == grupo),
+            'participantes': sum(1 for p in part.values() if p['grupo'] == grupo),
             'recall@10_primer_turno': media(m['r10_primer_turno']), 'n_turnos_con_gold': len(m['r10_primer_turno']),
             'respuestas_correctas': media(m['correcta']), 'respuestas_daninas': media(m['danina']),
             'daninas_por_jurisdiccion': media(m['danina_por_jurisdiccion']),

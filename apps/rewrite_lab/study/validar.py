@@ -11,7 +11,7 @@ import re
 import yaml
 
 ESTADOS = ('borrador', 'abierto', 'cerrado')
-GRUPOS = ('lego', 'estudiante', 'experto')            # quién participa
+GRUPOS = ('general', 'lego', 'estudiante', 'experto')  # quién participa; general = se clasifica por su perfil
 ROLES_CALIFICADOR = ('estudiante', 'experto')          # quién califica
 VEREDICTOS = ('correcta', 'parcial', 'incorrecta', 'no_responde')
 DANOS = ('ninguno', 'leve', 'enganoso', 'peligroso')

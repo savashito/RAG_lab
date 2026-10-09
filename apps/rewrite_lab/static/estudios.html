@@ -74,12 +74,22 @@ async function abrir(id) {
         <button class="primary" id="crear">Crear</button></div>
       <p class="muted">Reparte cada código a una sola persona. No anotes aquí nombres; si necesitas saber quién tiene qué código, guárdalo fuera del sistema.</p>
       <div class="scroll" id="codigos"></div></div>
+    <div class="card"><h2>🖥 Modo kiosco (sesiones presenciales)</h2>
+      <p class="muted">Convierte <b>esta computadora</b> en kiosco: <code>/estudio</code> mostrará un botón «Empezar» que crea
+      un código anónimo nuevo para cada persona. Solo funciona mientras el estudio esté <b>abierto</b>. Después de activarlo
+      puedes cerrar tu sesión.</p>
+      <div class="row"><select id="kgrupo"><option value="general">general (se clasifica por su perfil)</option>
+        <option value="lego">lego</option><option value="estudiante">estudiante</option><option value="experto">experto</option></select>
+        <input id="knota" placeholder="nota (p. ej. sesión Facultad de Ciencias)" style="width:260px">
+        <button class="primary" id="kact">Usar este equipo como kiosco</button>
+        <button class="ghost" id="kquitar">Quitar modo kiosco de este equipo</button> <span id="kmsg"></span></div>
+      <div class="scroll" id="kioscos" style="margin-top:8px"></div></div>
     <div class="card"><h2>Resultados</h2><div class="row"><button class="ghost" id="res">Calcular resumen</button>
       <a class="ghost" href="/api/estudios/${encodeURIComponent(id)}/export" style="text-decoration:none">⬇ Exportar JSON (seudónimo)</a></div>
       <div class="scroll" id="resumen"></div></div>
     <div class="card"><h2>Definición (estudio.yaml)</h2><textarea id="yaml" spellcheck="false">${esc(actual.spec_yaml)}</textarea>
       <div class="row"><button class="primary" id="guardar">Guardar</button> <span id="msg"></span></div></div>`;
-  const grupos = {participante: ['lego', 'estudiante', 'experto'], calificador: ['estudiante', 'experto']};
+  const grupos = {participante: ['general', 'lego', 'estudiante', 'experto'], calificador: ['estudiante', 'experto']};
   const setGrupos = () => { document.getElementById('grupo').innerHTML = grupos[document.getElementById('tipo').value].map(g => `<option>${g}</option>`).join(''); };
   document.getElementById('tipo').onchange = setGrupos; setGrupos();
   document.querySelectorAll('[data-estado]').forEach(b => b.onclick = async () => { await api('POST', `/api/estudios/${id}/estado`, {estado: b.dataset.estado}); cargarLista(id); });
@@ -94,6 +104,17 @@ async function abrir(id) {
     else { m.className = 'ok'; m.textContent = 'Guardado.'; actual = r; cargarLista(id); }
   };
   document.getElementById('res').onclick = () => resumen(id);
+  document.getElementById('kact').onclick = async () => {
+    if (actual.estado !== 'abierto' && !confirm('El estudio no está abierto: el kiosco no funcionará hasta que lo abras. ¿Activarlo de todos modos?')) return;
+    const r = await api('POST', `/api/estudios/${id}/kioscos`, {grupo: kgrupo.value, nota: knota.value});
+    try { localStorage.setItem('estudio_kiosco', r.token); localStorage.removeItem('estudio_codigo'); } catch (e) {}
+    location.href = '/estudio';
+  };
+  document.getElementById('kquitar').onclick = () => {
+    try { localStorage.removeItem('estudio_kiosco'); localStorage.removeItem('estudio_codigo'); } catch (e) {}
+    document.getElementById('kmsg').textContent = 'Este equipo ya no es kiosco.';
+  };
+  kioscos(id);
   codigos(id);
 }
 
@@ -104,6 +125,14 @@ async function codigos(id) {
       <td>${c.tipo === 'participante' ? (c.terminado_at ? '✅ terminó' : c.consentimiento_at ? `${c.escenarios_terminados} escenario(s)` : '—') : `${c.calificadas} calificada(s)`}</td>
       <td><input type="checkbox" data-cod="${esc(c.codigo)}" ${c.activo ? 'checked' : ''}></td></tr>`).join('')}</table>` : '<p class="muted">Sin códigos todavía.</p>';
   document.querySelectorAll('[data-cod]').forEach(x => x.onchange = () => api('POST', `/api/estudios/${id}/codigos/${x.dataset.cod}/activo`, {activo: x.checked}));
+}
+
+async function kioscos(id) {
+  const ks = await api('GET', `/api/estudios/${id}/kioscos`);
+  document.getElementById('kioscos').innerHTML = ks.length ? `<table><tr><th>#</th><th>Grupo</th><th>Nota</th><th>Participantes creados</th><th>Activado por</th><th>Activo</th></tr>
+    ${ks.map(k => `<tr><td>${k.id}</td><td>${esc(k.grupo)}</td><td>${esc(k.nota || '')}</td><td>${k.participantes}</td><td>${esc(k.creado_por || '')}</td>
+      <td><input type="checkbox" data-kiosco="${k.id}" ${k.activo ? 'checked' : ''}></td></tr>`).join('')}</table>` : '';
+  document.querySelectorAll('[data-kiosco]').forEach(x => x.onchange = () => api('POST', `/api/estudios/${id}/kioscos/${x.dataset.kiosco}/activo`, {activo: x.checked}));
 }
 
 async function resumen(id) {

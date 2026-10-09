@@ -35,9 +35,9 @@ REDIRECT_URL = os.environ.get('OAUTH_REDIRECT_URL', '')
 # Rutas accesibles sin sesión (el propio flujo de login y un health check).
 PUBLIC_PATHS = {'/login', '/auth/callback', '/logout', '/healthz'}
 # Estudio con usuarios (study/): participantes y calificadores entran con un código de acceso, sin
-# cuenta de Google. Esas rutas validan el código ellas mismas (encabezado X-Codigo).
+# cuenta de Google. Esas rutas validan el código ellas mismas (encabezado X-Codigo; el kiosco, X-Kiosco).
 PUBLIC_STUDY = {'/estudio', '/calificar'}
-PUBLIC_PREFIXES = ('/api/estudio/p/', '/api/estudio/c/')
+PUBLIC_PREFIXES = ('/api/estudio/p/', '/api/estudio/c/', '/api/estudio/k/')
 
 _DENIED = (
     '<html><body style="font:16px system-ui;background:#0f1115;color:#e6e6e6;padding:40px">'

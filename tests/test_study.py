@@ -137,6 +137,13 @@ def test_desempate_y_final():
     assert A.final([e('correcta', 'ninguno'), e('incorrecta', 'ninguno'), exp]) is exp
 
 
+def test_grupo_por_perfil():
+    assert A.grupo_de({'grupo': 'general', 'perfil': {'area': 'derecho'}}) == 'derecho'
+    assert A.grupo_de({'grupo': 'general', 'perfil': {'area': 'sociales', 'formacion_juridica': 'trabajo'}}) == 'derecho'
+    assert A.grupo_de({'grupo': 'general', 'perfil': {'area': 'fisico_mat', 'formacion_juridica': 'materias'}}) == 'no_derecho'
+    assert A.grupo_de({'grupo': 'lego', 'perfil': {'area': 'derecho'}}) == 'lego'
+
+
 def test_sus():
     assert A.sus([5, 1] * 5) == 100.0
     assert A.sus([1, 5] * 5) == 0.0
@@ -159,7 +166,7 @@ def cliente(tmp_path):
 
     connect = lambda: psycopg.connect(DSN)  # noqa: E731
     with connect() as c:
-        c.execute('DROP TABLE IF EXISTS estudio_calificaciones, estudio_turnos, estudio_intentos, '
+        c.execute('DROP TABLE IF EXISTS estudio_kioscos, estudio_calificaciones, estudio_turnos, estudio_intentos, '
                   'estudio_participantes, estudio_codigos, estudio_estudios CASCADE')
     (tmp_path / 'prueba.yaml').write_text(SPEC_YAML)
     store = StudyStore(connect, tmp_path)
@@ -235,6 +242,18 @@ def test_flujo_completo(cliente):
     vs = [store.participante(q)['variantes']['c'] for q in qs if 'c' in store.participante(q)['asignados']]
     assert len(vs) >= 2 and sorted(vs[:2]) == ['v1', 'v2']   # los dos primeros a quienes les toca «c»: una de cada
 
+    # Kiosco: solo con token válido y estudio abierto; cada «nuevo» es un código distinto, grupo general.
+    assert c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': 'falso'}).status_code == 403
+    tok = c.post('/api/estudios/prueba/kioscos', json={'nota': 'sala 1'}).json()['token']
+    k1 = c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': tok}).json()['codigo']
+    k2 = c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': tok}).json()['codigo']
+    assert k1 != k2 and c.post('/api/estudio/p/estado', headers={'X-Codigo': k1}).json()['consentido'] is False
+    assert c.get('/api/estudios/prueba/kioscos').json()[0]['participantes'] == 2
+    assert 'token' not in repr(c.get('/api/estudios/prueba/kioscos').json())
+    kid = c.get('/api/estudios/prueba/kioscos').json()[0]['id']
+    c.post(f'/api/estudios/prueba/kioscos/{kid}/activo', json={'activo': False})
+    assert c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': tok}).status_code == 403
+
     # Retirarse borra todo y el código deja de servir.
     c.post('/api/estudio/p/retirar', headers=H)
     assert c.get('/api/estudios/prueba/export').json()['turnos'] == []
@@ -245,3 +264,4 @@ def test_auth_deja_pasar_solo_rutas_del_estudio():
     import auth
     assert '/estudio' in auth.PUBLIC_STUDY and '/estudios' not in auth.PUBLIC_STUDY
     assert '/api/estudios/x'.startswith(auth.PUBLIC_PREFIXES) is False
+    assert '/api/estudio/k/nuevo'.startswith(auth.PUBLIC_PREFIXES)

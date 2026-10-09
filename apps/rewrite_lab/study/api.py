@@ -152,6 +152,18 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         store.retirar(acceso(request, 'participante')['codigo'])
         return {'ok': True}
 
+    # ── Kiosco (una computadora en sesión presencial) ───────────────────────────
+    @r.post('/api/estudio/k/estado')
+    @guard
+    async def k_estado(request: Request):
+        k = store.kiosco(request.headers.get('x-kiosco', ''))
+        return {'titulo': k['titulo']}
+
+    @r.post('/api/estudio/k/nuevo')
+    @guard
+    async def k_nuevo(request: Request):
+        return {'codigo': store.nuevo_desde_kiosco(request.headers.get('x-kiosco', ''))}
+
     # ── Calificación a ciegas ───────────────────────────────────────────────────
     def tarea(a: dict, turno_id: int | None) -> dict:
         out = {'rol': a['grupo'], **store.progreso_calificador(a)}
@@ -244,6 +256,29 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if not admin(request):
             return _err('Solo administradores.', 403)
         store.activar_codigo(codigo, bool((await request.json()).get('activo')))
+        return {'ok': True}
+
+    @r.get('/api/estudios/{eid}/kioscos')
+    def adm_kioscos(eid: str, request: Request):
+        if not admin(request):
+            return _err('Solo administradores.', 403)
+        return store.kioscos(eid)
+
+    @r.post('/api/estudios/{eid}/kioscos')
+    async def adm_crear_kiosco(eid: str, request: Request):
+        email = admin(request)
+        if not email:
+            return _err('Solo administradores.', 403)
+        b = await request.json()
+        if b.get('grupo', 'general') not in GRUPOS or not store.obtener(eid):
+            return _err('grupo inválido.')
+        return {'token': store.crear_kiosco(eid, b.get('grupo', 'general'), str(b.get('nota') or '')[:200], email)}
+
+    @r.post('/api/estudios/{eid}/kioscos/{kid}/activo')
+    async def adm_activar_kiosco(eid: str, kid: int, request: Request):
+        if not admin(request):
+            return _err('Solo administradores.', 403)
+        store.activar_kiosco(eid, kid, bool((await request.json()).get('activo')))
         return {'ok': True}
 
     def _export(eid: str) -> dict:

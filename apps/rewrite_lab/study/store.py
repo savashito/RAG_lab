@@ -14,6 +14,7 @@ calificaciones).
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import random
 import secrets
@@ -59,6 +60,12 @@ ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS variantes jsonb NOT N
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS variante text;
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto text;
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS detecto_cual text;
+-- Modo kiosco: una computadora autorizada por un admin crea un código nuevo por cada participante.
+-- Solo se guarda el hash del token; el token vive en el navegador de esa computadora.
+CREATE TABLE IF NOT EXISTS estudio_kioscos (
+    id serial PRIMARY KEY, estudio text NOT NULL REFERENCES estudio_estudios(id),
+    token_hash text NOT NULL UNIQUE, grupo text NOT NULL, nota text, activo boolean NOT NULL DEFAULT true,
+    participantes int NOT NULL DEFAULT 0, creado_por text, creado_at timestamptz DEFAULT now());
 """
 
 _ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'   # sin 0/O, 1/I/L
@@ -72,6 +79,10 @@ def nuevo_codigo() -> str:
 def normalizar_codigo(c: str) -> str:
     c = ''.join(ch for ch in (c or '').upper() if ch in _ALFABETO)
     return f'{c[:4]}-{c[4:]}' if len(c) == 8 else ''
+
+
+def _hash(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 class NoPermitido(Exception):
@@ -172,6 +183,36 @@ class StudyStore:
             "(SELECT count(*) FROM estudio_calificaciones c WHERE c.calificador = k.codigo) AS calificadas "
             "FROM estudio_codigos k LEFT JOIN estudio_participantes p USING (codigo) WHERE k.estudio = %s "
             "ORDER BY k.creado_at, k.codigo", (eid,))
+
+    # ── kiosco ───────────────────────────────────────────────────────────────────
+    def crear_kiosco(self, eid: str, grupo: str, nota: str, email: str) -> str:
+        token = secrets.token_urlsafe(32)
+        self._q("INSERT INTO estudio_kioscos (estudio, token_hash, grupo, nota, creado_por) VALUES (%s,%s,%s,%s,%s)",
+                (eid, _hash(token), grupo, nota or None, email), commit=True)
+        return token
+
+    def kioscos(self, eid: str) -> list[dict]:
+        return self._q("SELECT id, grupo, nota, activo, participantes, creado_por, creado_at::text FROM estudio_kioscos "
+                       "WHERE estudio = %s ORDER BY id", (eid,))
+
+    def activar_kiosco(self, eid: str, kid: int, activo: bool):
+        self._q("UPDATE estudio_kioscos SET activo=%s WHERE id=%s AND estudio=%s", (activo, kid, eid), commit=True)
+
+    def kiosco(self, token: str) -> dict:
+        k = self._q("SELECT k.id, k.estudio, k.grupo, k.activo, e.estado, e.titulo FROM estudio_kioscos k "
+                    "JOIN estudio_estudios e ON e.id = k.estudio WHERE k.token_hash = %s", (_hash(token or ''),), one=True)
+        if not k or not k['activo']:
+            raise NoPermitido('Este equipo ya no está autorizado como kiosco. Pide a quien organiza que lo active de nuevo.')
+        if k['estado'] != 'abierto':
+            raise NoPermitido('El estudio no está abierto en este momento.')
+        return k
+
+    def nuevo_desde_kiosco(self, token: str) -> str:
+        """Código nuevo de participante para la siguiente persona en la computadora del kiosco."""
+        k = self.kiosco(token)
+        [codigo] = self.crear_codigos(k['estudio'], 'participante', k['grupo'], 1, f'kiosco #{k["id"]}', f'kiosco #{k["id"]}')
+        self._q("UPDATE estudio_kioscos SET participantes = participantes + 1 WHERE id=%s", (k['id'],), commit=True)
+        return codigo
 
     def activar_codigo(self, codigo: str, activo: bool):
         self._q("UPDATE estudio_codigos SET activo=%s WHERE codigo=%s", (activo, codigo), commit=True)

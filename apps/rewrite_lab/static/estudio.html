@@ -52,6 +52,7 @@
 <div class="wrap">
   <header>
     <h1 id="titulo">Estudio del asistente legal</h1>
+    <button class="ghost" id="btnSalir" hidden title="Deja la computadora lista para la siguiente persona">Salir</button>
     <button class="ghost" id="btnRetirar" hidden>Retirarme del estudio</button>
   </header>
   <div id="app"></div>
@@ -74,6 +75,20 @@ async function api(path, body) {
   if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
   return j;
 }
+// Modo kiosco: computadora autorizada en /estudios; crea un código nuevo por persona (nadie lo escribe).
+let kiosco = '';
+try { kiosco = localStorage.getItem('estudio_kiosco') || ''; } catch (e) {}
+async function apiKiosco(path) {
+  const r = await fetch('/api/estudio/k/' + path, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Kiosco': kiosco}});
+  const j = await r.json().catch(() => ({error: 'Respuesta inválida del servidor.'}));
+  if (!r.ok) throw new Error(j.error || ('Error ' + r.status));
+  return j;
+}
+function siguientePersona() {
+  guardarCodigo(''); E = null; intento = null; fase = 'chat';
+  window.scrollTo(0, 0);
+  cargar();
+}
 function guardarCodigo(c) { codigo = c; try { c ? localStorage.setItem('estudio_codigo', c) : localStorage.removeItem('estudio_codigo'); } catch (e) {} }
 
 // ── Pantallas ────────────────────────────────────────────────────────────────
@@ -89,11 +104,30 @@ function pantallaCodigo(msg) {
   document.getElementById('cod').onkeydown = e => { if (e.key === 'Enter') go(); };
 }
 
+async function pantallaKiosco(msg) {
+  document.getElementById('btnRetirar').hidden = true;
+  document.getElementById('btnSalir').hidden = true;
+  let titulo = 'Estudio del asistente legal';
+  try { titulo = (await apiKiosco('estado')).titulo || titulo; } catch (e) { msg = msg || e.message; }
+  document.getElementById('titulo').textContent = titulo;
+  app.innerHTML = `<div class="card" style="text-align:center;padding:40px 20px">
+    <h2 style="font-size:22px">¡Hola! Gracias por participar</h2>
+    <p>Vas a leer 3 situaciones ficticias y a preguntarle a un asistente de inteligencia artificial con tus propias
+    palabras. Toma unos 25 minutos. <b>No te pediremos tu nombre.</b></p>
+    <button class="primary" id="empezar" style="font-size:18px;padding:12px 28px;margin-top:8px">Empezar</button>
+    ${msg ? `<p class="err">${esc(msg)}</p>` : ''}</div>`;
+  document.getElementById('empezar').onclick = async () => {
+    try { guardarCodigo((await apiKiosco('nuevo')).codigo); await cargar(); }
+    catch (e) { pantallaKiosco(e.message); }
+  };
+}
+
 async function cargar() {
-  if (!codigo) return pantallaCodigo();
-  try { E = await api('estado'); } catch (e) { return pantallaCodigo(e.message); }
+  if (!codigo) return kiosco ? pantallaKiosco() : pantallaCodigo();
+  try { E = await api('estado'); } catch (e) { guardarCodigo(''); return kiosco ? pantallaKiosco(e.message) : pantallaCodigo(e.message); }
   document.getElementById('titulo').textContent = E.titulo || 'Estudio';
   document.getElementById('btnRetirar').hidden = false;
+  document.getElementById('btnSalir').hidden = !kiosco;
   render();
 }
 
@@ -231,17 +265,30 @@ function pantallaCierre() {
 }
 
 function pantallaGracias() {
+  document.getElementById('btnSalir').hidden = true;
   app.innerHTML = `<div class="card"><h2>¡Gracias por participar!</h2>
     <p>Terminaste el estudio. Recuerda: el asistente puede equivocarse y no sustituye a una abogada o abogado.
-    Si tienes un problema legal real, acude a la Defensoría Pública.</p></div>`;
+    Si tienes un problema legal real, acude a la Defensoría Pública.</p>
+    <p class="muted small">Tu código anónimo es <b>${esc(codigo)}</b>. Si después quieres retirar tus respuestas,
+    anótalo y compártelo con quien organiza el estudio.</p>
+    ${kiosco ? '<button class="primary" id="sig">Listo — dejar la computadora para la siguiente persona</button>' : ''}</div>`;
+  if (kiosco) document.getElementById('sig').onclick = siguientePersona;
 }
+
+document.getElementById('btnSalir').onclick = () => {
+  if (!confirm('¿Salir? Lo que ya contestaste se guarda, pero ya no podrás continuar. La computadora queda lista para la siguiente persona.')) return;
+  siguientePersona();
+};
 
 document.getElementById('btnRetirar').onclick = async () => {
   if (!confirm('¿Seguro que quieres retirarte? Se borrará todo lo que escribiste y tu código dejará de funcionar.')) return;
   try { await api('retirar'); } catch (e) { alert(e.message); return; }
   guardarCodigo(''); E = null; intento = null;
-  app.innerHTML = '<div class="card"><h2>Te retiraste del estudio</h2><p>Se borró todo lo que escribiste. Gracias.</p></div>';
+  app.innerHTML = `<div class="card"><h2>Te retiraste del estudio</h2><p>Se borró todo lo que escribiste. Gracias.</p>
+    ${kiosco ? '<button class="primary" id="sig">Dejar la computadora para la siguiente persona</button>' : ''}</div>`;
   document.getElementById('btnRetirar').hidden = true;
+  document.getElementById('btnSalir').hidden = true;
+  if (kiosco) document.getElementById('sig').onclick = siguientePersona;
 };
 
 cargar();
