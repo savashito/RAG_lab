@@ -266,9 +266,9 @@ async function pantallaEscenario(s, hechos) {
   const n = intento.turnos.length;
   app.innerHTML = `${pasos(s.id, hechos)}
     <div class="card" style="margin-top:12px"><h2>${esc(s.titulo)}</h2>${md(s.texto)}
-      <p class="aviso">Escribe tu pregunta al asistente jurídico. Describe toda la situación con tus propias palabras.</p>
-      <p class="aviso">El asistente no tiene conocimiento de la situación.</p>
-        </div>
+      <p class="aviso">El asistente jurídico no puede ver esta situación: solo sabe lo que tú le escribas.</p>
+      <p class="aviso">Pregúntale con tus propias palabras, como lo harías si te pasara a ti.</p>
+    </div>
     <div id="zona"></div>`;
   const zona = document.getElementById('zona');
   if (fase === 'chat') {
