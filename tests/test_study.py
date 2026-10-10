@@ -290,7 +290,20 @@ def test_flujo_completo(cliente):
     k2 = c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': tok}).json()['codigo']
     assert k1 != k2 and c.post('/api/estudio/p/estado', headers={'X-Codigo': k1}).json()['consentido'] is False
     assert c.get('/api/estudios/prueba/kioscos').json()[0]['participantes'] == 2
-    assert 'token' not in repr(c.get('/api/estudios/prueba/kioscos').json())
+    assert c.get('/api/estudios/prueba/kioscos').json()[0]['token'] is None      # del kiosco solo se guarda el hash
+    # Enlace público: con cupo; el token sí se guarda (es el enlace que se comparte).
+    assert c.post('/api/estudios/prueba/kioscos', json={'tipo': 'enlace'}).status_code == 400    # sin cupo
+    link = c.post('/api/estudios/prueba/kioscos', json={'tipo': 'enlace', 'cupo': 1, 'nota': 'whatsapp'}).json()['token']
+    st = c.post('/api/estudio/k/estado', headers={'X-Kiosco': link}).json()
+    assert st['tipo'] == 'enlace' and st['lleno'] is False
+    e1 = c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': link}).json()['codigo']
+    lleno = c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': link})
+    assert lleno.status_code == 403 and 'completó' in lleno.json()['error']
+    assert c.post('/api/estudio/k/estado', headers={'X-Kiosco': link}).json()['lleno'] is True
+    en = [k for k in c.get('/api/estudios/prueba/kioscos').json() if k['tipo'] == 'enlace'][0]
+    assert en['token'] == link and en['participantes'] == 1 and en['cupo'] == 1
+    c.post('/api/estudio/p/consentir', headers={'X-Codigo': e1}, json={'acepto': True, 'perfil': {'formacion': 'ninguna', 'carrera': 'X'}})
+    assert [p['origen'] for p in store.export('prueba')['participantes'] if p['codigo'] == e1] == [f"enlace #{en['id']}"]
     kid = c.get('/api/estudios/prueba/kioscos').json()[0]['id']
     c.post(f'/api/estudios/prueba/kioscos/{kid}/activo', json={'activo': False})
     assert c.post('/api/estudio/k/nuevo', headers={'X-Kiosco': tok}).status_code == 403

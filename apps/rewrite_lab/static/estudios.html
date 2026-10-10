@@ -99,6 +99,13 @@ async function abrir(id) {
         <input id="knota" placeholder="nota (p. ej. sesión Facultad de Ciencias)" style="width:260px">
         <button class="primary" id="kact">Usar este equipo como kiosco</button>
         <button class="ghost" id="kquitar">Quitar modo kiosco de este equipo</button> <span id="kmsg"></span></div>
+      <h2 style="margin-top:14px">🔗 Enlace público (para contestar desde casa)</h2>
+      <p class="muted">Crea un enlace para compartir. Quien lo abra da clic en «Empezar» y recibe un código anónimo. Tiene un
+      <b>cupo</b> máximo y se puede desactivar. Las personas quedan marcadas con su origen (enlace #N) para analizarlas aparte
+      de las sesiones presenciales.</p>
+      <div class="row">Cupo <input type="number" id="ecupo" value="60" min="1" max="1000" style="width:80px">
+        <input id="enota" placeholder="nota (p. ej. grupo de WhatsApp Ciencias)" style="width:260px">
+        <button class="primary" id="ecrear">Crear enlace público</button></div>
       <div class="scroll" id="kioscos" style="margin-top:8px"></div></div>
     <div class="card"><h2>Resultados</h2><div class="row"><button class="ghost" id="res">Calcular resumen</button>
       <a class="ghost" href="/api/estudios/${encodeURIComponent(id)}/export" style="text-decoration:none">⬇ Exportar JSON (seudónimo)</a></div>
@@ -126,6 +133,10 @@ async function abrir(id) {
     try { localStorage.setItem('estudio_kiosco', r.token); localStorage.removeItem('estudio_codigo'); } catch (e) {}
     location.href = '/estudio';
   };
+  document.getElementById('ecrear').onclick = async () => {
+    await api('POST', `/api/estudios/${id}/kioscos`, {tipo: 'enlace', grupo: 'general', cupo: parseInt(ecupo.value), nota: enota.value});
+    kioscos(id);
+  };
   document.getElementById('kquitar').onclick = () => {
     try { localStorage.removeItem('estudio_kiosco'); localStorage.removeItem('estudio_codigo'); } catch (e) {}
     document.getElementById('kmsg').textContent = 'Este equipo ya no es kiosco.';
@@ -146,10 +157,17 @@ async function codigos(id) {
 
 async function kioscos(id) {
   const ks = await api('GET', `/api/estudios/${id}/kioscos`);
-  document.getElementById('kioscos').innerHTML = ks.length ? `<table><tr><th>#</th><th>Grupo</th><th>Nota</th><th>Participantes creados</th><th>Activado por</th><th>Activo</th></tr>
-    ${ks.map(k => `<tr><td>${k.id}</td><td>${esc(k.grupo)}</td><td>${esc(k.nota || '')}</td><td>${k.participantes}</td><td>${esc(k.creado_por || '')}</td>
+  const url = k => `${location.origin}/estudio#e=${k.token}`;
+  document.getElementById('kioscos').innerHTML = ks.length ? `<table><tr><th>#</th><th>Tipo</th><th>Nota</th><th>Participantes</th><th>Enlace</th><th>Creado por</th><th>Activo</th></tr>
+    ${ks.map(k => `<tr><td>${k.id}</td><td>${k.tipo === 'enlace' ? '🔗 enlace' : '🖥 kiosco'}</td><td>${esc(k.nota || '')}</td>
+      <td>${k.participantes}${k.cupo ? ' / ' + k.cupo : ''}</td>
+      <td>${k.tipo === 'enlace' ? `<code style="word-break:break-all">${esc(url(k))}</code> <button class="ghost" data-copiar="${esc(url(k))}">Copiar</button>` : '—'}</td>
+      <td>${esc(k.creado_por || '')}</td>
       <td><input type="checkbox" data-kiosco="${k.id}" ${k.activo ? 'checked' : ''}></td></tr>`).join('')}</table>` : '';
   document.querySelectorAll('[data-kiosco]').forEach(x => x.onchange = () => api('POST', `/api/estudios/${id}/kioscos/${x.dataset.kiosco}/activo`, {activo: x.checked}));
+  document.querySelectorAll('[data-copiar]').forEach(b => b.onclick = async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copiar); b.textContent = 'Copiado ✓'; } catch (e) { prompt('Copia el enlace:', b.dataset.copiar); }
+  });
 }
 
 const md = t => DOMPurify.sanitize(marked.parse(String(t || '')));

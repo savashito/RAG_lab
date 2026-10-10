@@ -77,6 +77,11 @@ CREATE TABLE IF NOT EXISTS estudio_kioscos (
     id serial PRIMARY KEY, estudio text NOT NULL REFERENCES estudio_estudios(id),
     token_hash text NOT NULL UNIQUE, grupo text NOT NULL, nota text, activo boolean NOT NULL DEFAULT true,
     participantes int NOT NULL DEFAULT 0, creado_por text, creado_at timestamptz DEFAULT now());
+-- Enlace público (para contestar desde casa): igual que un kiosco, pero el token va en el enlace que se
+-- comparte (por eso se guarda, para poder volver a copiarlo) y tiene un cupo máximo de participantes.
+ALTER TABLE estudio_kioscos ADD COLUMN IF NOT EXISTS tipo text NOT NULL DEFAULT 'kiosco';
+ALTER TABLE estudio_kioscos ADD COLUMN IF NOT EXISTS token text;
+ALTER TABLE estudio_kioscos ADD COLUMN IF NOT EXISTS cupo int;
 """
 
 _ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'   # sin 0/O, 1/I/L
@@ -196,34 +201,41 @@ class StudyStore:
             "FROM estudio_codigos k LEFT JOIN estudio_participantes p USING (codigo) WHERE k.estudio = %s "
             "ORDER BY k.creado_at, k.codigo", (eid,))
 
-    # ── kiosco ───────────────────────────────────────────────────────────────────
-    def crear_kiosco(self, eid: str, grupo: str, nota: str, email: str) -> str:
-        token = secrets.token_urlsafe(32)
-        self._q("INSERT INTO estudio_kioscos (estudio, token_hash, grupo, nota, creado_por) VALUES (%s,%s,%s,%s,%s)",
-                (eid, _hash(token), grupo, nota or None, email), commit=True)
+    # ── kiosco (sesión presencial) y enlace público (desde casa) ─────────────────
+    def crear_kiosco(self, eid: str, grupo: str, nota: str, email: str, tipo: str = 'kiosco', cupo: int | None = None) -> str:
+        token = secrets.token_urlsafe(32 if tipo == 'kiosco' else 12)
+        self._q("INSERT INTO estudio_kioscos (estudio, token_hash, grupo, nota, creado_por, tipo, token, cupo) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                (eid, _hash(token), grupo, nota or None, email, tipo, token if tipo == 'enlace' else None, cupo), commit=True)
         return token
 
     def kioscos(self, eid: str) -> list[dict]:
-        return self._q("SELECT id, grupo, nota, activo, participantes, creado_por, creado_at::text FROM estudio_kioscos "
-                       "WHERE estudio = %s ORDER BY id", (eid,))
+        return self._q("SELECT id, tipo, grupo, nota, activo, participantes, cupo, token, creado_por, creado_at::text "
+                       "FROM estudio_kioscos WHERE estudio = %s ORDER BY id", (eid,))
 
     def activar_kiosco(self, eid: str, kid: int, activo: bool):
         self._q("UPDATE estudio_kioscos SET activo=%s WHERE id=%s AND estudio=%s", (activo, kid, eid), commit=True)
 
     def kiosco(self, token: str) -> dict:
-        k = self._q("SELECT k.id, k.estudio, k.grupo, k.activo, e.estado, e.titulo FROM estudio_kioscos k "
-                    "JOIN estudio_estudios e ON e.id = k.estudio WHERE k.token_hash = %s", (_hash(token or ''),), one=True)
+        k = self._q("SELECT k.id, k.estudio, k.grupo, k.activo, k.tipo, k.cupo, k.participantes, e.estado, e.titulo "
+                    "FROM estudio_kioscos k JOIN estudio_estudios e ON e.id = k.estudio WHERE k.token_hash = %s",
+                    (_hash(token or ''),), one=True)
         if not k or not k['activo']:
-            raise NoPermitido('Este equipo ya no está autorizado como kiosco. Pide a quien organiza que lo active de nuevo.')
+            raise NoPermitido('Este enlace ya no está activo.' if (k or {}).get('tipo') == 'enlace' else
+                              'Este equipo ya no está autorizado como kiosco. Pide a quien organiza que lo active de nuevo.')
         if k['estado'] != 'abierto':
             raise NoPermitido('El estudio no está abierto en este momento.')
         return k
 
     def nuevo_desde_kiosco(self, token: str) -> str:
-        """Código nuevo de participante para la siguiente persona en la computadora del kiosco."""
+        """Código nuevo de participante: la siguiente persona en el kiosco, o alguien que abrió el enlace."""
         k = self.kiosco(token)
-        [codigo] = self.crear_codigos(k['estudio'], 'participante', k['grupo'], 1, f'kiosco #{k["id"]}', f'kiosco #{k["id"]}')
-        self._q("UPDATE estudio_kioscos SET participantes = participantes + 1 WHERE id=%s", (k['id'],), commit=True)
+        # Cuenta primero (atómico): con cupo, dos personas a la vez no pueden pasarse del límite.
+        if not self._q("UPDATE estudio_kioscos SET participantes = participantes + 1 WHERE id=%s "
+                       "AND (cupo IS NULL OR participantes < cupo) RETURNING id", (k['id'],), one=True, commit=True):
+            raise NoPermitido('Ya se completó el número de participantes de este enlace. ¡Gracias por tu interés!')
+        origen = f'{k["tipo"]} #{k["id"]}'
+        [codigo] = self.crear_codigos(k['estudio'], 'participante', k['grupo'], 1, origen, origen)
         return codigo
 
     def activar_codigo(self, codigo: str, activo: bool):
@@ -433,7 +445,7 @@ class StudyStore:
         return {**p, 'perfil_preguntas': spec.get('perfil') or [], 'intentos': intentos}
 
     def export(self, eid: str) -> dict:
-        part = self._q("SELECT p.codigo, k.grupo, p.perfil, p.asignados, p.variantes, p.cierre, p.practicas, "
+        part = self._q("SELECT p.codigo, k.grupo, k.nota AS origen, p.perfil, p.asignados, p.variantes, p.cierre, p.practicas, "
                        "p.tutorial_at::text, p.consentimiento_at::text, "
                        "p.terminado_at::text FROM estudio_participantes p JOIN estudio_codigos k USING (codigo) "
                        "WHERE k.estudio = %s ORDER BY p.consentimiento_at", (eid,))

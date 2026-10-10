@@ -23,6 +23,7 @@ from study.validar import (CITA, DANOS, ESTADOS, GRUPOS, ROLES_CALIFICADOR, SI_N
                            escenario_efectivo, limpiar_perfil, vista_publica)
 
 MAX_MENSAJE = 2000
+MAX_NUEVOS_POR_IP_HORA = 30
 
 
 def _err(msg, status=400):
@@ -283,12 +284,30 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         k = store.kiosco(request.headers.get('x-kiosco', ''))
         spec = store.spec(k['estudio'])
         return {'titulo': k['titulo'], 'duracion': spec.get('duracion') or 'unos 15 minutos',
-                'situaciones': len(spec.get('escenarios') or [])}
+                'situaciones': len(spec.get('escenarios') or []), 'tipo': k['tipo'],
+                'lleno': k['cupo'] is not None and k['participantes'] >= k['cupo']}
+
+    # Enlace público: como cualquiera puede abrirlo, se limita cuántos participantes nuevos puede crear
+    # una misma conexión por hora (un salón con la misma red cabe; un script que los crea en serie, no).
+    _nuevos_por_ip: dict[str, list[float]] = {}
+
+    def _permitido_por_ip(request: Request) -> bool:
+        ip = (request.headers.get('x-forwarded-for') or '').split(',')[0].strip() or (request.client.host if request.client else '?')
+        ahora = time.time()
+        recientes = [t for t in _nuevos_por_ip.get(ip, []) if ahora - t < 3600]
+        if len(recientes) >= MAX_NUEVOS_POR_IP_HORA:
+            _nuevos_por_ip[ip] = recientes
+            return False
+        _nuevos_por_ip[ip] = recientes + [ahora]
+        return True
 
     @r.post('/api/estudio/k/nuevo')
     @guard
     async def k_nuevo(request: Request):
-        return {'codigo': store.nuevo_desde_kiosco(request.headers.get('x-kiosco', ''))}
+        token = request.headers.get('x-kiosco', '')
+        if store.kiosco(token)['tipo'] == 'enlace' and not _permitido_por_ip(request):
+            return _err('Se crearon demasiados participantes desde esta conexión. Intenta de nuevo en una hora.', 429)
+        return {'codigo': store.nuevo_desde_kiosco(token)}
 
     # ── Calificación a ciegas ───────────────────────────────────────────────────
     def tarea(a: dict, turno_id: int | None) -> dict:
@@ -403,9 +422,14 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if not email:
             return _err('Solo administradores.', 403)
         b = await request.json()
-        if b.get('grupo', 'general') not in GRUPOS or not store.obtener(eid):
-            return _err('grupo inválido.')
-        return {'token': store.crear_kiosco(eid, b.get('grupo', 'general'), str(b.get('nota') or '')[:200], email)}
+        tipo = b.get('tipo', 'kiosco')
+        cupo = int(b.get('cupo') or 0) or None
+        if b.get('grupo', 'general') not in GRUPOS or tipo not in ('kiosco', 'enlace') or not store.obtener(eid):
+            return _err('grupo o tipo inválido.')
+        if tipo == 'enlace' and not (cupo and 1 <= cupo <= 1000):
+            return _err('Un enlace público necesita un cupo entre 1 y 1000 participantes.')
+        return {'token': store.crear_kiosco(eid, b.get('grupo', 'general'), str(b.get('nota') or '')[:200], email,
+                                            tipo=tipo, cupo=cupo if tipo == 'enlace' else None)}
 
     @r.post('/api/estudios/{eid}/kioscos/{kid}/activo')
     async def adm_activar_kiosco(eid: str, kid: int, request: Request):

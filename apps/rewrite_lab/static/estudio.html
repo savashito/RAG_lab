@@ -83,6 +83,15 @@ async function api(path, body) {
 // Modo kiosco: computadora autorizada en /estudios; crea un código nuevo por persona (nadie lo escribe).
 let kiosco = '';
 try { kiosco = localStorage.getItem('estudio_kiosco') || ''; } catch (e) {}
+// Enlace público (.../estudio#e=TOKEN): cada quien entra desde su casa. Funciona como el kiosco, pero el
+// navegador es de UNA persona: no hay «siguiente participante» y si vuelve a abrir el enlace, continúa.
+// El token va después de «#», así no viaja al servidor en la dirección ni queda en sus registros.
+let enlace = false;
+try {
+  const m = location.hash.match(/[#&]e=([\w-]+)/);
+  if (m) { localStorage.setItem('estudio_enlace', m[1]); history.replaceState(null, '', location.pathname); }
+  if (!kiosco) { kiosco = localStorage.getItem('estudio_enlace') || ''; enlace = !!kiosco; }
+} catch (e) {}
 async function apiKiosco(path) {
   const r = await fetch('/api/estudio/k/' + path, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Kiosco': kiosco}});
   const j = await r.json().catch(() => ({error: 'Respuesta inválida del servidor.'}));
@@ -153,15 +162,17 @@ function pantallaCodigo(msg) {
 async function pantallaKiosco(msg) {
   document.getElementById('btnRetirar').hidden = true;
   document.getElementById('btnSalir').hidden = true;
-  let titulo = 'Estudio del asistente legal', duracion = 'unos 15 minutos', n = 3;
-  try { const k = await apiKiosco('estado'); titulo = k.titulo || titulo; duracion = k.duracion || duracion; n = k.situaciones || n; }
+  let titulo = 'Estudio del asistente legal', duracion = 'unos 15 minutos', n = 3, lleno = false;
+  try { const k = await apiKiosco('estado'); titulo = k.titulo || titulo; duracion = k.duracion || duracion; n = k.situaciones || n; lleno = k.lleno; }
   catch (e) { msg = msg || e.message; }
+  if (lleno) msg = 'Ya se completó el número de participantes de este enlace. ¡Gracias por tu interés!';
   document.getElementById('titulo').textContent = titulo;
   app.innerHTML = `<div class="card" style="text-align:center;padding:40px 20px">
     <h2 style="font-size:22px">¡Hola! Gracias por participar</h2>
     <p>Vas a leer ${n} situaciones ficticias y a preguntarle a un asistente de inteligencia artificial con tus propias
     palabras. Toma ${esc(duracion)}. <b>No te pediremos tu nombre.</b></p>
-    <button class="primary" id="empezar" style="font-size:18px;padding:12px 28px;margin-top:8px">Empezar</button>
+    ${enlace ? '<p class="muted small">Hazlo de una sola vez, en un lugar tranquilo y de preferencia en computadora. Si cierras la página, puedes volver a abrir el enlace en este mismo navegador para continuar.</p>' : ''}
+    <button class="primary" id="empezar" style="font-size:18px;padding:12px 28px;margin-top:8px" ${lleno ? 'disabled' : ''}>Empezar</button>
     ${msg ? `<p class="err">${esc(msg)}</p>` : ''}</div>`;
   document.getElementById('empezar').onclick = async () => {
     try { guardarCodigo((await apiKiosco('nuevo')).codigo); await cargar(); }
@@ -174,7 +185,7 @@ async function cargar() {
   try { E = await api('estado'); } catch (e) { guardarCodigo(''); return kiosco ? pantallaKiosco(e.message) : pantallaCodigo(e.message); }
   document.getElementById('titulo').textContent = E.titulo || 'Estudio';
   document.getElementById('btnRetirar').hidden = false;
-  document.getElementById('btnSalir').hidden = !kiosco;
+  document.getElementById('btnSalir').hidden = !kiosco || enlace;
   render();
 }
 
@@ -363,8 +374,9 @@ function pantallaGracias() {
     Si tienes un problema legal real, acude a la Defensoría Pública.</p>
     <p class="muted small">Tu código anónimo es <b>${esc(codigo)}</b>. Si después quieres retirar tus respuestas,
     anótalo y compártelo con quien organiza el estudio.</p>
-    ${kiosco ? '<button class="primary" id="sig">Listo — dejar la computadora para la siguiente persona</button>' : ''}</div>`;
-  if (kiosco) document.getElementById('sig').onclick = siguientePersona;
+    ${kiosco && !enlace ? '<button class="primary" id="sig">Listo — dejar la computadora para la siguiente persona</button>' : ''}
+    ${enlace ? '<p>Ya puedes cerrar esta página.</p>' : ''}</div>`;
+  if (kiosco && !enlace) document.getElementById('sig').onclick = siguientePersona;
 }
 
 document.getElementById('btnSalir').onclick = () => {
@@ -377,10 +389,10 @@ document.getElementById('btnRetirar').onclick = async () => {
   try { await api('retirar'); } catch (e) { alert(e.message); return; }
   guardarCodigo(''); E = null; intento = null;
   app.innerHTML = `<div class="card"><h2>Te retiraste del estudio</h2><p>Se borró todo lo que escribiste. Gracias.</p>
-    ${kiosco ? '<button class="primary" id="sig">Dejar la computadora para la siguiente persona</button>' : ''}</div>`;
+    ${kiosco && !enlace ? '<button class="primary" id="sig">Dejar la computadora para la siguiente persona</button>' : ''}</div>`;
   document.getElementById('btnRetirar').hidden = true;
   document.getElementById('btnSalir').hidden = true;
-  if (kiosco) document.getElementById('sig').onclick = siguientePersona;
+  if (kiosco && !enlace) document.getElementById('sig').onclick = siguientePersona;
 };
 
 cargar();
