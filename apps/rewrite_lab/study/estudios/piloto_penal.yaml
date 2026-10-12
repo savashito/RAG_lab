@@ -11,7 +11,7 @@ asistente:                    # configuración FIJA: todas las personas usan el 
   descomponer: true
   k: 10                       # igual que la app y las corridas del benchmark (+ vecinos aparte)
   max_turnos: 6               # preguntas máximas al asistente por situación
-  historial: 10               # mensajes previos que recuerda el asistente: con 6 preguntas, toda la conversación
+  historial: 10
 escenarios_por_persona: 3     # todas las personas ven las 3, en orden aleatorio
 duracion: unos 15 minutos     # se muestra en la bienvenida del kiosco; ajustar con el tiempo real del piloto
 
@@ -20,15 +20,15 @@ consentimiento: |
   usan herramientas de inteligencia artificial para buscar información jurídica.
 
   - Leerás **3 situaciones ficticias** y le harás preguntas a un asistente con tus propias palabras.
-    Después de cada una contestarás unas preguntas breves. Toma unos 15 minutos.
+  - Al estar satisfecho con las respuestas del asistente jurídico, continuará un pequeño examen para verificar tu comprensión
   - **No escribas datos personales ni casos reales.** Lo que escribas se guarda con un código, sin tu
     nombre, número de cuenta ni correo, y se usa solo para la investigación.
+  - Los resultados de la investigación se publicaran en conferencia https://facctconference.org/2027/cfp.html
   - El asistente **no da asesoría legal** y puede equivocarse. Si tienes un problema legal real, acude
     a una abogada o abogado, o a la Defensoría Pública.
-  - Participar es voluntario y **no tiene relación con ninguna calificación ni materia**. Puedes
-    retirarte en cualquier momento con el botón «Retirarme» y se borrará todo lo que hayas escrito.
+  - Participar es voluntario y puedes retirarte en cualquier momento con el botón «Retirarme» y se borrará todo lo que hayas escrito.
 
-tutorial:                     # práctica antes de las situaciones (no se guarda como dato del estudio)
+tutorial:                     
   texto: |
     ## Antes de empezar: ¿qué es el asistente?
 
@@ -45,7 +45,7 @@ tutorial:                     # práctica antes de las situaciones (no se guarda
   # Ejemplo en lenguaje cotidiano y de un tema que NO aparece en ninguna situación (no adelanta respuestas
   # ni enseña a usar términos legales: la forma de preguntar es justo lo que medimos).
   ejemplo: Si me encuentro una cartera tirada en la calle y me quedo con el dinero, ¿eso es delito?
-  max_preguntas: 2
+  max_preguntas: 3
 
 perfil:                       # sin nombres: solo lo necesario para comparar perfiles
   - id: unam
@@ -125,10 +125,10 @@ escenarios:
         gold:
           - Cita el artículo 167 Ter del Código Penal del Estado de Querétaro
         referencia: |
-          (PENDIENTE KAREN) Puede ser **hostigamiento sexual** (art. 167 Ter del Código Penal de
+          Puede ser **hostigamiento sexual** (art. 167 Ter del Código Penal de
           Querétaro): asediar o solicitar favores sexuales valiéndose de la posición jerárquica o laboral;
           4 a 8 años de prisión y 200 a 800 días multa. No requiere contacto físico. Sin relación de
-          subordinación sería acoso sexual (art. 167 Bis, 3 a 5 años). Puede denunciar ante la Fiscalía de
+          subordinación sería acoso sexual (art. 167 Bis segundo párrafo, 3 a 5 años). Puede denunciar ante la Fiscalía de
           Querétaro.
       - id: cdmx
         texto: |
@@ -140,7 +140,7 @@ escenarios:
           - Cita el artículo 179 del Código Penal de la Ciudad de México
         correctas: {ley: cdmx_179}
         referencia: |
-          (PENDIENTE KAREN) Puede ser **acoso sexual** (art. 179 del Código Penal de la Ciudad de México):
+          Puede ser **acoso sexual** (art. 179 del Código Penal de la Ciudad de México):
           solicitar favores sexuales o una conducta sexual indeseable que cause daño o sufrimiento
           psicoemocional; 1 a 3 años de prisión. Como hay relación jerárquica laboral, la pena aumenta en
           una tercera parte. Se persigue por querella. No requiere contacto físico.
@@ -157,7 +157,7 @@ escenarios:
       - Cita el artículo 15 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
       - Cita el artículo 17 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
     referencia: |
-      (PENDIENTE KAREN) Puede ser **extorsión** (Ley General en materia de Extorsión, art. 15: 15 a 25
+      Puede ser **extorsión** (Ley General en materia de Extorsión, art. 15: 15 a 25
       años), agravada por usar imágenes privadas para coaccionar (art. 17 fr. IV) y por medios
       electrónicos (fr. V). Haber enviado las fotos no lo excluye; el art. 167 Quinquies del Código Penal
       de Querétaro también castiga amenazar con difundir imágenes íntimas obtenidas con o sin
@@ -180,7 +180,7 @@ escenarios:
           qro_167quinquies: Amenaza de difundir imágenes íntimas — Código Penal del Estado de Querétaro, art. 167 Quinquies
           ninguno: Ningún delito, es un problema entre particulares
           no_se: No sé
-        correcta: lg_15         # PENDIENTE KAREN: ¿ley general, 167 Quinquies o ambas?
+        correcta: lg_15
 
   # ── 3. Domicilio vs. lugar de los hechos (y una pregunta procesal)
   - id: citatorio
@@ -194,7 +194,7 @@ escenarios:
       - Cita el artículo 1 del Código Penal del Estado de Querétaro
       - Cita el artículo 20 del Código Nacional de Procedimientos Penales
     referencia: |
-      (PENDIENTE KAREN) Se aplica el **Código Penal de Querétaro**, porque el hecho ocurrió allá (art. 1:
+      Se aplica el **Código Penal de Querétaro**, porque el hecho ocurrió allá (art. 1:
       se aplica a los hechos realizados en el Estado de Querétaro); el de la Ciudad de México solo rige
       los delitos cometidos en su territorio (art. 7). Son competentes las autoridades de Querétaro (CNPP
       art. 20 fr. I). Vivir en la CDMX no cambia eso. Debe atender el citatorio y buscar defensa
