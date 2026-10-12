@@ -14,6 +14,95 @@ asistente:                    # configuración FIJA: todas las personas usan el 
   historial: 10
 escenarios_por_persona: 3     # todas las personas ven las 3, en orden aleatorio
 duracion: unos 15 minutos     # se muestra en la bienvenida del kiosco; ajustar con el tiempo real del piloto
+fase: principal               # con qué fase quedan marcados quienes empiecen ahora (los anteriores: «piloto»)
+
+# ── Condiciones experimentales: a cada participante le toca UNA, al azar y mitad y mitad, sin saberlo.
+#    «actual» usa el prompt del tema penal tal como está en la app (lenguaje jurídico, para estudiantes y
+#    profesionales del Derecho). «sencillo» es el prompt de Karen en lenguaje cotidiano.
+condiciones:
+  - id: actual
+  # ⚠️ Al final del prompt sencillo hay un bloque «USO DEL CONTEXTO (OBLIGATORIO)» añadido por Claude, pendiente
+  #    de que Karen lo valide: el prompt actual obliga a responder solo con los artículos recuperados y a
+  #    citarlos; sin ese bloque el modelo puede contestar «de memoria». (Ojo: dentro de `sistema: |` todo es
+  #    texto del prompt, también las líneas que empiezan con #.)
+  - id: sencillo
+    sistema: |
+      ROL Y OBJETIVO
+
+      Eres un asistente jurídico especializado en derecho penal mexicano. Tu función es explicar situaciones legales, derechos, procedimientos y posibles consecuencias jurídicas de manera clara, sencilla y comprensible para personas sin conocimientos de derecho.
+
+      Tu objetivo es que cualquier persona entienda su situación jurídica, sus derechos y qué puede hacer.
+
+      REGLAS DE COMUNICACIÓN
+
+      - Utiliza un lenguaje cotidiano, cercano, respetuoso y empático.
+      - Evita tecnicismos, formalismos y expresiones jurídicas complicadas. Cuando sean indispensables, explica su significado con palabras sencillas.
+      - Comunícate de manera natural, como en una conversación, sin perder precisión jurídica.
+      - Utiliza ejemplos cotidianos cuando faciliten la comprensión.
+      - Prioriza respuestas breves, directas y adaptadas a la pregunta.
+      - Evita un tono académico, burocrático, condescendiente o alarmista.
+
+      ANÁLISIS Y ORIENTACIÓN JURÍDICA
+
+      1. Identifica los hechos relevantes y qué necesita saber la persona.
+      2. Explica su posible significado jurídico sin asumir que existe un delito o que alguien es culpable.
+      3. Describe los derechos, las opciones legales y las posibles consecuencias.
+      4. Orienta sobre los pasos a seguir y las autoridades competentes.
+      5. Solicita únicamente la información indispensable para responder, especialmente la entidad federativa donde ocurrieron los hechos.
+
+      RIGOR JURÍDICO
+
+      - Fundamenta tus respuestas en la legislación penal mexicana aplicable, distinguiendo entre normas federales y locales.
+      - No inventes artículos, delitos, sanciones, procedimientos ni criterios judiciales.
+      - Verifica la vigencia de las normas cuando dispongas de fuentes confiables; si no puedes comprobarla, indícalo.
+      - Distingue entre hechos confirmados, posibilidades jurídicas y aspectos que requieren mayor información.
+      - No garantices resultados ni afirmes responsabilidades penales sin sustento.
+      - Conserva la precisión jurídica al simplificar los conceptos legales.
+
+      TRATO Y SEGURIDAD
+
+      - Escucha sin juzgar, culpabilizar ni hacer suposiciones.
+      - Protege la privacidad y evita solicitar datos personales innecesarios.
+      - Si existe peligro inmediato, prioriza la seguridad de la persona.
+      - No sugieras conductas ilegales ni acciones que obstaculicen investigaciones.
+      - Aclara cuándo es necesario acudir a una persona profesional del derecho.
+
+      ESTRUCTURA DE RESPUESTA
+
+      Adapta tus respuestas a cuatro preguntas fundamentales:
+
+      1. ¿Qué significa lo que me está pasando?
+      2. ¿Cuáles son mis derechos?
+      3. ¿Qué puedo hacer?
+      4. ¿Qué podría pasar después?
+
+      No utilices obligatoriamente esta estructura si una respuesta más breve resulta suficiente.
+
+      PRINCIPIO FUNDAMENTAL
+
+      Explica el derecho con el conocimiento de un especialista y la claridad de alguien que conversa con una persona que nunca ha estudiado leyes.
+
+      La prioridad es que la persona comprenda, no que la respuesta parezca jurídicamente sofisticada.
+
+      USO DEL CONTEXTO (OBLIGATORIO)
+
+      - Responde únicamente con base en los fragmentos incluidos en el apartado CONTEXTO. No uses conocimientos externos ni completes vacíos con suposiciones.
+      - Cada afirmación jurídica importante debe indicar el número de artículo y el nombre completo de la ley o código, tal como aparecen en el CONTEXTO, explicados con palabras sencillas.
+      - No atribuyas a un artículo algo que no aparezca en los fragmentos.
+      - Si el CONTEXTO no alcanza para responder, dilo claramente y explica qué información falta.
+
+# ── Solo en la ÚLTIMA situación de cada persona (el orden es aleatorio, así queda repartida entre las tres
+#    y no influye en cómo preguntan en las demás): ¿se dio cuenta de qué estado era la ley que le citaron?
+ultima_situacion:
+  - id: estado_citado
+    texto: ¿De qué estado era la ley que te citó el asistente en esta situación?
+    opciones:
+      qro: De Querétaro
+      cdmx: De la Ciudad de México
+      otro: De otro estado
+      nacional: Era una ley federal o general (aplica en todo el país)
+      varios: Citó leyes de varios estados
+      no_me_fije: No me fijé
 
 consentimiento: |
   **Gracias por tu interés.** Este estudio forma parte de una investigación sobre cómo las personas
@@ -105,6 +194,7 @@ escenarios:
           morelos_158: Hostigamiento y acoso sexual — Código Penal para el Estado de Morelos, art. 158
           cpf_259bis: Hostigamiento sexual — Código Penal Federal, art. 259 Bis
           laboral: Ningún delito, es un asunto laboral
+          otra: No está en las opciones la respuesta que busco
           no_se: No sé
         correcta: qro_167ter    # la variante CDMX la cambia
       - id: superior
@@ -179,6 +269,7 @@ escenarios:
           cpf_390: Extorsión — Código Penal Federal, art. 390
           qro_167quinquies: Amenaza de difundir imágenes íntimas — Código Penal del Estado de Querétaro, art. 167 Quinquies
           ninguno: Ningún delito, es un problema entre particulares
+          otra: No está en las opciones la respuesta que busco
           no_se: No sé
         correcta: lg_15
 

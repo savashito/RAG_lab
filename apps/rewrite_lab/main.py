@@ -564,6 +564,39 @@ with connect() as _c, _c.cursor() as _cur:
                  (ASK_SYSTEM,))
     _c.commit()
 load_topics()
+
+# ── Historial de prompts por tópico ─────────────────────────────────────────────────
+# Cada vez que cambia el system prompt, el de HyDE o la instrucción de búsqueda de un tópico queda
+# una fila con el texto completo, quién y cuándo. Sirve para saber con qué prompt se obtuvo cada
+# resultado (benchmark, estudio con usuarios) y para recuperar una versión anterior.
+TOPIC_HISTORY_TABLE = 'rewrite_lab_topic_history'
+
+
+def registrar_prompts(topic: str, quien: str) -> bool:
+    """Guarda los prompts actuales del tópico si difieren de la última versión guardada."""
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT system_prompt, hyde_prompt, instruct FROM {TOPICS_TABLE} WHERE topic = %s", (topic,))
+        actual = cur.fetchone()
+        if not actual:
+            return False
+        cur.execute(f"SELECT system_prompt, hyde_prompt, instruct FROM {TOPIC_HISTORY_TABLE} WHERE topic = %s "
+                    f"ORDER BY id DESC LIMIT 1", (topic,))
+        if cur.fetchone() == actual:
+            return False
+        cur.execute(f"INSERT INTO {TOPIC_HISTORY_TABLE} (topic, system_prompt, hyde_prompt, instruct, changed_by) "
+                    f"VALUES (%s,%s,%s,%s,%s)", (topic, *actual, quien))
+        c.commit()
+    return True
+
+
+with connect() as _c, _c.cursor() as _cur:
+    _cur.execute(f"""CREATE TABLE IF NOT EXISTS {TOPIC_HISTORY_TABLE} (
+        id serial PRIMARY KEY, topic text NOT NULL, system_prompt text, hyde_prompt text, instruct text,
+        changed_by text, changed_at timestamptz DEFAULT now())""")
+    _c.commit()
+for _t in list(TOPICS):   # línea base: lo que había al arrancar (o un cambio hecho por fuera de la app)
+    registrar_prompts(_t, 'arranque')
+
 DOC_BY_ID: dict[int, dict] = {}   # id -> {source,title,hierarchy,text}
 # (índice BM25, ids de la BD en el mismo orden). Un solo objeto a propósito: la
 # recarga corre en otro hilo y `bm25_ranked` debe ver índice e ids de la MISMA versión.
@@ -1160,9 +1193,14 @@ def _study_chat(messages, cfg):
                        bool(cfg.get('route', False)))
 
 
+def _study_sistema(cfg):
+    """El system prompt exacto con el que responde el asistente del estudio para esta configuración."""
+    return (cfg.get('sistema') or '').strip() or system_for(cfg.get('tema'))
+
+
 study_store = StudyStore(connect, Path(__file__).resolve().parent / 'study' / 'estudios', gold_refs=_study_gold_refs)
 app.include_router(study_router(store=study_store, chat=_study_chat, chat_stream=_study_chat_stream,
-                                gold_refs=_study_gold_refs,
+                                sistema_de=_study_sistema, gold_refs=_study_gold_refs,
                                 resolver_gold=_study_resolver, static_dir=STATIC, current_email=current_email,
                                 es_admin=can_ingest))
 
@@ -1304,7 +1342,20 @@ async def api_topic_update(topic: str, req: Request):
         cur.execute(f"UPDATE {TOPICS_TABLE} SET {', '.join(sets)} WHERE topic = %s", vals)
         c.commit()
     load_topics()
+    registrar_prompts(topic, current_email(req) or '?')
     return {'topic': topic, **TOPICS.get(topic, {})}
+
+
+@app.get('/api/topics/{topic}/historial')
+def api_topic_history(topic: str, req: Request):
+    """Versiones guardadas de los prompts del tópico (la más reciente primero). Solo admins."""
+    if not can_ingest(current_email(req)):
+        return JSONResponse({'error': 'Solo los administradores pueden ver el historial.'}, status_code=403)
+    with connect() as c, c.cursor() as cur:
+        cur.execute(f"SELECT id, changed_by, changed_at::text, system_prompt, hyde_prompt, instruct, md5(system_prompt) "
+                    f"FROM {TOPIC_HISTORY_TABLE} WHERE topic = %s ORDER BY id DESC", (topic,))
+        return [{'id': r[0], 'changed_by': r[1], 'changed_at': r[2], 'system_prompt': r[3], 'hyde_prompt': r[4],
+                 'instruct': r[5], 'system_md5': r[6]} for r in cur.fetchall()]
 
 
 @app.get('/api/questions')

@@ -77,6 +77,13 @@ CREATE TABLE IF NOT EXISTS estudio_kioscos (
     id serial PRIMARY KEY, estudio text NOT NULL REFERENCES estudio_estudios(id),
     token_hash text NOT NULL UNIQUE, grupo text NOT NULL, nota text, activo boolean NOT NULL DEFAULT true,
     participantes int NOT NULL DEFAULT 0, creado_por text, creado_at timestamptz DEFAULT now());
+-- Condición experimental sorteada (p. ej. qué system prompt le tocó), fase del estudio (piloto/principal),
+-- versión de la definición con la que contestó cada situación y el prompt exacto de cada respuesta.
+ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS condicion text;
+ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS fase text;
+ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS version int;
+ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS sistema_md5 text;
+CREATE TABLE IF NOT EXISTS estudio_prompts (md5 text PRIMARY KEY, texto text NOT NULL, visto_at timestamptz DEFAULT now());
 -- Enlace público (para contestar desde casa): igual que un kiosco, pero el token va en el enlace que se
 -- comparte (por eso se guarda, para poder volver a copiarlo) y tiene un cupo máximo de participantes.
 ALTER TABLE estudio_kioscos ADD COLUMN IF NOT EXISTS tipo text NOT NULL DEFAULT 'kiosco';
@@ -255,7 +262,7 @@ class StudyStore:
     # ── participante ─────────────────────────────────────────────────────────────
     def participante(self, codigo: str) -> dict | None:
         return self._q("SELECT codigo, perfil, asignados, variantes, cierre, consentimiento_at::text, terminado_at::text, "
-                       "tutorial_at::text, practicas "
+                       "tutorial_at::text, practicas, condicion, fase "
                        "FROM estudio_participantes WHERE codigo=%s", (codigo,), one=True)
 
     def consentir(self, acceso: dict, perfil: dict) -> dict:
@@ -277,9 +284,17 @@ class StudyStore:
                                  "JOIN estudio_codigos k USING (codigo) WHERE k.estudio = %s AND k.grupo = %s "
                                  "AND p.variantes ? %s GROUP BY 1", (e['id'], acceso['estudio'], acceso['grupo'], e['id']))
                 variantes[e['id']] = asignar_variante(vs, {u['v']: u['n'] for u in usados}, rng)
-        self._q("INSERT INTO estudio_participantes (codigo, perfil, asignados, variantes) VALUES (%s,%s,%s,%s) "
-                "ON CONFLICT DO NOTHING",
-                (acceso['codigo'], json.dumps(perfil or {}), json.dumps(asignados), json.dumps(variantes)), commit=True)
+        condicion = None
+        cids = [c['id'] for c in spec.get('condiciones') or []]
+        if cids:   # la menos asignada en su grupo (y en esta fase): mitad y mitad
+            usadas = self._q("SELECT p.condicion AS c, count(*) AS n FROM estudio_participantes p JOIN estudio_codigos k "
+                             "USING (codigo) WHERE k.estudio = %s AND k.grupo = %s AND p.fase IS NOT DISTINCT FROM %s "
+                             "GROUP BY 1", (acceso['estudio'], acceso['grupo'], spec.get('fase')))
+            condicion = asignar_variante(cids, {u['c']: u['n'] for u in usadas}, rng)
+        self._q("INSERT INTO estudio_participantes (codigo, perfil, asignados, variantes, condicion, fase) "
+                "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+                (acceso['codigo'], json.dumps(perfil or {}), json.dumps(asignados), json.dumps(variantes), condicion,
+                 spec.get('fase')), commit=True)
         return self.participante(acceso['codigo'])
 
     def intentos(self, codigo: str) -> list[dict]:
@@ -290,8 +305,9 @@ class StudyStore:
         p = self.participante(codigo)
         if not p or escenario not in p['asignados']:
             raise NoPermitido('Ese escenario no te tocó.')
-        self._q("INSERT INTO estudio_intentos (codigo, escenario, variante) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
-                (codigo, escenario, (p['variantes'] or {}).get(escenario)), commit=True)
+        self._q("INSERT INTO estudio_intentos (codigo, escenario, variante, version) SELECT %s,%s,%s, e.version "
+                "FROM estudio_codigos k JOIN estudio_estudios e ON e.id = k.estudio WHERE k.codigo = %s "
+                "ON CONFLICT DO NOTHING", (codigo, escenario, (p['variantes'] or {}).get(escenario), codigo), commit=True)
         return self._q("SELECT id, escenario, fin::text, preguntas_at::text FROM estudio_intentos WHERE codigo=%s AND escenario=%s",
                        (codigo, escenario), one=True)
 
@@ -320,15 +336,21 @@ class StudyStore:
                        "ORDER BY n", (intento_id,))
 
     def guardar_turno(self, intento_id: int, n: int, pregunta: str, out: dict | None, error: str | None,
-                      config: dict | None = None) -> int:
+                      config: dict | None = None, sistema: str | None = None) -> int:
+        """`sistema` = el system prompt exacto con el que se respondió: se guarda una vez (tabla
+        estudio_prompts) y el turno apunta a él por su md5."""
         out = out or {}
+        md5 = None
+        if sistema:
+            md5 = hashlib.md5(sistema.encode()).hexdigest()
+            self._q("INSERT INTO estudio_prompts (md5, texto) VALUES (%s,%s) ON CONFLICT DO NOTHING", (md5, sistema), commit=True)
         dbg = {k: out[k] for k in ('hyde_passage', 'subqueries', 'routes', 'rewrite', 'score_kind') if out.get(k)}
         row = self._q("INSERT INTO estudio_turnos (intento_id, n, pregunta, busqueda, respuesta, contexto, ranking, segundos, "
-                      "error, config, busqueda_debug) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+                      "error, config, busqueda_debug, sistema_md5) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
                       (intento_id, n, pregunta, out.get('search_query') or None, out.get('answer'),
                        json.dumps(out.get('contexto') or []), json.dumps(out.get('ranking') or []),
-                       out.get('seconds'), error, json.dumps(config or {}), json.dumps(dbg, ensure_ascii=False, default=str)),
-                      one=True, commit=True)
+                       out.get('seconds'), error, json.dumps(config or {}), json.dumps(dbg, ensure_ascii=False, default=str),
+                       md5), one=True, commit=True)
         return row['id']
 
     def terminar(self, codigo: str, intento_id: int, spec: dict, respuestas: dict, confianza: int, actuaria: str,
@@ -425,7 +447,7 @@ class StudyStore:
     def detalle_participante(self, eid: str, codigo: str) -> dict | None:
         """Todo lo de un participante para revisarlo en /estudios: perfil, cada situación tal como la vio
         (variante, preguntas con su respuesta correcta), lo que contestó y su conversación."""
-        p = self._q("SELECT p.codigo, k.grupo, k.nota, p.perfil, p.asignados, p.variantes, p.practicas, p.cierre, "
+        p = self._q("SELECT p.codigo, k.grupo, k.nota, p.condicion, p.fase, p.perfil, p.asignados, p.variantes, p.practicas, p.cierre, "
                     "p.consentimiento_at::text, p.tutorial_at::text, p.terminado_at::text FROM estudio_participantes p "
                     "JOIN estudio_codigos k USING (codigo) WHERE p.codigo=%s AND k.estudio=%s", (codigo, eid), one=True)
         if not p:
@@ -445,16 +467,27 @@ class StudyStore:
         return {**p, 'perfil_preguntas': spec.get('perfil') or [], 'intentos': intentos}
 
     def export(self, eid: str) -> dict:
-        part = self._q("SELECT p.codigo, k.grupo, k.nota AS origen, p.perfil, p.asignados, p.variantes, p.cierre, p.practicas, "
+        part = self._q("SELECT p.codigo, k.grupo, k.nota AS origen, p.condicion, p.fase, p.perfil, p.asignados, p.variantes, p.cierre, p.practicas, "
                        "p.tutorial_at::text, p.consentimiento_at::text, "
                        "p.terminado_at::text FROM estudio_participantes p JOIN estudio_codigos k USING (codigo) "
                        "WHERE k.estudio = %s ORDER BY p.consentimiento_at", (eid,))
-        intentos = self._q("SELECT i.id, i.codigo, i.escenario, i.variante, i.inicio::text, i.fin::text, i.respuestas, "
+        intentos = self._q("SELECT i.id, i.codigo, i.escenario, i.variante, i.version, i.inicio::text, i.fin::text, i.respuestas, "
                            "i.comprension, i.confianza, i.actuaria, i.detecto, i.detecto_cual, i.preguntas_at::text, i.comentario, "
                            "extract(epoch FROM i.fin - i.inicio)::int AS segundos FROM estudio_intentos i JOIN estudio_codigos k USING (codigo) "
                            "WHERE k.estudio = %s ORDER BY i.id", (eid,))
         turnos = self._q("SELECT t.id, t.intento_id, t.n, t.ts::text, t.pregunta, t.busqueda, t.respuesta, t.contexto, "
-                         "t.ranking, t.segundos, t.error, t.config, t.busqueda_debug FROM estudio_turnos t JOIN estudio_intentos i ON i.id = t.intento_id "
+                         "t.ranking, t.segundos, t.error, t.config, t.busqueda_debug, t.sistema_md5 FROM estudio_turnos t JOIN estudio_intentos i ON i.id = t.intento_id "
                          "JOIN estudio_codigos k ON k.codigo = i.codigo WHERE k.estudio = %s ORDER BY t.id", (eid,))
+        usados = sorted({t['sistema_md5'] for t in turnos if t['sistema_md5']})
+        prompts = {r['md5']: r['texto'] for r in self._q("SELECT md5, texto FROM estudio_prompts WHERE md5 = ANY(%s)", (usados,))}
         return {'estudio': self.obtener(eid), 'participantes': part, 'intentos': intentos, 'turnos': turnos,
-                'calificaciones': self._calificaciones(eid)}
+                'calificaciones': self._calificaciones(eid), 'prompts': prompts}
+
+    def fases(self, eid: str) -> list[dict]:
+        return self._q("SELECT coalesce(p.fase, '(sin fase)') AS fase, count(*) AS n FROM estudio_participantes p "
+                       "JOIN estudio_codigos k USING (codigo) WHERE k.estudio = %s GROUP BY 1 ORDER BY 1", (eid,))
+
+    def marcar_fase(self, eid: str, fase: str) -> int:
+        """Pone `fase` a quienes aún no tienen (p. ej. «piloto» antes de empezar la recolección principal)."""
+        return len(self._q("UPDATE estudio_participantes p SET fase = %s FROM estudio_codigos k WHERE k.codigo = p.codigo "
+                           "AND k.estudio = %s AND p.fase IS NULL RETURNING p.codigo", (fase, eid), commit=True))

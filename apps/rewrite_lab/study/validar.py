@@ -44,7 +44,8 @@ def cargar(spec_yaml: str) -> tuple[dict | None, list[str]]:
         return None, ['estudio.yaml debe ser un objeto (clave: valor).']
     escenarios = [e for e in spec.get('escenarios') or [] if isinstance(e, dict)]
     variantes = [v for e in escenarios for v in e.get('variantes') or [] if isinstance(v, dict)]
-    for p in (spec.get('perfil') or []) + [q for x in escenarios + variantes for q in x.get('preguntas') or []]:
+    for p in ((spec.get('perfil') or []) + [q for x in escenarios + variantes for q in x.get('preguntas') or []]
+              + (spec.get('ultima_situacion') or [])):
         if isinstance(p, dict):
             if isinstance(p.get('opciones'), dict):
                 p['opciones'] = {_clave(k): v for k, v in p['opciones'].items()}
@@ -152,6 +153,20 @@ def validar(spec_yaml: str, gold_refs=None) -> list[str]:
                 if pid not in {p.get('id') for p in ef.get('preguntas') or []}:
                     errs.append(f'escenario «{eid}», variante «{v["id"]}»: «correctas» menciona la pregunta «{pid}», que no existe.')
             _validar_escenario(ef, f'escenario «{eid}», variante «{v["id"]}»', gold_refs, errs)
+    # Condiciones experimentales (p. ej. dos system prompts): a cada participante le toca UNA, al azar y
+    # en partes iguales. Sin «sistema» = el prompt del tema, tal como está en la app.
+    cids = set()
+    for cnd in spec.get('condiciones') or []:
+        if not isinstance(cnd, dict) or not re.fullmatch(r'[a-z0-9_]+', str(cnd.get('id') or '')) or cnd['id'] in cids:
+            errs.append('cada elemento de «condiciones» necesita un «id» único (minúsculas, números, guion bajo).')
+            continue
+        cids.add(cnd['id'])
+        if 'sistema' in cnd and not (isinstance(cnd['sistema'], str) and cnd['sistema'].strip()):
+            errs.append(f'condición «{cnd["id"]}»: «sistema» debe ser el texto del prompt (o quítalo para usar el del tema).')
+    # Preguntas que solo se hacen en la ÚLTIMA situación de cada persona (no contaminan las demás).
+    for q in spec.get('ultima_situacion') or []:
+        if not isinstance(q, dict) or not q.get('id') or not q.get('texto') or not isinstance(q.get('opciones'), dict):
+            errs.append('cada pregunta de «ultima_situacion» necesita id, texto y opciones.')
     t = spec.get('tutorial')
     if t is not None and (not isinstance(t, dict) or not t.get('texto')):
         errs.append('«tutorial» necesita «texto» (y opcionalmente «ejemplo» y «max_preguntas»).')
@@ -182,8 +197,37 @@ def vista_publica(spec: dict, asignados: list[str], variantes: dict | None = Non
         'max_turnos': int((spec.get('asistente') or {}).get('max_turnos', 12)),
         'tutorial': ({k: spec['tutorial'][k] for k in ('texto', 'ejemplo', 'max_preguntas') if k in spec['tutorial']}
                      if isinstance(spec.get('tutorial'), dict) else None),
+        'ultima_situacion': [{'id': q['id'], 'texto': q['texto'], 'opciones': q['opciones']}
+                             for q in spec.get('ultima_situacion') or []],
         'escenarios': vista,
     }
+
+
+def sistema_de_condicion(spec: dict, condicion: str | None) -> str | None:
+    """Texto del system prompt de una condición, o None si usa el del tema."""
+    for c in spec.get('condiciones') or []:
+        if c.get('id') == condicion:
+            return (c.get('sistema') or '').strip() or None
+    return None
+
+
+def limpiar_respuestas(spec: dict, escenario: dict, respuestas: dict, es_ultima: bool) -> dict:
+    """Solo lo que el estudio pregunta: la opción elegida de cada pregunta de comprensión, el texto libre de
+    «otra» (`<pregunta>__texto`) y, en la última situación, las preguntas de `ultima_situacion` (`_<id>`)."""
+    r, out = respuestas or {}, {}
+    for q in escenario.get('preguntas') or []:
+        v = r.get(q['id'])
+        if v in (q.get('opciones') or {}):
+            out[q['id']] = v
+            txt = str(r.get(q['id'] + '__texto') or '').strip()[:500]
+            if v == 'otra' and txt:
+                out[q['id'] + '__texto'] = txt
+    if es_ultima:
+        for q in spec.get('ultima_situacion') or []:
+            v = r.get('_' + q['id'])
+            if v in (q.get('opciones') or {}):
+                out['_' + q['id']] = v
+    return out
 
 
 def limpiar_perfil(spec: dict, perfil: dict) -> tuple[dict, list[str]]:

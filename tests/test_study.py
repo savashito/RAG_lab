@@ -29,6 +29,12 @@ consentimiento: ok
 asistente: {tema: t, max_turnos: 2}
 escenarios_por_persona: 2
 tutorial: {texto: 'Así funciona', ejemplo: '¿Qué es la legítima defensa?', max_preguntas: 2}
+fase: principal
+condiciones:
+  - {id: actual}
+  - {id: sencillo, sistema: 'Habla sencillo'}
+ultima_situacion:
+  - {id: estado, texto: '¿De qué estado?', opciones: {qro: Qro, cdmx: CDMX}}
 perfil:
   - {id: formacion, pregunta: '¿Formación?', opciones: {ninguna: 'No', estudiante: 'Sí'}}
   - {id: carrera, tipo: texto, pregunta: '¿Carrera?'}
@@ -44,7 +50,7 @@ escenarios:
     titulo: B
     texto: texto B
     referencia: ref B
-    preguntas: [{id: p1, texto: '¿Pregunta?', opciones: {si: Sí, no: 'No'}, correcta: 'no'}]
+    preguntas: [{id: p1, texto: '¿Pregunta?', opciones: {si: Sí, no: 'No', otra: No está mi respuesta}, correcta: 'no'}]
   - id: c
     titulo: C
     texto: base
@@ -160,6 +166,7 @@ def test_sus():
 
 
 # ── store + API contra un Postgres desechable ────────────────────────────────
+CFGS: list = []   # configuraciones con las que se llamó al asistente falso
 DSN = os.environ.get('ESTUDIO_TEST_DSN')
 db = pytest.mark.skipif(not DSN, reason='ESTUDIO_TEST_DSN no definido (Postgres desechable)')
 
@@ -175,18 +182,20 @@ def cliente(tmp_path):
 
     connect = lambda: psycopg.connect(DSN)  # noqa: E731
     with connect() as c:
-        c.execute('DROP TABLE IF EXISTS estudio_kioscos, estudio_calificaciones, estudio_turnos, estudio_intentos, '
+        c.execute('DROP TABLE IF EXISTS estudio_prompts, estudio_kioscos, estudio_calificaciones, estudio_turnos, estudio_intentos, '
                   'estudio_participantes, estudio_codigos, estudio_estudios CASCADE')
     (tmp_path / 'prueba.yaml').write_text(SPEC_YAML)
     store = StudyStore(connect, tmp_path)
     llamadas = []
 
     def chat(messages, cfg):
+        CFGS.append(cfg)
         llamadas.append(messages)
         return {'answer': f'respuesta {len(messages)}', 'chunks': [{'id': 7, 'rank': 1, 'source': 's', 'text': 'Art. 179'}],
                 'ranking': [7, 8, 9], 'seconds': 0.1}
 
     def chat_stream(messages, cfg):
+        CFGS.append(cfg)
         llamadas.append(messages)
         yield {'stage': 'retrieving'}
         yield {'stage': 'hyde', 'passage': 'borrador'}
@@ -199,6 +208,7 @@ def cliente(tmp_path):
     resolver = lambda grupos: [[dict(x, ids=[7]) for x in g] for g in grupos]  # noqa: E731
     app = FastAPI()
     app.include_router(make_router(store=store, chat=chat, chat_stream=chat_stream, gold_refs=gold_refs, resolver_gold=resolver,
+                                   sistema_de=lambda cfg: cfg.get('sistema') or 'PROMPT DEL TEMA',
                                    static_dir=tmp_path, current_email=lambda r: 'admin@x', es_admin=lambda e: True))
     return TestClient(app), store, llamadas
 
@@ -333,6 +343,72 @@ def test_streaming_guarda_el_turno_completo(cliente):
     # La práctica en streaming no se guarda como turno.
     c.post('/api/estudio/p/practica_stream', headers=H, json={'mensaje': 'hola'})
     assert len(store.export('prueba')['turnos']) == 1 and store.participante(p)['practicas'] == 1
+
+
+@db
+def test_condiciones_fases_y_ultima_situacion(cliente):
+    c, store, llamadas = cliente
+    c.post('/api/estudios/prueba/estado', json={'estado': 'abierto'})
+    cods = c.post('/api/estudios/prueba/codigos', json={'tipo': 'participante', 'grupo': 'general', 'n': 2}).json()['codigos']
+    perfil = {'formacion': 'ninguna', 'carrera': 'X'}
+    vistas = {}
+    for cod in cods:
+        est = c.post('/api/estudio/p/consentir', headers={'X-Codigo': cod}, json={'acepto': True, 'perfil': perfil}).json()
+        assert 'condicion' not in repr(est) and 'sencillo' not in repr(est)      # la persona no sabe qué le tocó
+        vistas[cod] = est
+    conds = {cod: store.participante(cod)['condicion'] for cod in cods}
+    assert sorted(conds.values()) == ['actual', 'sencillo'] and store.participante(cods[0])['fase'] == 'principal'
+    # Cada quien conversa con el prompt de su condición; el turno guarda cuál fue (texto aparte, por md5).
+    for cod in cods:
+        H = {'X-Codigo': cod}
+        e1, e2 = vistas[cod]['escenarios']
+        it = c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': e1['id']}).json()['intento']
+        CFGS.clear()
+        c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': '¿es delito?'})
+        assert CFGS[-1].get('sistema') == ('Habla sencillo' if conds[cod] == 'sencillo' else None)
+        ok = {'confianza': 4, 'actuaria': 'si', 'detecto': 'no'}
+        resp = {q['id']: 'otra' if 'otra' in q['opciones'] else 'si' for q in e1['preguntas']}
+        resp.update({q['id'] + '__texto': 'art. 181 Quintus' for q in e1['preguntas'] if 'otra' in q['opciones']})
+        assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': resp, **ok}).status_code == 200
+        # La segunda (y última) situación exige además la pregunta de `ultima_situacion`.
+        it2 = c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': e2['id']}).json()['intento']
+        c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it2['id'], 'mensaje': 'otra duda'})
+        r2 = {q['id']: 'si' for q in e2['preguntas']}
+        assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it2['id'], 'respuestas': r2, **ok}).status_code == 400
+        assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it2['id'], 'respuestas': {**r2, '_estado': 'cdmx', 'basura': 1}, **ok}).status_code == 200
+    exp = c.get('/api/estudios/prueba/export').json()
+    prompts = {exp['prompts'][t['sistema_md5']] for t in exp['turnos']}
+    assert prompts == {'Habla sencillo', 'PROMPT DEL TEMA'}
+    assert all('sistema' not in t['config'] and t['config']['condicion'] in ('actual', 'sencillo') for t in exp['turnos'])
+    ult = [i['respuestas'] for i in exp['intentos'] if '_estado' in (i['respuestas'] or {})]
+    assert len(ult) == 2 and all('basura' not in r for r in ult)
+    assert exp['turnos'][0]['analisis']['palabras'] == 3 and exp['intentos'][0]['version'] >= 1
+    res = c.get('/api/estudios/prueba/resumen?fase=principal').json()
+    assert set(res['_por_condicion']) == {'actual', 'sencillo'} and res['_por_condicion']['sencillo']['situaciones'] == 2
+    assert c.get('/api/estudios/prueba/resumen?fase=piloto').json()['_por_condicion'] == {}
+    # Marcar «piloto» solo toca a quienes no tienen fase.
+    assert c.post('/api/estudios/prueba/fase', json={'fase': 'piloto'}).json()['marcados'] == 0
+
+
+def test_limpiar_respuestas():
+    from study.validar import cargar, limpiar_respuestas
+    spec = cargar(SPEC_YAML)[0]
+    b = spec['escenarios'][1]
+    r = {'p1': 'otra', 'p1__texto': ' art. 181 Quintus ', 'x': 1, '_estado': 'cdmx'}
+    assert limpiar_respuestas(spec, b, r, False) == {'p1': 'otra', 'p1__texto': 'art. 181 Quintus'}
+    assert limpiar_respuestas(spec, b, r, True) == {'p1': 'otra', 'p1__texto': 'art. 181 Quintus', '_estado': 'cdmx'}
+    assert limpiar_respuestas(spec, b, {'p1': 'si', 'p1__texto': 'no cuenta', '_estado': 'zzz'}, True) == {'p1': 'si'}
+    assert A.puntuar_comprension(b, {'p1': 'otra', 'p1__texto': 'x'})['aciertos'] == 0     # «otra» cuenta como incorrecta
+
+
+def test_analizar_respuesta():
+    g = [[{'source': 'Código Penal del Estado de Querétaro.md', 'article': '167 Ter'}]]
+    a = A.analizar_respuesta('Según el Código Penal para el Estado de Morelos, artículo 158… y el art. 167 TER del Código Penal del Estado de Querétaro.', g)
+    assert a['cita_ley_gold'] and a['cita_articulo_gold'] and a['otros_estados'] == ['Morelos'] and a['primera_ley_es_otra']
+    assert A.analizar_respuesta('Para orientarte necesito saber en qué estado ocurrió.', g)['pide_lugar']
+    g2 = [[{'source': 'Código Penal de la Ciudad de México.md', 'article': '179'}]]
+    assert not A.analizar_respuesta('El artículo 179 Bis del Código Penal de la Ciudad de México', g2)['cita_articulo_gold']
+    assert A.analizar_respuesta('art. 179 del Código Penal del Distrito Federal', g2)['cita_articulo_gold']
 
 
 def test_auth_deja_pasar_solo_rutas_del_estudio():

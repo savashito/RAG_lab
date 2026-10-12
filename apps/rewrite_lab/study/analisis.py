@@ -13,7 +13,9 @@ from __future__ import annotations
 import random
 from collections import Counter, defaultdict
 
-from shared.code_routes import codes_in
+import re
+
+from shared.code_routes import codes_in, fold, short_label
 from study.validar import DANOS
 
 # Entidades o códigos penales que fijan la jurisdicción si la persona los nombra en su pregunta.
@@ -110,6 +112,38 @@ def sus(respuestas: list[int]) -> float | None:
     return sum((r - 1) if i % 2 == 0 else (5 - r) for i, r in enumerate(respuestas)) * 2.5
 
 
+_PIDE_LUGAR = re.compile(r'en que (estado|entidad|lugar|ciudad)|que (estado|entidad)|entidad federativa donde|'
+                         r'donde (ocurri|sucedi|paso|pasaron)|(indica|dime|podrias decir|necesito saber).{0,60}(estado|entidad|lugar)')
+
+
+def analizar_respuesta(respuesta: str, gold: list[list[dict]]) -> dict:
+    """Lo que se puede medir de una respuesta del asistente sin juez, comparándola con los artículos esperados
+    (`gold` = grupos con 'source' y 'article'):
+      · cita_ley_gold / cita_articulo_gold: ¿nombra el código correcto y el artículo correcto?
+      · otros_estados: códigos penales de OTRA entidad (o el federal) que cita y no eran los esperados;
+      · primera_ley: la primera ley que nombra (lo que la persona lee primero);
+      · pide_lugar: ¿pregunta en qué estado ocurrió?;
+      · palabras: longitud de la respuesta."""
+    txt = fold(respuesta or '')
+    leyes = [h['label'] for h in codes_in(respuesta or '')]
+    gold_leyes = {short_label(x.get('source')) for g in gold for x in g if x.get('source')}
+    art_ok = False
+    for g in gold:
+        for x in g:
+            partes = fold(x.get('article') or '').split()
+            if not partes or short_label(x.get('source')) not in leyes:
+                continue
+            sufijo = r'\s*'.join(map(re.escape, partes))
+            if re.search(r'(?<![0-9])' + sufijo + (r'(?!\s*(bis|ter|quater|quinquies|quintus|sextus)\b)' if len(partes) == 1 else r'\b'), txt):
+                art_ok = True
+    otros = [l for l in leyes if l in LUGARES and l not in gold_leyes]
+    return {'cita_ley_gold': bool(gold_leyes & set(leyes)) if gold_leyes else None,
+            'cita_articulo_gold': art_ok if gold_leyes else None,
+            'otros_estados': otros, 'primera_ley': leyes[0] if leyes else None,
+            'primera_ley_es_otra': bool(leyes) and leyes[0] in LUGARES and leyes[0] not in gold_leyes if gold_leyes else None,
+            'pide_lugar': bool(_PIDE_LUGAR.search(txt)), 'palabras': len((respuesta or '').split())}
+
+
 def grupo_de(p: dict) -> str:
     """Grupo para comparar. Los códigos del kiosco son «general»: se clasifican por lo que la persona dijo
     de su formación (derecho = estudia o estudió Derecho, o trabaja en algo jurídico)."""
@@ -121,9 +155,18 @@ def grupo_de(p: dict) -> str:
     return 'no_derecho'
 
 
-def resumen(datos: dict) -> dict:
+def resumen(datos: dict, fase: str | None = None) -> dict:
     """Métricas por grupo a partir del export (ver store.export). `datos['turnos'][i]['rangos']`
-    ya trae la posición de cada artículo gold en el ranking de ese turno."""
+    ya trae la posición de cada artículo gold en el ranking de ese turno. `fase` = solo esos participantes
+    («piloto», «principal»…); None = todos."""
+    if fase is not None:
+        cods = {p['codigo'] for p in datos['participantes'] if (p.get('fase') or '(sin fase)') == fase}
+        ints = [i for i in datos['intentos'] if i['codigo'] in cods]
+        ids = {i['id'] for i in ints}
+        turnos = [t for t in datos['turnos'] if t['intento_id'] in ids]
+        tids = {t['id'] for t in turnos}
+        datos = dict(datos, participantes=[p for p in datos['participantes'] if p['codigo'] in cods], intentos=ints,
+                     turnos=turnos, calificaciones=[c for c in datos['calificaciones'] if c['turno_id'] in tids])
     part = {p['codigo']: dict(p, grupo=grupo_de(p)) for p in datos['participantes']}
     intentos = {i['id']: i for i in datos['intentos']}
     cal = defaultdict(list)
@@ -206,6 +249,50 @@ def resumen(datos: dict) -> dict:
                                  'recall@10_sin_lugar': media(m['r10_sin_lugar']),
                                  'comprension': media(m['comprension']), 'detecto_problema': media(m['detecto'])}
                              for k, m in sorted(esc.items())}
+    # Por condición experimental (p. ej. prompt actual vs. sencillo): la comparación principal del experimento.
+    cnd = defaultdict(lambda: defaultdict(list))
+    cond_de = {i['id']: (part.get(i['codigo']) or {}).get('condicion') or '(sin condición)' for i in datos['intentos']}
+    for t in datos['turnos']:
+        k = cond_de.get(t['intento_id'])
+        if not k:
+            continue
+        a = t.get('analisis') or {}
+        cnd[k]['palabras'].append(a.get('palabras'))
+        cnd[k]['pide_lugar'].append(a.get('pide_lugar'))
+        if t['n'] == 1:
+            cnd[k]['cita_ley_gold'].append(a.get('cita_ley_gold'))
+            cnd[k]['cita_articulo_gold'].append(a.get('cita_articulo_gold'))
+            cnd[k]['primera_ley_es_otra'].append(a.get('primera_ley_es_otra'))
+        f = final(cal[t['id']])
+        if f:
+            cnd[k]['correcta'].append(f['veredicto'] == 'correcta')
+            cnd[k]['danina'].append(f['dano'] in ('enganoso', 'peligroso'))
+    for it in datos['intentos']:
+        k = cond_de[it['id']]
+        sc = it.get('comprension') or {}
+        if sc.get('total'):
+            ac = sc['aciertos'] / sc['total']
+            cnd[k]['comprension'].append(ac)
+            if (it.get('confianza') or 0) >= 4:
+                cnd[k]['comprension_conf_alta'].append(ac)
+            cnd[k]['confianza'].append(it.get('confianza'))
+        if it.get('detecto'):
+            cnd[k]['detecto'].append(it['detecto'] == 'si')
+        if it.get('actuaria'):
+            cnd[k]['actuaria'].append(it['actuaria'] == 'si')
+        r = it.get('respuestas') or {}
+        if sc.get('total'):
+            cnd[k]['eligio_otra'].append(any(v == 'otra' for q, v in r.items() if not q.startswith('_')))
+    out['_por_condicion'] = {k: {
+        'participantes': sum(1 for p in part.values() if (p.get('condicion') or '(sin condición)') == k),
+        'situaciones': len(m['comprension']), 'comprension': media(m['comprension']),
+        'confianza_media': media(m['confianza']), 'comprension_con_confianza_alta': media(m['comprension_conf_alta']),
+        'noto_problema': media(m['detecto']), 'actuaria': media(m['actuaria']), 'eligio_no_esta_mi_respuesta': media(m['eligio_otra']),
+        'palabras_por_respuesta': media(m['palabras']), 'asistente_pide_lugar': media(m['pide_lugar']),
+        '1a_respuesta_cita_ley_correcta': media(m['cita_ley_gold']), '1a_respuesta_cita_articulo_correcto': media(m['cita_articulo_gold']),
+        '1a_respuesta_empieza_con_otro_estado': media(m['primera_ley_es_otra']),
+        'respuestas_correctas': media(m['correcta']), 'respuestas_daninas': media(m['danina'])}
+        for k, m in sorted(cnd.items())}
     out['_acuerdo'] = {'kappa_veredicto_estudiantes': kappa(pares), 'pares': len(pares),
                        'a_experta': sum(1 for cs in cal.values() if necesita_experto(cs))}
     return out

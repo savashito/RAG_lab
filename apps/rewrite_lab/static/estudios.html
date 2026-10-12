@@ -107,7 +107,9 @@ async function abrir(id) {
         <input id="enota" placeholder="nota (p. ej. grupo de WhatsApp Ciencias)" style="width:260px">
         <button class="primary" id="ecrear">Crear enlace público</button></div>
       <div class="scroll" id="kioscos" style="margin-top:8px"></div></div>
-    <div class="card"><h2>Resultados</h2><div class="row"><button class="ghost" id="res">Calcular resumen</button>
+    <div class="card"><h2>Resultados</h2><div class="row">Fase <select id="fase"><option value="">todas</option></select>
+      <button class="ghost" id="res">Calcular resumen</button>
+      <button class="ghost" id="marcar" title="Etiqueta a los participantes que aún no tienen fase (por ejemplo, los del piloto) para separarlos de la recolección principal">Marcar sin fase como…</button>
       <a class="ghost" href="/api/estudios/${encodeURIComponent(id)}/export" style="text-decoration:none">⬇ Exportar JSON (seudónimo)</a></div>
       <div class="scroll" id="resumen"></div></div>
     <div class="card"><h2>Definición (estudio.yaml)</h2><textarea id="yaml" spellcheck="false">${esc(actual.spec_yaml)}</textarea>
@@ -127,6 +129,13 @@ async function abrir(id) {
     else { m.className = 'ok'; m.textContent = 'Guardado.'; actual = r; cargarLista(id); }
   };
   document.getElementById('res').onclick = () => resumen(id);
+  document.getElementById('marcar').onclick = async () => {
+    const f = prompt('Nombre de la fase para los participantes que aún no tienen (p. ej. piloto):', 'piloto');
+    if (!f) return;
+    const r = await api('POST', `/api/estudios/${id}/fase`, {fase: f});
+    alert(`${r.marcados} participante(s) marcados como «${f}».`);
+    resumen(id);
+  };
   document.getElementById('kact').onclick = async () => {
     if (actual.estado !== 'abierto' && !confirm('El estudio no está abierto: el kiosco no funcionará hasta que lo abras. ¿Activarlo de todos modos?')) return;
     const r = await api('POST', `/api/estudios/${id}/kioscos`, {grupo: kgrupo.value, nota: knota.value});
@@ -194,7 +203,8 @@ async function verParticipante(eid, codigo) {
     const preg = (it.preguntas || []).map(q => {
       const r = (it.respuestas || {})[q.id];
       const marca = r == null ? '<span class="muted">sin contestar</span>' : r === q.correcta ? '<span class="ok-b">✔</span>' : r === 'no_se' ? '<span class="muted">no sé</span>' : '<span class="mal-b">✘</span>';
-      return `<div style="margin:6px 0"><b>${esc(q.texto)}</b><br>${marca} ${esc(q.opciones[r] || r || '')}
+      const libre = (it.respuestas || {})[q.id + '__texto'];
+      return `<div style="margin:6px 0"><b>${esc(q.texto)}</b><br>${marca} ${esc(q.opciones[r] || r || '')}${libre ? ` — <i>«${esc(libre)}»</i>` : ''}
         ${r != null && r !== q.correcta ? `<div class="muted small">Correcta: ${esc(q.opciones[q.correcta] || q.correcta)}</div>` : ''}</div>`;
     }).join('');
     const turnos = (it.turnos || []).map(t => `<div class="msg user">${esc(t.pregunta)} <span class="muted" style="font-size:11px">${hora(t.ts)}${t.segundos ? ' · ' + t.segundos + ' s' : ''}</span>
@@ -207,7 +217,7 @@ async function verParticipante(eid, codigo) {
       <details style="margin:6px 0"><summary class="muted">Texto de la situación</summary>${md(it.texto)}</details>
       <h3 style="font-size:13px;margin:10px 0 4px">Conversación (${(it.turnos || []).length})</h3>${turnos || '<p class="muted">Sin preguntas.</p>'}
       ${it.fin ? `<h3 style="font-size:13px;margin:12px 0 4px">Respuestas — ${sc.aciertos ?? '?'} de ${sc.total ?? '?'} correctas</h3>${preg}
-        <div class="kv" style="margin-top:6px"><div class="muted">Confianza</div><div>${it.confianza ?? '—'} / 5</div>
+        <div class="kv" style="margin-top:6px">${Object.entries(it.respuestas || {}).filter(([k]) => k.startsWith('_')).map(([k, v]) => `<div class="muted">${esc(k.slice(1))}</div><div>${esc(v)}</div>`).join('')}<div class="muted">Confianza</div><div>${it.confianza ?? '—'} / 5</div>
         <div class="muted">¿Notó un problema?</div><div>${esc(it.detecto || '—')}${it.detecto_cual ? ': ' + esc(it.detecto_cual) : ''}</div>
         <div class="muted">¿Actuaría?</div><div>${esc(it.actuaria || '—')}</div>
         <div class="muted">Comentarios</div><div>${esc(it.comentario || '—')}</div></div>` : ''}</div>`;
@@ -215,7 +225,7 @@ async function verParticipante(eid, codigo) {
   const cierre = d.cierre || {};
   hoja.innerHTML = `<div class="row" style="justify-content:space-between"><h1 style="margin:0">Participante <code>${esc(d.codigo)}</code></h1>
       <button class="ghost" id="cerrarPanel">Cerrar ✕</button></div>
-    <p class="muted">${esc(d.grupo)} · ${esc(d.nota || '')} · empezó ${hora(d.consentimiento_at)} · ${d.terminado_at ? 'terminó ' + hora(d.terminado_at) : '<b>no terminó</b>'} · ${d.practicas} pregunta(s) de práctica</p>
+    <p class="muted">${esc(d.grupo)} · ${esc(d.nota || '')} · condición: <b>${esc(d.condicion || '—')}</b> · fase: <b>${esc(d.fase || '—')}</b> · empezó ${hora(d.consentimiento_at)} · ${d.terminado_at ? 'terminó ' + hora(d.terminado_at) : '<b>no terminó</b>'} · ${d.practicas} pregunta(s) de práctica</p>
     <div class="card"><h2>Perfil</h2><div class="kv">${perfil}</div></div>
     ${sit || '<p class="muted">Aún no empieza ninguna situación.</p>'}
     ${d.terminado_at ? `<div class="card"><h2>Cierre</h2><div class="kv"><div class="muted">SUS (respuestas 1–5)</div><div>${esc((cierre.sus || []).join(', '))}</div>
@@ -226,7 +236,19 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') document.get
 document.getElementById('panel').addEventListener('click', e => { if (e.target.id === 'panel') e.target.hidden = true; });
 
 async function resumen(id) {
-  const r = await api('GET', `/api/estudios/${id}/resumen`);
+  const sel = document.getElementById('fase'), elegida = sel.value;
+  const r = await api('GET', `/api/estudios/${id}/resumen?fase=${encodeURIComponent(elegida)}`);
+  sel.innerHTML = '<option value="">todas</option>' + (r._fases || []).map(f => `<option value="${esc(f.fase)}" ${f.fase === elegida ? 'selected' : ''}>${esc(f.fase)} (${f.n})</option>`).join('');
+  const C = r._por_condicion || {}, conds = Object.keys(C);
+  const filasC = [['participantes', 'Participantes'], ['situaciones', 'Situaciones terminadas'], ['comprension', 'Comprensión (aciertos)'],
+    ['confianza_media', 'Confianza media (1–5)'], ['comprension_con_confianza_alta', 'Comprensión cuando dijeron confianza 4–5'],
+    ['noto_problema', 'Notaron un problema'], ['actuaria', 'Actuarían con la respuesta'], ['eligio_no_esta_mi_respuesta', 'Eligieron «no está mi respuesta»'],
+    ['palabras_por_respuesta', 'Palabras por respuesta del asistente'], ['asistente_pide_lugar', 'Respuestas en que el asistente pregunta el lugar'],
+    ['1a_respuesta_cita_ley_correcta', '1ª respuesta cita el código correcto'], ['1a_respuesta_cita_articulo_correcto', '1ª respuesta cita el artículo correcto'],
+    ['1a_respuesta_empieza_con_otro_estado', '1ª respuesta empieza citando otro estado'],
+    ['respuestas_correctas', 'Respuestas correctas (calificación humana)'], ['respuestas_daninas', 'Respuestas engañosas o peligrosas']];
+  const tablaC = conds.length ? `<h2 style="margin-top:14px">Por condición (prompt)</h2><table><tr><th></th>${conds.map(c => `<th>${esc(c)}</th>`).join('')}</tr>
+    ${filasC.map(([k, l]) => `<tr><td>${esc(l)}</td>${conds.map(c => `<td>${C[c][k] ?? '—'}</td>`).join('')}</tr>`).join('')}</table>` : '';
   const grupos = Object.keys(r).filter(k => !k.startsWith('_'));
   const filas = [['participantes', 'Participantes'], ['recall@10_primer_turno', 'Recall@10 del artículo (1er turno)'], ['n_turnos_con_gold', '  turnos medidos'],
     ['respuestas_correctas', 'Respuestas correctas (calificación final)'], ['respuestas_daninas', 'Respuestas engañosas o peligrosas'],
@@ -237,6 +259,7 @@ async function resumen(id) {
     ${filas.map(([k, l]) => `<tr><td>${esc(l)}</td>${grupos.map(g => `<td>${r[g][k] ?? '—'}</td>`).join('')}</tr>`).join('')}</table>
     <p class="muted">Acuerdo entre estudiantes (κ de Cohen, veredicto): <b>${a.kappa_veredicto_estudiantes ?? '—'}</b> en ${a.pares || 0} par(es) ·
     ${a.a_experta || 0} respuesta(s) para desempate de la experta.</p>
+    ${tablaC}
     <h2 style="margin-top:14px">Por situación</h2><table><tr><th>Situación / variante</th><th>Escenarios terminados</th><th>Recall@10 (1er turno)</th><th>1ª pregunta dice el lugar</th><th>Recall@10 con / sin lugar</th><th>Comprensión</th><th>Notaron un problema</th></tr>
     ${Object.entries(r._por_escenario || {}).map(([k, m]) => `<tr><td>${esc(k)}</td><td>${m.intentos}</td><td>${m['recall@10_primer_turno'] ?? '—'}</td><td>${m.primera_pregunta_dice_lugar ?? '—'}</td><td>${m['recall@10_con_lugar'] ?? '—'} / ${m['recall@10_sin_lugar'] ?? '—'}</td><td>${m.comprension ?? '—'}</td><td>${m.detecto_problema ?? '—'}</td></tr>`).join('')}</table>` : '<p class="muted">Aún no hay datos.</p>';
 }

@@ -17,10 +17,10 @@ from fastapi import APIRouter, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
-from study.analisis import lugares_mencionados, rango_gold, resumen
+from study.analisis import analizar_respuesta, lugares_mencionados, rango_gold, resumen
 from study.store import NoPermitido
 from study.validar import (CITA, DANOS, ESTADOS, GRUPOS, ROLES_CALIFICADOR, SI_NO_NS, VEREDICTOS,
-                           escenario_efectivo, limpiar_perfil, vista_publica)
+                           escenario_efectivo, limpiar_perfil, limpiar_respuestas, sistema_de_condicion, vista_publica)
 
 MAX_MENSAJE = 2000
 MAX_NUEVOS_POR_IP_HORA = 30
@@ -39,7 +39,7 @@ def _fuentes(chunks: list[dict]) -> list[dict]:
 
 
 def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_email, es_admin,
-                chat_stream=None) -> APIRouter:
+                chat_stream=None, sistema_de=None) -> APIRouter:
     """`chat(messages, cfg)` = chat_answer del app con la configuración del estudio; `chat_stream(messages, cfg)`,
     lo mismo como eventos (retrieving → context → token* → done | error) para mostrar la respuesta mientras se escribe.
     `gold_refs(texto)` → grupos de artículos (sin BD); `resolver_gold(grupos)` les pone sus ids."""
@@ -47,6 +47,23 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
 
     def acceso(request: Request, tipo: str) -> dict:
         return store.entrar(request.headers.get('x-codigo', ''), tipo)
+
+    def cfg_de(a: dict) -> dict:
+        """Configuración del asistente para ESTA persona: la del estudio + el system prompt de la condición
+        que le tocó (si su condición define uno)."""
+        cfg = dict(a['spec'].get('asistente') or {})
+        p = store.participante(a['codigo']) or {}
+        if p.get('condicion'):
+            cfg['condicion'] = p['condicion']
+            sistema = sistema_de_condicion(a['spec'], p['condicion'])
+            if sistema:
+                cfg['sistema'] = sistema
+        return cfg
+
+    def para_guardar(cfg: dict) -> dict:
+        """Lo que se guarda en cada turno: la configuración sin el texto del prompt (va aparte, por md5)."""
+        return {'config': {k: v for k, v in cfg.items() if k != 'sistema'},
+                'sistema': sistema_de(cfg) if sistema_de else cfg.get('sistema')}
 
     def guard(fn):
         """Convierte NoPermitido en 403 sin repetir try/except en cada ruta."""
@@ -110,7 +127,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
         if not mensaje:
             return _err('Escribe tu pregunta.')
-        cfg = a['spec'].get('asistente') or {}
+        cfg = cfg_de(a)
         previos = store.turnos(it['id'])
         if len(previos) >= int(cfg.get('max_turnos', 12)):
             return _err('Llegaste al máximo de preguntas para este escenario. Pasa a las preguntas finales.')
@@ -125,7 +142,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
             out['contexto'] = _fuentes(out.get('chunks'))
         except Exception as e:  # noqa: BLE001 — se registra el fallo; la persona puede reintentar
             error = f'{type(e).__name__}: {e}'
-        store.guardar_turno(it['id'], len(previos) + 1, mensaje, out, error, config=cfg)
+        store.guardar_turno(it['id'], len(previos) + 1, mensaje, out, error, **para_guardar(cfg))
         print(f'estudio: turno {len(previos) + 1} · {round(time.time() - t0, 1)}s'
               + (' · error' if error else ''), flush=True)
         if error:
@@ -185,7 +202,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
         if not mensaje:
             return _err('Escribe tu pregunta.')
-        cfg = a['spec'].get('asistente') or {}
+        cfg = cfg_de(a)
         previos = store.turnos(it['id'])
         if len(previos) >= int(cfg.get('max_turnos', 12)):
             return _err('Llegaste al máximo de preguntas para este escenario. Pasa a las preguntas finales.')
@@ -197,7 +214,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         n = len(previos) + 1
 
         def guardar(out, error):
-            store.guardar_turno(it['id'], n, mensaje, out, error, config=cfg)
+            store.guardar_turno(it['id'], n, mensaje, out, error, **para_guardar(cfg))
             print(f'estudio: turno {n} · {out.get("seconds")}s · streaming' + (' · error' if error else ''), flush=True)
         return _respuesta_sse(_stream(messages, cfg, guardar))
 
@@ -214,8 +231,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         maximo = int((a['spec'].get('tutorial') or {}).get('max_preguntas', 2))
         if not store.contar_practica(a['codigo'], maximo):
             return _err('Ya hiciste las preguntas de práctica. Da clic en «Entendido, empezar».')
-        return _respuesta_sse(_stream([{'role': 'user', 'content': mensaje}], a['spec'].get('asistente') or {},
-                                      lambda out, error: None))
+        return _respuesta_sse(_stream([{'role': 'user', 'content': mensaje}], cfg_de(a), lambda out, error: None))
 
     @r.post('/api/estudio/p/practica')
     @guard
@@ -231,7 +247,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if not store.contar_practica(a['codigo'], maximo):
             return _err('Ya hiciste las preguntas de práctica. Da clic en «Entendido, empezar».')
         try:
-            out = await run_in_threadpool(chat, [{'role': 'user', 'content': mensaje}], a['spec'].get('asistente') or {})
+            out = await run_in_threadpool(chat, [{'role': 'user', 'content': mensaje}], cfg_de(a))
         except Exception:  # noqa: BLE001
             return _err('El asistente no pudo responder. Intenta de nuevo en un momento.', 502)
         return {'respuesta': out['answer'], 'fuentes': _fuentes(out.get('chunks'))}
@@ -257,7 +273,17 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         confianza = b.get('confianza')
         if confianza not in (1, 2, 3, 4, 5) or b.get('actuaria') not in SI_NO_NS or b.get('detecto') not in SI_NO_NS:
             return _err('Contesta todas las preguntas.')
-        store.terminar(a['codigo'], int(b.get('intento') or 0), a['spec'], b.get('respuestas') or {},
+        iid = int(b.get('intento') or 0)
+        it = store.intento_abierto(a['codigo'], iid)
+        p = store.participante(a['codigo'])
+        hechos = sum(1 for i in store.intentos(a['codigo']) if i['fin'])
+        esc = escenario_efectivo(next((e for e in a['spec']['escenarios'] if e['id'] == it['escenario']), {}), it['variante'])
+        es_ultima = hechos == len(p['asignados']) - 1
+        respuestas = limpiar_respuestas(a['spec'], esc, b.get('respuestas') or {}, es_ultima)
+        if any(q['id'] not in respuestas for q in esc.get('preguntas') or []) or (
+                es_ultima and any('_' + q['id'] not in respuestas for q in a['spec'].get('ultima_situacion') or [])):
+            return _err('Contesta todas las preguntas.')
+        store.terminar(a['codigo'], iid, a['spec'], respuestas,
                        confianza, b['actuaria'], b['detecto'], str(b.get('detecto_cual') or '')[:2000],
                        str(b.get('comentario') or '')[:3000])
         return estado_participante(a)
@@ -438,7 +464,7 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         store.activar_kiosco(eid, kid, bool((await request.json()).get('activo')))
         return {'ok': True}
 
-    def _export(eid: str) -> dict:
+    def _export(eid: str, fase: str | None = None) -> dict:
         datos = store.export(eid)
         spec = store.spec(eid)
         por_id = {e['id']: e for e in spec.get('escenarios') or []}
@@ -454,7 +480,9 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
             t['gold'] = [[x['label'] for x in g] for g in grupos]
             t['rangos'] = rango_gold(grupos, t.get('ranking') or [])
             t['lugares_mencionados'] = lugares_mencionados(t['pregunta'])
-        datos['resumen'] = resumen(datos)
+            t['analisis'] = analizar_respuesta(t.get('respuesta') or '', grupos) if t.get('respuesta') else None
+        datos['resumen'] = resumen(datos, fase)
+        datos['fases'] = store.fases(eid)
         return datos
 
     @r.get('/api/estudios/{eid}/export')
@@ -465,9 +493,20 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         return JSONResponse(datos, headers={'Content-Disposition': f'attachment; filename="estudio_{eid}.json"'})
 
     @r.get('/api/estudios/{eid}/resumen')
-    async def adm_resumen(eid: str, request: Request):
+    async def adm_resumen(eid: str, request: Request, fase: str = ''):
         if not admin(request):
             return _err('Solo administradores.', 403)
-        return (await run_in_threadpool(_export, eid))['resumen']
+        d = await run_in_threadpool(_export, eid, fase or None)
+        return {**d['resumen'], '_fases': d['fases']}
+
+    @r.post('/api/estudios/{eid}/fase')
+    async def adm_marcar_fase(eid: str, request: Request):
+        """Etiqueta como `fase` a los participantes que aún no tienen (p. ej. «piloto»)."""
+        if not admin(request):
+            return _err('Solo administradores.', 403)
+        fase = str((await request.json()).get('fase') or '').strip()[:40]
+        if not fase:
+            return _err('Falta el nombre de la fase.')
+        return {'marcados': store.marcar_fase(eid, fase), 'fases': store.fases(eid)}
 
     return r
