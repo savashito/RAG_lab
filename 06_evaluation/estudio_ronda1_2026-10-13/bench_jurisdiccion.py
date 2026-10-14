@@ -55,9 +55,13 @@ def correr(caso, pid):
     return dict(caso, prompt=pid, palabras=len(ans.split()), pide_lugar=bool(_PIDE_LUGAR.search(fold(ans))),
                 cita_estado_correcto=caso['estado'] in resp, otros_estados=otros, otros_en_contexto=sorted(set(ctx) - permitidos),
                 primera_ley=resp[0] if resp else None, respuesta=ans[:1500], segundos=r.get('seconds'))
-res = []
-with cf.ThreadPoolExecutor(3) as ex:
-    futs = [ex.submit(correr, caso, pid) for pid in PROMPTS for caso in casos]
+import os
+res, hechos = [], set()
+if os.path.exists(out_path):   # reanudar: conserva lo que salió bien y repite solo lo que falló
+    res = [r for r in json.load(open(out_path)) if 'error' not in r]
+    hechos = {(r['prompt'], r['pregunta']) for r in res}
+with cf.ThreadPoolExecutor(2) as ex:
+    futs = [ex.submit(correr, caso, pid) for pid in PROMPTS for caso in casos if (pid, caso['pregunta']) not in hechos]
     for k, f in enumerate(cf.as_completed(futs), 1):
         res.append(f.result())
         if k % 20 == 0: print(k, '/', len(futs), flush=True); json.dump(res, open(out_path, 'w'), ensure_ascii=False)

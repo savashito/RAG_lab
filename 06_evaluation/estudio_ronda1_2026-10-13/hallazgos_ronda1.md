@@ -338,7 +338,33 @@ mismo Gemma con criterios must/should/error. Corridas 37–42, etiqueta `prompts
 
 ## 8. Benchmark automático de jurisdicción (13-oct)
 
-*(Sección completada al terminar la corrida; ver al final del documento.)*
+Sin personas y sin juez. Preguntas: la **1.ª pregunta real** de cada participante en cada situación (ronda 1).
+Cada una se corre tal cual y, si no decía el lugar, también con «Esto pasó en <estado>.» al final. Misma
+configuración del estudio (híbrido, k=10, vecinos, HyDE, descomponer, routing). Conteo automático de códigos
+citados (script `bench_jurisdiccion.py`; resultados en prod `/tmp/bench_jurisdiccion_AC.json`). 214 corridas,
+2 errores (el LLM remoto falló de forma intermitente; se repitieron solo las fallidas).
+
+| Prompt | Pregunta | n | Cita otro estado | …y venía en el contexto | Pide el lugar | Cita el estado correcto | Palabras |
+|---|---|---|---|---|---|---|---|
+| Original | dice el lugar | 30 | 27 % | 88 % | 7 % | 93 % | 478 |
+| Original | **no** dice el lugar | 39 | **85 %** | 97 % | 10 % | 28 % | 545 |
+| Original | lugar agregado | 39 | 33 % | 100 % | 3 % | 97 % | 472 |
+| Sencillo | dice el lugar | 30 | 17 % | 60 % | 40 % | 97 % | 545 |
+| Sencillo | **no** dice el lugar | 38 | 74 % | 100 % | **82 %** | 29 % | 556 |
+| Sencillo | lugar agregado | 38 | 21 % | 100 % | 8 % | **100 %** | 516 |
+
+Lectura:
+- **Decir el lugar es lo que más cambia**: citar otros estados baja de 74–85 % a 17–33 %, y citar el estado
+  correcto sube de ≈ 28 % a 93–100 %. Agregar una sola frase con el lugar a la misma pregunta produce casi el
+  mismo efecto que haberlo dicho: el lugar es **el** dato decisivo.
+- **La causa es la búsqueda**: cuando cita otro estado, ese código venía en el contexto en 88–100 % de los casos
+  (salvo «sencillo + dice el lugar», 60 %, con pocos casos).
+- **El prompt sencillo pregunta el lugar** cuando falta (82 % vs 10 %), pero **igual cita otros estados** (74 %):
+  pregunta *y además* responde con lo que trajo la búsqueda.
+- Aun con el lugar, 1 de cada 4–5 respuestas sigue citando otro estado: ahí el filtro de jurisdicción es el
+  arreglo natural (ver H6a: hoy las etiquetas de estado de la base no lo permiten para Querétaro).
+- Limitación: «cita» = el código aparece en la respuesta (puede ser para decir que no aplica); en el citatorio se
+  permite mencionar la CDMX.
 
 ## 9. Decisiones y cambios durante la ronda 1 (para el método)
 
