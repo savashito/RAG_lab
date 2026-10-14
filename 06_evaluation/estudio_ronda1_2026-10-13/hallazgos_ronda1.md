@@ -174,8 +174,11 @@ materias 6, trabaja en algo jurídico 1. Uso de IA: diario 11, semanal 10, mensu
   del Código Penal del Estado de Querétaro»*) · ningún delito 2 · no sé 1.
   - Ojo: **el asistente nunca citó el art. 390** (0 de 37 respuestas). Quienes lo eligieron siguieron su
     intuición («extorsión → Código Penal Federal»), no al asistente.
-  - **Decidido por la experta (14-oct): solo la Ley General de Extorsión es correcta** (ver H6b). El 167
-    Quinquies queda como «relacionado pero incorrecto»: la puntuación de comprensión ya lo trataba así.
+  - **Regla de calificación (decidida 14-oct):** cuenta como correcta si menciona **extorsión (Ley General) o el
+    167 Quinquies**. El **Quáter** es incorrecto (castiga *obtener* imágenes sin consentimiento; Cris las mandó).
+    Con esta regla, esta pregunta pasa de 5 a **9 correctas** (5 Ley de Extorsión + 4 Quinquies). La experta
+    señala que el lucro hace que sea extorsión (H6b); el Quinquies se acepta porque la amenaza de difundir sí
+    está en los hechos.
 - *Fotos, «¿es delito aunque Cris mandó las fotos?»*: sí 17 · no 2 · «solo si ya se publicaron» 2.
 - *Citatorio, «¿qué código aplica?»*: Querétaro 15 · **Federal 5** · no sé 1.
 
@@ -236,6 +239,40 @@ materias 6, trabaja en algo jurídico 1. Uso de IA: diario 11, semanal 10, mensu
   Ley de Extorsión art. 15: 2**.
 - Detectado por la experta al revisar respuestas. Análogo a problemas previos con «Bis/Ter/Quáter» en el
   benchmark.
+
+### H6a. Diagnóstico: por qué la búsqueda trae el Quáter (14-oct, solo lectura)
+Scripts `diag_quater.py`, `diag_desc.py`, `diag_hechos.py`, `diag_ext.py` (1.ª pregunta real de «Las fotos», 23
+preguntas; posición del artículo en el ranking; 999 = no aparece).
+
+| Buscador | Quáter (mediana / top-3) | Quinquies | LG art. 15 | LG art. 17 |
+|---|---|---|---|---|
+| Denso, solo la pregunta | 22 / 3 de 35 | 68 / 1 | 385 / 0 | 252 / 1 |
+| Denso + HyDE (como en el estudio) | 8 / 6 de 23 | 11 / 5 | 65 / 0 | 23 / 0 |
+| BM25 | ≈2 300 | ≈3 800 | ≈3 600 | ≈2 500 |
+
+- **El buscador semántico prefiere el Quáter**: su texto usa las palabras de la gente («imágenes o videos de las
+  partes íntimas», «se compartan a un tercero o públicamente»); el Quinquies dice «imágenes eróticas sexuales»,
+  «divulgue o amenace con difundir» y es corto (77 palabras). **BM25 no encuentra ninguno**: las palabras de la
+  gente («fotos», «nudes», «pack», «publicar») no están en los artículos.
+- **El modelo** elige el Quáter aunque el Quinquies esté en el contexto: el 2.º párrafo del Quáter habla de
+  compartir/publicar, y el modelo no verifica el elemento «sin consentimiento». Misma falla de subsunción que H6b.
+
+**Arreglos probados (simulación, sin tocar la base):**
+1. *Descripción en lenguaje cotidiano por artículo* (generada por el LLM con un prompt neutro, sin conocer el
+   caso, y embebida junto al texto): Quinquies **11 → 4** de mediana, top-3 **5 → 11** de 23; pasa al Quáter.
+   LG art. 15: 65 → 36. *Ojo:* solo se re-embebieron 6 artículos; la prueba real exige hacerlo en todo el corpus.
+2. *«Hechos decisivos → delitos candidatos»* (el LLM enumera los hechos que cambian el delito y nombra los delitos
+   posibles; se busca eso como sub-consulta): el LLM **sí identifica «extorsión»** en todos los ejemplos
+   («exigencia de dinero para evitar la difusión»). LG art. 17 (agravante por usar imágenes privadas) entra al
+   top-10 en **15 de 23** (antes 4). El art. 15 sigue fuera (mediana 33): es un artículo abstracto.
+3. *Qué estorba*: en esa sub-consulta el top-10 lo ocupan «Violencia Digital» (53), Morelos (39), ficha «Ley
+   Olimpia» (35), CDMX (20), Edomex (11): los equivalentes de **otros estados** (CDMX 181 Quintus, Morelos 150 Bis).
+   Quitar los otros estados mejora poco el art. 15 (33 → 24).
+4. **El filtro de jurisdicción hoy no funciona** para Querétaro: en la base, 45 documentos (Querétaro, Morelos, Ley
+   de Extorsión, doctrina…) tienen `jurisdiction='general'`; solo CDMX, CPF, CNPP y Edomex tienen etiqueta propia.
+   Hay que re-etiquetar antes de filtrar.
+5. Propuesta para el art. 15: **seguir referencias cruzadas**. El art. 17 dice «además de las penas señaladas en el
+   **artículo 15** de la presente Ley»: si llega el 17, traer también el 15 (lo mismo para «Bis/Ter…» de un tipo base).
 
 ### H6b. El elemento que decide el delito (el lucro) se pierde: Quinquies «parece» correcto, pero es extorsión
 Criterio de la experta (Karen, 14-oct), en sus palabras resumidas:
@@ -321,9 +358,8 @@ mismo Gemma con criterios must/should/error. Corridas 37–42, etiqueta `prompts
 - **El piloto no fue sorteado** y tuvo explicación verbal; usarlo solo como análisis complementario.
 - **Juez automático = el mismo modelo**; no hay todavía calificación humana de las respuestas (104 pendientes en
   `/calificar`).
-- **Respuesta «correcta» en «Las fotos»**: la experta decidió (14-oct) que solo la Ley de Extorsión es correcta
-  (H6b). Otras personas expertas podrían aceptar concurso con el 167 Quinquies; reportarlo y, si se puede,
-  pedir una segunda opinión experta.
+- **Respuesta «correcta» en «Las fotos»**: se acepta extorsión o 167 Quinquies (decidido 14-oct, después de ver
+  los datos). Reportarlo y dar los resultados con ambas reglas (solo extorsión / extorsión o Quinquies).
 - La pregunta del estado citado es ambigua (mencionar ≠ aplicar).
 - El prompt sencillo cambia varias cosas a la vez (estilo, estructura, pedir el estado): no se puede atribuir el
   efecto a una sola.
@@ -358,9 +394,8 @@ sesiones ronda 2 · 23–27 oct análisis + abstract · hasta 3 nov paper.
 
 ## 12. Preguntas abiertas (para la experta / para discutir)
 
-1. ~~«Las fotos»: ¿cuenta como correcta también el 167 Quinquies?~~ **Resuelto (14-oct): no; el lucro la
-   convierte en extorsión (H6b).** Pendiente: ¿una respuesta que cite **ambos** (extorsión + Quinquies) se
-   califica como correcta o como «parcialmente correcta»?
+1. ~~«Las fotos»: ¿cuenta como correcta también el 167 Quinquies?~~ **Resuelto (14-oct): extorsión o Quinquies
+   cuentan como correctas; Quáter no.**
 2. ¿El filtro de jurisdicción debe permitir siempre leyes federales/generales? ¿Y el CNPP?
 3. ¿Qué cuenta como «error de jurisdicción dañino» para la escala de daño de la calificación humana?
 4. ¿Cuántos estudiantes de Derecho pueden calificar, y cuándo?
