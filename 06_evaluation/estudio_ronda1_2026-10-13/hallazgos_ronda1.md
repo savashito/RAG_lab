@@ -23,6 +23,8 @@
 6. **Lenguaje cotidiano vs. jurídico**: con «me piden dinero por no publicar mis fotos», el buscador casi nunca trae
    el artículo que define la extorsión (9 %); confunde artículos contiguos casi homónimos (167 **Quáter** vs. 167
    **Quinquies** de Querétaro).
+   Según la experta, el error de fondo es de **subsunción**: el caso parece acoso por difusión de imágenes
+   (167 Quinquies), pero el **lucro** lo convierte en **extorsión**; el sistema no detecta ese elemento decisivo.
 7. **Prompt sencillo vs. jurídico** (sorteado, 8 vs. 7 personas): el sencillo **gusta más** (SUS 84 vs. 78),
    da **más seguridad** y **más disposición a actuar** (75 % vs. 56 %), **tarda menos** (6.3 vs. 8.7 min por
    situación)… pero **no mejora la comprensión** (67 % vs. 61 %, diferencia dentro del ruido).
@@ -172,7 +174,8 @@ materias 6, trabaja en algo jurídico 1. Uso de IA: diario 11, semanal 10, mensu
   del Código Penal del Estado de Querétaro»*) · ningún delito 2 · no sé 1.
   - Ojo: **el asistente nunca citó el art. 390** (0 de 37 respuestas). Quienes lo eligieron siguieron su
     intuición («extorsión → Código Penal Federal»), no al asistente.
-  - Está pendiente que la experta decida si el 167 Quinquies también cuenta como correcto (ver §9).
+  - **Decidido por la experta (14-oct): solo la Ley General de Extorsión es correcta** (ver H6b). El 167
+    Quinquies queda como «relacionado pero incorrecto»: la puntuación de comprensión ya lo trataba así.
 - *Fotos, «¿es delito aunque Cris mandó las fotos?»*: sí 17 · no 2 · «solo si ya se publicaron» 2.
 - *Citatorio, «¿qué código aplica?»*: Querétaro 15 · **Federal 5** · no sé 1.
 
@@ -234,6 +237,30 @@ materias 6, trabaja en algo jurídico 1. Uso de IA: diario 11, semanal 10, mensu
 - Detectado por la experta al revisar respuestas. Análogo a problemas previos con «Bis/Ter/Quáter» en el
   benchmark.
 
+### H6b. El elemento que decide el delito (el lucro) se pierde: Quinquies «parece» correcto, pero es extorsión
+Criterio de la experta (Karen, 14-oct), en sus palabras resumidas:
+- El asistente se confunde porque la conducta **sí tiene los elementos** del acoso sexual en su modalidad de
+  divulgación o **amenaza de difusión** de material erótico (Querétaro, art. 167 Quinquies).
+- Pero en el caso de Cris hay un **elemento imperante**: la **intención de obtener un lucro o beneficio
+  económico** («si no le deposita 5,000 pesos…»). **Con ese elemento la conducta se convierte en extorsión**
+  (Ley General en materia de Extorsión, art. 15; agravantes del art. 17 fr. IV —usar imágenes privadas— y fr. V
+  —medios electrónicos—).
+
+Por qué importa (para el paper):
+- No es solo un problema de «encontrar el artículo»: es de **subsunción**. El sistema empareja por **parecido
+  superficial** (fotos íntimas + amenaza de publicarlas → artículos sobre imágenes íntimas) y pierde el
+  **elemento típico que distingue** un delito de otro (pedir dinero).
+- Las tres capas fallan en la misma dirección:
+  1. *Pregunta de la gente*: describe sobre todo las fotos; el dinero aparece de pasada («me piden dinero»).
+  2. *Búsqueda*: los artículos sobre imágenes íntimas comparten vocabulario con la pregunta; el art. 15 de
+     extorsión está redactado en abstracto («obligue a otro a dar… obteniendo un lucro») y no menciona fotos.
+  3. *Modelo*: aun cuando el art. 15 está en el contexto, rara vez razona «hay lucro → extorsión».
+- Daño potencial: con el 167 Quinquies la pena es de 3 a 6 años; con extorsión agravada, 15 a 25 años más
+  5 a 12. Encuadrar mal **subestima la gravedad** y puede orientar mal la denuncia.
+- Es un hallazgo general, no de este caso: en derecho penal, **un solo elemento** (lucro, jerarquía laboral,
+  consentimiento, lugar) cambia el delito aplicable. H1–H3 (lugar) y H6b (lucro) son la misma falla: el sistema
+  no identifica qué **hechos jurídicamente decisivos** necesita y no los usa para elegir la norma.
+
 ### H7. Lenguaje sencillo: más agrado y confianza, no más comprensión (hipótesis)
 - Ver §4. Citas del grupo sencillo: *«Me gustó que es entendible el lenguaje que usa»*; *«No solo responde a mi
   pregunta, sino que también valida y reconoce las emociones de ese momento»*; *«te da la información completa…»*.
@@ -294,7 +321,9 @@ mismo Gemma con criterios must/should/error. Corridas 37–42, etiqueta `prompts
 - **El piloto no fue sorteado** y tuvo explicación verbal; usarlo solo como análisis complementario.
 - **Juez automático = el mismo modelo**; no hay todavía calificación humana de las respuestas (104 pendientes en
   `/calificar`).
-- **Respuesta «correcta» discutible** en «Las fotos» (¿solo Ley de Extorsión, o también 167 Quinquies?).
+- **Respuesta «correcta» en «Las fotos»**: la experta decidió (14-oct) que solo la Ley de Extorsión es correcta
+  (H6b). Otras personas expertas podrían aceptar concurso con el 167 Quinquies; reportarlo y, si se puede,
+  pedir una segunda opinión experta.
 - La pregunta del estado citado es ambigua (mencionar ≠ aplicar).
 - El prompt sencillo cambia varias cosas a la vez (estilo, estructura, pedir el estado): no se puede atribuir el
   efecto a una sola.
@@ -310,14 +339,18 @@ mismo Gemma con criterios must/should/error. Corridas 37–42, etiqueta `prompts
 2. **Prompt con disciplina de jurisdicción** (ataca H1, H4): «si ya sabes el estado, cita solo su código y leyes
    federales/generales; nunca presentes artículos de otros estados como aplicables; si no sabes el estado,
    pregúntalo primero». Validarlo con el benchmark de §8 hasta que la tasa de «otros estados» baje.
-3. **Mejor recuperación de artículos definitorios y contiguos** (H5–H6): reordenamiento (*reranker*), o agregar
+3. **Identificar los hechos decisivos antes de buscar** (H3, H6b): un paso que extraiga de la pregunta los
+   elementos que cambian el delito (lugar, ¿piden dinero o algo a cambio?, relación jerárquica, consentimiento,
+   edad) y que los use para (a) reformular la búsqueda en términos jurídicos («obtener un lucro → extorsión») y
+   (b) preguntar a la persona lo que falte. Medirlo con el benchmark de jurisdicción y con «Las fotos».
+4. **Mejor recuperación de artículos definitorios y contiguos** (H5–H6): reordenamiento (*reranker*), o agregar
    a cada artículo una descripción en lenguaje cotidiano («amenazar con publicar fotos íntimas»), o un HyDE que
    genere vocabulario de la gente. Medir con el benchmark experto + preguntas reales de la ronda 1.
-4. **Mantener el estilo sencillo** (gusta, ahorra tiempo) pero vigilar la sobre-confianza: medir de nuevo
+5. **Mantener el estilo sencillo** (gusta, ahorra tiempo) pero vigilar la sobre-confianza: medir de nuevo
    comprensión vs. confianza vs. disposición a actuar.
-5. **Diseño**: mismas 3 situaciones, **personas nuevas**, sorteo **original vs. corregido**; reclutar estudiantes
+6. **Diseño**: mismas 3 situaciones, **personas nuevas**, sorteo **original vs. corregido**; reclutar estudiantes
    de Derecho; arrancar la calificación humana ciega (2 estudiantes de Derecho + la experta para desempates).
-6. **Antes de abrir**: validar el sistema corregido con (a) benchmark experto, (b) benchmark de jurisdicción,
+7. **Antes de abrir**: validar el sistema corregido con (a) benchmark experto, (b) benchmark de jurisdicción,
    (c) repetición de las preguntas reales de la ronda 1.
 
 **Calendario tentativo:** 13–14 oct cierre y documento · 14–16 oct correcciones + benchmarks · 16–22 oct
@@ -325,8 +358,9 @@ sesiones ronda 2 · 23–27 oct análisis + abstract · hasta 3 nov paper.
 
 ## 12. Preguntas abiertas (para la experta / para discutir)
 
-1. «Las fotos»: ¿cuenta como correcta solo la Ley de Extorsión art. 15, o también Querétaro 167 Quinquies (y la
-   «Ley Olimpia»)? (Se puede re-puntuar hacia atrás sin perder datos.)
+1. ~~«Las fotos»: ¿cuenta como correcta también el 167 Quinquies?~~ **Resuelto (14-oct): no; el lucro la
+   convierte en extorsión (H6b).** Pendiente: ¿una respuesta que cite **ambos** (extorsión + Quinquies) se
+   califica como correcta o como «parcialmente correcta»?
 2. ¿El filtro de jurisdicción debe permitir siempre leyes federales/generales? ¿Y el CNPP?
 3. ¿Qué cuenta como «error de jurisdicción dañino» para la escala de daño de la calificación humana?
 4. ¿Cuántos estudiantes de Derecho pueden calificar, y cuándo?
