@@ -3,8 +3,9 @@
 > **Para quien lea esto (personas o un asistente de IA):** este documento es autocontenido. Resume un
 > estudio con usuarios de un asistente jurídico con RAG (retrieval-augmented generation) sobre derecho penal
 > mexicano, hecho para un paper en **ACM FAccT 2027** (abstract: 27-oct-2026; paper: 3-nov-2026).
-> Todos los números vienen de la base de datos de producción al **13-oct-2026** (ronda 1 cerrada), salvo donde
-> se indica. Las cifras son **preliminares**: los grupos son chicos (7–9 personas) y nada de esto tiene todavía
+> Los números de §0–§9 vienen de la base de datos de producción al **13-oct-2026**; la **§5b** agrega a las
+> personas de **Derecho** que contestaron el 14–15 oct (datos al 15-oct). **La ronda 1 sigue abierta** (se
+> está completando el grupo de Derecho); el sistema no se ha modificado desde el inicio de la fase principal. Las cifras son **preliminares**: los grupos son chicos (7–9 personas) y nada de esto tiene todavía
 > pruebas estadísticas. Las citas de participantes son textuales (con sus faltas de ortografía) y anónimas.
 
 ---
@@ -39,6 +40,18 @@
     sorteando de nuevo original vs. corregido, con personas nuevas y las mismas situaciones.
 12. Mensaje del paper: **la falla es de diseño, no del usuario, y se puede corregir** (incluso con un modelo
     pequeño y abierto), pero el lenguaje sencillo trae su propio riesgo: más confianza.
+
+**Actualización 15-oct — participantes de Derecho (§5b, n = 11, preliminar):**
+
+13. **Derecho entiende más pero actuaría menos**: comprensión 81 % (original) / 70 % (sencillo) vs. 62–67 % sin
+    formación jurídica; seguridad en su respuesta 4.7 vs. 3.8; pero solo 40–44 % actuaría con la respuesta (vs.
+    62–75 %). Su desconfianza es explícita: «lo usaría de guía», «hay que corroborar la ley y su vigencia».
+14. **Tampoco detectan los errores**: 46–76 % de las respuestas citan códigos de otro estado; solo 11–27 % de las
+    personas de Derecho dijo notar un problema. En Mensajes-Querétaro, 2 de 4 eligieron el art. 179 **de la CDMX**.
+15. **El grupo más expuesto es el no-jurídico con prompt sencillo**: más disposición a actuar (75 %) y mejor
+    calificación (SUS 84) con comprensión de solo 67 %.
+16. Lo que piden las personas de Derecho coincide con la ronda 2: *«debería interrogar previamente respecto a la
+    situación en particular… es bastante genérico»*.
 
 ---
 
@@ -114,6 +127,7 @@
 Sociales 3, Físico-Matemáticas e Ingenierías 3, **Derecho 1**. Formación jurídica: ninguna 17, una o dos
 materias 6, trabaja en algo jurídico 1. Uso de IA: diario 11, semanal 10, mensual 3. Origen: kioscos 21, enlace 3.
 → **La muestra es casi totalmente «lega»**: no se puede todavía comparar con estudiantes de Derecho.
+**(Actualización 15-oct: ya hay 11 personas con formación jurídica que terminaron; ver §5b.)**
 
 ## 4. Resultados por prompt
 
@@ -181,6 +195,108 @@ materias 6, trabaja en algo jurídico 1. Uso de IA: diario 11, semanal 10, mensu
     está en los hechos.
 - *Fotos, «¿es delito aunque Cris mandó las fotos?»*: sí 17 · no 2 · «solo si ya se publicaron» 2.
 - *Citatorio, «¿qué código aplica?»*: Querétaro 15 · **Federal 5** · no sé 1.
+
+## 5b. Participantes con formación jurídica (14–15 oct; datos al 15-oct)
+
+Se abrió un enlace propio para personas de Derecho (enlace #12, grupo «estudiante», cupo 20) el 14-oct; el sorteo
+de prompt y variantes se balancea dentro de ese grupo. **Mismo sistema, mismas situaciones, mismos prompts** que
+la fase principal. Clasificación «Derecho» = área Derecho en el perfil **o** formación jurídica «carrera» o
+«trabajo» (igual que `analisis.grupo_de`); con esa regla entra 1 persona de Ciencias de la Comunicación que
+declaró formación jurídica.
+
+**Muestra (Derecho):** 16 consintieron, **11 terminaron** (6 original, 5 sencillo; 33 situaciones). Semestre: 9.º 8,
+7.º–8.º 4, posgrado 3, 5.º–6.º 1. Formación jurídica: trabaja en algo jurídico 9, carrera 7. Uso de IA: mensual 7,
+semanal 3, diario 3, nunca 3. Confianza previa en IA (1–5): mayoría 4–5.
+
+**Totales del estudio al 15-oct:** 37 personas terminaron (26 sin formación jurídica + 11 de Derecho).
+
+### Derecho vs. sin formación jurídica
+
+| | Derecho, original | Derecho, sencillo | No-Derecho, original | No-Derecho, sencillo | Piloto (no-Derecho, original) |
+|---|---|---|---|---|---|
+| Terminaron | 6 | 5 | 7 | 8 | 7 |
+| Comprensión (opción múltiple) | **81 %** | 70 % | 62 % | 67 % | 69 % |
+| Comprensión con confianza alta (4–5) | 78 % (n=16) | 71 % (n=12) | 68 % (n=14) | 67 % (n=12) | 73 % (n=13) |
+| Seguridad en su respuesta (1–5) | **4.7** | 4.3 | 3.8 | 3.8 | 3.8 |
+| «Sí actuaría con esta respuesta» | 44 % | 40 % | 62 % | **75 %** | 57 % |
+| Notó algún problema | 11 % | 27 % | 5 % | 12 % | 5 % |
+| SUS (0–100) | 75 | 70 | 75 | **84** | 70 |
+| Preguntas al asistente por situación | 1.7 | 1.3 | 2.0 | 1.5 | 1.6 |
+| El asistente pregunta el lugar | 10 % | **42 %** | 7 % | 35 % | 12 % |
+| Respuestas que citan otro estado | 63 % | 58 % | 46 % | 62 % | 76 % |
+| 1.ª respuesta cita el código correcto | 56 % | 80 % | 59 % | 67 % | 68 % |
+| Recall@10 del artículo esperado (1.ª pregunta) | 33 % | 50 % | 30 % | 40 % | 30 % |
+
+(Las cifras «no-Derecho» difieren un poco de §4 porque aquí la clasificación es por perfil y no por grupo de
+enlace, y se incluye a quienes terminaron hasta el 15-oct.)
+
+### Por situación (Derecho, n de situaciones entre paréntesis)
+
+- **El citatorio (11)**: comprensión 91 % (no-Derecho 73 %). «¿Qué código aplica?»: Querétaro 10, federal 1 (en
+  no-Derecho, **federal 6 de 22**). «¿Puede pedir que lo lleven en la CDMX?»: no 10, sí 1.
+- **Mensajes – CDMX (7)**: CDMX 179 (correcta) 5, CPF 259 Bis 2. Jerarquía «más grave»: 7 de 7.
+- **Mensajes – Querétaro (4)**: Querétaro 167 Ter (correcta) 2, **CDMX 179 2** → error de jurisdicción también en
+  Derecho (n muy chico). Jerarquía «más grave»: 4 de 4.
+- **Las fotos (11)**: Querétaro 167 Quinquies 5, Ley General de Extorsión art. 15 3, **CPF art. 390 (derogado) 2**,
+  otra 1. Con la regla «extorsión o Quinquies = correcta»: **8 de 11 (73 %)** vs. 10 de 22 (45 %) en no-Derecho;
+  con «solo extorsión»: 3 de 11 vs. 6 de 22. «¿Es delito aunque Cris mandó las fotos?»: sí 9, no 1, «solo si ya
+  se publicaron» 1. El art. 390 (7 personas en total) **nunca** lo citó el asistente: viene del conocimiento previo.
+  Texto en «otra»: *«La inteligencia no aportó nada sobre el estado de Querétaro, se centró en la CDMX y el código
+  FEDERAL»*.
+- En las 15 respuestas del asistente a Derecho en «Las fotos»: Quáter 3, Quinquies 3, extorsión art. 15 2, «Ley
+  Olimpia» 4.
+- Última pregunta («¿de qué estado era la ley que citó?»): Querétaro 8, CDMX 1, varios 1, nacional 1.
+
+### Cómo preguntan las personas de Derecho
+
+- **Con lenguaje técnico y pocas preguntas** (1.3–1.7 por situación): *«¿Qué legislación penal y qué autoridad
+  ministerial son competentes para investigar una agresión física ocurrida en el estado de Querétaro…?»*,
+  *«Características de la extorsión»*, *«Que elementos se necesitan para acreditar el acoso laboral en la CDMX»*.
+- **Dicen el lugar mucho más**: 82 % en el citatorio, 88 % en Mensajes-CDMX (no-Derecho: 25–36 % en Mensajes).
+- **Varias personas pegaron el texto completo de la situación** («Ariel vive y trabaja en la Ciudad de México…»,
+  «Cris tiene 24 años y vive en Querétaro…»), aunque la instrucción pide «con tus propias palabras». Esto infla
+  «dice el lugar» y el recall.
+- **Algunas cambiaron los hechos** a lugares fuera del corpus (Puebla, Estado de México, «Zihuatanejo, Guerrero»):
+  prueba involuntaria de cobertura; conviene revisar qué respondió el asistente ahí (¿avisa que no tiene ese
+  código o cita otro estado como si aplicara?).
+
+### Lo que dijeron (textual)
+
+- Confianza: *«Lo utilizaría de guía, pero no confiaría del todo en él.»* · *«No, siempre es mejor consultar a un
+  profesional.»* · *«No, porque… hay que verificar la información porque en ocasiones puede inventar o confundir
+  información.»* · *«Sí confiaría, resolvió mis dudas de inmediato y con fundamento legal. Después buscaría a un
+  abogado.»* · *«Podría ser usado como referencia, mas mi actuar no podría estar únicamente basado en un modelo de
+  IA.»* · *«Debería corroborarlo en la ley y su vigencia.»*
+- Calidad: *«Debería interrogar previamente respecto a la situación en particular, ya que desarrolla temas que
+  pueden llegar a confundir, es decir, es bastante genérico.»* · *«Es genérico y no vincula del todo las respuestas
+  que va dando.»* · *«No es concreto y sus respuestas no siguen un hilo con las dadas anteriormente.»* · *«Dio
+  información general, mas no respondió como tal la pregunta planteada.»* · *«Le falta… responder de manera más
+  objetiva y precisa a lo que se le pregunta.»*
+- Positivo: *«Me gusta que el asistente manifieste empatía por mi situación»* (sencillo) · *«Las respuestas fueron
+  muy claras y precisas»* (sencillo).
+- Sobre el instrumento: *«No le pregunté si debía hacer algo, por eso no sé la respuesta a esta pregunta»* →
+  la pregunta «¿actuarías?» se interpreta distinto según lo que preguntó cada quien.
+
+### Lectura
+
+1. **Más conocimiento → más escepticismo, no más detección.** La gente de Derecho acierta más y desconfía más
+   (actuaría menos, SUS más bajo), pero **igual casi no detecta** que el asistente cita otros estados. La
+   desconfianza es *general* («hay que verificar»), no *calibrada* a los errores concretos.
+2. **La protección del experto viene de su conocimiento, no del asistente**: aciertan en el citatorio aunque 77 %
+   de esas respuestas citan otro estado. Quien no tiene formación jurídica no tiene esa defensa → refuerza el
+   argumento de equidad del paper (el daño se concentra en quien menos puede detectarlo).
+3. **Derecho prefiere el original** (comprensión 81 % vs. 70 %; SUS 75 vs. 70), al revés que no-Derecho (sencillo
+   SUS 84 vs. 75). Pero depende de las respuestas rápidas (ver abajo): **no concluir todavía**.
+4. Sus críticas («interrogar previamente», «genérico», «no sigue un hilo») apoyan la propuesta de la ronda 2:
+   identificar los **hechos decisivos** y preguntarlos antes de responder.
+
+### Calidad de datos (decidir la regla antes de ver más resultados)
+
+- **3 personas de Derecho con prompt sencillo** completaron casi todas sus situaciones en **< 2 minutos con una sola
+  pregunta** (situaciones de 0.8–2.0 min); dos de ellas dieron SUS 40–42.5. Propuesta: regla de exclusión
+  pre-registrada (p. ej. < 2 min por situación o 0 preguntas propias) y reportar resultados **con y sin** ellas.
+- La diferencia «Derecho original 81 % vs. sencillo 70 %» depende en buena parte de esas 3 personas.
+- n = 5–6 por celda: todo esto es descriptivo.
 
 ## 6. Hallazgos principales (con evidencia)
 
@@ -387,6 +503,10 @@ Lectura:
 - **Respuesta «correcta» en «Las fotos»**: se acepta extorsión o 167 Quinquies (decidido 14-oct, después de ver
   los datos). Reportarlo y dar los resultados con ambas reglas (solo extorsión / extorsión o Quinquies).
 - La pregunta del estado citado es ambigua (mencionar ≠ aplicar).
+- **Copiar y pegar la situación** (sobre todo en Derecho) en vez de preguntar con sus palabras; y **respuestas muy
+  rápidas** (< 2 min por situación). Definir y reportar una regla de exclusión.
+- **La composición por enlace difiere**: Derecho entró casi todo por un enlace propio (en casa); los no-Derecho
+  por kioscos (en persona, con alguien presente). Lugar y supervisión pueden explicar parte de las diferencias.
 - El prompt sencillo cambia varias cosas a la vez (estilo, estructura, pedir el estado): no se puede atribuir el
   efecto a una sola.
 - Detección automática de «otros estados» por nombres de códigos: cuenta menciones, incluso «no aplica el de…».

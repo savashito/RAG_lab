@@ -16,6 +16,10 @@ E = 'piloto_penal'
 s = StudyStore(connect, Path('/nonexistent'))
 d = s.export(E); spec = s.spec(E)
 P = {p['codigo']: p for p in d['participantes'] if p['codigo'] not in PRUEBAS}
+import os
+def _der(p): pf = p.get('perfil') or {}; return pf.get('area') == 'derecho' or pf.get('formacion_juridica') in ('carrera', 'trabajo')
+POB = os.environ.get('POBLACION')   # derecho | no_derecho | (vacío = todos)
+if POB: P = {c: p for c, p in P.items() if _der(p) == (POB == 'derecho')}
 I = {i['id']: i for i in d['intentos'] if i['codigo'] in P}
 T = [t for t in d['turnos'] if t['intento_id'] in I]
 por_id = {e['id']: e for e in spec['escenarios']}
@@ -142,5 +146,5 @@ out['comentarios'] = [(cond(i['codigo']), esc_key(i), i['comentario']) for i in 
 out['abiertas'] = [(cond(c), P[c]['perfil'].get('area'), qq, a) for c in P for qq, a in ((P[c].get('cierre') or {}).get('abiertas') or {}).items() if (a or '').strip()]
 out['preguntas_ejemplo'] = {k: [(cond(I[t['intento_id']]['codigo']), t['pregunta']) for t in T if esc_key(I[t['intento_id']]) == k and t['n'] == 1][:40] for k in S}
 out['participantes'] = part
-json.dump(out, open('/tmp/ronda1.json', 'w'), ensure_ascii=False, indent=1, default=str)
+json.dump(out, open(f"/tmp/ronda1{'_' + POB if POB else ''}.json", 'w'), ensure_ascii=False, indent=1, default=str)
 print(json.dumps({k: out[k] for k in ('n', 'fechas', 'por_grupo', 'mezcla_estados', 'fotos_articulos', 'estado_citado')}, ensure_ascii=False, indent=1, default=str))
