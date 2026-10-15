@@ -282,8 +282,9 @@ enlace, y se incluye a quienes terminaron hasta el 15-oct.)
 1. **Más conocimiento → más escepticismo, no más detección.** La gente de Derecho acierta más y desconfía más
    (actuaría menos, SUS más bajo), pero **igual casi no detecta** que el asistente cita otros estados. La
    desconfianza es *general* («hay que verificar»), no *calibrada* a los errores concretos.
-2. **La protección del experto viene de su conocimiento, no del asistente**: aciertan en el citatorio aunque 77 %
-   de esas respuestas citan otro estado. Quien no tiene formación jurídica no tiene esa defensa → refuerza el
+2. **La protección del experto viene de su conocimiento, no del asistente**: en Mensajes y Fotos aciertan más que no-Derecho
+   con respuestas igual de mezcladas (46–63 % citan otro estado; en el citatorio la cifra no sirve porque mencionar la
+   CDMX ahí es legítimo). Quien no tiene formación jurídica no tiene esa defensa → refuerza el
    argumento de equidad del paper (el daño se concentra en quien menos puede detectarlo).
 3. **Derecho prefiere el original** (comprensión 81 % vs. 70 %; SUS 75 vs. 70), al revés que no-Derecho (sencillo
    SUS 84 vs. 75). Pero depende de las respuestas rápidas (ver abajo): **no concluir todavía**.
