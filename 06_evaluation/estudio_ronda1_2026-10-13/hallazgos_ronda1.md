@@ -208,7 +208,9 @@ declaró formación jurídica.
 7.º–8.º 4, posgrado 3, 5.º–6.º 1. Formación jurídica: trabaja en algo jurídico 9, carrera 7. Uso de IA: mensual 7,
 semanal 3, diario 3, nunca 3. Confianza previa en IA (1–5): mayoría 4–5.
 
-**Totales del estudio al 15-oct:** 37 personas terminaron (26 sin formación jurídica + 11 de Derecho).
+**Totales del estudio al 15-oct:** 40 personas aceptaron el consentimiento y **33 terminaron** (22 sin formación
+jurídica + 11 de Derecho); «terminó» = completó las 3 situaciones y el cuestionario final (`terminado_at`). Nadie
+quedó con las 3 situaciones hechas pero sin cuestionario final.
 
 ### Derecho vs. sin formación jurídica
 
