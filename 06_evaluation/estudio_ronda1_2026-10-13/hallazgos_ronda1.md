@@ -528,6 +528,12 @@ saber, «sin ley identificable» y no se clasifica) y se verifica contra el corp
 | Benchmark set 11, prompts A/B/C (runs 37–39) | 171 | 414 | 100 % | 0 % | 0 % | **0** |
 | Jurisdicción, original / sencillo (runs 43–44) | 62 | 109 | 93–96 % | 3–7 % | 0–1.5 % | **0** |
 
+- **Ya está en la página (18-oct):** cada corrida del 🧪 Benchmark calcula esto solo (columnas «📎 sin fuente»,
+  «🔴 inexist.», «🗺️ otro edo.», tarjeta «🧾 citas verificadas», etiquetas por pregunta y filas en la comparación;
+  código en `apps/rewrite_lab/citations.py`). Las 41 corridas anteriores se recalcularon desde su artefacto: **4 542
+  citas clasificadas, 1 inexistente** (corrida #13 del 1-oct). La versión de la página compara el contexto también
+  por (ley, artículo), porque los ids de los chunks cambian al reingestar; por eso sus cifras difieren un poco de la
+  tabla de arriba (p. ej. run 43: 98 % en contexto, 0 % de memoria, 1.6 % cruzada; run 44: 98 %, 2.4 %, 0 %).
 - **Ninguna cita a un artículo inexistente** en ~1 200 citas verificadas: con este RAG el modelo **no inventa
   números de artículo**.
 - **≈ 4 % de las citas no venían en el contexto** (el modelo las tomó de su memoria, aunque el prompt pide usar solo
