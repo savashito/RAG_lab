@@ -1,0 +1,721 @@
+{
+ "name": "Jurisdicción · un solo estado (31)",
+ "topic": "derecho_penal_mexicano",
+ "description": "31 preguntas en lenguaje cotidiano que dicen UN estado (CDMX 8, Querétaro 8, Edomex 7, Morelos 8; 8 delitos). Mide si la respuesta fundamenta solo con el código de ese estado. Artículos verificados en el corpus el 17-oct-2026. Creado a partir de los hallazgos del estudio de usuarios.",
+ "judge_notes": "Mencionar otra entidad solo para decir que NO aplica, o para comparar explícitamente, NO cuenta como «presentar como aplicable». Citar el Código Penal Federal, el CNPP o una ley general NO es otra entidad. El artículo correcto cuenta como presente aunque se escriba «artículo», «art.» o en mayúsculas (p. ej. «167 QUINQUIES»).",
+ "questions": [
+  {
+   "question": "Me robaron el celular en la calle en la Ciudad de México, sin golpes ni armas. Valía como 8 mil pesos. ¿Es delito y cuánta cárcel le pueden dar?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: robo, art. 220.",
+   "notes": "jurisdiccion · estado=CDMX · delito=robo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 220 del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En la Ciudad de México le pagué a alguien por internet una computadora que nunca me entregó y ya no me contesta. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: fraude, art. 230.",
+   "notes": "jurisdiccion · estado=CDMX · delito=fraude",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 230 del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Vivo en la Ciudad de México y un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: amenazas, art. 209.",
+   "notes": "jurisdiccion · estado=CDMX · delito=amenazas",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 209 del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Mi pareja y yo vivimos en la Ciudad de México; me insulta y me empuja seguido. ¿Qué dice la ley penal?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: violencia familiar, art. 200.",
+   "notes": "jurisdiccion · estado=CDMX · delito=violencia familiar",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 200 del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Trabajo en la Ciudad de México y quien me supervisa me manda mensajes con insinuaciones sexuales. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: acoso con jerarquía, art. 179.",
+   "notes": "jurisdiccion · estado=CDMX · delito=acoso con jerarquía",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 179 del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En la Ciudad de México mi expareja subió a redes sociales fotos íntimas mías sin mi permiso. ¿Qué puedo hacer?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: imágenes íntimas, art. 181 Quintus.",
+   "notes": "jurisdiccion · estado=CDMX · delito=imágenes íntimas",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 181 Quintus del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Alguien se metió a mi casa en la Ciudad de México sin permiso mientras no estaba, aunque no se llevó nada. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: allanamiento, art. 210.",
+   "notes": "jurisdiccion · estado=CDMX · delito=allanamiento",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 210 del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En la Ciudad de México una persona se metió a vivir a mi terreno y no se quiere salir. ¿Qué delito comete?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en la Ciudad de México, así que se rige por el Código Penal de la Ciudad de México: despojo, art. 237.",
+   "notes": "jurisdiccion · estado=CDMX · delito=despojo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 237 del Código Penal de la Ciudad de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de la Ciudad de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Querétaro, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En Querétaro me sacaron la cartera en el camión sin que me diera cuenta; traía 3 mil pesos. ¿Qué pena tiene eso?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: robo, art. 182.",
+   "notes": "jurisdiccion · estado=QRO · delito=robo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 182 del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Vivo en Querétaro y le di un anticipo a alguien para rentarme un departamento que resultó no ser suyo. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: fraude, art. 193.",
+   "notes": "jurisdiccion · estado=QRO · delito=fraude",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 193 del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En Querétaro mi hermano me grita, me amenaza y me ha empujado varias veces en la casa donde vivimos. ¿Qué dice la ley penal?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: violencia familiar, art. 217 Bis.",
+   "notes": "jurisdiccion · estado=QRO · delito=violencia familiar",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 217 Bis del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En Querétaro un compañero de la escuela me pide insistentemente favores sexuales aunque le digo que no. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: acoso sexual, art. 167 Bis.",
+   "notes": "jurisdiccion · estado=QRO · delito=acoso sexual",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 167 Bis del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Trabajo en Querétaro y quien me supervisa me dijo que me ayudaría a subir de puesto si salgo con esa persona. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: acoso con jerarquía, art. 167 Ter.",
+   "notes": "jurisdiccion · estado=QRO · delito=acoso con jerarquía",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 167 Ter del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En Querétaro alguien con quien salí me amenaza con publicar unas fotos íntimas que yo le mandé. ¿Eso es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: imágenes íntimas, art. 167 Quinquies.",
+   "notes": "jurisdiccion · estado=QRO · delito=imágenes íntimas",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 167 Quinquies del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En Querétaro un conocido entró a mi casa sin mi permiso cuando yo no estaba. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: allanamiento, art. 158.",
+   "notes": "jurisdiccion · estado=QRO · delito=allanamiento",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 158 del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Tengo un terreno en Querétaro y unas personas lo ocuparon y pusieron una cerca. ¿Qué delito cometen?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Querétaro, así que se rige por el Código Penal del Estado de Querétaro: despojo, art. 199.",
+   "notes": "jurisdiccion · estado=QRO · delito=despojo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 199 del Código Penal del Estado de Querétaro"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Querétaro porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Estado de México, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En el Estado de México me quitaron la bicicleta afuera de la tienda. ¿Qué delito es y qué pena tiene?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: robo, art. 287.",
+   "notes": "jurisdiccion · estado=EDOMEX · delito=robo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 287 del Código Penal del Estado de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de el Estado de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Vivo en el Estado de México y me vendieron un coche con papeles falsos. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: fraude, art. 305.",
+   "notes": "jurisdiccion · estado=EDOMEX · delito=fraude",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 305 del Código Penal del Estado de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de el Estado de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En el Estado de México mi pareja me controla el dinero, me insulta y a veces me pega. ¿Qué dice la ley penal?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: violencia familiar, art. 218.",
+   "notes": "jurisdiccion · estado=EDOMEX · delito=violencia familiar",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 218 del Código Penal del Estado de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de el Estado de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "Trabajo en el Estado de México y mi jefe me presiona para tener una relación sexual a cambio de no despedirme. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: acoso con jerarquía, art. 269.",
+   "notes": "jurisdiccion · estado=EDOMEX · delito=acoso con jerarquía",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 269 del Código Penal del Estado de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de el Estado de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En el Estado de México alguien compartió en un grupo de WhatsApp un video íntimo mío sin mi consentimiento. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: imágenes íntimas, art. 269 Bis.",
+   "notes": "jurisdiccion · estado=EDOMEX · delito=imágenes íntimas",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 269 Bis del Código Penal del Estado de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de el Estado de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En el Estado de México mi casero entró a mi departamento sin avisar ni pedir permiso. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: allanamiento, art. 268.",
+   "notes": "jurisdiccion · estado=EDOMEX · delito=allanamiento",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 268 del Código Penal del Estado de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de el Estado de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En el Estado de México un familiar cambió la chapa de mi casa y ya no me deja entrar. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: despojo, art. 308.",
+   "notes": "jurisdiccion · estado=EDOMEX · delito=despojo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 308 del Código Penal del Estado de México"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de el Estado de México porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Morelos)"
+    }
+   ]
+  },
+  {
+   "question": "En Morelos me robaron una bocina de mi coche estacionado. ¿Qué pena tiene ese delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: robo, art. 174.",
+   "notes": "jurisdiccion · estado=MOR · delito=robo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 174 del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  },
+  {
+   "question": "En Morelos pagué un curso que nunca se dio y la persona desapareció con el dinero. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: fraude, art. 188.",
+   "notes": "jurisdiccion · estado=MOR · delito=fraude",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 188 del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  },
+  {
+   "question": "En Morelos una persona me dijo por mensaje que me va a hacer daño si no le pago lo que dice que le debo. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: amenazas, art. 147.",
+   "notes": "jurisdiccion · estado=MOR · delito=amenazas",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 147 del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  },
+  {
+   "question": "En Morelos mi padrastro me insulta y me golpea seguido en la casa. ¿Qué dice la ley penal?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: violencia familiar, art. 202 Bis.",
+   "notes": "jurisdiccion · estado=MOR · delito=violencia familiar",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 202 Bis del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  },
+  {
+   "question": "Trabajo en Morelos y la persona que me supervisa me hace comentarios sexuales y me presiona para salir. ¿Es delito?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: acoso con jerarquía, art. 158.",
+   "notes": "jurisdiccion · estado=MOR · delito=acoso con jerarquía",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 158 del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  },
+  {
+   "question": "En Morelos alguien publicó en Facebook fotos íntimas mías sin mi permiso. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: imágenes íntimas, art. 150 Bis.",
+   "notes": "jurisdiccion · estado=MOR · delito=imágenes íntimas",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 150 Bis del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  },
+  {
+   "question": "En Morelos un vecino se metió a mi patio y a mi casa sin permiso. ¿Qué delito es?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: allanamiento, art. 149.",
+   "notes": "jurisdiccion · estado=MOR · delito=allanamiento",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 149 del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  },
+  {
+   "question": "En Morelos alguien ocupó un terreno de mi familia y dice que ahora es suyo. ¿Qué delito comete?",
+   "difficulty": "facil",
+   "expected_answer": "Los hechos ocurrieron en Morelos, así que se rige por el Código Penal para el Estado de Morelos: despojo, art. 184.",
+   "notes": "jurisdiccion · estado=MOR · delito=despojo",
+   "components": [
+    {
+     "kind": "must",
+     "weight": 1,
+     "text": "Cita el art. 184 del Código Penal para el Estado de Morelos"
+    },
+    {
+     "kind": "should",
+     "weight": 1,
+     "text": "Explica que se aplica la ley de Morelos porque ahí ocurrieron los hechos"
+    },
+    {
+     "kind": "must_not",
+     "weight": 1,
+     "text": "Presenta como aplicable al caso un artículo del código penal de otra entidad (Ciudad de México, Querétaro, Estado de México)"
+    }
+   ]
+  }
+ ]
+}
