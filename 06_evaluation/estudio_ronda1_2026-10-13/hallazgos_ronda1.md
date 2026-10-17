@@ -485,6 +485,65 @@ Lectura:
 - Limitación: «cita» = el código aparece en la respuesta (puede ser para decir que no aplica); en el citatorio se
   permite mencionar la CDMX.
 
+## 8b. Benchmark «Jurisdicción · un solo estado» (set 13, 17-oct)
+
+**Cierre de la ronda 1: 17-oct-2026** (se desactivaron todos los kioscos, enlaces y códigos sin terminar; la
+calificación ciega sigue disponible). **Muestra final: 40 consintieron, 33 terminaron (22 sin formación jurídica,
+11 de Derecho).**
+
+Set nuevo en la pestaña 🧪 Benchmark de prod: **31 preguntas en lenguaje cotidiano que dicen UN solo estado** (CDMX 8,
+Querétaro 8, Estado de México 7, Morelos 8) sobre 8 delitos (robo, fraude, amenazas, violencia familiar, acoso con
+jerarquía/acoso, imágenes íntimas, allanamiento, despojo). Cada pregunta: *must* = el artículo del código de ese
+estado (verificado en el corpus), *should* = explicar que aplica la ley del lugar de los hechos, *must_not* =
+«presenta como aplicable un artículo del código penal de otra entidad». Configuración del estudio (híbrido, k=10,
+vecinos, HyDE, descomponer, routing). Además del juez, un conteo **sin juez** de los artículos de otra entidad
+que cita cada respuesta (`06_evaluation/jurisdiccion_2026-10-17/analizar_set.py`).
+
+| | Original (run 43) | Sencillo (run 44) |
+|---|---|---|
+| **Cita artículos de otra entidad** (conteo sin juez) | **19 %** (6/31) | **10 %** (3/31) |
+| Juez: presenta otra entidad como aplicable | 16 % (5/31) | 10 % (3/31) |
+| Acuerdo juez vs. conteo sin juez | 30/31 | 31/31 |
+| Pasa (artículo correcto y sin violación) | 68 % | 81 % |
+| El artículo correcto llegó al contexto | 84 % | 90 % |
+
+- **Aun diciendo el estado de forma explícita, 1 de cada 5–10 respuestas cita artículos de otro estado** (p. ej.
+  robo en la CDMX respondido con los arts. 287, 290 y 293 del Edomex; amenazas en la CDMX con el art. 148 de Morelos;
+  violencia familiar en Querétaro con el 202 Bis de Morelos).
+- Coincide con el benchmark de jurisdicción con preguntas reales (§8: 17–33 % con el lugar dicho).
+- El juez y el conteo sin juez coinciden casi siempre: el conteo automático sirve como métrica barata.
+- Cautela: una corrida por prompt; el HyDE no es determinista (el «llegó al contexto» varía 84 % vs. 90 % con la
+  misma configuración), así que diferencias de pocos puntos son ruido.
+
+## 8c. Verificación de citas: ¿el modelo inventa artículos? (17-oct, sin juez)
+
+Script `06_evaluation/citas_2026-10-17/verificar_citas.py`. Para cada artículo citado en una respuesta: se identifica
+la ley (la nombrada junto al artículo en la misma oración, o el encabezado de la columna en tablas; si no se puede
+saber, «sin ley identificable» y no se clasifica) y se verifica contra el corpus y contra el contexto recuperado.
+
+| Fuente | Respuestas | Citas clasificadas | En el contexto | Fuera del contexto (memoria) | Atribución cruzada | **No existe** |
+|---|---|---|---|---|---|---|
+| Estudio de usuarios (ronda 1) | 161 | 436 | 95.6 % | 3.7 % | 0.7 % | **0** |
+| Benchmark set 3, prompts A/B/C (runs 40–42) | 150 | 264 | 88–100 % | 0–3.7 % | 0–2.2 % | **0** |
+| Benchmark set 11, prompts A/B/C (runs 37–39) | 171 | 414 | 100 % | 0 % | 0 % | **0** |
+| Jurisdicción, original / sencillo (runs 43–44) | 62 | 109 | 93–96 % | 3–7 % | 0–1.5 % | **0** |
+
+- **Ninguna cita a un artículo inexistente** en ~1 200 citas verificadas: con este RAG el modelo **no inventa
+  números de artículo**.
+- **≈ 4 % de las citas no venían en el contexto** (el modelo las tomó de su memoria, aunque el prompt pide usar solo
+  el contexto). Revisadas a mano en el estudio (15 de 16): casi todas del **CNPP** (arts. 311, 312, 316, 335, 337,
+  153, 137, 138…) y parte general del CPF; **parecen correctas**, pero no están fundamentadas en lo recuperado.
+- **Atribución cruzada** (raro, < 1 % en el estudio, pero dañino): el número existe en el contexto, pero con OTRA ley.
+  Ejemplos reales: *«Artículo 269 del Código Penal de la Ciudad de México»* (el 269 es del **Edomex**) y *«Artículo
+  150 BIS del Código Penal de la CDMX»* (es de **Morelos**). Es la versión «a nivel artículo» de la mezcla de estados.
+- **Lectura para el paper:** el riesgo principal no es la alucinación clásica (inventar), sino **citar artículos
+  reales del estado equivocado** (§8, §8b) y, en menor medida, mal atribuirlos.
+- **Limitaciones:** 20–50 % de las citas quedan «sin ley identificable» (artículo suelto en prosa comparativa) y no se
+  clasifican; el emparejamiento se depuró revisando a mano todos los casos dudosos del estudio (≈ 1 error residual en
+  21); no verifica que el **contenido** atribuido al artículo sea correcto (eso requiere juez o revisión humana).
+  «Derogado»: el texto del corpus empieza con «se deroga»; 0–3 por corrida, casi siempre citado precisamente para
+  decir que está derogado.
+
 ## 9. Decisiones y cambios durante la ronda 1 (para el método)
 
 | Fecha | Cambio |
