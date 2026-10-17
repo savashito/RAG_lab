@@ -38,6 +38,42 @@ function retBadge(r){
   const h = Math.min(r.hit, r.attainable), cls = h>=r.attainable ? 'ret-ok' : h ? 'ret-part' : 'ret-bad';
   return `<span class="tag ${cls}" title="Artículos necesarios que la búsqueda trajo al contexto del LLM">🔎 ${h}/${r.attainable}</span>`;
 }
+// 🧾 Verificación de citas (sin LLM, citations.py): cada artículo que cita la respuesta, contra el corpus y el contexto.
+const CIT = {
+  en_contexto: ['🟢', 'en el contexto', 'El artículo llegó al contexto que vio el LLM: la cita está respaldada'],
+  memoria:     ['🟡', 'de memoria', 'Existe en el corpus pero NO venía en el contexto: el modelo lo sacó de lo que ya sabía (no está fundamentado)'],
+  cruzada:     ['🟠', 'atribución cruzada', 'Ese número venía en el contexto pero con OTRA ley (p. ej. «art. 269 de la CDMX» cuando el 269 es del Edomex)'],
+  inexistente: ['🔴', 'inexistente', 'La ley está en el corpus pero ese artículo no: inventado o mal numerado (alucinación)'],
+  sin_ley:     ['⚪', 'sin ley identificable', 'No se puede saber de qué ley es (artículo suelto): no se clasifica'],
+};
+function citTags(c){
+  if(!c) return '';
+  const k = c.counts||{}, out = [];
+  if((c.other_states||[]).length) out.push(`<span class="tag ret-bad" title="${attr('Cita artículos de un código estatal que la pregunta no menciona: '+c.other_states.join(', '))}">🗺️ otro estado: ${esc(c.other_states.join(', '))}</span>`);
+  if(k.inexistente) out.push(`<span class="tag ret-bad" title="${attr(CIT.inexistente[2])}">🔴 ${k.inexistente} inexistente${k.inexistente>1?'s':''}</span>`);
+  if(k.cruzada) out.push(`<span class="tag ret-part" title="${attr(CIT.cruzada[2])}">🟠 ${k.cruzada} cruzada${k.cruzada>1?'s':''}</span>`);
+  if(k.memoria) out.push(`<span class="tag ret-part" title="${attr(CIT.memoria[2])}">🟡 ${k.memoria} de memoria</span>`);
+  return out.join(' ');
+}
+// Lista de citas de una respuesta (detalle expandido).
+function citList(c){
+  if(!c || !(c.items||[]).length) return '';
+  const orden = Object.keys(CIT);
+  const items = [...c.items].sort((a,b)=>orden.indexOf(b.clase)-orden.indexOf(a.clase));
+  return `<details ${items.some(i=>i.clase!=='en_contexto'&&i.clase!=='sin_ley')?'open':''}><summary>🧾 Citas verificadas (${items.length})</summary><ul style="margin:4px 0;padding-left:20px">${
+    items.map(i=>`<li title="${attr(i.snippet||'')}">${CIT[i.clase][0]} <b>${esc(i.label||'¿?')} ${esc(i.article)}</b> — ${CIT[i.clase][1]}${i.derogado?' · <span style="color:#fbbf24">derogado</span>':''}</li>`).join('')
+  }</ul><p class="muted" style="font-size:11px;margin:2px 0">Pasa el ratón sobre una cita para ver dónde aparece en la respuesta.</p></details>`;
+}
+// Mismas métricas que citations.aggregate(), sobre un subconjunto de resultados.
+function citAgg(rs){
+  const ok = rs.filter(x=>!x.error && x.citations); if(!ok.length) return {};
+  const t = Object.fromEntries(Object.keys(CIT).map(k=>[k, ok.reduce((a,x)=>a+((x.citations.counts||{})[k]||0),0)]));
+  const n = t.en_contexto+t.memoria+t.cruzada+t.inexistente;
+  const ap = ok.filter(x=>x.citations.other_states!=null);
+  return {cit_n: n, cit_unknown: t.sin_ley, cit_context: n?t.en_contexto/n:null, cit_memory: n?t.memoria/n:null,
+          cit_cross: n?t.cruzada/n:null, cit_missing: t.inexistente,
+          other_state_n: ap.length, other_state_rate: ap.length ? ap.filter(x=>x.citations.other_states.length).length/ap.length : null};
+}
 // Score medio y % que pasa por dificultad, sobre los resultados sin error.
 function diffStats(results){
   const out = {};
@@ -450,7 +486,10 @@ async function loadBenchRuns(){
   $('bench-runs').innerHTML = runs.length ? `<table><tr><th title="marcar para comparar">☑</th><th>#</th><th>fecha</th><th>etiqueta / config</th><th>estado</th>
     <th title="promedio del score por pregunta">score</th><th title="% de preguntas con todos los must y ningún must_not">pasan</th>
     <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th>
-    <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th><th>s/preg</th>
+    <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th>
+    <th title="🧾 Citas sin fuente: % de los artículos citados que NO venían en el contexto (de memoria + atribución cruzada) — sin LLM">📎 sin fuente</th>
+    <th title="🧾 Citas a artículos que no existen en el corpus (alucinación) — sin LLM">🔴 inexist.</th>
+    <th title="🗺️ % de respuestas que citan artículos de un código estatal que la pregunta no menciona (solo preguntas que mencionan un estado) — sin LLM">🗺️ otro edo.</th><th>s/preg</th>
     <th title="Preguntas con revisión humana">✍️</th><th></th></tr>`+
     runs.map(r=>{ const m=r.metrics||{}; return `<tr class="clk ${r.id===sel?'sel':''}" onclick="showBenchRun(${r.id})">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="bench-cmp" value="${r.id}" ${checked.has(r.id)?'checked':''}></td><td>${r.id}</td>
@@ -459,7 +498,10 @@ async function loadBenchRuns(){
       <td>${r.status==='running'?`⏳ ${r.done}/${r.n}`:esc(r.status)}${m.errors?` <span style="color:#f87171">(${m.errors} err)</span>`:''}</td>
       <td class="sc" style="background:${scoreColor(m.score)}">${pct(m.score)}</td>
       <td class="sc">${pct(m.pass_rate)}</td><td class="sc">${pct(m.must_coverage)}</td>
-      <td class="sc">${m.violations??'—'}</td><td class="sc">${pct(m.retrieval_recall)}</td><td class="sc">${m.avg_seconds??'—'}</td>
+      <td class="sc">${m.violations??'—'}</td><td class="sc">${pct(m.retrieval_recall)}</td>
+      <td class="sc">${m.cit_n!=null ? pct((m.cit_memory||0)+(m.cit_cross||0)) : '<span class="muted">—</span>'}</td>
+      <td class="sc"${m.cit_missing?' style="color:#f87171;font-weight:700"':''}>${m.cit_n!=null ? m.cit_missing : '<span class="muted">—</span>'}</td>
+      <td class="sc">${m.other_state_rate!=null ? pct(m.other_state_rate) : '<span class="muted">—</span>'}</td><td class="sc">${m.avg_seconds??'—'}</td>
       <td class="sc">${r.reviewed ? `${r.reviewed}/${r.done}` : '<span class="muted">—</span>'}</td>
       <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id}, ${r.reviewed||0})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
     : '<p class="muted">Aún no hay corridas de este set. Configura arriba y pulsa ▶ Correr benchmark.</p>';
@@ -583,6 +625,8 @@ const DFILTERS = [
   ['gap', '🔎 Ley fuera del corpus', x=>!x.error && x.retrieval && x.retrieval.attainable < x.retrieval.total],
   ['noret', '🔎 No trajo el artículo', x=>!x.error && x.retrieval && x.retrieval.hit < x.retrieval.attainable],
   ['retfail', '🔎✓ pero no pasa', x=>!x.error && !x.passed && x.retrieval && x.retrieval.attainable && x.retrieval.hit >= x.retrieval.attainable],
+  ['otroedo', '🗺️ Cita otro estado', x=>!x.error && x.citations && (x.citations.other_states||[]).length>0],
+  ['sinfuente', '🧾 Cita sin fuente', x=>!x.error && x.citations && ['memoria','cruzada','inexistente'].some(k=>(x.citations.counts||{})[k])],
   ['facil', 'Fácil', x=>qDiff(x.question_id)==='facil'],
   ['mediano', 'Mediano', x=>qDiff(x.question_id)==='mediano'],
   ['dificil', 'Difícil', x=>qDiff(x.question_id)==='dificil'],
@@ -649,6 +693,18 @@ function renderBenchDetail(){
       ${card('cobertura de must', pct(m.must_coverage))}
       ${card('violaciones must_not', m.violations??'—')}
       ${m.retrieval_recall!=null ? card('artículos recuperados 🔎', pct(m.retrieval_recall), `${pct(m.retrieval_full)} de las preguntas con todos`) : ''}
+      ${m.cit_n!=null ? `<div class="card" title="Sin LLM: cada artículo citado se busca en el corpus y en el contexto que vio el LLM (ver ❔ ¿Cómo se califica?)"><h3>🧾 citas verificadas</h3>
+          <div class="m"><span>${CIT.en_contexto[0]} en el contexto</span><b>${pct(m.cit_context)}</b></div>
+          <div class="m" title="${attr(CIT.memoria[2])}"><span>${CIT.memoria[0]} de memoria</span><b>${pct(m.cit_memory)}</b></div>
+          <div class="m" title="${attr(CIT.cruzada[2])}"><span>${CIT.cruzada[0]} atribución cruzada</span><b>${pct(m.cit_cross)}</b></div>
+          <div class="m" title="${attr(CIT.inexistente[2])}"><span>${CIT.inexistente[0]} inexistentes</span><b${m.cit_missing?' style="color:#f87171"':''}>${m.cit_missing}</b></div>
+          <div class="muted" style="font-size:11px">${m.cit_n} citas clasificadas · ${m.cit_unknown} sin ley identificable${m.cit_derogated?` · ${m.cit_derogated} a artículos derogados`:''}</div></div>`
+        : (r.status!=='running' && r.artifact_key ? `<div class="card"><h3>🧾 citas verificadas</h3><p class="muted" style="font-size:12px;margin:4px 0">Corrida anterior a la verificación de citas.</p><button class="ghost" onclick="calcCitations(${r.id})">🧾 Calcular ahora</button></div>` : '')}
+      ${m.other_state_rate!=null ? `<div class="card" title="Solo preguntas que mencionan al menos un estado"><h3>🗺️ cita otro estado</h3>
+          <div style="font-size:22px;font-weight:700">${pct(m.other_state_rate)}</div>
+          <div class="muted" style="font-size:12px">de ${m.other_state_n} respuestas (conteo sin LLM)</div>
+          ${m.other_state_judge_rate!=null ? `<div class="m" style="margin-top:4px"><span>según el juez</span><b>${pct(m.other_state_judge_rate)}</b></div>
+          <div class="m" title="% de preguntas donde el conteo sin LLM y el juez coinciden"><span>acuerdo con el juez</span><b>${pct(m.other_state_agreement)}</b></div>` : ''}</div>` : ''}
       ${(()=>{ const st = (BENCH.reviews||{}).stats||{}; if(!st.n_reviews) return '';
         return `<div class="card" title="Comparado en las mismas preguntas revisadas"><h3>✍️ revisión humana</h3>
           <div class="m"><span>revisadas</span><b>${st.n_questions} de ${r.results.filter(x=>!x.error).length}</b></div>
@@ -673,7 +729,7 @@ function renderBenchDetail(){
       <th title="Revisión humana: ✅/❌ según la persona, ★ calificación; en rojo si no coincide con el juez">✍️</th><th>s</th></tr>`+
     (rows.length ? rows.map(x=>{ const miss = missesOf(x); return `<tr class="clk" onclick="toggleBenchAnswer(${r.id}, ${x.question_id}, this)">
       <td>${x.position+1}</td>
-      <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))} ${retBadge(x.retrieval)}</td>
+      <td>${esc(x.question)} ${diffTag(qDiff(x.question_id))} ${retBadge(x.retrieval)} ${citTags(x.citations)}</td>
       <td class="sc" style="background:${x.error?'#374151':scoreColor(x.score)}">${x.error?'err':pct(x.score)}</td>
       <td class="sc">${x.error?'—':(x.passed?'✅':'❌')}</td>
       <td>${x.error?`<span style="color:#f87171">${esc(x.error)}</span>`
@@ -682,6 +738,12 @@ function renderBenchDetail(){
         : '<span class="muted" style="font-size:12px">todo presente</span>'}</td>
       <td class="sc" onclick="event.stopPropagation();${x.error?'':`openReview(${x.question_id})`}" title="Revisar esta respuesta">${revCell(x)}</td>
       <td class="sc">${x.seconds??''}</td></tr>`; }).join('') : '<tr><td colspan="7" class="muted">Ninguna pregunta en este filtro.</td></tr>')+'</table>';
+}
+async function calcCitations(rid){
+  try{ await bjson(`/api/bench/runs/${rid}/citations`, {method:'POST'}); }
+  catch(e){ bmsg(esc(e.message), false); return; }
+  bmsg('🧾 Citas verificadas para la corrida #'+rid, true);
+  await loadBenchRuns(); await showBenchRun(rid, true);
 }
 async function toggleBenchAnswer(rid, qid, tr){
   const next = tr.nextElementSibling;
@@ -697,6 +759,7 @@ async function toggleBenchAnswer(rid, qid, tr){
       ${(d.routes||[]).length?`<details open><summary>🧭 Routing por código</summary><ul style="margin:4px 0;padding-left:20px">${d.routes.map(r=>`<li>«${esc(r.match)}» → ${esc(r.source.replace(/\.md$/,''))}</li>`).join('')}</ul></details>`:''}
       ${(d.subqueries||[]).length>1?`<details open><summary>🧩 Buscó por partes (${d.subqueries.length} sub-búsquedas)</summary><ol style="margin:4px 0;padding-left:20px">${d.subqueries.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`:''}
       <details open><summary>💬 Respuesta del sistema</summary><div class="ans">${md(d.answer)}</div></details>
+      ${citList(((BENCH.detail||{}).results||[]).find(y=>y.question_id===qid)?.citations || d.citations)}
       ${d.expected_answer?`<details><summary>🎯 Respuesta esperada</summary><div class="ref">${esc(d.expected_answer)}</div></details>`:''}
       <details><summary>⚖️ Veredictos con evidencia</summary><ul>${(d.verdicts||[]).map(v=>
         `<li>${compChip(v, v.verdict)} → <b>${esc(v.verdict||'sin veredicto')}</b>${v.evidence?` — «${esc(v.evidence)}»`:''}</li>`).join('')}</ul></details>
@@ -846,7 +909,7 @@ function metricsOver(rs){
   return {score: n ? ok.reduce((a,x)=>a+x.score,0)/n : null, pass_rate: n ? ok.filter(x=>x.passed).length/n : null,
           must_coverage: mt ? ok.reduce((a,x)=>a+(x.must_ok||0),0)/mt : null,
           violations: ok.reduce((a,x)=>a+(x.violations||0),0),
-          retrieval_recall: att ? rr.reduce((a,r)=>a+Math.min(r.hit,r.attainable),0)/att : null};
+          retrieval_recall: att ? rr.reduce((a,r)=>a+Math.min(r.hit,r.attainable),0)/att : null, ...citAgg(rs)};
 }
 function renderCompare(){
   const runs = BENCH.cmp; if(!runs) return;
@@ -897,6 +960,9 @@ function renderCompare(){
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
     <tr><td><b>score medio</b>${partial?` <span class="muted" style="font-size:11px">(${common.length} comunes)</span>`:''}</td>${runs.map(r=>`<td class="sc" style="background:${scoreColor(met(r).score)}">${pct(met(r).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
     ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}${mrow('🔎 artículos recuperados', m=>pct(m.retrieval_recall))}
+    ${runs.some(r=>(r.metrics||{}).cit_n!=null) ? mrow('🧾 citas en el contexto', m=>m.cit_n!=null?pct(m.cit_context):'—')+mrow('🟡 citas de memoria', m=>m.cit_n!=null?pct(m.cit_memory):'—')
+      +mrow('🟠 atribución cruzada', m=>m.cit_n!=null?pct(m.cit_cross):'—')+mrow('🔴 citas inexistentes', m=>m.cit_n!=null?m.cit_missing:'—') : ''}
+    ${runs.some(r=>(r.metrics||{}).other_state_rate!=null) ? mrow('🗺️ cita otro estado', m=>m.other_state_rate!=null?pct(m.other_state_rate):'—') : ''}
     ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(resOf(r))[d]); if(!st.some(Boolean)) return '';
       return `<tr><td><b>score ${diffTag(d)}</b></td>${st.map(x=>`<td class="sc" style="background:${scoreColor(x&&x.score)}">${x?pct(x.score):'—'}</td>`).join('')}${two?'<td></td>':''}</tr>`; }).join('')}`+
     rows.map(q=>`<tr><td>${esc(q.question)} ${diffTag(qDiff(q.question_id))}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';

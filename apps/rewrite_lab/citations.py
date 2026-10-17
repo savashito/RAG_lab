@@ -1,0 +1,237 @@
+"""
+apps/rewrite_lab/citations.py — verificación de citas de una respuesta, SIN LLM (benchmark 🧪).
+
+Para cada artículo que cita la respuesta se identifica la ley y se clasifica contra el corpus y contra
+el contexto que vio el LLM:
+
+  en_contexto   el artículo llegó al contexto → la cita está respaldada por lo recuperado
+  memoria       existe en el corpus pero NO venía en el contexto → el modelo la sacó de lo que ya sabía
+                (el prompt pide responder solo con el contexto); puede ser correcta, pero no está fundamentada
+  cruzada       no venía con ESA ley, pero el mismo número sí venía con OTRA ley del contexto
+                («art. 269 del Código Penal de la CDMX» cuando el 269 del contexto es del Estado de México)
+  inexistente   la ley está en el corpus pero ese artículo no → inventado o mal numerado (alucinación)
+  sin_ley       no se puede saber de qué ley es (artículo suelto en prosa comparativa): no se clasifica
+
+Además: `otros_estados` = artículos citados de un código ESTATAL que la pregunta no menciona (si la pregunta
+menciona al menos un estado). Es la métrica de jurisdicción: «dije CDMX y me citó el Edomex».
+
+Emparejamiento artículo→ley (ver `ley_de`), depurado revisando a mano las respuestas del estudio de usuarios
+(06_evaluation/citas_2026-10-17): solo se acepta una ley de la MISMA oración o, en tablas, la del encabezado de la
+columna; ante la duda la cita queda `sin_ley` (precisión antes que cobertura). No verifica que lo que la respuesta
+DICE del artículo sea correcto: eso sigue siendo cosa del juez o de la revisión humana.
+"""
+
+from __future__ import annotations
+
+import re
+from typing import Callable
+
+from shared.code_routes import codes_in
+
+CLASES = ('en_contexto', 'memoria', 'cruzada', 'inexistente', 'sin_ley')
+ESTADOS = {'CDMX', 'CPEM', 'Morelos', 'Querétaro'}   # etiquetas de codes_in de los códigos penales estatales
+
+# «art. 179», «arts. 269 y 269 Bis», «artículos 161, 162 y 163», «199 Octies», «211 Quinquies 1»
+_SUF = (r'(?:\s*(?:o\b|bis\b|ter\b|qu[aá]ter\b|quintus\b|quinquies\b|sextus\b|sexies\b|septimus\b|septies\b|'
+        r'octies\b|nonies\b|decies\b))?(?:\s+\d\b)?')
+ART_LIST_RE = re.compile(r'(?i)\bart(?:[íi]culos?|s?\.)\s*(\d+' + _SUF + r'(?:\s*(?:,|\by\b)\s*\d+' + _SUF + r')*)')
+ART_ONE_RE = re.compile(r'(?i)\d+' + _SUF)
+_FRAC = r'(?:,?\s*(?:fracci[oó]n|frac\.|apartado|inciso|p[aá]rrafo)[^.;()\n]{0,40}?)?'
+# Entre el artículo y la ley que lo sigue: «del/de la …» (quizá tras fracción/párrafo) o una coma («Art. 20, frac. I,
+# CNPP»; «Art. 107, Código Penal CDMX»); hasta 45 caracteres del nombre de la ley antes del alias reconocido.
+_CONECTOR = re.compile(r'(?i)^[\s*_]*' + _FRAC + r'[\s,*_]*(?:(?:del|de la|de los|de)\s[^.;()\n]{0,45}|,\s*[*_]*(?:[^.;()\n]{0,45}\s)?|\s*[*_]*)$')
+# «del citado código», «del Código Penal local»: no se sabe cuál.
+_AMBIGUA = re.compile(r'(?i)^[\s*_,]*' + _FRAC + r'[\s,*_]*(?:del|de la|de este|de ese)\s+(?:citad[oa]|mism[oa]|c[oó]digo local|c[oó]digo penal local|ordenamiento|ley local)')
+# «Artículo 12 de *Lecciones de Derecho Penal*»: «de …» que no es una ley del corpus.
+_DE_ALGO = re.compile(r'(?i)^[\s*_,]*' + _FRAC + r'[\s,*_]*(?:del|de la|de los|de)\s+[*_]*[A-ZÁÉÍÓÚ]')
+_FIN_ORACION = re.compile(r'(?<!\bart)(?<!\barts)(?<!\bfrac)(?<!\bNo)[.;]\**\s+(?=[*_¿(]*[A-ZÁÉÍÓÚ])')
+# «Al igual que en la CDMX, el Artículo 201…»: esa ley es la de la comparación, no la del artículo.
+_COMPARA = re.compile(r'(?i)(al igual que|a diferencia de|igual que|como en|similar a|que en)\W+(?:en\s+)?(?:la|el)?\s*$')
+_DEROGADO = re.compile(r'(?i)^\W*(se deroga|derogad[oa])\b')
+
+
+def _norm_art(a: str) -> str:
+    return re.sub(r'\W+', ' ', a or '').strip().lower()
+
+
+def _ley_en_tabla(texto: str, ini_l: int, pos: int):
+    """Tabla «| Concepto | Ciudad de México | Querétaro |»: la ley de una celda es la del encabezado de su
+    columna; si el encabezado no nombra una ley, la de la propia celda; si no, None."""
+    lineas = texto[:ini_l].split('\n')
+    k = len(lineas) - 2
+    while k >= 0 and lineas[k].lstrip().startswith('|'):
+        k -= 1
+    fin = texto.find('\n', ini_l)
+    encabezado = lineas[k + 1] if k + 1 < len(lineas) - 1 else texto[ini_l:fin if fin >= 0 else len(texto)]
+    col = texto[ini_l:pos].count('|') - 1
+    celdas = encabezado.strip().strip('|').split('|')
+    if 0 <= col < len(celdas):
+        h = codes_in(celdas[col])
+        if h:
+            return h[0]
+    fin_c = texto.find('|', pos)
+    h = codes_in(texto[texto.rfind('|', 0, pos) + 1:fin_c if fin_c > 0 else len(texto)])
+    return h[0] if h else None
+
+
+def ley_de(texto: str, m: re.Match):
+    """Ley de la cita `m` (un match de ART_LIST_RE), o None si no se puede saber:
+    (1) la nombrada justo después en la misma oración («art. 179 del Código Penal de la CDMX»);
+    (2) la última nombrada antes en la misma oración («**Código Penal de Querétaro:** Artículos 167 Bis y 167 Ter»),
+        salvo que sea la de una comparación; (3) la primera después en la misma oración; en tablas, la de la columna."""
+    ini_l = texto.rfind('\n', 0, m.start()) + 1
+    fin_l = texto.find('\n', m.end())
+    fin_l = len(texto) if fin_l < 0 else fin_l
+    if texto[ini_l:fin_l].lstrip().startswith('|'):
+        return _ley_en_tabla(texto, ini_l, m.start())
+    tramo = texto[m.end():min(fin_l, m.end() + 200)]
+    if _AMBIGUA.match(tramo):
+        return None
+    despues = codes_in(tramo)
+    if despues and _CONECTOR.match(tramo[:despues[0]['start']]):
+        return despues[0]
+    if _DE_ALGO.match(tramo) and not codes_in(tramo[:90]):
+        return None
+    antes_txt = texto[ini_l:m.start()]
+    cortes = [x.end() for x in _FIN_ORACION.finditer(antes_txt)]   # en prosa una «línea» es un párrafo entero
+    if cortes:
+        antes_txt = antes_txt[cortes[-1]:]
+    antes = codes_in(antes_txt)
+    if antes:
+        h = antes[-1]
+        return None if _COMPARA.search(antes_txt[max(0, h['start'] - 30):h['start']]) else h
+    if despues and not _FIN_ORACION.search(tramo[:despues[0]['start']]):
+        return None if _COMPARA.search(tramo[:despues[0]['start']]) else despues[0]
+    return None
+
+
+def extract(texto: str) -> list[dict]:
+    """Citas de una respuesta, sin repetir: [{'source', 'label', 'article', 'snippet'}] (source None = sin ley)."""
+    out, seen = [], set()
+    texto = texto or ''
+    for m in ART_LIST_RE.finditer(texto):
+        ley = ley_de(texto, m)
+        for a in ART_ONE_RE.findall(m.group(1)):
+            a = re.sub(r'\s+', ' ', a.strip())
+            key = ((ley or {}).get('source'), _norm_art(a))
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({'source': (ley or {}).get('source'), 'label': (ley or {}).get('label'), 'article': a,
+                        'snippet': texto[max(0, m.start() - 60):m.end() + 90].replace('\n', ' ')})
+    return out
+
+
+def article_of(hierarchy: str) -> str | None:
+    """«… > Artículo 167 QUINQUIES» → «167 quinquies»."""
+    m = re.search(r'(?i)art[íi]culo\s+(.+?)\s*$', (hierarchy or '').split(' > ')[-1])
+    return _norm_art(m.group(1)) if m else None
+
+
+def classify(question: str, answer: str, chunks: list[dict], resolve: Callable[[str, str], tuple[list[int], bool]],
+             corpus_sources: set[str] | None = None) -> dict:
+    """Clasifica las citas de `answer`. `chunks` = contexto que vio el LLM ([{id, source, hierarchy}]);
+    `resolve(source, article)` → (ids de los chunks de ese artículo en el corpus, ¿derogado?).
+    `corpus_sources` (opcional): documentos del corpus; una ley fuera de él queda `sin_ley`."""
+    ctx_ids = {ch.get('id') for ch in chunks or [] if ch.get('id') is not None}
+    arts_ctx: dict[str, set] = {}
+    for ch in chunks or []:
+        a = article_of(ch.get('hierarchy'))
+        if a:
+            arts_ctx.setdefault(a, set()).add(ch.get('source'))
+    items = []
+    for c in extract(answer):
+        it = {'label': c['label'], 'article': c['article'], 'snippet': c['snippet']}
+        src = c['source']
+        if src is None or (corpus_sources is not None and src not in corpus_sources):
+            it['clase'] = 'sin_ley'
+        else:
+            ids, derogado = resolve(src, c['article'])
+            if derogado:
+                it['derogado'] = True
+            if ctx_ids & set(ids):
+                it['clase'] = 'en_contexto'
+            elif arts_ctx.get(_norm_art(c['article']), set()) - {src}:
+                it['clase'] = 'cruzada'
+            else:
+                it['clase'] = 'memoria' if ids else 'inexistente'
+        items.append(it)
+    q_estados = sorted({h['label'] for h in codes_in(question or '') if h['label'] in ESTADOS})
+    otros = sorted({f"{it['label']} {it['article']}" for it in items
+                    if it['clase'] != 'sin_ley' and it['label'] in ESTADOS and it['label'] not in q_estados})
+    counts = {k: sum(it['clase'] == k for it in items) for k in CLASES}
+    return {'items': items, 'counts': counts, 'question_states': q_estados,
+            'other_states': otros if q_estados else None,   # None = la pregunta no menciona estados: no aplica
+            'derogated': sum(bool(it.get('derogado')) for it in items)}
+
+
+_JUEZ_OTRO_ESTADO = re.compile(r'(?i)otra entidad|otro estado|otra jurisdicci')
+
+
+def judge_other_state(verdicts: list[dict]) -> bool | None:
+    """Veredicto del juez sobre un must_not de jurisdicción («presenta como aplicable … de otra entidad»), si
+    la pregunta tiene uno: True = el juez dice que la respuesta cita otro estado. None = no hay ese criterio."""
+    vs = [v for v in verdicts or [] if v.get('kind') == 'must_not' and _JUEZ_OTRO_ESTADO.search(v.get('text') or '')]
+    return any(v.get('verdict') == 'presente' for v in vs) if vs else None
+
+
+def aggregate(rows: list[dict]) -> dict:
+    """Métricas de la corrida a partir de rows con 'citations' (y 'verdicts'). Vacío si ninguna fila las tiene."""
+    rs = [r for r in rows if not r.get('error') and r.get('citations')]
+    if not rs:
+        return {}
+    tot = {k: sum((r['citations'].get('counts') or {}).get(k, 0) for r in rs) for k in CLASES}
+    n_cls = sum(tot[k] for k in CLASES if k != 'sin_ley')
+    frac = (lambda k: round(tot[k] / n_cls, 4)) if n_cls else (lambda k: None)
+    aplica = [r for r in rs if r['citations'].get('other_states') is not None]
+    out = {'cit_n': n_cls, 'cit_unknown': tot['sin_ley'], 'cit_context': frac('en_contexto'),
+           'cit_memory': frac('memoria'), 'cit_cross': frac('cruzada'), 'cit_missing': tot['inexistente'],
+           'cit_answers': len(rs),
+           'cit_answers_missing': sum(r['citations']['counts'].get('inexistente', 0) > 0 for r in rs),
+           'cit_answers_ungrounded': sum(r['citations']['counts'].get('memoria', 0) + r['citations']['counts'].get('cruzada', 0) > 0 for r in rs),
+           'cit_derogated': sum(r['citations'].get('derogated', 0) for r in rs)}
+    if aplica:
+        con = [bool(r['citations']['other_states']) for r in aplica]
+        out.update(other_state_n=len(aplica), other_state_rate=round(sum(con) / len(aplica), 4))
+        par = [(bool(r['citations']['other_states']), judge_other_state(r.get('verdicts'))) for r in aplica]
+        par = [(a, j) for a, j in par if j is not None]
+        if par:
+            out.update(other_state_judge_n=len(par), other_state_judge_rate=round(sum(j for _, j in par) / len(par), 4),
+                       other_state_agreement=round(sum(a == j for a, j in par) / len(par), 4))
+    return out
+
+
+class Resolver:
+    """resolve(source, article) contra la tabla del corpus, con caché por corrida (un SELECT por documento)."""
+
+    def __init__(self, cur, table: str):
+        self.cur, self.table, self._docs, self._memo = cur, table, {}, {}
+        cur.execute(f"SELECT DISTINCT source FROM {table}")
+        self.sources = {r[0] for r in cur.fetchall()}
+
+    def __call__(self, source: str, article: str) -> tuple[list[int], bool]:
+        key = (source, _norm_art(article))
+        if key in self._memo:
+            return self._memo[key]
+        if source not in self._docs:
+            self.cur.execute(f"SELECT id, hierarchy, text FROM {self.table} WHERE source = %s", (source,))
+            self._docs[source] = self.cur.fetchall()
+        rows = self._docs[source]
+        # Misma búsqueda que bench.resolve_gold: por jerarquía («> Artículo 179») y, si el documento no está
+        # partido por artículo (p. ej. Morelos), donde el artículo EMPIEZA y, si no, cualquier mención.
+        toks = article.split()
+        rx = re.compile(r'(?i)> art[íi]culo\s+' + r'\s*'.join(map(re.escape, toks)) + r'[oº°]?\.?$')
+        hits = [(i, t) for i, h, t in rows if rx.search(h or '')]
+        if not hits:
+            num = re.escape(toks[0])
+            start = re.compile(r'(?im)^[\s#>*_]*art[íi]c?u?lo\s*\**\s*' + num + r'(?![0-9])')
+            hits = [(i, t) for i, _, t in rows if start.search(t or '')]
+            if not hits:
+                trx = re.compile(r'(?i)art[íi]culo\W{0,4}' + num + r'(?![0-9])')
+                hits = [(i, t) for i, _, t in rows if trx.search(t or '')]
+        derogado = False
+        if hits and len(hits) <= 3:
+            cuerpo = re.sub(r'(?is)^.*?\*\*\s*art[íi]culo[^*]*\*\*', '', ' '.join(t or '' for _, t in hits), count=1)
+            derogado = bool(_DEROGADO.match(cuerpo.strip(' *_.-–—:()\n')[:40]))
+        self._memo[key] = ([i for i, _ in hits], derogado)
+        return self._memo[key]

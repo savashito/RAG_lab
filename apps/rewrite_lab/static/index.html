@@ -641,6 +641,16 @@
      dicen qué artículo necesita la respuesta. En cada corrida se revisa si el chunk de ese artículo llegó al contexto que vio el LLM.
      Así se separa <b>«la búsqueda no lo trajo»</b> (🔎✗, problema de recuperación) de <b>«lo tenía y respondió mal»</b>
      (filtro «🔎✓ pero no pasa», problema de prompt o del modelo). No depende del juez, así que no tiene ruido.</p>
+   <p><b>🧾 Citas verificadas</b> (sin LLM): cada artículo que cita la respuesta se empareja con su ley (la nombrada en
+     la misma oración, o el encabezado de la columna en tablas) y se busca en el corpus y en el contexto que vio el LLM:
+     🟢 <b>en el contexto</b> (respaldada) · 🟡 <b>de memoria</b> (existe pero no venía en el contexto: el modelo la sacó de
+     lo que ya sabía) · 🟠 <b>atribución cruzada</b> (ese número venía con <i>otra</i> ley, p. ej. «art. 269 de la CDMX» cuando
+     el 269 es del Edomex) · 🔴 <b>inexistente</b> (la ley está en el corpus pero el artículo no: alucinación) · ⚪ <b>sin ley
+     identificable</b> (artículo suelto; no se clasifica). Mide si la cita <i>existe y de dónde salió</i>, no si lo que dice
+     del artículo es correcto (eso sigue siendo el juez o la revisión humana). <b>📎 sin fuente</b> = de memoria + cruzadas.</p>
+   <p><b>🗺️ Cita otro estado</b> (sin LLM): en preguntas que mencionan al menos un estado, % de respuestas que citan un
+     artículo de un código penal <i>estatal</i> que la pregunta no menciona (el Código Penal Federal, el CNPP y las leyes
+     generales no cuentan). Si el set tiene un error «presenta como aplicable … de otra entidad», se compara con el juez.</p>
    <p><b>✍️ Revisión humana</b>: en el detalle de una corrida, «✍️ Revisar respuestas» muestra una pregunta a la vez.
      Quien revisa marca cada componente igual que el juez y, si quiere, califica la respuesta de 1 a 5 y deja un comentario.
      El veredicto del juez está <b>oculto</b> (👁 para verlo), para no sesgar. Con eso se calcula el <b>score humano</b> (misma fórmula)

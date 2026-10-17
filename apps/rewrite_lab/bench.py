@@ -42,6 +42,8 @@ from fastapi.responses import JSONResponse
 
 from shared.code_routes import codes_in, short_label
 
+import citations as cit
+
 KINDS = ('must', 'should', 'must_not')
 # En pantalla y en el JSON el must_not se llama «error»: describe un error que, si aparece en la
 # respuesta, la reprueba. El nombre «must_not» invitaba a redactarlo en negativo ("No omitir…"),
@@ -316,6 +318,7 @@ def aggregate(results: list[dict]) -> dict:
         'violations': sum(r['violations'] for r in ok),
         'avg_seconds': round(sum(r.get('seconds') or 0 for r in ok) / n, 1) if n else None,
         **_retrieval_agg(ok),
+        **cit.aggregate(ok),   # verificación de citas sin LLM (citations.py): de memoria, cruzadas, inexistentes, otro estado
     }
 
 
@@ -489,6 +492,7 @@ CREATE TABLE IF NOT EXISTS bench_results (
     must_total int, must_ok int, violations int, verdicts jsonb, seconds real, error text);
 CREATE INDEX IF NOT EXISTS bench_results_run ON bench_results (run_id, position);
 ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS retrieval jsonb;   -- ¿llegó el artículo correcto al contexto?
+ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS citations jsonb;   -- verificación de citas sin LLM (citations.py)
 -- Latido de la corrida: se actualiza con cada pregunta terminada (ver STALE_MINUTES).
 ALTER TABLE bench_runs ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 -- Criterios para el juez del set (equivalencias, trampas conocidas): se añaden a JUDGE_SYSTEM.
@@ -731,10 +735,27 @@ class Bench:
         threading.Thread(target=self._run, args=(rid, s, qs, cfg), daemon=True).start()
         return rid
 
+    def _citations(self, resolver, question: str, answer: str, chunks: list[dict]):
+        """Verificación de citas de una respuesta; None si no hay corpus o falla (la corrida sigue)."""
+        if resolver is None:
+            return None
+        try:
+            return cit.classify(question, answer, chunks, resolver, resolver.sources)
+        except Exception:  # noqa: BLE001
+            traceback.print_exc()
+            return None
+
     def _run(self, rid: int, s: dict, qs: list[dict], cfg: dict) -> None:
         results, detail = [], []
         status, err = 'done', None
         gold = {}
+        rconn = resolver = None
+        if self.table:
+            try:   # conexión propia para el resolver de citas (cachea los documentos durante la corrida)
+                rconn = self.connect()
+                resolver = cit.Resolver(rconn.cursor(), self.table)
+            except Exception:  # noqa: BLE001
+                traceback.print_exc()
         if self.table:
             try:
                 with self.connect() as c, c.cursor() as cur:
@@ -751,7 +772,7 @@ class Bench:
                 t0 = time.time()
                 row = {'question_id': q['id'], 'position': pos, 'question': q['question'],
                        'score': 0.0, 'passed': False, 'must_total': 0, 'must_ok': 0, 'violations': 0,
-                       'verdicts': [], 'seconds': None, 'error': None, 'retrieval': None}
+                       'verdicts': [], 'seconds': None, 'error': None, 'retrieval': None, 'citations': None}
                 det = {'question_id': q['id'], 'question': q['question'],
                        'expected_answer': q.get('expected_answer') or '', 'difficulty': q.get('difficulty'),
                        'components': comps}
@@ -769,12 +790,14 @@ class Bench:
                         row['retrieval'] = retrieval_check(gold[q['id']], [ch.get('id') for ch in a.get('chunks', [])])
                     row['verdicts'] = [{'text': c['text'], 'kind': c['kind'], 'weight': c['weight'], **v}
                                        for c, v in zip(comps, g['verdicts'])]
+                    row['citations'] = self._citations(resolver, q['question'], a['answer'], a.get('chunks', []))
                     det.update(answer=a['answer'], chunks=[{k: ch.get(k) for k in
                                                             ('rank', 'id', 'source', 'hierarchy', 'score', 'neighbor', 'text')}
                                                            for ch in a.get('chunks', [])],
                                rewrite=a.get('rewrite'), score_kind=a.get('score_kind'), hyde_passage=a.get('hyde_passage'),
                                judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'),
-                               retrieval=row['retrieval'], subqueries=a.get('subqueries'), routes=a.get('routes'))
+                               retrieval=row['retrieval'], citations=row['citations'], subqueries=a.get('subqueries'),
+                               routes=a.get('routes'))
                 except Exception as e:  # noqa: BLE001 — una pregunta que falla no tumba la corrida
                     row['error'] = det['error'] = f'{type(e).__name__}: {e}'
                 row['seconds'] = round(time.time() - t0, 1)
@@ -783,18 +806,22 @@ class Bench:
                 with self.connect() as c, c.cursor() as cur:
                     cur.execute(
                         "INSERT INTO bench_results (run_id, question_id, position, question, score, passed, "
-                        "must_total, must_ok, violations, verdicts, seconds, error, retrieval) "
-                        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s::jsonb)",
+                        "must_total, must_ok, violations, verdicts, seconds, error, retrieval, citations) "
+                        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s::jsonb,%s::jsonb)",
                         (rid, row['question_id'], pos, row['question'], row['score'], row['passed'],
                          row['must_total'], row['must_ok'], row['violations'],
                          json.dumps(row['verdicts'], ensure_ascii=False), row['seconds'], row['error'],
-                         json.dumps(row['retrieval'], ensure_ascii=False) if row['retrieval'] else None))
+                         json.dumps(row['retrieval'], ensure_ascii=False) if row['retrieval'] else None,
+                         json.dumps(row['citations'], ensure_ascii=False) if row['citations'] else None))
                     cur.execute("UPDATE bench_runs SET done = %s, metrics = %s::jsonb, updated_at = now() WHERE id = %s",
                                 (len(results), json.dumps(aggregate(results)), rid))
                     c.commit()
         except Exception as e:  # noqa: BLE001
             status, err = 'error', f'{type(e).__name__}: {e}'
             traceback.print_exc()
+        finally:
+            if rconn is not None:
+                rconn.close()
         key = None
         try:
             key = self.store.put_json(f'bench/runs/{rid}.json', {
@@ -809,6 +836,37 @@ class Bench:
             c.commit()
         with self._lock:
             self._running = None
+
+    def backfill_citations(self, rid: int) -> dict:
+        """Calcula la verificación de citas de una corrida ya hecha con su artefacto (respuestas y contexto
+        guardados), sin volver a correr nada: actualiza bench_results.citations y las métricas de la corrida."""
+        with self.connect() as c, c.cursor() as cur:
+            cur.execute("SELECT artifact_key, status FROM bench_runs WHERE id = %s", (rid,))
+            row = cur.fetchone()
+            if not row or not row[0]:
+                raise ValueError('la corrida no tiene artefacto guardado')
+            if row[1] == 'running':
+                raise ValueError('la corrida sigue en curso')
+            art = self.store.get_json(row[0])
+            resolver = cit.Resolver(cur, self.table)
+            n = 0
+            for x in art.get('results') or []:
+                if x.get('error') or x.get('answer') is None:
+                    continue
+                cj = cit.classify(x.get('question') or '', x.get('answer') or '', x.get('chunks') or [], resolver,
+                                  resolver.sources)
+                cur.execute("UPDATE bench_results SET citations = %s::jsonb WHERE run_id = %s AND question_id = %s",
+                            (json.dumps(cj, ensure_ascii=False), rid, x.get('question_id')))
+                n += cur.rowcount
+            cur.execute("SELECT score, passed, must_total, must_ok, violations, verdicts, seconds, error, retrieval, "
+                        "citations FROM bench_results WHERE run_id = %s", (rid,))
+            cols = ['score', 'passed', 'must_total', 'must_ok', 'violations', 'verdicts', 'seconds', 'error',
+                    'retrieval', 'citations']
+            rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+            metrics = aggregate(rows)
+            cur.execute("UPDATE bench_runs SET metrics = %s::jsonb WHERE id = %s", (json.dumps(metrics), rid))
+            c.commit()
+        return {'run_id': rid, 'updated': n, 'metrics': metrics}
 
     # ── rutas ─────────────────────────────────────────────────────────────────────
     def _make_router(self) -> APIRouter:
@@ -1039,6 +1097,18 @@ class Bench:
                 return bad(str(e))
             return {'run_id': rid}
 
+        @r.post('/runs/{rid}/citations')
+        def run_citations(rid: int, request: Request):
+            """Recalcula la verificación de citas de una corrida ya hecha (desde su artefacto)."""
+            if not self.can_run(self.current_email(request)):
+                return deny('Solo los administradores pueden recalcular corridas.')
+            if not self.table:
+                return bad('no hay corpus configurado para verificar citas')
+            try:
+                return self.backfill_citations(rid)
+            except ValueError as e:
+                return bad(str(e))
+
         @r.post('/runs/{rid}/cancel')
         def run_cancel(rid: int, request: Request):
             if not self.can_run(self.current_email(request)):
@@ -1076,10 +1146,10 @@ class Bench:
                         'metrics', 'error', 'artifact_key', 'created_at', 'finished_at']
                 out = dict(zip(cols, row))
                 cur.execute("SELECT question_id, position, question, score, passed, must_total, must_ok, "
-                            "violations, verdicts, seconds, error, retrieval FROM bench_results WHERE run_id = %s "
-                            "ORDER BY position", (rid,))
+                            "violations, verdicts, seconds, error, retrieval, citations FROM bench_results "
+                            "WHERE run_id = %s ORDER BY position", (rid,))
                 rcols = ['question_id', 'position', 'question', 'score', 'passed', 'must_total', 'must_ok',
-                         'violations', 'verdicts', 'seconds', 'error', 'retrieval']
+                         'violations', 'verdicts', 'seconds', 'error', 'retrieval', 'citations']
                 out['results'] = [dict(zip(rcols, x)) for x in cur.fetchall()]
             return out
 
