@@ -59,9 +59,10 @@ function citTags(c){
 function citList(c){
   if(!c || !(c.items||[]).length) return '';
   const orden = Object.keys(CIT);
-  const items = [...c.items].sort((a,b)=>orden.indexOf(b.clase)-orden.indexOf(a.clase));
-  return `<details ${items.some(i=>i.clase!=='en_contexto'&&i.clase!=='sin_ley')?'open':''}><summary>🧾 Citas verificadas (${items.length})</summary><ul style="margin:4px 0;padding-left:20px">${
-    items.map(i=>`<li title="${attr(i.snippet||'')}">${CIT[i.clase][0]} <b>${esc(i.label||'¿?')} ${esc(i.article)}</b> — ${CIT[i.clase][1]}${i.derogado?' · <span style="color:#fbbf24">derogado</span>':''}</li>`).join('')
+  const otro = new Set(c.other_states||[]), esOtro = i => otro.has(`${i.label} ${i.article}`);
+  const items = [...c.items].sort((a,b)=>(esOtro(b)-esOtro(a)) || (orden.indexOf(b.clase)-orden.indexOf(a.clase)));
+  return `<details ${items.some(i=>esOtro(i) || (i.clase!=='en_contexto'&&i.clase!=='sin_ley'))?'open':''}><summary>🧾 Citas verificadas (${items.length})</summary><ul style="margin:4px 0;padding-left:20px">${
+    items.map(i=>`<li title="${attr(i.snippet||'')}">${CIT[i.clase][0]} <b>${esc(i.label||'¿?')} ${esc(i.article)}</b> — ${CIT[i.clase][1]}${esOtro(i)?' · <span style="color:#f87171">🗺️ de un estado que la pregunta no menciona</span>':''}${i.derogado?' · <span style="color:#fbbf24">derogado</span>':''}</li>`).join('')
   }</ul><p class="muted" style="font-size:11px;margin:2px 0">Pasa el ratón sobre una cita para ver dónde aparece en la respuesta.</p></details>`;
 }
 // Mismas métricas que citations.aggregate(), sobre un subconjunto de resultados.

@@ -134,3 +134,29 @@ def test_aggregate_y_acuerdo_con_juez():
     assert m['other_state_rate'] == round(1 / 3, 4) and m['other_state_judge_rate'] == round(2 / 3, 4)
     assert m['other_state_agreement'] == round(2 / 3, 4)
     assert cit.aggregate([{'error': None, 'citations': None}]) == {}
+
+
+def test_alias_dentro_de_otra_ley_no_es_la_ley_penal():
+    assert pares('el artículo 388 del Código Civil para el Distrito Federal (ahora Ciudad de México)') == [(None, '388')]
+    assert pares('*   **Código Procesal Familiar del Estado de Morelos:** Artículos 302 y 443.') == [('CPFM', '302'), ('CPFM', '443')]
+    assert pares('el Artículo 7o, transitorio, de la Constitución Política del Estado de Morelos') == [(None, '7o')]
+    assert pares('el artículo 194bis del Código Federal de Procedimientos Penales') == [(None, '194bis')]
+    assert pares('el artículo 179 del Código Penal de la Ciudad de México') == [('CDMX', '179')]
+    assert pares('el artículo 311 del Código Nacional de Procedimientos Penales') == [('CNPP', '311')]
+
+
+def test_rangos():
+    assert pares('las lesiones de los artículos 291 a 293 del Código Penal Federal') == [('CPF', '291'), ('CPF', '293')]
+
+
+def test_ley_que_no_es_del_corpus_no_hereda_la_anterior():
+    assert pares('En el Distrito Federal, Chiapas y Veracruz, así como el artículo 4o. de la Constitución Política de '
+                 'los Estados Unidos Mexicanos') == [(None, '4o')]
+    assert pares('La Ley Federal contra la Delincuencia Organizada establece que el acopio de armas, previsto en los '
+                 'artículos 83 Bis, 84 (párrafo primero) de la Ley Federal de Armas de Fuego') == [(None, '83 Bis'), (None, '84')]
+    assert pares('el art. 7o. del Código Penal Federal') == [('CPF', '7o')]
+
+
+def test_mencion_suelta_de_articulo_ya_citado_no_se_repite():
+    assert pares('Según el artículo 290 del Código Penal del Estado de México… Además, el Artículo 290 establece…') == \
+        [('CPEM', '290')]
