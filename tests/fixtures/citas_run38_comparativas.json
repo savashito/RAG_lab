@@ -1,0 +1,33 @@
+{
+ "descripcion": "Corrida 38 (set 11, prompt sencillo de Karen), preguntas 277 y 294: secciones por estado con comparaciones («Al igual que en la CDMX…», «similares a las de la CDMX»). Ley esperada de cada mención en orden.",
+ "casos": [
+  {
+   "run": 38,
+   "question_id": 277,
+   "texto": "Para responder a tu pregunta, me basaré en los textos legales que proporcionaste. Es importante notar que, aunque ambos estados castigan estas conductas, lo hacen con nombres y reglas distintas.\n\nAquí tienes los fundamentos legales:\n\n### 1. En la Ciudad de México\n\nEn la CDMX, la ley utiliza el término **\"violación equiparada\"**. Esto significa que, aunque no haya habido violencia física o amenazas (fuerza), la ley considera que el acto es igual de grave debido a la condición de la víctima.\n\n*   **El fundamento principal es el Artículo 175:** Este artículo establece que se castigará como violación a quien realice cópula (relación sexual) o introduzca cualquier objeto o parte del cuerpo en una persona que:\n    *   No tenga la capacidad de comprender qué está pasando.\n    *   O que, por cualquier causa, no pueda resistirse al acto.\n*   **Agravantes (Castigos más severos):**\n    *   Si además de la condición de la persona, se usa **violencia física o moral**, la pena aumenta en una mitad (**Art. 175**).\n    *   Si el agresor es un familiar (padre, hermano, tutor, etc.) o alguien que aprovecha su cargo, profesión o una relación de confianza, la pena puede aumentar hasta en **dos terceras partes** (**Art. 178**).\n\n### 2. En el Estado de Querétaro\n\nEn Querétaro, la estructura es muy similar, pero los artículos cambian.\n\n*   **El fundamento principal es el Artículo 161:** Al igual que en la CDMX, se establece la **\"violación equiparada\"**. Se sanciona con pena de 16 a 40 años de prisión a quien realice cópula o introduzca objetos/partes del cuerpo en una persona que:\n    *   No tenga capacidad para comprender el significado del hecho.\n    *   O no tenga capacidad para resistirlo.\n*   **Agravantes (Castigos más severos):**\n    *   Si se ejerce **violencia física o moral**, o si el delito lo cometen **dos o más personas**, la pena aumenta en una mitad (**Art. 161**).\n    *   Si el agresor aprovecha su autoridad legal sobre la víctima, la pena aumenta hasta en una mitad más (**Art. 162**).\n\n### Resumen comparativo\n\n| Concepto | Ciudad de México | Querétaro |\n| :--- | :--- | :--- |\n| **Término legal** | Violación equiparada | Violación equiparada |\n| **Fundamento** | Artículo 175 | Artículo 161 |\n| **Causa de equiparación** | Incapacidad de comprender o de resistir | Incapacidad de comprender o de resistir |\n| **Persecución** | De oficio (la autoridad investiga sin que nadie lo pida) | De oficio (cuando hay incapacidad o violencia) |\n\n**Nota importante:** En ambos estados, cuando la víctima no puede comprender lo que sucede o no puede defenderse, el Estado tiene la obligación de investigar el delito de forma automática (**de oficio**), sin necesidad de que un familiar presente una denuncia formal para que la investigación comience.\n\n*Recuerda que esta es una explicación informativa basada en los textos proporcionados. Si te encuentras en una situación legal real, es indispensable consultar con un abogado profesional.*",
+   "leyes": [
+    "CDMX",
+    "CDMX",
+    "CDMX",
+    "Querétaro",
+    "Querétaro",
+    "Querétaro",
+    "CDMX",
+    "Querétaro"
+   ]
+  },
+  {
+   "run": 38,
+   "question_id": 294,
+   "texto": "Para responder a tu pregunta, es importante distinguir que, aunque en ambos lugares la conducta de \"vejar o excluir\" es un delito, las leyes y las consecuencias varían dependiendo de dónde ocurran los hechos.\n\nAquí te explico los fundamentos legales para cada caso:\n\n### **1. En la Ciudad de México**\nSi la exclusión o la vejación ocurre en la Ciudad de México, el fundamento es el **Código Penal para el Distrito Federal** (ahora Ciudad de México).\n\n*   **El delito:** Se encuentra en el **Artículo 206, fracción III**.\n*   **¿Qué dice la ley?:** Establece que es un delito vejar o excluir a una persona o grupo de personas por motivos como edad, sexo, embarazo, raza, religión, orientación sexual, discapacidad, entre otros.\n*   **¿Qué podría pasar?:** La persona que cometa este acto podría enfrentar una pena de **uno a tres años de prisión** o bien, realizar **trabajo en favor de la comunidad** (de 25 a 100 días) y pagar una multa.\n*   **Dato importante:** Si quien discrimina es un servidor público en ejercicio de sus funciones, la pena puede aumentar hasta en una mitad.\n\n### **2. En el Estado de Querétaro**\nEn Querétaro, la situación es distinta debido a cambios en su legislación local.\n\n*   **El fundamento:** El **Artículo 170** del Código Penal del Estado de Querétaro, que describe conductas similares a las de la CDMX (incitar al odio, negar servicios, vejar o excluir, o restringir derechos laborales).\n*   **Situación actual:** Es muy importante notar que, según la información proporcionada, el **Artículo 171** de este código fue **derogado** (es decir, ya no tiene validez). Sin embargo, el **Artículo 170** sigue vigente para sancionar estas conductas.\n*   **¿Qué podría pasar?:** Al igual que en la CDMX, la sanción es de **uno a tres años de prisión** o trabajo comunitario, más una multa. Si el responsable es un servidor público, además de la pena, se le puede destituir e inhabilitar para trabajar en el gobierno.\n\n### **Resumen comparativo**\n\n| Concepto | Ciudad de México | Querétaro |\n| :--- | :--- | :--- |\n| **Fundamento Legal** | Art. 206, fracción III (Código Penal CDMX) | Art. 170 (Código Penal Querétaro) |\n| **Conducta** | Vejar o excluir por motivos discriminatorios. | Vejar o excluir por motivos discriminatorios. |\n| **Pena de prisión** | 1 a 3 años. | 1 a 3 años. |\n| **Cómo se denuncia** | Por querella (debes presentar la denuncia tú). | Por querella (debes presentar la denuncia tú). |\n\n**Nota importante:** En ambos casos, estos delitos se persiguen por **querella**, lo que significa que la autoridad no actuará de oficio (por cuenta propia), sino que es necesario que la persona afectada presente la denuncia formal ante el Ministerio Público.\n\n*Recuerda que esta es una orientación basada en los textos legales proporcionados y, para un caso real, siempre es necesario consultar con un abogado profesional.*",
+   "leyes": [
+    "CDMX",
+    "Querétaro",
+    "Querétaro",
+    "Querétaro",
+    "CDMX",
+    "Querétaro"
+   ]
+  }
+ ]
+}

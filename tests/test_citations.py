@@ -225,3 +225,20 @@ def test_muestra_externa_contra_clasificacion_manual():
     assert len(res) == 66
     assert len(mal) <= 1, mal
     assert len(sin) <= 3, sin
+
+
+def test_secciones_comparativas_corrida_38():
+    import json
+    d = json.load(open(Path(__file__).parent / 'fixtures' / 'citas_run38_comparativas.json'))
+    for c in d['casos']:
+        got = [(cit.ley_de(c['texto'], m) or {}).get('label') for m in cit.ART_LIST_RE.finditer(c['texto'])]
+        assert got == c['leyes'], (c['question_id'], got)
+
+
+def test_comparacion_con_palabras_intermedias():
+    t = (INTRO_DOS + 'Por su parte, el **Código Penal del Estado de México** ofrece otra definición.\n\n'
+         'No obstante, al igual que en la legislación de la Ciudad de México, se sanciona como violación la introducción '
+         'de cualquier objeto (Artículo 273, segundo párrafo).')
+    assert pares(t) == [('CPEM', '273')]
+    t = INTRO_DOS + '### En Querétaro\n\n*   *Nota:* Las penas aquí son menores que en la CDMX.\n*   **Aumento de penas (Artículo 200):**'
+    assert pares(t) == [('Querétaro', '200')]
