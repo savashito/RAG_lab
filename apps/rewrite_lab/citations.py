@@ -362,6 +362,8 @@ def aggregate(rows: list[dict]) -> dict:
     frac = (lambda k: round(tot[k] / n_cls, 4)) if n_cls else (lambda k: None)
     aplica = [r for r in rs if r['citations'].get('other_states') is not None]
     out = {'cit_n': n_cls, 'cit_unknown': tot['sin_ley'], 'cit_context': frac('en_contexto'),
+           # «sin respaldo en los documentos» = inventados + sin fundamento (memoria) + ley mal atribuida (cruzada)
+           'cit_unsupported': round((tot['inexistente'] + tot['memoria'] + tot['cruzada']) / n_cls, 4) if n_cls else None,
            'cit_memory': frac('memoria'), 'cit_cross': frac('cruzada'), 'cit_missing': tot['inexistente'],
            'cit_answers': len(rs),
            'cit_answers_missing': sum(r['citations']['counts'].get('inexistente', 0) > 0 for r in rs),

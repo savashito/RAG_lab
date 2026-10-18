@@ -641,14 +641,24 @@
      dicen qué artículo necesita la respuesta. En cada corrida se revisa si el chunk de ese artículo llegó al contexto que vio el LLM.
      Así se separa <b>«la búsqueda no lo trajo»</b> (🔎✗, problema de recuperación) de <b>«lo tenía y respondió mal»</b>
      (filtro «🔎✓ pero no pasa», problema de prompt o del modelo). No depende del juez, así que no tiene ruido.</p>
-   <p><b>🧾 Citas verificadas</b> (sin LLM): cada artículo que cita la respuesta se empareja con su ley (la nombrada en
-     la misma oración, o el encabezado de la columna en tablas) y se busca en el corpus y en el contexto que vio el LLM:
-     🟢 <b>en el contexto</b> (respaldada) · 🟡 <b>de memoria</b> (existe pero no venía en el contexto: el modelo la sacó de
-     lo que ya sabía) · 🟠 <b>atribución cruzada</b> (ese número venía con <i>otra</i> ley, p. ej. «art. 269 de la CDMX» cuando
-     el 269 es del Edomex) · 🔴 <b>inexistente</b> (la ley está en el corpus pero el artículo no: alucinación) · ⚪ <b>sin ley
-     identificable</b> (artículo suelto; no se clasifica). Mide si la cita <i>existe y de dónde salió</i>, no si lo que dice
-     del artículo es correcto (eso sigue siendo el juez o la revisión humana). <b>📎 sin fuente</b> = de memoria + cruzadas.</p>
-   <p><b>🗺️ Cita otro estado</b> (sin LLM): en preguntas que mencionan al menos un estado, % de respuestas que citan un
+   <p><b>🧾 ¿De dónde salen los artículos que cita el LLM?</b> (sin otro LLM): para cada artículo que el LLM (Gemma)
+     escribe en su respuesta se identifica su ley (la que nombra en la misma oración o, si no, la del encabezado de la sección
+     o del inicio del texto) y se revisa si existe en la base y si venía en los documentos que trajo el buscador:</p>
+   <ul>
+     <li>🟢 <b>con respaldo</b>: venía en los documentos del buscador.</li>
+     <li>🔴 <b>inventado</b>: la ley está en la base pero ese artículo no existe (alucinación clásica).</li>
+     <li>🟡 <b>sin fundamento</b>: el artículo existe, pero el buscador no lo trajo; el LLM lo sacó de lo que aprendió antes.
+       Puede estar bien, pero no se puede comprobar con los documentos y puede estar desactualizado.</li>
+     <li>🟠 <b>ley mal atribuida</b>: el LLM le puso a un artículo el nombre de otra ley (escribe «art. 269 del Código Penal de
+       la CDMX», pero el 269 que trajo el buscador es del Estado de México).</li>
+     <li>⚪ <b>sin ley identificable</b>: el artículo aparece suelto y no se sabe de qué ley es; no se revisa.</li>
+   </ul>
+   <p><b>🧾 sin respaldo en los documentos</b> = 🔴 inventados + 🟡 sin fundamento + 🟠 ley mal atribuida: el % de artículos
+     que el LLM cita sin que salgan de los documentos. Para quien lee la respuesta los tres se ven igual; se separan porque
+     las causas son distintas (inventar es un problema del modelo; citar de memoria suele indicar que el buscador no trajo lo
+     necesario). No mide si lo que el LLM dice <i>del</i> artículo es correcto (eso es el juez o la revisión humana).</p>
+   <p><b>🗺️ Cita otro estado</b> (sin LLM): distinto de «ley mal atribuida». Aquí la cita es verdadera (artículo real con su
+     ley correcta), pero de un estado que no se preguntó. En preguntas que mencionan al menos un estado, % de respuestas que citan un
      artículo de un código penal <i>estatal</i> que la pregunta no menciona (el Código Penal Federal, el CNPP y las leyes
      generales no cuentan). Si el set tiene un error «presenta como aplicable … de otra entidad», se compara con el juez.</p>
    <p><b>✍️ Revisión humana</b>: en el detalle de una corrida, «✍️ Revisar respuestas» muestra una pregunta a la vez.

@@ -137,6 +137,7 @@ def test_aggregate_y_acuerdo_con_juez():
     assert m['cit_n'] == 8 and m['cit_unknown'] == 2 and m['cit_missing'] == 1
     assert m['cit_context'] == 0.75 and m['cit_memory'] == 0.125
     assert m['cit_answers_missing'] == 1 and m['cit_answers_ungrounded'] == 1
+    assert m['cit_unsupported'] == 0.25   # (1 inventado + 1 sin fundamento + 0 mal atribuidas) / 8
     assert m['other_state_rate'] == round(1 / 3, 4) and m['other_state_judge_rate'] == round(2 / 3, 4)
     assert m['other_state_agreement'] == round(2 / 3, 4)
     assert cit.aggregate([{'error': None, 'citations': None}]) == {}

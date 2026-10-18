@@ -39,20 +39,29 @@ function retBadge(r){
   return `<span class="tag ${cls}" title="Artículos necesarios que la búsqueda trajo al contexto del LLM">🔎 ${h}/${r.attainable}</span>`;
 }
 // 🧾 Verificación de citas (sin LLM, citations.py): cada artículo que cita la respuesta, contra el corpus y el contexto.
+// [icono, nombre, explicación corta visible, explicación larga (tooltip)]
 const CIT = {
-  en_contexto: ['🟢', 'en el contexto', 'El artículo llegó al contexto que vio el LLM: la cita está respaldada'],
-  memoria:     ['🟡', 'de memoria', 'Existe en el corpus pero NO venía en el contexto: el modelo lo sacó de lo que ya sabía (no está fundamentado)'],
-  cruzada:     ['🟠', 'atribución cruzada', 'Ese número venía en el contexto pero con OTRA ley (p. ej. «art. 269 de la CDMX» cuando el 269 es del Edomex)'],
-  inexistente: ['🔴', 'inexistente', 'La ley está en el corpus pero ese artículo no: inventado o mal numerado (alucinación)'],
-  sin_ley:     ['⚪', 'sin ley identificable', 'No se puede saber de qué ley es (artículo suelto): no se clasifica'],
+  en_contexto: ['🟢', 'con respaldo', 'venía en los documentos que trajo el buscador',
+                'El artículo que cita el LLM venía en los fragmentos que recuperó el buscador: la cita está respaldada por los documentos.'],
+  memoria:     ['🟡', 'sin fundamento', 'existe, pero el buscador no lo trajo: el LLM lo sacó de lo que ya sabía',
+                'El artículo existe en la base, pero NO venía en los fragmentos del buscador: el LLM lo citó de lo que aprendió antes. Puede estar bien, pero no se puede comprobar con los documentos y puede estar desactualizado.'],
+  cruzada:     ['🟠', 'ley mal atribuida', 'el LLM le puso el nombre de otra ley (ej. dice CDMX, pero es del Edomex)',
+                'El LLM le puso a un artículo el nombre de una ley que no es la suya: escribe «art. 269 del Código Penal de la CDMX», pero el 269 que trajo el buscador es del Estado de México.'],
+  inexistente: ['🔴', 'inventado', 'el artículo no existe en la base',
+                'La ley está en la base pero ese artículo no: el LLM lo inventó o lo numeró mal (alucinación clásica).'],
+  sin_ley:     ['⚪', 'sin ley identificable', 'no se sabe de qué ley es: no se pudo revisar',
+                'El LLM escribió el artículo suelto, sin que se pueda saber de qué ley es: no se clasifica.'],
 };
+// «Sin respaldo en los documentos» = inventados + sin fundamento + ley mal atribuida (sobre los artículos revisados).
+const citSinRespaldo = m => m.cit_unsupported != null ? m.cit_unsupported
+  : (m.cit_n ? (m.cit_memory||0) + (m.cit_cross||0) + (m.cit_missing||0)/m.cit_n : null);
 function citTags(c){
   if(!c) return '';
   const k = c.counts||{}, out = [];
   if((c.other_states||[]).length) out.push(`<span class="tag ret-bad" title="${attr('Cita artículos de un código estatal que la pregunta no menciona: '+c.other_states.join(', '))}">🗺️ otro estado: ${esc(c.other_states.join(', '))}</span>`);
-  if(k.inexistente) out.push(`<span class="tag ret-bad" title="${attr(CIT.inexistente[2])}">🔴 ${k.inexistente} inexistente${k.inexistente>1?'s':''}</span>`);
-  if(k.cruzada) out.push(`<span class="tag ret-part" title="${attr(CIT.cruzada[2])}">🟠 ${k.cruzada} cruzada${k.cruzada>1?'s':''}</span>`);
-  if(k.memoria) out.push(`<span class="tag ret-part" title="${attr(CIT.memoria[2])}">🟡 ${k.memoria} de memoria</span>`);
+  if(k.inexistente) out.push(`<span class="tag ret-bad" title="${attr(CIT.inexistente[3])}">🔴 ${k.inexistente} inventado${k.inexistente>1?'s':''}</span>`);
+  if(k.cruzada) out.push(`<span class="tag ret-part" title="${attr(CIT.cruzada[3])}">🟠 ${k.cruzada} ley mal atribuida</span>`);
+  if(k.memoria) out.push(`<span class="tag ret-part" title="${attr(CIT.memoria[3])}">🟡 ${k.memoria} sin fundamento</span>`);
   return out.join(' ');
 }
 // Lista de citas de una respuesta (detalle expandido).
@@ -61,8 +70,8 @@ function citList(c){
   const orden = Object.keys(CIT);
   const otro = new Set(c.other_states||[]), esOtro = i => otro.has(`${i.label} ${i.article}`);
   const items = [...c.items].sort((a,b)=>(esOtro(b)-esOtro(a)) || (orden.indexOf(b.clase)-orden.indexOf(a.clase)));
-  return `<details ${items.some(i=>esOtro(i) || (i.clase!=='en_contexto'&&i.clase!=='sin_ley'))?'open':''}><summary>🧾 Citas verificadas (${items.length})</summary><ul style="margin:4px 0;padding-left:20px">${
-    items.map(i=>`<li title="${attr(i.snippet||'')}">${CIT[i.clase][0]} <b>${esc(i.label||'¿?')} ${esc(i.article)}</b> — ${CIT[i.clase][1]}${esOtro(i)?' · <span style="color:#f87171">🗺️ de un estado que la pregunta no menciona</span>':''}${i.derogado?' · <span style="color:#fbbf24">derogado</span>':''}</li>`).join('')
+  return `<details ${items.some(i=>esOtro(i) || (i.clase!=='en_contexto'&&i.clase!=='sin_ley'))?'open':''}><summary>🧾 ¿De dónde salen los artículos que cita el LLM? (${items.length})</summary><ul style="margin:4px 0;padding-left:20px">${
+    items.map(i=>`<li title="${attr(i.snippet||'')}">${CIT[i.clase][0]} <b>${esc(i.label||'¿?')} ${esc(i.article)}</b> — ${CIT[i.clase][1]} <span class="muted">(${CIT[i.clase][2]})</span>${esOtro(i)?' · <span style="color:#f87171">🗺️ de un estado que la pregunta no menciona</span>':''}${i.derogado?' · <span style="color:#fbbf24">derogado</span>':''}</li>`).join('')
   }</ul><p class="muted" style="font-size:11px;margin:2px 0">Pasa el ratón sobre una cita para ver dónde aparece en la respuesta.</p></details>`;
 }
 // Mismas métricas que citations.aggregate(), sobre un subconjunto de resultados.
@@ -72,7 +81,7 @@ function citAgg(rs){
   const n = t.en_contexto+t.memoria+t.cruzada+t.inexistente;
   const ap = ok.filter(x=>x.citations.other_states!=null);
   return {cit_n: n, cit_unknown: t.sin_ley, cit_context: n?t.en_contexto/n:null, cit_memory: n?t.memoria/n:null,
-          cit_cross: n?t.cruzada/n:null, cit_missing: t.inexistente,
+          cit_cross: n?t.cruzada/n:null, cit_missing: t.inexistente, cit_unsupported: n?(t.memoria+t.cruzada+t.inexistente)/n:null,
           other_state_n: ap.length, other_state_rate: ap.length ? ap.filter(x=>x.citations.other_states.length).length/ap.length : null};
 }
 // Score medio y % que pasa por dificultad, sobre los resultados sin error.
@@ -488,8 +497,8 @@ async function loadBenchRuns(){
     <th title="promedio del score por pregunta">score</th><th title="% de preguntas con todos los must y ningún must_not">pasan</th>
     <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th>
     <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th>
-    <th title="🧾 Citas sin fuente: % de los artículos citados que NO venían en el contexto (de memoria + atribución cruzada) — sin LLM">📎 sin fuente</th>
-    <th title="🧾 Citas a artículos que no existen en el corpus (alucinación) — sin LLM">🔴 inexist.</th>
+    <th title="🧾 Sin respaldo en los documentos: % de los artículos que cita el LLM que NO salen de los documentos del buscador = 🔴 inventados + 🟡 sin fundamento + 🟠 ley mal atribuida. Sin LLM.">🧾 sin respaldo</th>
+    <th title="🔴 Artículos inventados: el LLM citó un artículo que no existe en la base (alucinación clásica). Sin LLM.">🔴 inventados</th>
     <th title="🗺️ % de respuestas que citan artículos de un código estatal que la pregunta no menciona (solo preguntas que mencionan un estado) — sin LLM">🗺️ otro edo.</th><th>s/preg</th>
     <th title="Preguntas con revisión humana">✍️</th><th></th></tr>`+
     runs.map(r=>{ const m=r.metrics||{}; return `<tr class="clk ${r.id===sel?'sel':''}" onclick="showBenchRun(${r.id})">
@@ -500,7 +509,7 @@ async function loadBenchRuns(){
       <td class="sc" style="background:${scoreColor(m.score)}">${pct(m.score)}</td>
       <td class="sc">${pct(m.pass_rate)}</td><td class="sc">${pct(m.must_coverage)}</td>
       <td class="sc">${m.violations??'—'}</td><td class="sc">${pct(m.retrieval_recall)}</td>
-      <td class="sc">${m.cit_n!=null ? pct((m.cit_memory||0)+(m.cit_cross||0)) : '<span class="muted">—</span>'}</td>
+      <td class="sc">${m.cit_n!=null ? pct(citSinRespaldo(m)) : '<span class="muted">—</span>'}</td>
       <td class="sc"${m.cit_missing?' style="color:#f87171;font-weight:700"':''}>${m.cit_n!=null ? m.cit_missing : '<span class="muted">—</span>'}</td>
       <td class="sc">${m.other_state_rate!=null ? pct(m.other_state_rate) : '<span class="muted">—</span>'}</td><td class="sc">${m.avg_seconds??'—'}</td>
       <td class="sc">${r.reviewed ? `${r.reviewed}/${r.done}` : '<span class="muted">—</span>'}</td>
@@ -627,7 +636,7 @@ const DFILTERS = [
   ['noret', '🔎 No trajo el artículo', x=>!x.error && x.retrieval && x.retrieval.hit < x.retrieval.attainable],
   ['retfail', '🔎✓ pero no pasa', x=>!x.error && !x.passed && x.retrieval && x.retrieval.attainable && x.retrieval.hit >= x.retrieval.attainable],
   ['otroedo', '🗺️ Cita otro estado', x=>!x.error && x.citations && (x.citations.other_states||[]).length>0],
-  ['sinfuente', '🧾 Cita sin fuente', x=>!x.error && x.citations && ['memoria','cruzada','inexistente'].some(k=>(x.citations.counts||{})[k])],
+  ['sinfuente', '🧾 Cita sin respaldo', x=>!x.error && x.citations && ['memoria','cruzada','inexistente'].some(k=>(x.citations.counts||{})[k])],
   ['facil', 'Fácil', x=>qDiff(x.question_id)==='facil'],
   ['mediano', 'Mediano', x=>qDiff(x.question_id)==='mediano'],
   ['dificil', 'Difícil', x=>qDiff(x.question_id)==='dificil'],
@@ -694,16 +703,22 @@ function renderBenchDetail(){
       ${card('cobertura de must', pct(m.must_coverage))}
       ${card('violaciones must_not', m.violations??'—')}
       ${m.retrieval_recall!=null ? card('artículos recuperados 🔎', pct(m.retrieval_recall), `${pct(m.retrieval_full)} de las preguntas con todos`) : ''}
-      ${m.cit_n!=null ? `<div class="card" title="Sin LLM: cada artículo citado se busca en el corpus y en el contexto que vio el LLM (ver ❔ ¿Cómo se califica?)"><h3>🧾 citas verificadas</h3>
-          <div class="m"><span>${CIT.en_contexto[0]} en el contexto</span><b>${pct(m.cit_context)}</b></div>
-          <div class="m" title="${attr(CIT.memoria[2])}"><span>${CIT.memoria[0]} de memoria</span><b>${pct(m.cit_memory)}</b></div>
-          <div class="m" title="${attr(CIT.cruzada[2])}"><span>${CIT.cruzada[0]} atribución cruzada</span><b>${pct(m.cit_cross)}</b></div>
-          <div class="m" title="${attr(CIT.inexistente[2])}"><span>${CIT.inexistente[0]} inexistentes</span><b${m.cit_missing?' style="color:#f87171"':''}>${m.cit_missing}</b></div>
-          <div class="muted" style="font-size:11px">${m.cit_n} citas clasificadas · ${m.cit_unknown} sin ley identificable${m.cit_derogated?` · ${m.cit_derogated} a artículos derogados`:''}</div></div>`
-        : (r.status!=='running' && r.artifact_key ? `<div class="card"><h3>🧾 citas verificadas</h3><p class="muted" style="font-size:12px;margin:4px 0">Corrida anterior a la verificación de citas.</p><button class="ghost" onclick="calcCitations(${r.id})">🧾 Calcular ahora</button></div>` : '')}
+      ${m.cit_n!=null ? (()=>{ const ln = (k, v, red) => `<div class="m" title="${attr(CIT[k][3])}"><span>${CIT[k][0]} ${CIT[k][1]}</span><b${red?' style="color:#f87171"':''}>${v}</b></div>
+            <div class="muted" style="font-size:11px;margin:-2px 0 4px 22px">${CIT[k][2]}</div>`;
+          return `<div class="card" style="min-width:300px"><h3>🧾 ¿De dónde salen los artículos que cita el LLM?</h3>
+          <div class="muted" style="font-size:11px;margin-bottom:6px">Para cada artículo que cita el LLM (Gemma) se revisa, sin otro LLM, si existe en la base y si venía en los documentos que trajo el buscador.</div>
+          <div class="m" title="Inventados + sin fundamento + ley mal atribuida"><span><b>🧾 sin respaldo en los documentos</b></span><b style="font-size:18px">${pct(citSinRespaldo(m))}</b></div>
+          <div class="muted" style="font-size:11px;margin:-2px 0 6px 22px">el artículo no sale de los documentos: suma de los tres de abajo</div>
+          ${ln('inexistente', m.cit_missing, m.cit_missing)}${ln('memoria', pct(m.cit_memory))}${ln('cruzada', pct(m.cit_cross))}
+          <hr style="border:0;border-top:1px solid #374151;margin:6px 0">
+          ${ln('en_contexto', pct(m.cit_context))}
+          <div class="muted" style="font-size:11px;margin-top:4px">${m.cit_n} artículos revisados · ${m.cit_unknown} sin ley identificable (no se pudieron revisar)${m.cit_derogated?` · ${m.cit_derogated} a artículos derogados`:''}</div>
+          <div class="muted" style="font-size:11px;margin-top:4px">⚠️ «Con respaldo» no significa «del estado correcto»: un artículo del Edomex que trajo el buscador cuenta aquí como respaldado aunque la pregunta sea de la CDMX. Eso se mide en 🗺️ cita otro estado.</div></div>`; })()
+        : (r.status!=='running' && r.artifact_key ? `<div class="card"><h3>🧾 ¿De dónde salen los artículos que cita el LLM?</h3><p class="muted" style="font-size:12px;margin:4px 0">Corrida anterior a la verificación de citas.</p><button class="ghost" onclick="calcCitations(${r.id})">🧾 Calcular ahora</button></div>` : '')}
       ${m.other_state_rate!=null ? `<div class="card" title="Solo preguntas que mencionan al menos un estado"><h3>🗺️ cita otro estado</h3>
           <div style="font-size:22px;font-weight:700">${pct(m.other_state_rate)}</div>
           <div class="muted" style="font-size:12px">de ${m.other_state_n} respuestas (conteo sin LLM)</div>
+          <div class="muted" style="font-size:11px;margin-top:4px">La pregunta dice un estado y el LLM cita artículos (reales, con su ley correcta) del código penal de OTRO estado.</div>
           ${m.other_state_judge_rate!=null ? `<div class="m" style="margin-top:4px"><span>según el juez</span><b>${pct(m.other_state_judge_rate)}</b></div>
           <div class="m" title="% de preguntas donde el conteo sin LLM y el juez coinciden"><span>acuerdo con el juez</span><b>${pct(m.other_state_agreement)}</b></div>` : ''}</div>` : ''}
       ${(()=>{ const st = (BENCH.reviews||{}).stats||{}; if(!st.n_reviews) return '';
@@ -961,8 +976,9 @@ function renderCompare(){
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
     <tr><td><b>score medio</b>${partial?` <span class="muted" style="font-size:11px">(${common.length} comunes)</span>`:''}</td>${runs.map(r=>`<td class="sc" style="background:${scoreColor(met(r).score)}">${pct(met(r).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
     ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}${mrow('🔎 artículos recuperados', m=>pct(m.retrieval_recall))}
-    ${runs.some(r=>(r.metrics||{}).cit_n!=null) ? mrow('🧾 citas en el contexto', m=>m.cit_n!=null?pct(m.cit_context):'—')+mrow('🟡 citas de memoria', m=>m.cit_n!=null?pct(m.cit_memory):'—')
-      +mrow('🟠 atribución cruzada', m=>m.cit_n!=null?pct(m.cit_cross):'—')+mrow('🔴 citas inexistentes', m=>m.cit_n!=null?m.cit_missing:'—') : ''}
+    ${runs.some(r=>(r.metrics||{}).cit_n!=null) ? mrow('🧾 sin respaldo en los documentos', m=>m.cit_n!=null?pct(citSinRespaldo(m)):'—')
+      +mrow('&nbsp;&nbsp;🔴 inventados', m=>m.cit_n!=null?m.cit_missing:'—')+mrow('&nbsp;&nbsp;🟡 sin fundamento', m=>m.cit_n!=null?pct(m.cit_memory):'—')
+      +mrow('&nbsp;&nbsp;🟠 ley mal atribuida', m=>m.cit_n!=null?pct(m.cit_cross):'—') : ''}
     ${runs.some(r=>(r.metrics||{}).other_state_rate!=null) ? mrow('🗺️ cita otro estado', m=>m.other_state_rate!=null?pct(m.other_state_rate):'—') : ''}
     ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(resOf(r))[d]); if(!st.some(Boolean)) return '';
       return `<tr><td><b>score ${diffTag(d)}</b></td>${st.map(x=>`<td class="sc" style="background:${scoreColor(x&&x.score)}">${x?pct(x.score):'—'}</td>`).join('')}${two?'<td></td>':''}</tr>`; }).join('')}`+
