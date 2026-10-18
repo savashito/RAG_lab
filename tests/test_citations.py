@@ -56,9 +56,15 @@ def test_no_toma_la_ley_de_la_linea_siguiente():
                  'Artículo 181 QUINTUS.') == [('CPF', '199 Octies'), ('CDMX', '181 QUINTUS')]
 
 
+INTRO_DOS = 'Para responder, separo la información de la Ciudad de México y de Querétaro.\n\n'
+
+
 def test_comparacion_no_es_la_ley_del_articulo():
-    assert pares('Sobre la posesión: Al igual que en la CDMX, el **Artículo 201** menciona que…') == [(None, '201')]
-    assert pares('El fundamento principal es el Artículo 161: Al igual que en la CDMX, se establece…') == [(None, '161')]
+    # El ejemplo original: dentro de la sección de Querétaro, la CDMX solo es comparación → Querétaro (encabezado).
+    t = INTRO_DOS + '### 2. En Querétaro\n\n*   Sobre la posesión: Al igual que en la CDMX, el **Artículo 201** menciona que…'
+    assert pares(t) == [('Querétaro', '201')]
+    # Sin encabezado que lo resuelva y con dos leyes al inicio: no se adivina.
+    assert pares(INTRO_DOS + 'El fundamento principal es el Artículo 161: Al igual que en la CDMX, se establece…') == [(None, '161')]
 
 
 def test_referencias_ambiguas_o_que_no_son_leyes():
@@ -69,7 +75,7 @@ def test_referencias_ambiguas_o_que_no_son_leyes():
 
 
 def test_otra_oracion_no_cuenta():
-    assert pares('…diferente al miembro viril (Artículo 273, segundo párrafo). Finalmente, el **Código Penal '
+    assert pares(INTRO_DOS + '…diferente al miembro viril (Artículo 273, segundo párrafo). Finalmente, el **Código Penal '
                  'Federal** define la cópula') == [(None, '273')]
 
 
@@ -160,3 +166,62 @@ def test_ley_que_no_es_del_corpus_no_hereda_la_anterior():
 def test_mencion_suelta_de_articulo_ya_citado_no_se_repite():
     assert pares('Según el artículo 290 del Código Penal del Estado de México… Además, el Artículo 290 establece…') == \
         [('CPEM', '290')]
+
+
+def test_encabezados():
+    t = ('Basado en el **Código Penal de la Ciudad de México**, aquí te explico:\n\n### 1. ¿Qué significa?\n'
+         '*   El **Artículo 201 BIS** dice…\n')
+    assert pares(t) == [('CDMX', '201 BIS')]                     # inicio del texto
+    t = INTRO_DOS + '### 2. En el Estado de Querétaro\n\n*   **La base:** El **Artículo 202** establece…'
+    assert pares(t) == [('Querétaro', '202')]                    # título de sección
+    t = INTRO_DOS + '*   **Código Penal del Estado de México**:\n    *   **Artículo 269**: hostigamiento.'
+    assert pares(t) == [('CPEM', '269')]                         # línea de la que cuelga la lista
+    # Encabezado con una ley que no está en el corpus: se detiene (no sube al Código Penal del inicio).
+    t = ('Basado en el **Código Penal del Estado de México**:\n\nSegún la **Ley para la Prevención y Erradicación de la '
+         'Violencia Familiar en el Estado de México**:\n\n*   **Protección inmediata:** medidas de protección (Art. 17).')
+    assert pares(t) == [(None, '17')]
+    # La oración dice que es otra ley: no se sube al encabezado.
+    t = 'Basado en el **Código Penal del Estado de México**:\n\n*   El **Artículo 4.397 del Código Civil del Estado de México** define…'
+    assert pares(t) == [(None, '4')]
+
+
+def test_institucion_no_es_la_ley():
+    assert pares(INTRO_DOS + 'atención gratuita por parte de las dependencias del Gobierno del Estado de México (Art. 14).') == [(None, '14')]
+
+
+# ── validación contra la clasificación manual de la corrida 44 ──────────────────
+
+def evaluar_fixture(nombre='citas_run44.json'):
+    """[(tag, etiqueta esperada, ley de citations, fragmento)] de cada mención del fixture."""
+    import json, re
+    d = json.load(open(Path(__file__).parent / 'fixtures' / nombre))
+    out = []
+    for c in d['casos']:
+        marcado = c['texto_marcado']
+        texto = re.sub(r'⟦[AH]\d+⟧', '', marcado)
+        off = 0
+        for mm in re.finditer(r'⟦([AH]\d+)⟧', marcado):
+            pos = mm.start() - off
+            off += len(mm.group(0))
+            m = cit.ART_LIST_RE.match(texto, pos)
+            ley = cit.ley_de(texto, m)
+            out.append((mm.group(1), c['etiquetas'][mm.group(1)], (ley or {}).get('label'), texto[max(0, pos - 60):pos + 40]))
+    return out
+
+
+def test_corrida_44_contra_clasificacion_manual():
+    res = evaluar_fixture()
+    mal = [r for r in res if (r[2] is not None) and (r[1] == 'OTRA' or r[2] != r[1])]
+    sin = [r for r in res if r[2] is None and r[1] != 'OTRA']
+    assert len(res) == 133
+    assert len(mal) <= 1, mal          # precisión: casi nunca asigna una ley equivocada
+    assert len(sin) <= 10, sin         # cobertura: ≥ 92 % de las menciones con ley del corpus
+
+
+def test_muestra_externa_contra_clasificacion_manual():
+    res = evaluar_fixture('citas_holdout.json')
+    mal = [r for r in res if (r[2] is not None) and (r[1] == 'OTRA' or r[2] != r[1])]
+    sin = [r for r in res if r[2] is None and r[1] != 'OTRA']
+    assert len(res) == 66
+    assert len(mal) <= 1, mal
+    assert len(sin) <= 3, sin

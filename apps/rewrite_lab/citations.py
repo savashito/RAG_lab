@@ -15,9 +15,9 @@ el contexto que vio el LLM:
 Además: `otros_estados` = artículos citados de un código ESTATAL que la pregunta no menciona (si la pregunta
 menciona al menos un estado). Es la métrica de jurisdicción: «dije CDMX y me citó el Edomex».
 
-Emparejamiento artículo→ley (ver `ley_de`), depurado revisando a mano las respuestas del estudio de usuarios
-(06_evaluation/citas_2026-10-17): solo se acepta una ley de la MISMA oración o, en tablas, la del encabezado de la
-columna; ante la duda la cita queda `sin_ley` (precisión antes que cobertura). No verifica que lo que la respuesta
+Emparejamiento artículo→ley (ver `ley_de`): la ley de la MISMA oración (en tablas, la del encabezado de la columna);
+si la oración no la dice, la del encabezado de la sección o del inicio del texto. Ante la duda la cita queda `sin_ley`.
+Validado contra una clasificación manual a ciegas de los 31 textos de la corrida 44 (tests/fixtures/citas_run44.json). No verifica que lo que la respuesta
 DICE del artículo sea correcto: eso sigue siendo cosa del juez o de la revisión humana.
 """
 
@@ -36,14 +36,15 @@ _SUF = (r'(?:\s*(?:o\b|bis\b|ter\b|qu[aá]ter\b|quintus\b|quinquies\b|sextus\b|s
         r'octies\b|nonies\b|decies\b))?(?:\s+\d\b)?')
 ART_LIST_RE = re.compile(r'(?i)\bart(?:[íi]culos?|s?\.)\s*(\d+' + _SUF + r'(?:\s*(?:,|\by\b|\ba[l]?\b)\s*\d+' + _SUF + r')*)')
 ART_ONE_RE = re.compile(r'(?i)\d+' + _SUF)
-_FRAC = r'(?:,?\s*(?:fracci[oó]n|frac\.|apartado|inciso|p[aá]rrafo)[^.;()\n]{0,40}?)?'
+_FRAC = (r'(?:,?\s*[*_]*(?:fracci[oó]n|frac\.|fracciones|apartado|inciso|p[aá]rrafo)\s+[\w°º]+(?:\s*(?:,|y)\s*[\w°º]+)*'
+         r'(?:\s+(?:primero|segundo|tercero|cuarto|quinto))?[*_]*)*')
 # Entre el artículo y la ley que lo sigue: «del/de la …» (quizá tras fracción/párrafo) o una coma («Art. 20, frac. I,
-# CNPP»; «Art. 107, Código Penal CDMX»); hasta 45 caracteres del nombre de la ley antes del alias reconocido.
-_CONECTOR = re.compile(r'(?i)^\.?[\s*_]*' + _FRAC + r'[\s,*_]*(?:(?:del|de la|de los|de)\s[^.;()\n]{0,45}|,\s*[*_]*(?:[^.;()\n]{0,45}\s)?|\s*[*_]*)$')
+# CNPP»; «Art. 107, Código Penal CDMX»); hasta 90 caracteres del nombre de la ley antes del alias reconocido.
+_CONECTOR = re.compile(r'(?i)^\.?[\s*_]*' + _FRAC + r'[\s,*_]*(?:(?:del|de la|de los|de)\s[^.;()\n]{0,90}|,\s*[*_]*(?:[^.;()\n]{0,45}\s)?|\s*[*_]*)$')
 # «del citado código», «del Código Penal local»: no se sabe cuál.
 _AMBIGUA = re.compile(r'(?i)^\.?[\s*_,]*' + _FRAC + r'[\s,*_]*(?:del|de la|de este|de ese)\s+(?:citad[oa]|mism[oa]|c[oó]digo local|c[oó]digo penal local|ordenamiento|ley local)')
 # «Artículo 12 de *Lecciones de Derecho Penal*»: «de …» que no es una ley del corpus.
-_DE_ALGO = re.compile(r'(?i)^\.?[\s*_,]*' + _FRAC + r'[\s,*_]*(?:del|de la|de los|de)\s+[*_]*[A-ZÁÉÍÓÚ]')
+_DE_ALGO = re.compile(r'(?i)^\.?[\s*_,]*' + _FRAC + r'[\s,*_]*(?:del|de la|de los|de)\s+[*_]*(?-i:[A-ZÁÉÍÓÚ])')
 _OTRA_LEY = re.compile(r'(?i)\b(?:del|de la|de los)\s+[*_]*(?:c[oó]digo|ley|constituci[oó]n|reglamento)\b')
 _FIN_ORACION = re.compile(r'(?<!\bart)(?<!\barts)(?<!\bfrac)(?<!\bNo)[.;]\**\s+(?=[*_¿(]*[A-ZÁÉÍÓÚ])')
 # «Al igual que en la CDMX, el Artículo 201…»: esa ley es la de la comparación, no la del artículo.
@@ -58,7 +59,12 @@ _DEROGADO = re.compile(r'(?i)^\W*(se deroga|derogad[oa])\b')
 _PENALES = {'CDMX', 'CPEM', 'CPF', 'CNPP', 'Morelos', 'Querétaro'}
 _CABEZA = re.compile(r'(?i)\b(c[oó]digo|ley|constituci[oó]n|reglamento|acuerdo)\b')
 _OTRA_MATERIA = re.compile(r'(?i)civil|procesal|familiar|constituci|armas|amparo|v[ií]ctimas|electoral|trabajo|laboral|'
-                           r'fiscal|salud|ambient|federal de procedimientos|tr[aá]nsito|municipal')
+                           r'fiscal|salud|ambient|federal de procedimientos|tr[aá]nsito|municipal|prevenci|erradicaci|'
+                           r'violencia familiar|acceso de las mujeres')
+# «las dependencias del Gobierno del Estado de México», «la Fiscalía General del Estado de Querétaro»: el alias nombra
+# una institución del estado, no su código penal.
+_INSTITUCION = re.compile(r'(?i)\b(gobierno|fiscal[ií]a(?: general)?|poder judicial|congreso|secretar[ií]a[^,.;\n]{0,40}|'
+                          r'tribunal(?: superior)?(?: de justicia)?|ayuntamiento|defensor[ií]a(?: p[uú]blica)?)\s+(?:del?|de la)\s*$')
 
 
 def _leyes(t: str) -> list[dict]:
@@ -68,7 +74,7 @@ def _leyes(t: str) -> list[dict]:
         if h['label'] in _PENALES:
             cabezas = list(_CABEZA.finditer(t, max(0, h['start'] - 80), h['start'] + 1))
             nombre = t[cabezas[-1].start():h['start'] + len(h['match'])] if cabezas else h['match']
-            if _OTRA_MATERIA.search(nombre):
+            if _OTRA_MATERIA.search(nombre) or (not cabezas and _INSTITUCION.search(t[max(0, h['start'] - 60):h['start']])):
                 continue
         out.append(h)
     return out
@@ -98,9 +104,81 @@ def _ley_en_tabla(texto: str, ini_l: int, pos: int):
     return h[0] if h else None
 
 
+_VINETA = re.compile(r'^\s*(?:[*-]|\d+\.)\s')
+# Nombre de una ley (con mayúscula): «Ley General de Acceso…», «Código Civil…»; no la palabra genérica «la ley».
+_MISMO = re.compile(r'(?i)^[\s*_,]*' + _FRAC + r'[\s,*_]*(?:del|de ese|de este)\s+(?:mismo|citado)\s+(?:c[oó]digo|ordenamiento)')
+_LOCAL = re.compile(r'(?i)^[\s*_,]*' + _FRAC + r'[\s,*_]*del\s+c[oó]digo\s+penal\s+(?:local|correspondiente|estatal|de\s+(?:esa|dicha)\s+entidad)')
+_ESTE_CODIGO = re.compile(r'(?i)\b(?:este|dicho|ese)\s+(?:c[oó]digo|ordenamiento)\b[^.\n]*\b(?:su|el|los)\s+[*_]*$')
+_TIPO_LEY = re.compile(r'\b(?:Ley|LEY|C[oó]digo|CÓDIGO|Constituci[oó]n|Reglamento)\s+(?:General|Federal|Nacional|Org[aá]nica|'
+                       r'Civil|Penal|Procesal|Pol[ií]tica|para|de|del|contra|sobre)\b')
+
+
+def _ley_por_encabezado(texto: str, pos: int):
+    """Ley del texto que «encabeza» al artículo, si la oración no la dice: subiendo línea por línea, el primer título
+    markdown («### En Querétaro»), línea en negritas o línea de la que cuelga la lista («**Código Penal del Estado de
+    México**:») que nombre exactamente UNA ley del corpus; si no hay, la única ley que nombre el inicio del texto
+    («Basado en el **Código Penal de la Ciudad de México**…»). Si el encabezado nombra una ley que NO está en el
+    corpus («Según la Ley para la Prevención… del Estado de México:») o varias, se detiene: None."""
+    lineas = texto[:pos].split('\n')
+    actual = lineas[-1]
+    sangria = len(actual) - len(actual.lstrip())
+    for ln in reversed(lineas[:-1]):
+        s = ln.strip()
+        if not s:
+            continue
+        es_titulo = (s.startswith('#') or (s.startswith('**') and s.rstrip(':').endswith('**'))
+                     or re.match(r'^[*-]\s+\*\*[^*]+\*\*\s*:?\s*$', s))
+        # Línea de la que cuelga la lista: termina en «:» y el artículo está más sangrado, o está en una viñeta
+        # justo debajo de un párrafo que no es viñeta («Según la Ley …:» + «*   … (Art. 17)»).
+        es_padre = s.endswith(':') and ((len(ln) - len(ln.lstrip())) < sangria
+                                         or (_VINETA.match(actual) and not _VINETA.match(ln)))
+        if es_titulo or es_padre:
+            leyes = _leyes(s)
+            if len({h['source'] for h in leyes}) == 1:
+                return leyes[0]
+            if leyes or _TIPO_LEY.search(s):
+                return None
+    leyes = _leyes(texto[:700])
+    return leyes[0] if len({h['source'] for h in leyes}) == 1 else None
+
+
+def _senal_de_otra_ley(texto: str, m: re.Match) -> bool:
+    """La oración del artículo dice que es de otra ley o de una referencia que no se puede resolver («del citado
+    código», «de la misma Ley», «del Código Civil…», «Ley General de Acceso… (Artículo 13)»): no se sube al encabezado."""
+    fin = texto.find('\n', m.end())
+    tramo = texto[m.end():fin if fin > 0 else len(texto)][:200]
+    antes = texto[texto.rfind('\n', 0, m.start()) + 1:m.start()]
+    return bool(_AMBIGUA.match(tramo) or _OTRA_LEY.search(tramo[:80])
+                or (_DE_ALGO.match(tramo) and not _leyes(tramo[:90]))
+                or (re.search(_TIPO_LEY.pattern + r'[^.\n]{0,120}$', antes) and not _leyes(antes[-150:])))
+
+
 def ley_de(texto: str, m: re.Match):
-    """Ley de la cita `m` (un match de ART_LIST_RE), o None si no se puede saber:
-    (1) la nombrada justo después en la misma oración («art. 179 del Código Penal de la CDMX»);
+    """Ley de la cita `m` (un match de ART_LIST_RE), o None si no se puede saber: la de su oración (ver
+    `_ley_en_oracion`); si la oración no la dice y no indica que es otra ley, la del encabezado (`_ley_por_encabezado`)."""
+    ley = _ley_en_oracion(texto, m)
+    if ley:
+        return ley
+    tramo = texto[m.end():m.end() + 60]
+    ini_l = texto.rfind('\n', 0, m.start()) + 1
+    oracion = texto[ini_l:m.start()]
+    cortes = [x.end() for x in _FIN_ORACION.finditer(oracion)]
+    oracion = oracion[cortes[-1]:] if cortes else oracion
+    if _LOCAL.match(tramo):   # «del Código Penal local / correspondiente»: el estado nombrado antes en la oración
+        en_oracion = _leyes(oracion)
+        return en_oracion[-1] if len({h['source'] for h in en_oracion}) == 1 else None
+    # «del mismo código», «de ese mismo código», «este código contempla… en su artículo 131»: la última ley nombrada
+    # antes en el texto.
+    if _MISMO.match(tramo) or _ESTE_CODIGO.search(oracion):
+        antes = _leyes(texto[:m.start()])
+        return antes[-1] if antes else None
+    if _senal_de_otra_ley(texto, m):
+        return None
+    return _ley_por_encabezado(texto, m.start())
+
+
+def _ley_en_oracion(texto: str, m: re.Match):
+    """(1) la ley nombrada justo después en la misma oración («art. 179 del Código Penal de la CDMX»);
     (2) la última nombrada antes en la misma oración («**Código Penal de Querétaro:** Artículos 167 Bis y 167 Ter»),
         salvo que sea la de una comparación; (3) la primera después en la misma oración; en tablas, la de la columna."""
     ini_l = texto.rfind('\n', 0, m.start()) + 1
