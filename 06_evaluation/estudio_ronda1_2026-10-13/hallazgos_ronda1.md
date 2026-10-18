@@ -534,6 +534,16 @@ saber, «sin ley identificable» y no se clasifica) y se verifica contra el corp
   citas clasificadas, 1 inexistente** (corrida #13 del 1-oct). La versión de la página compara el contexto también
   por (ley, artículo), porque los ids de los chunks cambian al reingestar; por eso sus cifras difieren un poco de la
   tabla de arriba (p. ej. run 43: 98 % en contexto, 0 % de memoria, 1.6 % cruzada; run 44: 98 %, 2.4 %, 0 %).
+- **Actualización 18-oct (emparejamiento artículo→ley mejorado y validado):** el script ahora también toma la ley del
+  encabezado de la sección, del párrafo o del inicio del texto cuando la oración no la dice. Validado contra una
+  clasificación manual a ciegas (Claude): corrida 44 completa (31 textos, 133 menciones: antes 72 bien / 60 sin ley /
+  1 mal) y una muestra externa al azar de las corridas 37–43 (12 textos, 66 menciones: 63 / 2 / 1 antes del último
+  ajuste). Tras revisar una por una todas las atribuciones cruzadas de las corridas 33–44, quedan 7, de ellas 4 son
+  **errores reales de Gemma** (35/286 «167 SEXTUS del Código Penal de la Ciudad de México», que es de Querétaro;
+  40/34 «Artículo 7 del Código Penal Federal» con solo el art. 7 del Edomex en el contexto; 41/19 «Art. 265» del CPF
+  presentado en la sección del Estado de México; 42/17 «Artículo 266 Bis» del CPF presentado como del Código Penal de
+  la CDMX). Totales en las 41 corridas: **5 046 citas clasificadas, 479 sin ley identificable (9 %), 1 inexistente**.
+  Corridas 43/44 (jurisdicción): en contexto 98.6 % / 100 %, de memoria 0 % / 0 %, cruzadas 1.4 % / 0 %.
 - **Ninguna cita a un artículo inexistente** en ~1 200 citas verificadas: con este RAG el modelo **no inventa
   números de artículo**.
 - **≈ 4 % de las citas no venían en el contexto** (el modelo las tomó de su memoria, aunque el prompt pide usar solo
