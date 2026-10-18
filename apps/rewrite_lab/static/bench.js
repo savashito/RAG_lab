@@ -498,8 +498,8 @@ async function loadBenchRuns(){
     <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th>
     <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th>
     <th title="🧾 Sin respaldo en los documentos: % de los artículos que cita el LLM que NO salen de los documentos del buscador = 🔴 inventados + 🟡 sin fundamento + 🟠 ley mal atribuida. Sin LLM.">🧾 sin respaldo</th>
-    <th title="🔴 Artículos inventados: el LLM citó un artículo que no existe en la base (alucinación clásica). Sin LLM.">🔴 inventados</th>
-    <th title="🗺️ % de respuestas que citan artículos de un código estatal que la pregunta no menciona (solo preguntas que mencionan un estado) — sin LLM">🗺️ otro edo.</th><th>s/preg</th>
+    <th title="🔴 Artículos inventados: el LLM citó un artículo que no existe en la base (alucinación clásica). Con regex y la base de datos, sin LLM.">🔴 inventados</th>
+    <th title="🗺️ % de respuestas que citan artículos de un código estatal que la pregunta no menciona (solo preguntas que mencionan un estado) — conteo con regex, sin LLM">🗺️ otro edo.</th><th>s/preg</th>
     <th title="Preguntas con revisión humana">✍️</th><th></th></tr>`+
     runs.map(r=>{ const m=r.metrics||{}; return `<tr class="clk ${r.id===sel?'sel':''}" onclick="showBenchRun(${r.id})">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="bench-cmp" value="${r.id}" ${checked.has(r.id)?'checked':''}></td><td>${r.id}</td>
@@ -706,7 +706,7 @@ function renderBenchDetail(){
       ${m.cit_n!=null ? (()=>{ const ln = (k, v, red) => `<div class="m" title="${attr(CIT[k][3])}"><span>${CIT[k][0]} ${CIT[k][1]}</span><b${red?' style="color:#f87171"':''}>${v}</b></div>
             <div class="muted" style="font-size:11px;margin:-2px 0 4px 22px">${CIT[k][2]}</div>`;
           return `<div class="card" style="min-width:300px"><h3>🧾 ¿De dónde salen los artículos que cita el LLM?</h3>
-          <div class="muted" style="font-size:11px;margin-bottom:6px">Para cada artículo que cita el LLM (Gemma) se revisa, sin otro LLM, si existe en la base y si venía en los documentos que trajo el buscador.</div>
+          <div class="muted" style="font-size:11px;margin-bottom:6px">Para cada artículo que cita el LLM (Gemma) se revisa con regex y la base de datos (sin otro LLM) si existe y si venía en los documentos que trajo el buscador.</div>
           <div class="m" title="Inventados + sin fundamento + ley mal atribuida"><span><b>🧾 sin respaldo en los documentos</b></span><b style="font-size:18px">${pct(citSinRespaldo(m))}</b></div>
           <div class="muted" style="font-size:11px;margin:-2px 0 6px 22px">el artículo no sale de los documentos: suma de los tres de abajo</div>
           ${ln('inexistente', m.cit_missing, m.cit_missing)}${ln('memoria', pct(m.cit_memory))}${ln('cruzada', pct(m.cit_cross))}
@@ -717,10 +717,12 @@ function renderBenchDetail(){
         : (r.status!=='running' && r.artifact_key ? `<div class="card"><h3>🧾 ¿De dónde salen los artículos que cita el LLM?</h3><p class="muted" style="font-size:12px;margin:4px 0">Corrida anterior a la verificación de citas.</p><button class="ghost" onclick="calcCitations(${r.id})">🧾 Calcular ahora</button></div>` : '')}
       ${m.other_state_rate!=null ? `<div class="card" title="Solo preguntas que mencionan al menos un estado"><h3>🗺️ cita otro estado</h3>
           <div style="font-size:22px;font-weight:700">${pct(m.other_state_rate)}</div>
-          <div class="muted" style="font-size:12px">de ${m.other_state_n} respuestas (conteo sin LLM)</div>
+          <div class="muted" style="font-size:12px">de ${m.other_state_n} respuestas · <b>conteo con regex</b> (sin LLM)</div>
           <div class="muted" style="font-size:11px;margin-top:4px">La pregunta dice un estado y el LLM cita artículos (reales, con su ley correcta) del código penal de OTRO estado.</div>
-          ${m.other_state_judge_rate!=null ? `<div class="m" style="margin-top:4px"><span>según el juez</span><b>${pct(m.other_state_judge_rate)}</b></div>
-          <div class="m" title="% de preguntas donde el conteo sin LLM y el juez coinciden"><span>acuerdo con el juez</span><b>${pct(m.other_state_agreement)}</b></div>` : ''}</div>` : ''}
+          ${m.other_state_judge_rate!=null ? `<div class="m" style="margin-top:4px"><span>según el juez (LLM)</span><b>${pct(m.other_state_judge_rate)}</b></div>
+          <div class="muted" style="font-size:11px;margin:-2px 0 4px 0">el juez (otro LLM) solo lo cuenta si el artículo de otro estado se presenta como aplicable al caso</div>
+          <div class="m"><span>acuerdo regex ↔ juez (LLM)</span><b>${pct(m.other_state_agreement)}</b></div>
+          <div class="muted" style="font-size:11px;margin:-2px 0 0 0">% de preguntas donde el conteo con regex y el juez dicen lo mismo</div>` : ''}</div>` : ''}
       ${(()=>{ const st = (BENCH.reviews||{}).stats||{}; if(!st.n_reviews) return '';
         return `<div class="card" title="Comparado en las mismas preguntas revisadas"><h3>✍️ revisión humana</h3>
           <div class="m"><span>revisadas</span><b>${st.n_questions} de ${r.results.filter(x=>!x.error).length}</b></div>

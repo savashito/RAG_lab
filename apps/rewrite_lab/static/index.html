@@ -641,7 +641,7 @@
      dicen qué artículo necesita la respuesta. En cada corrida se revisa si el chunk de ese artículo llegó al contexto que vio el LLM.
      Así se separa <b>«la búsqueda no lo trajo»</b> (🔎✗, problema de recuperación) de <b>«lo tenía y respondió mal»</b>
      (filtro «🔎✓ pero no pasa», problema de prompt o del modelo). No depende del juez, así que no tiene ruido.</p>
-   <p><b>🧾 ¿De dónde salen los artículos que cita el LLM?</b> (sin otro LLM): para cada artículo que el LLM (Gemma)
+   <p><b>🧾 ¿De dónde salen los artículos que cita el LLM?</b> (con regex y la base de datos, sin otro LLM): para cada artículo que el LLM (Gemma)
      escribe en su respuesta se identifica su ley (la que nombra en la misma oración o, si no, la del encabezado de la sección
      o del inicio del texto) y se revisa si existe en la base y si venía en los documentos que trajo el buscador:</p>
    <ul>
@@ -657,10 +657,11 @@
      que el LLM cita sin que salgan de los documentos. Para quien lee la respuesta los tres se ven igual; se separan porque
      las causas son distintas (inventar es un problema del modelo; citar de memoria suele indicar que el buscador no trajo lo
      necesario). No mide si lo que el LLM dice <i>del</i> artículo es correcto (eso es el juez o la revisión humana).</p>
-   <p><b>🗺️ Cita otro estado</b> (sin LLM): distinto de «ley mal atribuida». Aquí la cita es verdadera (artículo real con su
+   <p><b>🗺️ Cita otro estado</b> (conteo con regex, sin LLM): distinto de «ley mal atribuida». Aquí la cita es verdadera (artículo real con su
      ley correcta), pero de un estado que no se preguntó. En preguntas que mencionan al menos un estado, % de respuestas que citan un
      artículo de un código penal <i>estatal</i> que la pregunta no menciona (el Código Penal Federal, el CNPP y las leyes
-     generales no cuentan). Si el set tiene un error «presenta como aplicable … de otra entidad», se compara con el juez.</p>
+     generales no cuentan). Si el set tiene un error «presenta como aplicable … de otra entidad», se compara con el juez (otro LLM):
+     <b>acuerdo regex ↔ juez</b> = % de preguntas donde los dos dicen lo mismo.</p>
    <p><b>✍️ Revisión humana</b>: en el detalle de una corrida, «✍️ Revisar respuestas» muestra una pregunta a la vez.
      Quien revisa marca cada componente igual que el juez y, si quiere, califica la respuesta de 1 a 5 y deja un comentario.
      El veredicto del juez está <b>oculto</b> (👁 para verlo), para no sesgar. Con eso se calcula el <b>score humano</b> (misma fórmula)
