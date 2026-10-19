@@ -54,6 +54,15 @@ EXTRA = [   # (frase, estados esperados) — escritas para esta prueba, no vista
     ('Me robaron en Cuerna', {'Morelos'}),
 ]
 
+# Rol del lugar: ¿dónde ocurrieron los hechos? (agregado 2026-10-19 tras el caso de Carlos, set 12 de Karen)
+ROLES = [   # (frase, estados de los HECHOS esperados, estados mencionados por otra razón)
+    ('Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.', {'Guanajuato'}, {'Querétaro'}),
+    ('Vivo en Puebla pero me asaltaron en Cuernavaca.', {'Morelos'}, {'Puebla'}),
+    ('Vivo en el Estado de México. En un hospital privado le negaron la atención a mi abuela si no pagábamos antes.', set(), {'Estado de México'}),
+    ('Soy de Oaxaca y estudio en la CDMX; un compañero de clase me amenazó en la escuela.', {'Ciudad de México'}, {'Oaxaca'}),
+    ('Vivo en Toluca y un vecino entró a mi casa sin permiso.', {'Estado de México'}, set()),
+]
+
 def main():
     llm = LlamaClient(url=os.environ.get('LLM_URL', 'http://127.0.0.1:1237'))
     s14 = json.loads((AQUI.parent / 'jurisdiccion_inteligente_2026-10-18' / 'set_jurisdiccion_inteligente.json').read_text())
@@ -71,6 +80,16 @@ def main():
         res_extra = f' · sin estado: {sin_estado}' if sin_estado else ''
         if not bien or sin_estado:
             print(f'{"✓" if bien else "✗"} [{cat}] {texto[:90]}\n    esperado {sorted(esp)} · detectado {sorted(got)}{res_extra}')
+    for texto, hechos, otros in ROLES:
+        ex = jg.extraer_lugares(texto, llm)
+        got_h = {x['estado'] for x in ex['lugares'] if x['estado'] and x.get('rol') == 'hechos'}
+        got_o = {x['estado'] for x in ex['lugares'] if x['estado'] and x.get('rol') == 'otro'} - got_h
+        bien = got_h == hechos and got_o == otros
+        ok.setdefault('rol', []).append(bien)
+        res.append({'fuente': 'rol', 'cat': 'rol', 'texto': texto, 'esperado': [sorted(hechos), sorted(otros)],
+                    'detectado': [sorted(got_h), sorted(got_o)], 'bien': bien, 'lugares': ex['lugares'], 'raw': ex['raw']})
+        if not bien:
+            print(f'✗ [rol] {texto[:90]}\n    hechos esperado {sorted(hechos)} obtuvo {sorted(got_h)} · otros esperado {sorted(otros)} obtuvo {sorted(got_o)}')
     print()
     for cat, v in ok.items():
         print(f'{cat:16s} {sum(v)}/{len(v)}')

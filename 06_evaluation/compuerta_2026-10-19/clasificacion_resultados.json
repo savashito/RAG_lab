@@ -1,0 +1,574 @@
+[
+ {
+  "frase": "Me vendieron un coche por Facebook y nunca me lo entregaron, ¿qué hago?",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Mi exsocio se quedó con el dinero del negocio que le confié.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Me clonaron la tarjeta y sacaron dinero de mi cuenta.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Un compañero de la escuela me pegó y me rompió la nariz.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Mi vecino envenenó a mi perro.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Mi ex se llevó a mis hijos y no me deja verlos.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Un señor me tocó sin mi permiso en el camión.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Me grafitearon la fachada de la casa.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Mi jefe me manda mensajes sexuales y me presiona.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Atropellaron a mi hermano y el conductor huyó.",
+  "tipo": "común",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "¿Cuánto tiempo puede estar detenida una persona antes de que la vea un juez?",
+  "tipo": "procedimiento",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "¿Puedo pedirle al Ministerio Público copia de la carpeta de investigación?",
+  "tipo": "procedimiento",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "¿Qué es una audiencia de vinculación a proceso?",
+  "tipo": "procedimiento",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "Si me acusan de un delito, ¿tengo derecho a un abogado gratis?",
+  "tipo": "procedimiento",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "¿Qué es la reparación del daño para la víctima?",
+  "tipo": "procedimiento",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "Me agarraron con una pistola de uso exclusivo del Ejército, ¿qué pena es?",
+  "tipo": "federal",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": true
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_federal\"}\n```"
+ },
+ {
+  "frase": "Mi tío metió mercancía de contrabando por la aduana.",
+  "tipo": "federal",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": true
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_federal\"}\n```"
+ },
+ {
+  "frase": "Un funcionario del SAT me pidió dinero para no multarme.",
+  "tipo": "federal",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": true
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_federal\"}\n```"
+ },
+ {
+  "frase": "Creo que en un negocio de mi colonia están lavando dinero.",
+  "tipo": "federal",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": true
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_federal\"}\n```"
+ },
+ {
+  "frase": "Me ofrecieron dinero por mi voto en las elecciones federales.",
+  "tipo": "federal",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": true
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_federal\"}\n```"
+ },
+ {
+  "frase": "Detuvieron a mi primo con varios kilos de cocaína en la frontera.",
+  "tipo": "federal",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": true
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_federal\"}\n```"
+ },
+ {
+  "frase": "Me hablan diciendo que tienen a mi hijo y piden un depósito para soltarlo.",
+  "tipo": "ley general",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "frase": "Unos tipos le cobran cuota a mi negocio cada semana.",
+  "tipo": "ley general",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "frase": "Desaparecieron a mi hermano y la policía no hace nada.",
+  "tipo": "ley general",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "frase": "Torturaron a mi hijo en la delegación para que confesara.",
+  "tipo": "ley general",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "frase": "Mi cuñado me pidió prestado el coche y lo vendió sin decirme.",
+  "tipo": "común (nueva)",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Mi expareja publicó en Facebook que soy ladrona y es mentira.",
+  "tipo": "común (nueva)",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "El perro de mi vecino mordió a mi hijo.",
+  "tipo": "común (nueva)",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Me quitaron la bicicleta a punta de cuchillo.",
+  "tipo": "común (nueva)",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Mi hija de 15 años anda con un hombre de 25.",
+  "tipo": "común (nueva)",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Un trabajador se cayó en la obra y murió porque no le dieron equipo de seguridad.",
+  "tipo": "común (nueva)",
+  "esperado": {
+   "depende": true,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "¿Me pueden detener sin una orden de un juez?",
+  "tipo": "procedimiento (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "¿Qué significa que a alguien lo vinculen a proceso?",
+  "tipo": "procedimiento (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "¿Cuánto tarda normalmente un juicio oral?",
+  "tipo": "procedimiento (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "¿Puedo grabar mi declaración ante el Ministerio Público?",
+  "tipo": "procedimiento (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "frase": "Una señora me dio un billete falso en el mercado.",
+  "tipo": "federal (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Mi vecino tiene un taller clandestino de cohetes y pólvora.",
+  "tipo": "federal (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Están talando árboles dentro de una reserva natural protegida.",
+  "tipo": "federal (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Un elemento de la Guardia Nacional me golpeó en un retén.",
+  "tipo": "federal (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": true
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Encontraron a mi prima trabajando contra su voluntad, la tenían encerrada.",
+  "tipo": "ley general (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "frase": "Unos hombres armados se llevaron a mi papá y no sabemos nada de él.",
+  "tipo": "ley general (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "frase": "Me llamaron diciendo que eran de un cártel y que si no pago lastiman a mi familia.",
+  "tipo": "ley general (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "frase": "Golpearon a mi hijo en la patrulla para que firmara una declaración.",
+  "tipo": "ley general (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": true,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "frase": "Me quieren obligar a vender droga en mi colonia o me matan.",
+  "tipo": "ley general (nueva)",
+  "esperado": {
+   "depende": false,
+   "federal": false
+  },
+  "obtenido": {
+   "depende": false,
+   "federal": false
+  },
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ }
+]

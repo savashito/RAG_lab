@@ -8,7 +8,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -19,7 +19,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -30,7 +30,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -41,7 +41,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -52,7 +52,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -63,7 +63,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -74,7 +74,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -85,7 +85,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -96,7 +96,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -107,7 +107,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -118,7 +118,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -129,7 +129,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -146,10 +146,11 @@
   "lugares": [
    {
     "texto": "Ciudad de México",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Ciudad de México\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Ciudad de México\", \"estado\": \"Ciudad de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -166,10 +167,11 @@
   "lugares": [
    {
     "texto": "Ciudad de México",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "otro"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Ciudad de México\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"otro\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -186,10 +188,11 @@
   "lugares": [
    {
     "texto": "Querétaro",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -206,10 +209,11 @@
   "lugares": [
    {
     "texto": "Querétaro",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -226,10 +230,11 @@
   "lugares": [
    {
     "texto": "Estado de México",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Estado de México\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -246,10 +251,11 @@
   "lugares": [
    {
     "texto": "Estado de México",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Estado de México\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -266,10 +272,11 @@
   "lugares": [
    {
     "texto": "Morelos",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Morelos\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Morelos\", \"estado\": \"Morelos\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -286,10 +293,11 @@
   "lugares": [
    {
     "texto": "Morelos",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "otro"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": false\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\",\n      \"rol\": \"otro\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -306,10 +314,11 @@
   "lugares": [
    {
     "texto": "Coyoacán",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Coyoacán\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Coyoacán\", \"estado\": \"Ciudad de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -326,10 +335,11 @@
   "lugares": [
    {
     "texto": "Iztapalapa",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Iztapalapa\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Iztapalapa\", \"estado\": \"Ciudad de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -346,10 +356,11 @@
   "lugares": [
    {
     "texto": "Ecatepec",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Ecatepec\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ecatepec\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -366,10 +377,11 @@
   "lugares": [
    {
     "texto": "Toluca",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Toluca\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Toluca\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -386,10 +398,11 @@
   "lugares": [
    {
     "texto": "Cuernavaca",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuernavaca\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuernavaca\", \"estado\": \"Morelos\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -406,10 +419,11 @@
   "lugares": [
    {
     "texto": "Cuautla",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuautla\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuautla\", \"estado\": \"Morelos\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -426,10 +440,11 @@
   "lugares": [
    {
     "texto": "San Juan del Río",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"San Juan del Río\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"San Juan del Río\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -446,10 +461,11 @@
   "lugares": [
    {
     "texto": "Corregidora",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "otro"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Corregidora\",\n      \"estado\": \"Querétaro\"\n    }\n  ],\n  \"comparar\": false\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Corregidora\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"otro\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -468,14 +484,16 @@
   "lugares": [
    {
     "texto": "Ciudad de México",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    },
    {
     "texto": "Querétaro",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -494,14 +512,16 @@
   "lugares": [
    {
     "texto": "Ciudad de México",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    },
    {
     "texto": "Estado de México",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -520,14 +540,16 @@
   "lugares": [
    {
     "texto": "Querétaro",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    },
    {
     "texto": "Morelos",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -546,14 +568,16 @@
   "lugares": [
    {
     "texto": "Estado de México",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    },
    {
     "texto": "Morelos",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -572,14 +596,16 @@
   "lugares": [
    {
     "texto": "Ciudad de México",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    },
    {
     "texto": "Morelos",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -598,14 +624,16 @@
   "lugares": [
    {
     "texto": "Querétaro",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    },
    {
     "texto": "Estado de México",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -624,14 +652,16 @@
   "lugares": [
    {
     "texto": "Ciudad de México",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    },
    {
     "texto": "Querétaro",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -652,18 +682,21 @@
   "lugares": [
    {
     "texto": "Ciudad de México",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    },
    {
     "texto": "Estado de México",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    },
    {
     "texto": "Morelos",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -674,7 +707,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
  },
  {
   "fuente": "set14",
@@ -685,7 +718,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
  },
  {
   "fuente": "set14",
@@ -696,7 +729,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
  },
  {
   "fuente": "set14",
@@ -707,7 +740,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
  },
  {
   "fuente": "set14",
@@ -718,7 +751,117 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Si me detiene la policía, ¿qué derechos tengo?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Soy víctima de un delito y ya puse la denuncia. ¿Qué derechos tengo durante el proceso?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "¿Qué medidas cautelares le puede poner el juez a la persona que me agredió mientras dura el juicio?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "¿Para qué delitos procede la prisión preventiva oficiosa?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "¿Qué es la suspensión condicional del proceso?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Le ofrecieron a mi hermano un procedimiento abreviado. ¿Qué requisitos tiene?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Detuvieron a mi papá y ya tuvo su primera audiencia. ¿En cuánto tiempo el juez decide si lo vinculan a proceso?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"procedimiento\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Se llevaron a mi hermano y nos piden dinero para soltarlo. ¿Qué delito es y qué pena tiene?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "¿Cuándo se considera que un grupo de personas es delincuencia organizada?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "¿Qué es el lavado de dinero y qué pena tiene?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_federal\"}\n```"
  },
  {
   "fuente": "set14",
@@ -735,10 +878,11 @@
   "lugares": [
    {
     "texto": "Puebla",
-    "estado": "Puebla"
+    "estado": "Puebla",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Puebla\", \"estado\": \"Puebla\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Puebla\", \"estado\": \"Puebla\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -755,10 +899,11 @@
   "lugares": [
    {
     "texto": "Guadalajara",
-    "estado": "Jalisco"
+    "estado": "Jalisco",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Guadalajara\", \"estado\": \"Jalisco\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Guadalajara\",\n      \"estado\": \"Jalisco\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -775,14 +920,16 @@
   "lugares": [
    {
     "texto": "Monterrey",
-    "estado": "Nuevo León"
+    "estado": "Nuevo León",
+    "rol": "hechos"
    },
    {
     "texto": "Nuevo León",
-    "estado": "Nuevo León"
+    "estado": "Nuevo León",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Monterrey\",\n      \"estado\": \"Nuevo León\"\n    },\n    {\n      \"texto\": \"Nuevo León\",\n      \"estado\": \"Nuevo León\"\n    }\n  ],\n  \"comparar\": false\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Monterrey\",\n      \"estado\": \"Nuevo León\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Nuevo León\",\n      \"estado\": \"Nuevo León\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "set14",
@@ -799,10 +946,11 @@
   "lugares": [
    {
     "texto": "Oaxaca",
-    "estado": "Oaxaca"
+    "estado": "Oaxaca",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Oaxaca\", \"estado\": \"Oaxaca\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Oaxaca\", \"estado\": \"Oaxaca\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -819,10 +967,11 @@
   "lugares": [
    {
     "texto": "Mérida",
-    "estado": "Yucatán"
+    "estado": "Yucatán",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mérida\", \"estado\": \"Yucatán\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mérida\", \"estado\": \"Yucatán\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "set14",
@@ -839,10 +988,11 @@
   "lugares": [
    {
     "texto": "Veracruz",
-    "estado": "Veracruz"
+    "estado": "Veracruz",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Veracruz\", \"estado\": \"Veracruz\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Veracruz\", \"estado\": \"Veracruz\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -859,10 +1009,11 @@
   "lugares": [
    {
     "texto": "metro Pantitlán",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"metro Pantitlán\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"metro Pantitlán\", \"estado\": \"Ciudad de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -879,10 +1030,11 @@
   "lugares": [
    {
     "texto": "Neza",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Neza\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Neza\", \"estado\": \"Estado de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -899,10 +1051,11 @@
   "lugares": [
    {
     "texto": "Xochimilco",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Xochimilco\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Xochimilco\", \"estado\": \"Ciudad de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -919,10 +1072,11 @@
   "lugares": [
    {
     "texto": "Polanco",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Polanco\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Polanco\", \"estado\": \"Ciudad de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -939,10 +1093,11 @@
   "lugares": [
    {
     "texto": "Tlalnepantla",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "otro"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tlalnepantla\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tlalnepantla\", \"estado\": \"Estado de México\", \"rol\": \"otro\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -959,10 +1114,11 @@
   "lugares": [
    {
     "texto": "Valle de Chalco",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Valle de Chalco\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Valle de Chalco\", \"estado\": \"Estado de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -979,10 +1135,11 @@
   "lugares": [
    {
     "texto": "Tepoztlán",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tepoztlán\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tepoztlán\", \"estado\": \"Morelos\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -999,10 +1156,11 @@
   "lugares": [
    {
     "texto": "Jiutepec",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Jiutepec\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Jiutepec\", \"estado\": \"Morelos\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1019,10 +1177,11 @@
   "lugares": [
    {
     "texto": "Tequisquiapan",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tequisquiapan\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tequisquiapan\", \"estado\": \"Querétaro\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1039,10 +1198,11 @@
   "lugares": [
    {
     "texto": "Pachuca",
-    "estado": "Hidalgo"
+    "estado": "Hidalgo",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Pachuca\", \"estado\": \"Hidalgo\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Pachuca\", \"estado\": \"Hidalgo\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1059,10 +1219,11 @@
   "lugares": [
    {
     "texto": "Cancún",
-    "estado": "Quintana Roo"
+    "estado": "Quintana Roo",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cancún\", \"estado\": \"Quintana Roo\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cancún\", \"estado\": \"Quintana Roo\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1079,10 +1240,11 @@
   "lugares": [
    {
     "texto": "Monterrey",
-    "estado": "Nuevo León"
+    "estado": "Nuevo León",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Monterrey\", \"estado\": \"Nuevo León\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Monterrey\", \"estado\": \"Nuevo León\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"ley_general\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1099,10 +1261,11 @@
   "lugares": [
    {
     "texto": "Mérida",
-    "estado": "Yucatán"
+    "estado": "Yucatán",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mérida\", \"estado\": \"Yucatán\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mérida\", \"estado\": \"Yucatán\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1119,10 +1282,11 @@
   "lugares": [
    {
     "texto": "Los Cabos",
-    "estado": "Baja California Sur"
+    "estado": "Baja California Sur",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Los Cabos\", \"estado\": \"Baja California Sur\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Los Cabos\", \"estado\": \"Baja California Sur\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1135,10 +1299,11 @@
   "lugares": [
    {
     "texto": "Texas",
-    "estado": null
+    "estado": null,
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Texas\", \"estado\": null}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Texas\", \"estado\": null, \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1149,7 +1314,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1162,10 +1327,11 @@
   "lugares": [
    {
     "texto": "central de abastos",
-    "estado": null
+    "estado": null,
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"central de abastos\", \"estado\": null}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"central de abastos\", \"estado\": null, \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1176,7 +1342,7 @@
   "bien": true,
   "via": "llm",
   "lugares": [],
-  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1195,14 +1361,16 @@
   "lugares": [
    {
     "texto": "Iztacalco",
-    "estado": "Ciudad de México"
+    "estado": "Ciudad de México",
+    "rol": "hechos"
    },
    {
     "texto": "Ecatepec",
-    "estado": "Estado de México"
+    "estado": "Estado de México",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Iztacalco\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Ecatepec\",\n      \"estado\": \"Estado de México\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Iztacalco\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"hechos\"\n    },\n    {\n      \"texto\": \"Ecatepec\",\n      \"estado\": \"Estado de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": true,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "extra",
@@ -1221,14 +1389,16 @@
   "lugares": [
    {
     "texto": "Querétaro",
-    "estado": "Querétaro"
+    "estado": "Querétaro",
+    "rol": "otro"
    },
    {
     "texto": "Celaya",
-    "estado": "Guanajuato"
+    "estado": "Guanajuato",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\"}, {\"texto\": \"Celaya\", \"estado\": \"Guanajuato\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"otro\"\n    },\n    {\n      \"texto\": \"Celaya\",\n      \"estado\": \"Guanajuato\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
  },
  {
   "fuente": "extra",
@@ -1245,10 +1415,11 @@
   "lugares": [
    {
     "texto": "GDL",
-    "estado": "Jalisco"
+    "estado": "Jalisco",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"GDL\", \"estado\": \"Jalisco\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"GDL\", \"estado\": \"Jalisco\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1261,10 +1432,11 @@
   "lugares": [
    {
     "texto": "GLD",
-    "estado": null
+    "estado": null,
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"GLD\", \"estado\": null}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"GLD\", \"estado\": null, \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1281,10 +1453,11 @@
   "lugares": [
    {
     "texto": "Mty",
-    "estado": "Nuevo León"
+    "estado": "Nuevo León",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mty\", \"estado\": \"Nuevo León\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mty\", \"estado\": \"Nuevo León\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  },
  {
   "fuente": "extra",
@@ -1301,9 +1474,167 @@
   "lugares": [
    {
     "texto": "Cuerna",
-    "estado": "Morelos"
+    "estado": "Morelos",
+    "rol": "hechos"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuerna\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuerna\", \"estado\": \"Morelos\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
+ },
+ {
+  "fuente": "rol",
+  "cat": "rol",
+  "texto": "Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.",
+  "esperado": [
+   [
+    "Guanajuato"
+   ],
+   [
+    "Querétaro"
+   ]
+  ],
+  "detectado": [
+   [
+    "Guanajuato"
+   ],
+   [
+    "Querétaro"
+   ]
+  ],
+  "bien": true,
+  "lugares": [
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro",
+    "rol": "otro"
+   },
+   {
+    "texto": "Celaya",
+    "estado": "Guanajuato",
+    "rol": "hechos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\",\n      \"rol\": \"otro\"\n    },\n    {\n      \"texto\": \"Celaya\",\n      \"estado\": \"Guanajuato\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
+ },
+ {
+  "fuente": "rol",
+  "cat": "rol",
+  "texto": "Vivo en Puebla pero me asaltaron en Cuernavaca.",
+  "esperado": [
+   [
+    "Morelos"
+   ],
+   [
+    "Puebla"
+   ]
+  ],
+  "detectado": [
+   [
+    "Morelos"
+   ],
+   [
+    "Puebla"
+   ]
+  ],
+  "bien": true,
+  "lugares": [
+   {
+    "texto": "Puebla",
+    "estado": "Puebla",
+    "rol": "otro"
+   },
+   {
+    "texto": "Cuernavaca",
+    "estado": "Morelos",
+    "rol": "hechos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Puebla\",\n      \"estado\": \"Puebla\",\n      \"rol\": \"otro\"\n    },\n    {\n      \"texto\": \"Cuernavaca\",\n      \"estado\": \"Morelos\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
+ },
+ {
+  "fuente": "rol",
+  "cat": "rol",
+  "texto": "Vivo en el Estado de México. En un hospital privado le negaron la atención a mi abuela si no pagábamos antes.",
+  "esperado": [
+   [],
+   [
+    "Estado de México"
+   ]
+  ],
+  "detectado": [
+   [],
+   [
+    "Estado de México"
+   ]
+  ],
+  "bien": true,
+  "lugares": [
+   {
+    "texto": "Estado de México",
+    "estado": "Estado de México",
+    "rol": "otro"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Estado de México\", \"estado\": \"Estado de México\", \"rol\": \"otro\"}], \"comparar\": false, \"tipo\": \"otro\"}\n```"
+ },
+ {
+  "fuente": "rol",
+  "cat": "rol",
+  "texto": "Soy de Oaxaca y estudio en la CDMX; un compañero de clase me amenazó en la escuela.",
+  "esperado": [
+   [
+    "Ciudad de México"
+   ],
+   [
+    "Oaxaca"
+   ]
+  ],
+  "detectado": [
+   [
+    "Ciudad de México"
+   ],
+   [
+    "Oaxaca"
+   ]
+  ],
+  "bien": true,
+  "lugares": [
+   {
+    "texto": "Oaxaca",
+    "estado": "Oaxaca",
+    "rol": "otro"
+   },
+   {
+    "texto": "CDMX",
+    "estado": "Ciudad de México",
+    "rol": "hechos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Oaxaca\",\n      \"estado\": \"Oaxaca\",\n      \"rol\": \"otro\"\n    },\n    {\n      \"texto\": \"CDMX\",\n      \"estado\": \"Ciudad de México\",\n      \"rol\": \"hechos\"\n    }\n  ],\n  \"comparar\": false,\n  \"tipo\": \"delito_comun\"\n}\n```"
+ },
+ {
+  "fuente": "rol",
+  "cat": "rol",
+  "texto": "Vivo en Toluca y un vecino entró a mi casa sin permiso.",
+  "esperado": [
+   [
+    "Estado de México"
+   ],
+   []
+  ],
+  "detectado": [
+   [
+    "Estado de México"
+   ],
+   []
+  ],
+  "bien": true,
+  "lugares": [
+   {
+    "texto": "Toluca",
+    "estado": "Estado de México",
+    "rol": "hechos"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Toluca\", \"estado\": \"Estado de México\", \"rol\": \"hechos\"}], \"comparar\": false, \"tipo\": \"delito_comun\"}\n```"
  }
 ]
