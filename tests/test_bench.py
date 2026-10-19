@@ -386,3 +386,22 @@ def test_validate_judge_notes_must_be_text():
     base = {'name': 'n', 'topic': 't', 'questions': []}
     assert validate_set_payload(dict(base, judge_notes='- x')) == []
     assert validate_set_payload(dict(base, judge_notes=['- x'])) == ['"judge_notes" debe ser un texto.']
+
+
+# ── Etiquetas de system prompts ─────────────────────────────────────────────────
+import hashlib  # noqa: E402
+
+import bench  # noqa: E402
+
+def test_prompt_md5_matches_study_and_postgres():
+    # md5 de los bytes UTF-8, igual que hashlib en study/store.py y md5() de Postgres.
+    assert bench.prompt_md5('Actúa como') == hashlib.md5('Actúa como'.encode()).hexdigest()
+    assert bench.prompt_md5(None) == bench.prompt_md5('')
+
+
+def test_clean_tag_normalizes_and_rejects():
+    assert bench.clean_tag('  Penal Sencillo v2 ') == ('penal-sencillo-v2', None)
+    assert bench.clean_tag('penal-sencillo-jur-v1') == ('penal-sencillo-jur-v1', None)
+    for bad in ('', 'x', 'penal/v2', '-penal', 'á-v1', 'a' * 61):
+        tag, err = bench.clean_tag(bad)
+        assert tag is None and err

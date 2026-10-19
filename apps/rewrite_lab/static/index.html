@@ -154,6 +154,15 @@
  .bmodal[hidden]{display:none}
  .bmodal-box{background:#0f1115;border:1px solid #2a2f3a;border-radius:12px;padding:16px 18px;width:100%;max-width:560px;box-sizing:border-box}
  .bmodal-box.wide{max-width:900px}
+ /* 🗂️ Prompts: etiqueta de un system prompt (por el md5 de su texto) */
+ .ptag{font:11px ui-monospace,monospace;border:1px solid #3b82f6;border-radius:6px;padding:1px 6px;color:#bfdbfe;background:#0b1730;white-space:nowrap}
+ .ptag.none{border:1px dashed #b45309;color:#fbbf24;background:transparent}
+ .pstatus{font-size:12px;margin:6px 0 2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+ .pstatus input{flex:1;min-width:160px}
+ tr.puntag td{background:#1c1406}
+ .ptext{white-space:pre-wrap;font:12px/1.45 ui-monospace,monospace;background:#0b0d12;border:1px solid #2a2f3a;border-radius:8px;padding:10px;max-height:65vh;overflow:auto;margin:8px 0}
+ .ptext .dl{display:block;padding:0 4px} .ptext .dl.add{background:#14532d88} .ptext .dl.del{background:#7f1d1d88;text-decoration:line-through;text-decoration-color:#f8717180}
+ .ptext .dl.gap{color:#6b7280;font-style:italic}
  .bmodal-box h3{margin:0 0 8px;font-size:15px}
  .bmodal-box label.f{display:block;color:#9aa4b2;font-size:12px;margin:10px 0 4px}
  details.bq{padding:0}
@@ -481,6 +490,7 @@
    <div class="bsub">
      <button data-sub="run" class="active">▶ Correr y resultados</button>
      <button data-sub="questions">📝 Preguntas <span id="bench-qcount" class="pill"></span></button>
+     <button data-sub="prompts" title="Nombre de cada system prompt usado en las corridas">🗂️ Prompts</button>
      <button data-sub="compare" hidden>📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
    </div>
  </div>
@@ -534,13 +544,19 @@
          <div id="bss-list" class="bss-list"></div>
        </div>
      </details>
-     <details><summary>⚙️ System prompt de la respuesta (por defecto, el del tema del set)</summary>
-       <textarea id="bench-system" style="min-height:110px;margin-top:8px"></textarea></details>
+     <details id="bench-sys"><summary>⚙️ System prompt de la respuesta: <span id="bench-psum" class="muted">…</span></summary>
+       <div class="row" style="margin:8px 0 4px">
+         <label>Usar un prompt etiquetado: <select id="bench-psel" style="max-width:420px"></select></label>
+         <span class="muted" style="font-size:12px">o edita el texto abajo (por defecto, el del tema del set)</span>
+       </div>
+       <textarea id="bench-system" style="min-height:110px"></textarea>
+       <div id="bench-pstatus" class="pstatus"></div></details>
      <div id="bench-progress"></div>
    </div>
 
    <div class="row" style="margin-top:18px">
      <b>Corridas de este set</b>
+     <select id="bench-pfilter" title="Mostrar solo las corridas con este system prompt"></select>
      <span class="muted" style="font-size:12px">— clic en una fila para ver sus resultados · marca ☑ dos o más para comparar</span>
      <span style="flex:1"></span>
      <button class="ghost" id="bench-compare" hidden>📊 Comparar</button>
@@ -568,6 +584,18 @@
  </div>
 
  <!-- 📊 Comparar -->
+ <!-- 🗂️ Prompts -->
+ <div id="bsub-prompts" class="bsubpage" hidden>
+   <p class="muted" style="font-size:13px;margin-top:0">Cada corrida guarda el <b>texto completo</b> del system prompt con que el LLM respondió.
+     Aquí se le pone nombre a cada texto distinto. La etiqueta va pegada a la huella del texto (md5), no a las corridas:
+     etiquetar <b>no modifica ninguna corrida</b>, y las corridas viejas con ese mismo texto quedan etiquetadas solas.
+     Si cambias una sola letra del texto, es otro prompt (otra huella) y necesita su propio nombre.</p>
+   <div class="row"><span class="muted" id="bench-pcount" style="font-size:12px"></span><span style="flex:1"></span>
+     <button class="ghost" id="bench-pdiff" disabled title="Marca ☑ dos prompts">🔀 Comparar textos (☑ 2)</button>
+     <button class="ghost" id="bench-preload" title="Recargar">↻</button></div>
+   <div id="bench-prompts"></div>
+ </div>
+
  <div id="bsub-compare" class="bsubpage" hidden>
    <div id="bench-compare-out"></div>
  </div>
@@ -625,6 +653,24 @@
      <button class="danger" id="rv-del" onclick="rvDelete()" hidden>🗑 Borrar mi revisión</button>
    </div>
  </div></div>
+ <div class="bmodal" id="bench-prompt-modal" hidden><div class="bmodal-box">
+   <h3>🏷️ Etiqueta del prompt</h3>
+   <div class="muted" style="font-size:12px" id="bp-info"></div>
+   <label class="f">Nombre (minúsculas, sin espacios; p. ej. <code>penal-sencillo-v2</code>)</label>
+   <input type="text" id="bp-tag" style="width:100%;box-sizing:border-box" maxlength="60">
+   <label class="f">Nota (opcional): qué es, de dónde salió, en qué se distingue</label>
+   <textarea id="bp-note" style="min-height:60px"></textarea>
+   <div class="row"><button id="bp-save">Guardar</button><button class="ghost" id="bp-cancel">Cancelar</button>
+     <span style="flex:1"></span><button class="danger" id="bp-untag" title="Las corridas no se tocan: el prompt vuelve a «sin etiqueta»">Quitar etiqueta</button></div>
+   <div id="bp-history" class="muted" style="font-size:12px;margin-top:10px"></div>
+ </div></div>
+
+ <div class="bmodal" id="bench-ptext-modal" hidden><div class="bmodal-box wide">
+   <h3 id="bpt-title">Prompt</h3><div id="bpt-legend" class="muted" style="font-size:12px"></div>
+   <div id="bpt-body" class="ptext"></div>
+   <div class="row"><button class="ghost" id="bpt-close">Cerrar</button></div>
+ </div></div>
+
  <div class="bmodal" id="bench-help" hidden><div class="bmodal-box wide">
    <h3>¿Cómo se califica?</h3>
    <p>Para cada pregunta el sistema responde con la configuración elegida y el <b>juez</b> (<span id="bench-judge">LLM</span>)

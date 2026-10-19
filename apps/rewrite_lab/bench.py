@@ -15,6 +15,8 @@ Modelo de datos (Postgres, porque se edita desde la UI y se filtra):
   bench_reviews     revisión HUMANA de un resultado (una por revisor): veredicto por
                     componente, calificación 1–5 y comentario. Sirve para evaluar las
                     respuestas y para medir cuánto coincide el juez con una persona.
+  bench_prompt_tags nombre (etiqueta) de un system prompt, por el md5 de su texto; su
+                    historial de cambios va en bench_prompt_tags_history.
 
 El detalle pesado de cada corrida (respuesta completa, chunks, prompt, salida cruda del
 juez) va al object store (MinIO) en `bench/runs/<id>.json`; ver shared/object_store.py.
@@ -28,8 +30,10 @@ de lo que razona sobre reglas de puntuación.
 
 from __future__ import annotations
 
+import hashlib
 import http.client
 import json
+import os
 import re
 import threading
 import time
@@ -505,6 +509,43 @@ CREATE TABLE IF NOT EXISTS bench_reviews (
     UNIQUE (run_id, question_id, reviewer));
 """
 
+# ── Etiquetas de system prompts ───────────────────────────────────────────────────────
+# Cada corrida guarda el TEXTO completo de su system prompt (config.system). La etiqueta
+# («penal-sencillo-v2») se asigna al md5 de ese texto, no a las corridas: así las corridas
+# viejas quedan etiquetadas sin tocarlas, y dos corridas con el mismo texto comparten nombre
+# aunque la etiqueta de la corrida diga otra cosa. Cambiar una letra del texto es otro prompt.
+# BENCH_PROMPT_TAGS_TABLE permite probar con otra tabla (copia temporal de la app).
+PROMPT_TAGS = os.environ.get('BENCH_PROMPT_TAGS_TABLE', 'bench_prompt_tags')
+if not re.fullmatch(r'[a-z_][a-z0-9_]*', PROMPT_TAGS):
+    raise ValueError(f'BENCH_PROMPT_TAGS_TABLE inválida: {PROMPT_TAGS!r}')
+TAG_RE = re.compile(r'[a-z0-9][a-z0-9._-]{1,59}')
+MD5_RE = re.compile(r'[0-9a-f]{32}')
+TAG_MSG = ('la etiqueta va en minúsculas y sin espacios: letras, números, «-», «_» o «.», '
+           'de 2 a 60 caracteres (p. ej. penal-sencillo-v2)')
+PROMPT_SCHEMA = f"""
+CREATE TABLE IF NOT EXISTS {PROMPT_TAGS} (
+    md5 text PRIMARY KEY, tag text NOT NULL UNIQUE, note text, text text NOT NULL,
+    created_by text, created_at timestamptz DEFAULT now(), updated_by text, updated_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS {PROMPT_TAGS}_history (
+    id serial PRIMARY KEY, md5 text NOT NULL, action text NOT NULL, tag text, note text,
+    changed_by text, changed_at timestamptz DEFAULT now());
+"""
+# Columnas para leer, junto con una corrida, el md5 y la etiqueta de su prompt.
+_PROMPT_COLS = (f"md5(bench_runs.config->>'system'), (SELECT p.tag FROM {PROMPT_TAGS} p "
+                f"WHERE p.md5 = md5(bench_runs.config->>'system')) ")
+
+
+def prompt_md5(text: str | None) -> str:
+    """El mismo md5 que calcula Postgres con md5(config->>'system') y que usa el estudio."""
+    return hashlib.md5((text or '').encode()).hexdigest()
+
+
+def clean_tag(raw) -> tuple[str | None, str | None]:
+    """«Penal sencillo v2» → «penal-sencillo-v2»; (None, mensaje) si no es válida."""
+    tag = re.sub(r'\s+', '-', str(raw or '').strip().lower())
+    return (tag, None) if TAG_RE.fullmatch(tag) else (None, TAG_MSG)
+
+
 # Una corrida 'running' sin avance en este tiempo se da por muerta (el proceso que la corría
 # se reinició). NO basta con ver status='running' al arrancar: la BD es compartida (prod y una
 # app local por túnel), y otro proceso puede tener una corrida viva. Una pregunta tarda
@@ -549,6 +590,7 @@ class Bench:
         self._cancel = threading.Event()
         with connect() as c, c.cursor() as cur:
             cur.execute(SCHEMA)
+            cur.execute(PROMPT_SCHEMA)
             cur.execute(_STALE_SQL, (STALE_MINUTES,))   # corridas huérfanas de un reinicio
             c.commit()
         self.router = self._make_router()
@@ -868,6 +910,101 @@ class Bench:
             c.commit()
         return {'run_id': rid, 'updated': n, 'metrics': metrics}
 
+    # ── etiquetas de system prompts ───────────────────────────────────────────────
+    def prompts_list(self) -> list[dict]:
+        """Todos los prompts que conocemos: los usados en alguna corrida (agrupados por el md5 del
+        texto) y los etiquetados aunque aún no se hayan corrido. El más antiguo primero."""
+        with self.connect() as c, c.cursor() as cur:
+            cur.execute(f"""WITH usados AS (
+                SELECT md5(config->>'system') AS md5, min(config->>'system') AS texto, count(*) AS n,
+                       array_agg(id ORDER BY id) AS runs, array_agg(DISTINCT set_name) AS sets,
+                       array_agg(DISTINCT topic) AS topics, array_agg(DISTINCT created_by) AS por,
+                       min(created_at) AS primera, max(created_at) AS ultima
+                FROM bench_runs WHERE coalesce(config->>'system', '') <> '' GROUP BY 1)
+              SELECT coalesce(p.md5, u.md5), p.tag, p.note, p.created_by, p.created_at::text, p.updated_by,
+                     p.updated_at::text, coalesce(p.text, u.texto), coalesce(u.n, 0), u.runs, u.sets, u.topics,
+                     u.por, u.primera::text, u.ultima::text
+              FROM usados u FULL JOIN {PROMPT_TAGS} p ON p.md5 = u.md5
+              ORDER BY coalesce(u.primera, p.created_at)""")
+            cols = ['md5', 'tag', 'note', 'created_by', 'created_at', 'updated_by', 'updated_at', 'text',
+                    'n_runs', 'runs', 'sets', 'topics', 'run_by', 'first_run', 'last_run']
+            rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        # ¿Es el prompt actual de algún tema? (el que se usa si la corrida deja el campo vacío)
+        current = {}
+        for t in {t for r in rows for t in (r['topics'] or []) if t}:
+            current.setdefault(prompt_md5((self.system_for(t) or '').strip()), []).append(t)
+        for r in rows:
+            for k in ('runs', 'sets', 'topics', 'run_by'):
+                r[k] = [x for x in (r[k] or []) if x is not None]
+            r['current_for'] = sorted(current.get(r['md5'], []))
+        return rows
+
+    def prompt_lookup(self, text: str, topic: str | None = None) -> dict:
+        """¿Qué etiqueta tiene este texto? Vacío = el prompt del tema (como al correr)."""
+        text = (text or '').strip() or ((self.system_for(topic) or '').strip() if topic else '')
+        md5 = prompt_md5(text)
+        with self.connect() as c, c.cursor() as cur:
+            cur.execute(f"SELECT tag, note FROM {PROMPT_TAGS} WHERE md5 = %s", (md5,))
+            row = cur.fetchone()
+            cur.execute("SELECT count(*) FROM bench_runs WHERE md5(config->>'system') = %s", (md5,))
+            n = cur.fetchone()[0]
+        return {'md5': md5, 'tag': row[0] if row else None, 'note': row[1] if row else None,
+                'n_runs': n, 'length': len(text)}
+
+    def prompt_save(self, md5: str, tag, note, text, email: str | None) -> dict:
+        """Pone o cambia la etiqueta del prompt `md5`. El texto se toma de una corrida que lo usó o,
+        si es un prompt nuevo, de `text` (que debe dar ese md5)."""
+        if not MD5_RE.fullmatch(md5 or ''):
+            raise ValueError('md5 inválido')
+        tag, err = clean_tag(tag)
+        if err:
+            raise ValueError(err)
+        note = str(note or '').strip()[:1000] or None
+        text = (text or '').strip()
+        if text and prompt_md5(text) != md5:
+            raise ValueError('el texto no corresponde a ese md5 (¿cambió el texto mientras lo etiquetabas?)')
+        with self.connect() as c, c.cursor() as cur:
+            cur.execute(f"SELECT tag, note, text FROM {PROMPT_TAGS} WHERE md5 = %s", (md5,))
+            old = cur.fetchone()
+            if not text:
+                text = old[2] if old else None
+            if not text:
+                cur.execute("SELECT config->>'system' FROM bench_runs WHERE md5(config->>'system') = %s LIMIT 1", (md5,))
+                row = cur.fetchone()
+                text = row[0] if row else None
+            if not text:
+                raise ValueError('ese prompt no está en ninguna corrida: manda también su texto')
+            cur.execute(f"SELECT md5 FROM {PROMPT_TAGS} WHERE tag = %s AND md5 <> %s", (tag, md5))
+            if cur.fetchone():
+                raise ValueError(f'«{tag}» ya es la etiqueta de otro prompt: elige otro nombre (p. ej. con -v2)')
+            cur.execute(f"""INSERT INTO {PROMPT_TAGS} (md5, tag, note, text, created_by, updated_by)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            ON CONFLICT (md5) DO UPDATE SET tag = EXCLUDED.tag, note = EXCLUDED.note,
+                                updated_by = EXCLUDED.updated_by, updated_at = now()""",
+                        (md5, tag, note, text, email, email))
+            if not old or (old[0], old[1]) != (tag, note):
+                cur.execute(f"INSERT INTO {PROMPT_TAGS}_history (md5, action, tag, note, changed_by) "
+                            f"VALUES (%s, %s, %s, %s, %s)", (md5, 'editar' if old else 'crear', tag, note, email))
+            c.commit()
+        return {'md5': md5, 'tag': tag, 'note': note}
+
+    def prompt_untag(self, md5: str, email: str | None) -> bool:
+        """Quita la etiqueta (las corridas no se tocan; el prompt vuelve a «sin etiqueta»)."""
+        with self.connect() as c, c.cursor() as cur:
+            cur.execute(f"DELETE FROM {PROMPT_TAGS} WHERE md5 = %s RETURNING tag, note", (md5,))
+            old = cur.fetchone()
+            if old:
+                cur.execute(f"INSERT INTO {PROMPT_TAGS}_history (md5, action, tag, note, changed_by) "
+                            f"VALUES (%s, 'quitar', %s, %s, %s)", (md5, old[0], old[1], email))
+            c.commit()
+        return bool(old)
+
+    def prompt_history(self, md5: str) -> list[dict]:
+        with self.connect() as c, c.cursor() as cur:
+            cur.execute(f"SELECT action, tag, note, changed_by, changed_at::text FROM {PROMPT_TAGS}_history "
+                        f"WHERE md5 = %s ORDER BY id DESC", (md5,))
+            return [dict(zip(['action', 'tag', 'note', 'changed_by', 'changed_at'], r)) for r in cur.fetchall()]
+
     # ── rutas ─────────────────────────────────────────────────────────────────────
     def _make_router(self) -> APIRouter:
         r = APIRouter(prefix='/api/bench')
@@ -1125,25 +1262,26 @@ class Bench:
                 c.commit()
                 cur.execute("SELECT id, set_id, set_name, topic, label, config, status, n, done, metrics, "
                             "error, created_by, created_at::text, finished_at::text, "
-                            "(SELECT count(DISTINCT question_id) FROM bench_reviews v WHERE v.run_id = bench_runs.id) "
-                            "FROM bench_runs "
+                            "(SELECT count(DISTINCT question_id) FROM bench_reviews v WHERE v.run_id = bench_runs.id), "
+                            + _PROMPT_COLS + "FROM bench_runs "
                             + ("WHERE set_id = %s " if set_id else "") + "ORDER BY id DESC LIMIT 200",
                             (set_id,) if set_id else ())
                 cols = ['id', 'set_id', 'set_name', 'topic', 'label', 'config', 'status', 'n', 'done',
-                        'metrics', 'error', 'created_by', 'created_at', 'finished_at', 'reviewed']
+                        'metrics', 'error', 'created_by', 'created_at', 'finished_at', 'reviewed',
+                        'prompt_md5', 'prompt_tag']
                 return [dict(zip(cols, x)) for x in cur.fetchall()]
 
         @r.get('/runs/{rid}')
         def run_get(rid: int):
             with self.connect() as c, c.cursor() as cur:
                 cur.execute("SELECT id, set_id, set_name, topic, label, config, status, n, done, metrics, "
-                            "error, artifact_key, created_at::text, finished_at::text FROM bench_runs WHERE id = %s",
-                            (rid,))
+                            "error, artifact_key, created_at::text, finished_at::text, " + _PROMPT_COLS +
+                            "FROM bench_runs WHERE id = %s", (rid,))
                 row = cur.fetchone()
                 if not row:
                     return JSONResponse({'error': 'no existe'}, status_code=404)
                 cols = ['id', 'set_id', 'set_name', 'topic', 'label', 'config', 'status', 'n', 'done',
-                        'metrics', 'error', 'artifact_key', 'created_at', 'finished_at']
+                        'metrics', 'error', 'artifact_key', 'created_at', 'finished_at', 'prompt_md5', 'prompt_tag']
                 out = dict(zip(cols, row))
                 cur.execute("SELECT question_id, position, question, score, passed, must_total, must_ok, "
                             "violations, verdicts, seconds, error, retrieval, citations FROM bench_results "
@@ -1243,5 +1381,37 @@ class Bench:
                 except Exception:  # noqa: BLE001 — el artefacto huérfano no es grave
                     pass
             return {'ok': True}
+
+        # ── 🗂️ Prompts: etiquetas de los system prompts ──────────────────────────────
+        @r.get('/prompts')
+        def prompts():
+            return self.prompts_list()
+
+        @r.post('/prompts/lookup')
+        async def prompt_lookup(req: Request):
+            b = await req.json()
+            return self.prompt_lookup(str(b.get('text') or ''), b.get('topic') or None)
+
+        @r.put('/prompts/{md5}')
+        async def prompt_save(md5: str, req: Request):
+            email = self.current_email(req)
+            if not self.can_run(email):
+                return deny('Solo los administradores pueden etiquetar prompts.')
+            b = await req.json()
+            try:
+                return self.prompt_save(md5, b.get('tag'), b.get('note'), b.get('text'), email)
+            except ValueError as e:
+                return bad(str(e))
+
+        @r.delete('/prompts/{md5}')
+        def prompt_untag(md5: str, request: Request):
+            email = self.current_email(request)
+            if not self.can_run(email):
+                return deny('Solo los administradores pueden quitar etiquetas.')
+            return {'ok': self.prompt_untag(md5, email)}
+
+        @r.get('/prompts/{md5}/history')
+        def prompt_history(md5: str):
+            return self.prompt_history(md5)
 
         return r

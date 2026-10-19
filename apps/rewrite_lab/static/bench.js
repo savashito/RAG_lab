@@ -4,7 +4,7 @@
 // que ya existen cuando se llama a cualquiera de estas funciones.
 //
 // Estructura: barra fija (tema · set · menú ⋯ · ayuda) + tres sub-pestañas:
-//   ▶ Correr y resultados (default) · 📝 Preguntas · 📊 Comparar
+//   ▶ Correr y resultados (default) · 📝 Preguntas · 🗂️ Prompts · 📊 Comparar
 // Los formularios de set y de pregunta son ventanas emergentes (no hay que hacer scroll).
 // ✍️ Revisión humana: desde el detalle de una corrida, una persona marca cada componente de
 // cada respuesta (como el juez, que queda oculto tras un 👁) y la califica de 1 a 5.
@@ -97,11 +97,12 @@ function diffStats(results){
 // ── Navegación ──────────────────────────────────────────────────────────────────
 // La URL refleja lo que se ve, para recargar o compartir el enlace:
 //   /benchmark?set=3&vista=preguntas · ?set=3&corrida=12 · ?set=3&vista=comparar&comparar=11,12
-const SUB_URL = {run: '', questions: 'preguntas', compare: 'comparar'};
+const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', compare: 'comparar'};
 function benchSub(name){
   BENCH.sub = name;
   document.querySelectorAll('.bsub button').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
-  for(const s of ['run','questions','compare']) $('bsub-'+s).hidden = (s!==name);
+  for(const s of ['run','questions','prompts','compare']) $('bsub-'+s).hidden = (s!==name);
+  if(name==='prompts') loadPrompts();
   benchUrlSync();
 }
 function benchUrlSync(){
@@ -169,6 +170,18 @@ async function benchInit(){
     $('bq-save').addEventListener('click', saveQ);
     // Corridas
     $('bench-run').addEventListener('click', startBenchRun);
+    // 🏷️ Etiqueta del system prompt
+    $('bench-psel').addEventListener('change', ()=>{ const p = (BENCH.prompts||[]).find(x=>x.md5===$('bench-psel').value);
+      if(p){ $('bench-system').value = p.text; promptStatus(); } });
+    $('bench-system').addEventListener('input', ()=>{ clearTimeout(BENCH.ptimer); BENCH.ptimer = setTimeout(promptStatus, 400); });
+    $('bench-pfilter').addEventListener('change', renderBenchRuns);
+    $('bench-pdiff').addEventListener('click', diffPrompts);
+    $('bench-preload').addEventListener('click', loadPrompts);
+    $('bp-save').addEventListener('click', savePromptTag);
+    $('bp-untag').addEventListener('click', untagPrompt);
+    $('bp-cancel').addEventListener('click', ()=>closeModal('bench-prompt-modal'));
+    $('bpt-close').addEventListener('click', ()=>closeModal('bench-ptext-modal'));
+    $('bench-prompts').addEventListener('change', e=>{ if(e.target.classList.contains('bp-cmp')) $('bench-pdiff').disabled = checkedPrompts().length!==2; });
     document.querySelectorAll('.bss-diff').forEach(c=>c.addEventListener('change', ()=>subsetChanged()));
     $('bss-crit').addEventListener('change', ()=>subsetChanged());
     $('bss-run').addEventListener('change', ()=>subsetChanged());
@@ -196,6 +209,7 @@ async function benchInit(){
     if(info.running) watchBenchRun(info.running);
   }catch(e){}
   benchFillTopics();
+  loadPrompts();
   await loadBenchSets(BENCH.want && BENCH.want.set);
 }
 // Selectores de tema del tab. Se llama también desde loadTopics() (index.html), porque
@@ -212,7 +226,7 @@ function benchFillTopics(){
     ts.map(t=>`<option value="${esc(t.topic)}">${esc(t.label)}</option>`).join('');
   $('bench-topic-filter').value = prevF;
   if(BENCH.set && !$('bench-system').value){
-    const t = ts.find(x=>x.topic===BENCH.set.topic); if(t) $('bench-system').value = t.system_prompt||'';
+    const t = ts.find(x=>x.topic===BENCH.set.topic); if(t){ $('bench-system').value = t.system_prompt||''; promptStatus(); }
   }
 }
 
@@ -244,6 +258,7 @@ async function loadBenchSet(id){
   try{ BENCH.set = await bjson('/api/bench/sets/'+id); }catch(e){ bmsg(esc(e.message), false); return; }
   const t = (window.__topics||[]).find(x=>x.topic===BENCH.set.topic);
   $('bench-system').value = (t && t.system_prompt) || '';
+  promptStatus();
   renderQuestions();
   resetSubset(true);
   await loadBenchRuns();
@@ -440,6 +455,7 @@ async function deleteQ(qid){
 // ── Corridas ────────────────────────────────────────────────────────────────────
 async function startBenchRun(){
   if(!BENCH.set) return;
+  if(!(await ensurePromptTag())) return;
   const body = {set_id: BENCH.set.id, label: $('bench-label').value, setting: $('bench-setting').value,
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
     rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked, route: $('bench-route').checked,
@@ -490,10 +506,17 @@ function cfgSummary(c){
 async function loadBenchRuns(){
   if(!BENCH.set) return;
   let runs; try{ runs = await bjson('/api/bench/runs?set_id='+BENCH.set.id); }catch(e){ return; }
-  const checked = new Set([...document.querySelectorAll('.bench-cmp:checked')].map(c=>+c.value));
   BENCH.runs = runs;
+  fillPromptFilter();
+  renderBenchRuns();
+  fillSubsetRuns();
+}
+function renderBenchRuns(){
+  const checked = new Set([...document.querySelectorAll('.bench-cmp:checked')].map(c=>+c.value));
+  const all = BENCH.runs||[], pf = $('bench-pfilter').value;
+  const runs = pf ? all.filter(r=>r.prompt_md5===pf) : all;
   const sel = BENCH.detail && BENCH.detail.id;
-  $('bench-runs').innerHTML = runs.length ? `<table><tr><th title="marcar para comparar">☑</th><th>#</th><th>fecha</th><th>etiqueta / config</th><th>estado</th>
+  $('bench-runs').innerHTML = runs.length ? `<table><tr><th title="marcar para comparar">☑</th><th>#</th><th>fecha</th><th>etiqueta / config</th><th title="Nombre del system prompt con que respondió el LLM (se pone en 🗂️ Prompts)">🏷️ prompt</th><th>estado</th>
     <th title="promedio del score por pregunta">score</th><th title="% de preguntas con todos los must y ningún must_not">pasan</th>
     <th title="% de componentes must presentes">must ✓</th><th title="must_not que aparecieron">viol.</th>
     <th title="% de los artículos necesarios (según los must de cita) que la búsqueda trajo al contexto — sin LLM, sin ruido">🔎 art.</th>
@@ -505,6 +528,7 @@ async function loadBenchRuns(){
       <td onclick="event.stopPropagation()"><input type="checkbox" class="bench-cmp" value="${r.id}" ${checked.has(r.id)?'checked':''}></td><td>${r.id}</td>
       <td style="white-space:nowrap">${esc((r.created_at||'').slice(5,16))}</td>
       <td>${esc(r.label||'—')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></td>
+      <td>${ptagChip(r)}</td>
       <td>${r.status==='running'?`⏳ ${r.done}/${r.n}`:esc(r.status)}${m.errors?` <span style="color:#f87171">(${m.errors} err)</span>`:''}</td>
       <td class="sc" style="background:${scoreColor(m.score)}">${pct(m.score)}</td>
       <td class="sc">${pct(m.pass_rate)}</td><td class="sc">${pct(m.must_coverage)}</td>
@@ -514,9 +538,9 @@ async function loadBenchRuns(){
       <td class="sc">${m.other_state_rate!=null ? pct(m.other_state_rate) : '<span class="muted">—</span>'}</td><td class="sc">${m.avg_seconds??'—'}</td>
       <td class="sc">${r.reviewed ? `${r.reviewed}/${r.done}` : '<span class="muted">—</span>'}</td>
       <td onclick="event.stopPropagation()"><button class="danger" onclick="deleteBenchRun(${r.id}, ${r.reviewed||0})" title="Borrar corrida">🗑</button></td></tr>`; }).join('')+'</table>'
+    : all.length ? '<p class="muted">Ninguna corrida de este set usó ese prompt.</p>'
     : '<p class="muted">Aún no hay corridas de este set. Configura arriba y pulsa ▶ Correr benchmark.</p>';
   syncCompareTab();
-  fillSubsetRuns();
 }
 async function deleteBenchRun(rid, reviewed){
   if(!confirm(`¿Borrar la corrida #${rid} (y su artefacto)?` + (reviewed ? `\n\n⚠️ Tiene ${reviewed} preguntas con revisión humana: también se borrarán.` : ''))) return;
@@ -693,7 +717,7 @@ function renderBenchDetail(){
   if(BENCH.dsort==='worst') rows = [...rows].sort((a,b)=>(a.error?-1:a.score)-(b.error?-1:b.score));
   const card = (t, v, sub) => `<div class="card"><h3>${t}</h3><div style="font-size:22px;font-weight:700">${v}</div>${sub?`<div class="muted" style="font-size:12px">${sub}</div>`:''}</div>`;
   const nPass = r.results.filter(x=>!x.error && x.passed).length;
-  $('bench-detail').innerHTML = `<h2 style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">Corrida #${r.id} ${esc(r.label||'')}
+  $('bench-detail').innerHTML = `<h2 style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">Corrida #${r.id} ${esc(r.label||'')} ${ptagChip(r)}
       <span class="runcfg">${esc(cfgSummary(r.config))}</span>${r.status==='running'?`<span class="tag gap">en curso ${r.done}/${r.n}</span>`:''}
       <span style="flex:1"></span>${r.status!=='running' && r.results.some(x=>!x.passed)?`<button class="ghost" onclick="rerunFailed(${r.id})" title="Prepara una corrida solo con las preguntas que no pasaron aquí (no la arranca)">🎯 Re-correr las que no pasan</button>`:''}
       ${r.results.some(x=>!x.error)?`<button onclick="openReview()" title="Califica tú las respuestas, componente por componente">✍️ Revisar respuestas</button>`:''}</h2>
@@ -973,8 +997,9 @@ function renderCompare(){
       <span class="muted" style="font-size:12px">${rows.length} de ${qs.length} preguntas</span>
     </div>
     ${new Set(runs.map(r=>((r.config||{}).judge_notes||'').trim())).size > 1 ? `<p class="muted" style="font-size:12px;margin:4px 0;color:#fbbf24" title="${attr(runs.map(r=>'#'+r.id+': '+(((r.config||{}).judge_notes||'').trim()||'(sin criterios)')).join('\n\n'))}">📋 Las corridas se calificaron con <b>criterios para el juez distintos</b>: parte del Δ puede venir del juez y no del sistema (pasa el ratón para verlos).</p>` : ''}
+    ${new Set(runs.map(r=>r.prompt_md5)).size > 1 ? `<p class="muted" style="font-size:12px;margin:4px 0">🏷️ Las corridas usan <b>system prompts distintos</b>: ${runs.map(r=>'#'+r.id+' '+ptagChip(r)).join(' · ')}</p>` : ''}
     ${partial ? `<p class="muted" style="font-size:12px;margin:4px 0;color:#fbbf24">🎯 Hay corridas parciales: se comparan solo las <b>${common.length}</b> preguntas que están en todas (promedios incluidos).</p>` : ''}
-    <table><tr><th>pregunta</th>${runs.map(r=>`<th>#${r.id} ${esc(r.label||'')}<div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}
+    <table><tr><th>pregunta</th>${runs.map(r=>`<th>#${r.id} ${esc(r.label||'')}<div>${ptagChip(r)}</div><div class="runcfg">${esc(cfgSummary(r.config))}</div></th>`).join('')}
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
     <tr><td><b>score medio</b>${partial?` <span class="muted" style="font-size:11px">(${common.length} comunes)</span>`:''}</td>${runs.map(r=>`<td class="sc" style="background:${scoreColor(met(r).score)}">${pct(met(r).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
     ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}${mrow('🔎 artículos recuperados', m=>pct(m.retrieval_recall))}
@@ -985,4 +1010,166 @@ function renderCompare(){
     ${DIFFS.map(([d,l])=>{ const st = runs.map(r=>diffStats(resOf(r))[d]); if(!st.some(Boolean)) return '';
       return `<tr><td><b>score ${diffTag(d)}</b></td>${st.map(x=>`<td class="sc" style="background:${scoreColor(x&&x.score)}">${x?pct(x.score):'—'}</td>`).join('')}${two?'<td></td>':''}</tr>`; }).join('')}`+
     rows.map(q=>`<tr><td>${esc(q.question)} ${diffTag(qDiff(q.question_id))}${changed(q)?' <span class="tag" style="border:1px solid #4b5563;color:#c7cdd6" title="Se editaron los componentes de esta pregunta entre las corridas comparadas">⚙ criterios distintos</span>':''}</td>${runs.map(r=>cell(r,q)).join('')}${two?dcell(q):''}</tr>`).join('')+'</table>';
+}
+
+// ── 🗂️ Prompts: nombre de cada system prompt ────────────────────────────────────
+// La etiqueta va pegada al md5 del texto (bench_prompt_tags), no a la corrida: las corridas
+// viejas con el mismo texto quedan etiquetadas solas. Backend: /api/bench/prompts (bench.py).
+const short = md5 => (md5||'').slice(0,8);
+function ptagChip(r){
+  if(r.prompt_tag) return `<span class="ptag" title="system prompt · huella ${attr(short(r.prompt_md5))}">🏷️ ${esc(r.prompt_tag)}</span>`;
+  return r.prompt_md5 ? `<span class="ptag none" title="Este system prompt aún no tiene nombre: ponlo en 🗂️ Prompts">sin etiqueta · ${esc(short(r.prompt_md5))}</span>` : '';
+}
+const checkedPrompts = () => [...document.querySelectorAll('.bp-cmp:checked')].map(c=>c.value);
+async function loadPrompts(){
+  try{ BENCH.prompts = await bjson('/api/bench/prompts'); }catch(e){ bmsg(esc(e.message), false); return; }
+  const tagged = BENCH.prompts.filter(p=>p.tag);
+  const prev = $('bench-psel').value;
+  $('bench-psel').innerHTML = '<option value="">— elegir —</option>' +
+    tagged.map(p=>`<option value="${p.md5}">${esc(p.tag)}${p.current_for.length?' · actual del tema':''} · ${p.n_runs} corridas</option>`).join('');
+  if(prev) $('bench-psel').value = prev;
+  renderPrompts();
+  fillPromptFilter();
+  promptStatus();
+}
+function renderPrompts(){
+  const ps = BENCH.prompts||[], untagged = ps.filter(p=>!p.tag).length;
+  $('bench-pcount').innerHTML = `${ps.length} prompts distintos` + (untagged ? ` · <span style="color:#fbbf24">⚠️ ${untagged} sin etiqueta</span>` : '');
+  const was = new Set(checkedPrompts());
+  const runsTxt = p => p.runs.length > 8 ? p.runs.slice(0,3).map(x=>'#'+x).join(', ')+' … '+p.runs.slice(-3).map(x=>'#'+x).join(', ') : p.runs.map(x=>'#'+x).join(', ');
+  const who = e => esc((e||'').split('@')[0]);
+  $('bench-prompts').innerHTML = ps.length ? `<table><tr><th title="Marca dos para comparar sus textos">☑</th><th>🏷️ etiqueta</th><th>nota</th>
+      <th title="Huella del texto (md5): el mismo texto da siempre la misma huella">huella</th><th>tamaño</th><th>corridas</th><th>sets</th><th>usado</th><th></th></tr>` +
+    ps.map(p=>`<tr class="${p.tag?'':'puntag'}">
+      <td><input type="checkbox" class="bp-cmp" value="${p.md5}" ${was.has(p.md5)?'checked':''}></td>
+      <td>${p.tag ? `<span class="ptag">🏷️ ${esc(p.tag)}</span>` : '<span class="ptag none">sin etiqueta</span>'}
+        ${p.current_for.length ? `<div class="muted" style="font-size:11px" title="Es el system prompt actual de este tema: el que usa una corrida si no se cambia el texto">⭐ actual de: ${esc(p.current_for.map(topicLabel).join(', '))}</div>` : ''}
+        <div class="muted" style="font-size:11px">${esc(p.text.slice(0,90).replace(/\s+/g,' '))}…</div></td>
+      <td style="font-size:12px;max-width:260px">${esc(p.note||'')}${p.tag && p.updated_by ? `<div class="muted" style="font-size:11px">por ${who(p.updated_by)} · ${esc((p.updated_at||'').slice(0,10))}</div>` : ''}</td>
+      <td><code>${short(p.md5)}</code></td><td class="sc">${p.text.length.toLocaleString()}</td>
+      <td style="font-size:12px"><b>${p.n_runs}</b>${p.runs.length?` <span class="muted">(${runsTxt(p)})</span>`:''}</td>
+      <td style="font-size:12px;max-width:220px" title="${attr(p.sets.join('\n'))}">${p.sets.length > 2 ? `${esc(p.sets[0])} <span class="muted">y ${p.sets.length-1} sets más</span>` : esc(p.sets.join(' · '))}</td>
+      <td style="font-size:12px;white-space:nowrap">${p.first_run ? esc(p.first_run.slice(0,10))+(p.last_run.slice(0,10)!==p.first_run.slice(0,10)?' → '+esc(p.last_run.slice(0,10)):'') : '<span class="muted">sin corridas</span>'}
+        ${p.run_by.length ? `<div class="muted" style="font-size:11px">${p.run_by.map(who).join(', ')}</div>` : ''}</td>
+      <td style="white-space:nowrap"><button class="ghost" onclick="showPromptText('${p.md5}')" title="Ver el texto completo">👁</button>
+        <button class="${p.tag?'ghost':''}" onclick="openPromptTag('${p.md5}')">${p.tag?'✏️':'🏷️ Ponerle nombre'}</button>
+        <button class="ghost" onclick="usePrompt('${p.md5}')" title="Usarlo en la próxima corrida">▶</button></td></tr>`).join('') + '</table>'
+    : '<p class="muted">Aún no hay corridas ni prompts etiquetados.</p>';
+  $('bench-pdiff').disabled = checkedPrompts().length!==2;
+}
+// Filtro de la tabla de corridas: los prompts que usan las corridas de este set.
+function fillPromptFilter(){
+  const sel = $('bench-pfilter'), prev = sel.value, seen = new Map();
+  for(const r of BENCH.runs||[]) if(r.prompt_md5) seen.set(r.prompt_md5, r.prompt_tag || 'sin etiqueta · '+short(r.prompt_md5));
+  sel.innerHTML = '<option value="">🏷️ todos los prompts</option>' + [...seen].map(([m,t])=>`<option value="${m}">🏷️ ${esc(t)}</option>`).join('');
+  sel.value = seen.has(prev) ? prev : '';
+  sel.hidden = seen.size < 2 && !sel.value;
+}
+// Estado del prompt del formulario de corrida: ¿tiene nombre? Si no, pide uno antes de correr.
+async function promptStatus(){
+  if(!BENCH.set){ $('bench-psum').textContent = ''; return; }
+  const text = $('bench-system').value;
+  let lk; try{ lk = await bpost('/api/bench/prompts/lookup', {text, topic: BENCH.set.topic}); }catch(e){ return; }
+  if(text !== $('bench-system').value) return;   // el texto cambió mientras se consultaba
+  BENCH.plook = lk;
+  $('bench-psel').value = (BENCH.prompts||[]).some(p=>p.md5===lk.md5 && p.tag) ? lk.md5 : '';
+  if(lk.tag){
+    $('bench-psum').innerHTML = `<span class="ptag">🏷️ ${esc(lk.tag)}</span>`;
+    $('bench-pstatus').innerHTML = `<span class="muted">Huella <code>${short(lk.md5)}</code> · ${lk.length.toLocaleString()} caracteres · usado en ${lk.n_runs} corridas${lk.note?' · '+esc(lk.note):''}</span>`;
+  }else{
+    const keep = $('bench-pnew') ? [$('bench-pnew').value, $('bench-pnote').value] : ['', ''];
+    $('bench-psum').innerHTML = `<span class="ptag none">⚠️ prompt sin etiqueta</span>`;
+    $('bench-pstatus').innerHTML = `<span style="color:#fbbf24">⚠️ Este texto ${lk.n_runs ? `ya se usó en ${lk.n_runs} corridas pero` : 'es nuevo:'} no tiene nombre. Pónselo antes de correr:</span>
+      <input type="text" id="bench-pnew" maxlength="60" placeholder="etiqueta, p. ej. penal-sencillo-v3" value="${attr(keep[0])}">
+      <input type="text" id="bench-pnote" placeholder="nota (opcional): qué cambia" value="${attr(keep[1])}">
+      <span class="muted" style="width:100%">Huella <code>${short(lk.md5)}</code> · ${lk.length.toLocaleString()} caracteres</span>`;
+  }
+}
+// Antes de correr: si el prompt no tiene nombre, lo guarda con el que se escribió (o pide uno).
+async function ensurePromptTag(){
+  if(!$('bench-system').value.trim() && BENCH.set){   // vacío = el del tema: se muestra para que se vea qué se corre
+    const t = (window.__topics||[]).find(x=>x.topic===BENCH.set.topic); if(t) $('bench-system').value = t.system_prompt||'';
+  }
+  await promptStatus();
+  const lk = BENCH.plook; if(!lk || lk.tag) return true;
+  const tag = ($('bench-pnew').value||'').trim();
+  if(!tag){ $('bench-sys').open = true; $('bench-pnew').focus();
+    bmsg('⚠️ El system prompt no tiene etiqueta: escribe un nombre en «⚙️ System prompt» antes de correr.', false); return false; }
+  try{ await bjson('/api/bench/prompts/'+lk.md5, {method:'PUT', headers:{'Content-Type':'application/json'},
+         body: JSON.stringify({tag, note: $('bench-pnote').value, text: $('bench-system').value})}); }
+  catch(e){ $('bench-sys').open = true; bmsg(esc(e.message), false); return false; }
+  await loadPrompts();
+  return true;
+}
+function usePrompt(md5){
+  const p = (BENCH.prompts||[]).find(x=>x.md5===md5); if(!p) return;
+  $('bench-system').value = p.text; benchSub('run'); $('bench-sys').open = true; promptStatus();
+  $('bench-sys').scrollIntoView({behavior:'smooth', block:'center'});
+}
+async function openPromptTag(md5){
+  const p = (BENCH.prompts||[]).find(x=>x.md5===md5); if(!p) return;
+  BENCH.ptagging = md5;
+  $('bp-tag').value = p.tag||''; $('bp-note').value = p.note||'';
+  $('bp-untag').hidden = !p.tag;
+  $('bp-info').innerHTML = `Huella <code>${short(md5)}</code> · ${p.text.length.toLocaleString()} caracteres · ${p.n_runs} corridas · «${esc(p.text.slice(0,80).replace(/\s+/g,' '))}…»`;
+  $('bp-history').innerHTML = '';
+  openModal('bench-prompt-modal'); $('bp-tag').focus();
+  try{ const h = await bjson(`/api/bench/prompts/${md5}/history`);
+    const verb = {crear:'puso', editar:'cambió a', quitar:'quitó'};
+    $('bp-history').innerHTML = h.length ? '<b>Historial</b><br>' + h.map(x=>`${esc((x.changed_at||'').slice(0,16))} · ${esc((x.changed_by||'?').split('@')[0])} ${verb[x.action]||x.action} «${esc(x.tag||'')}»${x.note?' — '+esc(x.note):''}`).join('<br>') : '';
+  }catch(e){}
+}
+async function savePromptTag(){
+  const md5 = BENCH.ptagging, p = (BENCH.prompts||[]).find(x=>x.md5===md5);
+  try{ await bjson('/api/bench/prompts/'+md5, {method:'PUT', headers:{'Content-Type':'application/json'},
+         body: JSON.stringify({tag: $('bp-tag').value, note: $('bp-note').value, text: p ? p.text : ''})}); }
+  catch(e){ $('bp-info').innerHTML = `<span style="color:#f87171">${esc(e.message)}</span>`; return; }
+  closeModal('bench-prompt-modal'); await loadPrompts(); loadBenchRuns();
+}
+async function untagPrompt(){
+  const md5 = BENCH.ptagging;
+  if(!confirm('¿Quitar la etiqueta? Las corridas no se tocan; este prompt volverá a «sin etiqueta».')) return;
+  try{ await bjson('/api/bench/prompts/'+md5, {method:'DELETE'}); }catch(e){ bmsg(esc(e.message), false); return; }
+  closeModal('bench-prompt-modal'); await loadPrompts(); loadBenchRuns();
+}
+const pname = p => p.tag || 'sin etiqueta · '+short(p.md5);
+function showPromptText(md5){
+  const p = (BENCH.prompts||[]).find(x=>x.md5===md5); if(!p) return;
+  $('bpt-title').innerHTML = `🏷️ ${esc(pname(p))}`;
+  $('bpt-legend').innerHTML = `Huella <code>${short(md5)}</code> · ${p.text.length.toLocaleString()} caracteres${p.note?' · '+esc(p.note):''}`;
+  $('bpt-body').textContent = p.text;
+  openModal('bench-ptext-modal');
+}
+// Diferencia por líneas entre dos prompts (LCS): verde = solo en B, rojo tachado = solo en A.
+function lineDiff(a, b){
+  const A = a.split('\n'), B = b.split('\n'), n = A.length, m = B.length;
+  const L = Array.from({length: n+1}, ()=>new Uint16Array(m+1));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--) L[i][j] = A[i]===B[j] ? L[i+1][j+1]+1 : Math.max(L[i+1][j], L[i][j+1]);
+  const out = []; let i=0, j=0;
+  while(i<n || j<m){
+    if(i<n && j<m && A[i]===B[j]){ out.push([' ', A[i]]); i++; j++; }
+    else if(j<m && (i>=n || L[i][j+1] >= L[i+1][j])) out.push(['+', B[j++]]);
+    else out.push(['-', A[i++]]);
+  }
+  return out;
+}
+function diffPrompts(){
+  const [ma, mb] = checkedPrompts(); const ps = BENCH.prompts||[];
+  let a = ps.find(x=>x.md5===ma), b = ps.find(x=>x.md5===mb); if(!a || !b) return;
+  if((a.first_run||'') > (b.first_run||'')) [a, b] = [b, a];   // A = el más antiguo
+  const d = lineDiff(a.text, b.text);
+  const add = d.filter(x=>x[0]==='+').length, del = d.filter(x=>x[0]==='-').length;
+  $('bpt-title').innerHTML = `🔀 ${esc(pname(a))} → ${esc(pname(b))}`;
+  $('bpt-legend').innerHTML = `A = <b>${esc(pname(a))}</b> · B = <b>${esc(pname(b))}</b> · <span style="color:#86efac">+${add} líneas solo en B</span> · <span style="color:#fca5a5">−${del} líneas solo en A</span> · las líneas iguales se muestran solo cerca de un cambio`;
+  // Contexto: 2 líneas iguales alrededor de cada cambio; el resto se resume.
+  const near = d.map((x,k)=>x[0]!==' ' ? 0 : Math.min(...d.map((y,q)=>y[0]!==' ' ? Math.abs(q-k) : 1e9)));
+  let html = '', skipped = 0;
+  d.forEach((x,k)=>{
+    if(x[0]===' ' && near[k] > 2){ skipped++; return; }
+    if(skipped){ html += `<span class="dl gap">… ${skipped} líneas iguales …</span>`; skipped = 0; }
+    html += `<span class="dl ${x[0]==='+'?'add':x[0]==='-'?'del':''}">${x[0]===' '?'&nbsp;':x[0]} ${esc(x[1])||'&nbsp;'}</span>`;
+  });
+  if(skipped) html += `<span class="dl gap">… ${skipped} líneas iguales …</span>`;
+  $('bpt-body').innerHTML = add || del ? html : '<span class="muted">Los textos son iguales línea por línea (difieren solo en espacios).</span>';
+  openModal('bench-ptext-modal');
 }
