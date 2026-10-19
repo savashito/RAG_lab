@@ -202,6 +202,20 @@ the model **sees** (a jurisdiction gate before retrieval) is the intervention we
   **Paper:** strong motivation: lay users *prefer* LLM legal advice, so wrong-jurisdiction answers reach people who
   are inclined to trust them. Consistent with our participants rarely detecting problems.
 
+- **Basoah, Chechelnitsky, Long, Reinecke, Zerva, Zhou, Díaz & Sap (2025). "Not Like Us, Hunty: Measuring Perceptions
+  and Behavioral Effects of Minoritized Anthropomorphic Cues in LLMs." *FAccT 2025*.**
+  [arXiv 2505.05660](https://arxiv.org/abs/2505.05660) — 498 African American English speakers and 487 queer-slang
+  speakers answered questions with LLM suggestions written in standard English or in their own sociolect. Both groups
+  **relied more on the standard-English agent** and rated it more positively; speaking "like the user" did not raise
+  reliance or trust. Reliance was measured **behaviorally** (whether people followed the suggestion), not only
+  self-reported. (Suggested by the user, 2026-10-19.)
+  **Paper:** closest prior evidence for our prompt-style result. In round 1, the plain-language prompt improved
+  perceived usability but not comprehension; this paper also finds that adapting the language to the user doesn't
+  automatically change reliance or safety. Same venue, so it helps position the work for FAccT reviewers.
+  **Tlacua:** (1) Karen's `tlacua-v1` («claro, cercano, empático») is this kind of manipulation: measure its effect,
+  don't assume it. (2) Add a **behavioral** reliance measure to a future round (e.g. a choice that follows or ignores
+  the assistant's advice), since our "willingness to act" is self-reported.
+
 - **Tan, Westermann & Benyekhlef (2023). "ChatGPT as an Artificial Lawyer?" *AI4AJ workshop @ ICAIL 2023* (CEUR-WS
   Vol. 3435).** [PDF](https://ceur-ws.org/Vol-3435/short2.pdf) — Legal information for laypeople evaluated as a
   **process** (understanding the person's situation and needs, not just accuracy); compares ChatGPT with JusticeBot.
