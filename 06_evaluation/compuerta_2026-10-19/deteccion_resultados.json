@@ -1,0 +1,1229 @@
+[
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Mi pareja me insulta y me empuja seguido en la casa. ¿Qué dice la ley penal?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "La persona que me supervisa en el trabajo me manda mensajes con insinuaciones sexuales. ¿Es delito?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Mi expareja subió a redes sociales fotos íntimas mías sin mi permiso. ¿Qué puedo hacer?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Alguien se metió a mi casa sin permiso mientras no estaba, aunque no se llevó nada. ¿Es delito?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Una persona se metió a vivir a mi terreno y no se quiere salir. ¿Qué delito comete?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Me quitaron la bicicleta afuera de una tienda. ¿Qué pena tiene el que se la llevó?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Mi hermano me grita, me amenaza y me ha empujado varias veces en la casa donde vivimos. ¿Lo puedo denunciar?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Alguien con quien salí me amenaza con publicar unas fotos íntimas que yo le mandé. ¿Eso es delito?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "sin_lugar",
+  "texto": "Di un anticipo para rentar un departamento y resultó que el que me lo rentó no era el dueño. ¿Qué puedo hacer?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "En la Ciudad de México me vendieron un celular por internet y nunca me llegó. ¿Qué delito es?",
+  "esperado": [
+   "Ciudad de México"
+  ],
+  "detectado": [
+   "Ciudad de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ciudad de México",
+    "estado": "Ciudad de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Ciudad de México\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "Vivo en la Ciudad de México y mi exroomie entró a mi departamento sin permiso. ¿Es delito?",
+  "esperado": [
+   "Ciudad de México"
+  ],
+  "detectado": [
+   "Ciudad de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ciudad de México",
+    "estado": "Ciudad de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Ciudad de México\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "En Querétaro me robaron la mochila en el transporte público. ¿Qué pena tiene?",
+  "esperado": [
+   "Querétaro"
+  ],
+  "detectado": [
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "Tengo una casa en Querétaro y unas personas se metieron a vivir sin mi permiso. ¿Qué delito cometen?",
+  "esperado": [
+   "Querétaro"
+  ],
+  "detectado": [
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "En el Estado de México mi papá me pega y me insulta. ¿Qué dice la ley penal?",
+  "esperado": [
+   "Estado de México"
+  ],
+  "detectado": [
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Estado de México",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Estado de México\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "En el Estado de México alguien está pasando por WhatsApp un video íntimo mío. ¿Qué delito es?",
+  "esperado": [
+   "Estado de México"
+  ],
+  "detectado": [
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Estado de México",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Estado de México\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "En Morelos un cobrador me dijo que me va a lastimar si no le pago. ¿Es delito?",
+  "esperado": [
+   "Morelos"
+  ],
+  "detectado": [
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Morelos",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Morelos\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "un_estado",
+  "texto": "Trabajo en Morelos y mi jefa me presiona para salir con ella a cambio de un aumento. ¿Es delito?",
+  "esperado": [
+   "Morelos"
+  ],
+  "detectado": [
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Morelos",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": false\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "En Coyoacán me robaron la cartera en el mercado. ¿Qué pena tiene eso?",
+  "esperado": [
+   "Ciudad de México"
+  ],
+  "detectado": [
+   "Ciudad de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Coyoacán",
+    "estado": "Ciudad de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Coyoacán\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "En Iztapalapa un vecino me amenazó con lastimarme. ¿Es delito?",
+  "esperado": [
+   "Ciudad de México"
+  ],
+  "detectado": [
+   "Ciudad de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Iztapalapa",
+    "estado": "Ciudad de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Iztapalapa\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "En Ecatepec me vendieron un coche con papeles falsos. ¿Qué delito es?",
+  "esperado": [
+   "Estado de México"
+  ],
+  "detectado": [
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ecatepec",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Ecatepec\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "En Toluca mi casero entró a mi casa sin avisar. ¿Eso es delito?",
+  "esperado": [
+   "Estado de México"
+  ],
+  "detectado": [
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Toluca",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Toluca\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "En Cuernavaca alguien ocupó un terreno de mi familia y dice que ahora es suyo. ¿Qué delito comete?",
+  "esperado": [
+   "Morelos"
+  ],
+  "detectado": [
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Cuernavaca",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuernavaca\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "En Cuautla alguien publicó fotos íntimas mías en Facebook. ¿Qué delito es?",
+  "esperado": [
+   "Morelos"
+  ],
+  "detectado": [
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Cuautla",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuautla\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "En San Juan del Río mi pareja me golpea y me controla el dinero. ¿Qué dice la ley penal?",
+  "esperado": [
+   "Querétaro"
+  ],
+  "detectado": [
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "San Juan del Río",
+    "estado": "Querétaro"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"San Juan del Río\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "lugar_indirecto",
+  "texto": "Trabajo en Corregidora y mi supervisor me dijo que me sube de puesto si salgo con él. ¿Es delito?",
+  "esperado": [
+   "Querétaro"
+  ],
+  "detectado": [
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Corregidora",
+    "estado": "Querétaro"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Corregidora\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "¿Cómo se castiga el robo en la Ciudad de México y en Querétaro?",
+  "esperado": [
+   "Ciudad de México",
+   "Querétaro"
+  ],
+  "detectado": [
+   "Ciudad de México",
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ciudad de México",
+    "estado": "Ciudad de México"
+   },
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "¿Qué diferencias hay entre el delito de fraude en la Ciudad de México y en el Estado de México?",
+  "esperado": [
+   "Ciudad de México",
+   "Estado de México"
+  ],
+  "detectado": [
+   "Ciudad de México",
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ciudad de México",
+    "estado": "Ciudad de México"
+   },
+   {
+    "texto": "Estado de México",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "Compara cómo regulan la violencia familiar Querétaro y Morelos.",
+  "esperado": [
+   "Morelos",
+   "Querétaro"
+  ],
+  "detectado": [
+   "Morelos",
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro"
+   },
+   {
+    "texto": "Morelos",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "¿El hostigamiento sexual en el trabajo se castiga igual en el Estado de México que en Morelos?",
+  "esperado": [
+   "Estado de México",
+   "Morelos"
+  ],
+  "detectado": [
+   "Estado de México",
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Estado de México",
+    "estado": "Estado de México"
+   },
+   {
+    "texto": "Morelos",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "¿Qué dice la ley de la Ciudad de México y la de Morelos sobre publicar fotos íntimas de alguien sin su permiso?",
+  "esperado": [
+   "Ciudad de México",
+   "Morelos"
+  ],
+  "detectado": [
+   "Ciudad de México",
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ciudad de México",
+    "estado": "Ciudad de México"
+   },
+   {
+    "texto": "Morelos",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "Si alguien invade un terreno, ¿qué delito comete en Querétaro y cuál en el Estado de México?",
+  "esperado": [
+   "Estado de México",
+   "Querétaro"
+  ],
+  "detectado": [
+   "Estado de México",
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro"
+   },
+   {
+    "texto": "Estado de México",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "¿Meterse a una casa sin permiso es delito en la Ciudad de México y en Querétaro? ¿Con qué pena?",
+  "esperado": [
+   "Ciudad de México",
+   "Querétaro"
+  ],
+  "detectado": [
+   "Ciudad de México",
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ciudad de México",
+    "estado": "Ciudad de México"
+   },
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Querétaro\",\n      \"estado\": \"Querétaro\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "comparacion",
+  "texto": "Compara la pena del robo simple en la Ciudad de México, el Estado de México y Morelos.",
+  "esperado": [
+   "Ciudad de México",
+   "Estado de México",
+   "Morelos"
+  ],
+  "detectado": [
+   "Ciudad de México",
+   "Estado de México",
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Ciudad de México",
+    "estado": "Ciudad de México"
+   },
+   {
+    "texto": "Estado de México",
+    "estado": "Estado de México"
+   },
+   {
+    "texto": "Morelos",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Ciudad de México\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Estado de México\",\n      \"estado\": \"Estado de México\"\n    },\n    {\n      \"texto\": \"Morelos\",\n      \"estado\": \"Morelos\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Detuvieron a mi primo justo en el momento en que estaba robando. ¿Eso es flagrancia? ¿Qué dice la ley?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Si detienen a alguien en flagrancia por un delito que se persigue por querella y la víctima no ha presentado la querella, ¿cuánto tiempo lo pueden tener detenido?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "¿En qué delitos se puede llegar a un acuerdo con la víctima para terminar el proceso penal?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "¿Qué es un criterio de oportunidad y en qué casos no se puede aplicar?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "nacional",
+  "texto": "Alguien me exige dinero por teléfono amenazando con hacerle daño a mi familia. ¿Qué delito es y qué pena tiene?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "fuera_corpus",
+  "texto": "En Puebla me robaron el celular en la calle. ¿Qué pena tiene ese delito?",
+  "esperado": [
+   "Puebla"
+  ],
+  "detectado": [
+   "Puebla"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Puebla",
+    "estado": "Puebla"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Puebla\", \"estado\": \"Puebla\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "fuera_corpus",
+  "texto": "En Guadalajara le pagué a alguien un servicio que nunca hizo y desapareció con el dinero. ¿Qué delito es?",
+  "esperado": [
+   "Jalisco"
+  ],
+  "detectado": [
+   "Jalisco"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Guadalajara",
+    "estado": "Jalisco"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Guadalajara\", \"estado\": \"Jalisco\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "fuera_corpus",
+  "texto": "En Monterrey mi pareja me golpea seguido. ¿Qué dice la ley penal de Nuevo León?",
+  "esperado": [
+   "Nuevo León"
+  ],
+  "detectado": [
+   "Nuevo León"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Monterrey",
+    "estado": "Nuevo León"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Monterrey\", \"estado\": \"Nuevo León\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "fuera_corpus",
+  "texto": "En Oaxaca un vecino me amenazó con quemar mi casa. ¿Es delito?",
+  "esperado": [
+   "Oaxaca"
+  ],
+  "detectado": [
+   "Oaxaca"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Oaxaca",
+    "estado": "Oaxaca"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Oaxaca\", \"estado\": \"Oaxaca\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "fuera_corpus",
+  "texto": "En Mérida alguien se metió a mi casa sin permiso. ¿Qué delito es?",
+  "esperado": [
+   "Yucatán"
+  ],
+  "detectado": [
+   "Yucatán"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Mérida",
+    "estado": "Yucatán"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mérida\", \"estado\": \"Yucatán\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "set14",
+  "cat": "fuera_corpus",
+  "texto": "En Veracruz invadieron un terreno de mi familia. ¿Qué delito cometen?",
+  "esperado": [
+   "Veracruz"
+  ],
+  "detectado": [
+   "Veracruz"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Veracruz",
+    "estado": "Veracruz"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Veracruz\", \"estado\": \"Veracruz\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me asaltaron saliendo del metro Pantitlán, ¿qué hago?",
+  "esperado": [
+   "Ciudad de México"
+  ],
+  "detectado": [
+   "Ciudad de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "metro Pantitlán",
+    "estado": "Ciudad de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"metro Pantitlán\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Estoy en Neza y un vecino me rompió la ventana a pedradas.",
+  "esperado": [
+   "Estado de México"
+  ],
+  "detectado": [
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Neza",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Neza\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Xochimilco me cobraron de más en una trajinera y me amenazaron.",
+  "esperado": [
+   "Ciudad de México"
+  ],
+  "detectado": [
+   "Ciudad de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Xochimilco",
+    "estado": "Ciudad de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Xochimilco\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Polanco me clonaron la tarjeta en un restaurante.",
+  "esperado": [
+   "Ciudad de México"
+  ],
+  "detectado": [
+   "Ciudad de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Polanco",
+    "estado": "Ciudad de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Polanco\", \"estado\": \"Ciudad de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Vivo en Tlalnepantla y mi expareja publicó fotos mías sin permiso.",
+  "esperado": [
+   "Estado de México"
+  ],
+  "detectado": [
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Tlalnepantla",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tlalnepantla\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Valle de Chalco me robaron la moto.",
+  "esperado": [
+   "Estado de México"
+  ],
+  "detectado": [
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Valle de Chalco",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Valle de Chalco\", \"estado\": \"Estado de México\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Tepoztlán un guía de turistas me estafó.",
+  "esperado": [
+   "Morelos"
+  ],
+  "detectado": [
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Tepoztlán",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tepoztlán\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Jiutepec me golpearon afuera de un bar.",
+  "esperado": [
+   "Morelos"
+  ],
+  "detectado": [
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Jiutepec",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Jiutepec\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Tequisquiapan me vendieron un terreno que no era del vendedor.",
+  "esperado": [
+   "Querétaro"
+  ],
+  "detectado": [
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Tequisquiapan",
+    "estado": "Querétaro"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Tequisquiapan\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me robaron la cartera en Pachuca.",
+  "esperado": [
+   "Hidalgo"
+  ],
+  "detectado": [
+   "Hidalgo"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Pachuca",
+    "estado": "Hidalgo"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Pachuca\", \"estado\": \"Hidalgo\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Cancún me cobraron un tour que nunca existió.",
+  "esperado": [
+   "Quintana Roo"
+  ],
+  "detectado": [
+   "Quintana Roo"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Cancún",
+    "estado": "Quintana Roo"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cancún\", \"estado\": \"Quintana Roo\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me extorsionaron por teléfono desde Monterrey.",
+  "esperado": [
+   "Nuevo León"
+  ],
+  "detectado": [
+   "Nuevo León"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Monterrey",
+    "estado": "Nuevo León"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Monterrey\", \"estado\": \"Nuevo León\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En Mérida me chocaron y el otro conductor huyó.",
+  "esperado": [
+   "Yucatán"
+  ],
+  "detectado": [
+   "Yucatán"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Mérida",
+    "estado": "Yucatán"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mérida\", \"estado\": \"Yucatán\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me robaron en Los Cabos, en el hotel.",
+  "esperado": [
+   "Baja California Sur"
+  ],
+  "detectado": [
+   "Baja California Sur"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Los Cabos",
+    "estado": "Baja California Sur"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Los Cabos\", \"estado\": \"Baja California Sur\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me robaron el celular en Texas, ¿puedo denunciar en México?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Texas",
+    "estado": null
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Texas\", \"estado\": null}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Aquí en mi colonia hay un señor que amenaza a todos.",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "En la central de abastos me vendieron mercancía robada.",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "central de abastos",
+    "estado": null
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"central de abastos\", \"estado\": null}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "¿Qué pena tiene el homicidio culposo según el Código Penal Federal?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [],
+  "raw": "```json\n{\"lugares\": [], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "¿Es igual de grave el robo en Iztacalco que en Ecatepec?",
+  "esperado": [
+   "Ciudad de México",
+   "Estado de México"
+  ],
+  "detectado": [
+   "Ciudad de México",
+   "Estado de México"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Iztacalco",
+    "estado": "Ciudad de México"
+   },
+   {
+    "texto": "Ecatepec",
+    "estado": "Estado de México"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Iztacalco\", \"estado\": \"Ciudad de México\"}, {\"texto\": \"Ecatepec\", \"estado\": \"Estado de México\"}], \"comparar\": true}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.",
+  "esperado": [
+   "Guanajuato",
+   "Querétaro"
+  ],
+  "detectado": [
+   "Guanajuato",
+   "Querétaro"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Querétaro",
+    "estado": "Querétaro"
+   },
+   {
+    "texto": "Celaya",
+    "estado": "Guanajuato"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\"}, {\"texto\": \"Celaya\", \"estado\": \"Guanajuato\"}], \"comparar\": false}\n```"
+ }
+]

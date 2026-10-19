@@ -822,7 +822,8 @@ class Bench:
                     a = _retry(lambda: self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
                                                 cfg['rerank'], decompose=cfg.get('decompose', False),
-                                                route=cfg.get('route', False)), self._cancel)
+                                                route=cfg.get('route', False), gate=cfg.get('gate', False)),
+                               self._cancel)
                     g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or '',
                                                   cfg.get('judge_notes') or ''),
                                self._cancel)
@@ -839,7 +840,7 @@ class Bench:
                                rewrite=a.get('rewrite'), score_kind=a.get('score_kind'), hyde_passage=a.get('hyde_passage'),
                                judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'),
                                retrieval=row['retrieval'], citations=row['citations'], subqueries=a.get('subqueries'),
-                               routes=a.get('routes'))
+                               routes=a.get('routes'), gate=a.get('gate'))
                 except Exception as e:  # noqa: BLE001 — una pregunta que falla no tumba la corrida
                     row['error'] = det['error'] = f'{type(e).__name__}: {e}'
                 row['seconds'] = round(time.time() - t0, 1)
@@ -1223,7 +1224,7 @@ class Bench:
                 cfg = {'setting': b.get('setting') or 'híbrido', 'k': int(b.get('k') or 10),
                        'neighbors': bool(b.get('neighbors', True)), 'hyde': bool(b.get('hyde', False)),
                        'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
-                       'route': bool(b.get('route', False)),
+                       'route': bool(b.get('route', False)), 'gate': bool(b.get('gate', False)),
                        'system': b.get('system') or '',
                        'jurisdictions': b.get('jurisdictions') or []}
                 qids = [int(x) for x in (b.get('question_ids') or [])]

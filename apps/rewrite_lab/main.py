@@ -104,6 +104,7 @@ JURISDICTIONS = {
     'queretaro': 'Querétaro',
     'cdmx': 'Ciudad de México',
     'edomex': 'Estado de México',
+    'morelos': 'Morelos',
     'nacional': 'Nacional (procedimientos)',
     'general': 'General / Doctrina',
 }
@@ -111,7 +112,7 @@ DEFAULT_JURISDICTION = 'general'
 # Backfill de los documentos ya ingeridos: se deriva el lugar del nombre del archivo.
 # El orden importa (lo más específico primero). Lo no reconocido queda 'general'.
 JURISDICTION_BY_SOURCE = [
-    ('Quer', 'queretaro'), ('Ciudad de M', 'cdmx'), ('Estado de M', 'edomex'),
+    ('Quer', 'queretaro'), ('PENALEM', 'morelos'), ('Ciudad de M', 'cdmx'), ('Estado de M', 'edomex'),
     ('Nacional de Proced', 'nacional'), ('Federal', 'federal'),
 ]
 
@@ -1000,8 +1001,25 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
     return (lists[0] if len(lists) == 1 else interleave_scored(lists)), kind, rw
 
 
+# ── Compuerta de jurisdicción (jurisdiction_gate.py) ─────────────────────────────────
+# Antes de buscar, un LLM detecta el lugar de los hechos; la búsqueda solo ve los códigos penales
+# de los estados que la persona mencionó (más leyes nacionales, federales y doctrina), y el LLM
+# recibe una nota: qué lugar se detectó, o que pregunte el estado si no hay ninguno.
+import jurisdiction_gate as jgate  # noqa: E402
+
+
+def gate_for(question: str, topic=None) -> dict:
+    """Decisión de la compuerta. Los estados «disponibles» salen de las etiquetas `jurisdiction` del
+    corpus del tema (un estado está si tiene fragmentos con su etiqueta), no de una lista fija."""
+    en_tema = {m.get('jurisdiction') for m in DOC_BY_ID.values() if not topic or m.get('topic') == topic}
+    disponibles = {jgate.normalizar_estado(label): jid for jid, label in JURISDICTIONS.items()
+                   if jgate.normalizar_estado(label) and jid in en_tema}
+    no_estatales = [jid for jid, label in JURISDICTIONS.items() if not jgate.normalizar_estado(label)]
+    return jgate.decidir(question, llm, disponibles, no_estatales)
+
+
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
-        neighbors=True, hyde=False, rerank=False, decompose=False, route=False):
+        neighbors=True, hyde=False, rerank=False, decompose=False, route=False, gate=False):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -1010,6 +1028,9 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
         k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
     dbg: dict = {}
+    g = gate_for(question, topic) if gate else None
+    if g:   # la compuerta decide los lugares (reemplaza el filtro «Lugar»)
+        jurisdictions = g['jurisdictions']
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions, neighbors,
                                                  hyde, rerank, decompose, debug=dbg, route=route)
@@ -1021,13 +1042,14 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     context = '\n\n'.join(
         f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
         for ch in top)
+    nota = f"{g['nota']}\n\n" if g else ''
     answer = llm.chat((system or '').strip() or system_for(topic),
-                      f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}',
+                      f'CONTEXTO:\n{context}\n\n{nota}PREGUNTA: {question}',
                       max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
             'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
             'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
-            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes')}
+            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes'), 'gate': g}
 
 
 # ── Tab "Conversacional" ──────────────────────────────────────────────────────────
