@@ -348,7 +348,9 @@
  <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
  <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
  <details id="ask-prompt-box" style="margin-top:10px">
-   <summary>⚙️ System prompt (editable — experimenta con distintos prompts)</summary>
+   <summary>⚙️ System prompt (editable — experimenta con distintos prompts) <span id="ask-psum"></span></summary>
+   <div class="row" style="margin:8px 0 0"><label>Usar un prompt etiquetado: <select id="ask-psel" style="max-width:420px"></select></label>
+     <span class="muted" style="font-size:12px">o edita el texto abajo</span></div>
    <textarea id="ask-system" style="min-height:120px;margin-top:8px"></textarea>
    <div class="row">
     <button id="ask-prompt-reset" >Borra tus cambios!</button>
@@ -375,7 +377,9 @@
    <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="chat-decompose" checked> descomponer 🧩</label>
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="chat-route"> routing por código 🧭</label>
    <details id="chat-prompt-box" style="margin:0">
-     <summary>⚙️ System prompt</summary>
+     <summary>⚙️ System prompt <span id="chat-psum"></span></summary>
+     <div class="row" style="margin:8px 0 0"><label>Usar un prompt etiquetado: <select id="chat-psel" style="max-width:420px"></select></label>
+       <span class="muted" style="font-size:12px">o edita el texto abajo</span></div>
      <textarea id="chat-system" style="min-height:120px;margin-top:8px"></textarea>
      <div class="row"><button id="chat-prompt-reset" class="ghost">Restaurar</button>
        <span class="muted">Instrucción del asistente en cada respuesta.</span></div>
@@ -897,7 +901,32 @@ function canIngestTopic(t){
 let firstTopicsLoad=true;
 function topicObj(selId){ return (window.__topics||[]).find(t=>t.topic===$(selId).value); }
 // Carga el system prompt del tópico elegido en el textbox editable del tab.
-function syncSystem(selId, taId){ const t=topicObj(selId); if(t && t.system_prompt!=null) $(taId).value=t.system_prompt; }
+function syncSystem(selId, taId){ const t=topicObj(selId); if(t && t.system_prompt!=null) $(taId).value=t.system_prompt; promptTagOf(taId); }
+// 🏷️ Prompts etiquetados (los mismos de 🧪 Benchmark → 🗂️ Prompts): un menú para elegir uno y, junto al
+// título, el nombre del texto que está en la caja (o «sin etiqueta» si se editó).
+const PROMPT_PICKERS = {'ask-system': ['ask-psel', 'ask-psum', 'ask-topic'], 'chat-system': ['chat-psel', 'chat-psum', 'chat-topic']};
+let TAGGED_PROMPTS = [];
+async function loadTaggedPrompts(){
+  try{ TAGGED_PROMPTS = (await (await fetch('/api/bench/prompts')).json()).filter(p=>p.tag); }catch(e){ return; }
+  for(const [ta, [sel]] of Object.entries(PROMPT_PICKERS)){
+    $(sel).innerHTML = '<option value="">— elegir —</option>' + TAGGED_PROMPTS.map(p=>
+      `<option value="${p.md5}">${esc(p.tag)}${p.current_for.length?' · actual del tema':''}</option>`).join('');
+    promptTagOf(ta);
+  }
+}
+async function promptTagOf(ta){
+  const [sel, sum, topicSel] = PROMPT_PICKERS[ta] || []; if(!sel) return;
+  const text = $(ta).value;
+  let lk; try{ lk = await (await fetch('/api/bench/prompts/lookup', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({text, topic: $(topicSel).value})})).json(); }catch(e){ return; }
+  if(text !== $(ta).value) return;   // cambió mientras se consultaba
+  $(sel).value = TAGGED_PROMPTS.some(p=>p.md5===lk.md5) ? lk.md5 : '';
+  $(sum).innerHTML = lk.tag ? `<span class="ptag">🏷️ ${esc(lk.tag)}</span>` : (lk.md5 ? '<span class="ptag none">sin etiqueta</span>' : '');
+}
+for(const [ta, [sel]] of Object.entries(PROMPT_PICKERS)){
+  $(sel).addEventListener('change', ()=>{ const p = TAGGED_PROMPTS.find(x=>x.md5===$(sel).value); if(p){ $(ta).value = p.text; promptTagOf(ta); } });
+  let timer; $(ta).addEventListener('input', ()=>{ clearTimeout(timer); timer = setTimeout(()=>promptTagOf(ta), 400); });
+}
 async function loadTopics(){
   try{
     const ts=await (await fetch('/api/topics')).json();
@@ -913,7 +942,7 @@ async function loadTopics(){
       else if(DEFAULT_TOPIC && list.some(t=>t.topic===DEFAULT_TOPIC)) el.value=DEFAULT_TOPIC;
     }
     benchFillTopics();
-    if(firstTopicsLoad){ syncSystem('ask-topic','ask-system'); syncSystem('chat-topic','chat-system'); firstTopicsLoad=false; }
+    if(firstTopicsLoad){ syncSystem('ask-topic','ask-system'); syncSystem('chat-topic','chat-system'); firstTopicsLoad=false; loadTaggedPrompts(); }
   }catch(e){}
 }
 
