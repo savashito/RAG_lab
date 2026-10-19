@@ -1,0 +1,316 @@
+# Estudio con usuarios — definición. Se edita en /estudios (o aquí, mientras siga en borrador).
+# Las 3 situaciones vienen de research_paper/propuesta_3_escenarios.md.
+# ⚠️ PENDIENTE DE VALIDACIÓN POR KAREN: artículos esperados, respuestas correctas y referencias.
+id: piloto_penal
+titulo: Estudio sobre un asistente de información legal
+asistente:                    # configuración FIJA: todas las personas usan el mismo sistema
+  tema: derecho_penal_mexicano
+  setting: híbrido
+  hyde: true
+  route: true                 # routing por código
+  descomponer: true
+  k: 10                       # igual que la app y las corridas del benchmark (+ vecinos aparte)
+  max_turnos: 6               # preguntas máximas al asistente por situación
+  historial: 10
+escenarios_por_persona: 3     # todas las personas ven las 3, en orden aleatorio
+duracion: unos 15 minutos     # se muestra en la bienvenida del kiosco; ajustar con el tiempo real del piloto
+fase: principal               # con qué fase quedan marcados quienes empiecen ahora (los anteriores: «piloto»)
+
+# ── Condiciones experimentales: a cada participante le toca UNA, al azar y mitad y mitad, sin saberlo.
+#    «actual» usa el prompt del tema penal tal como está en la app (lenguaje jurídico, para estudiantes y
+#    profesionales del Derecho). «sencillo» es el prompt de Karen en lenguaje cotidiano.
+condiciones:
+  - id: actual
+  # ⚠️ Al final del prompt sencillo hay un bloque «USO DEL CONTEXTO (OBLIGATORIO)» añadido por Claude, pendiente
+  #    de que Karen lo valide: el prompt actual obliga a responder solo con los artículos recuperados y a
+  #    citarlos; sin ese bloque el modelo puede contestar «de memoria». (Ojo: dentro de `sistema: |` todo es
+  #    texto del prompt, también las líneas que empiezan con #.)
+  - id: sencillo
+    sistema: |
+      ROL Y OBJETIVO
+
+      Eres un asistente jurídico especializado en derecho penal mexicano. Tu función es explicar situaciones legales, derechos, procedimientos y posibles consecuencias jurídicas de manera clara, sencilla y comprensible para personas sin conocimientos de derecho.
+
+      Tu objetivo es que cualquier persona entienda su situación jurídica, sus derechos y qué puede hacer.
+
+      REGLAS DE COMUNICACIÓN
+
+      - Utiliza un lenguaje cotidiano, cercano, respetuoso y empático.
+      - Evita tecnicismos, formalismos y expresiones jurídicas complicadas. Cuando sean indispensables, explica su significado con palabras sencillas.
+      - Comunícate de manera natural, como en una conversación, sin perder precisión jurídica.
+      - Utiliza ejemplos cotidianos cuando faciliten la comprensión.
+      - Prioriza respuestas breves, directas y adaptadas a la pregunta.
+      - Evita un tono académico, burocrático, condescendiente o alarmista.
+
+      ANÁLISIS Y ORIENTACIÓN JURÍDICA
+
+      1. Identifica los hechos relevantes y qué necesita saber la persona.
+      2. Explica su posible significado jurídico sin asumir que existe un delito o que alguien es culpable.
+      3. Describe los derechos, las opciones legales y las posibles consecuencias.
+      4. Orienta sobre los pasos a seguir y las autoridades competentes.
+      5. Solicita únicamente la información indispensable para responder, especialmente la entidad federativa donde ocurrieron los hechos.
+
+      RIGOR JURÍDICO
+
+      - Fundamenta tus respuestas en la legislación penal mexicana aplicable, distinguiendo entre normas federales y locales.
+      - No inventes artículos, delitos, sanciones, procedimientos ni criterios judiciales.
+      - Verifica la vigencia de las normas cuando dispongas de fuentes confiables; si no puedes comprobarla, indícalo.
+      - Distingue entre hechos confirmados, posibilidades jurídicas y aspectos que requieren mayor información.
+      - No garantices resultados ni afirmes responsabilidades penales sin sustento.
+      - Conserva la precisión jurídica al simplificar los conceptos legales.
+
+      TRATO Y SEGURIDAD
+
+      - Escucha sin juzgar, culpabilizar ni hacer suposiciones.
+      - Protege la privacidad y evita solicitar datos personales innecesarios.
+      - Si existe peligro inmediato, prioriza la seguridad de la persona.
+      - No sugieras conductas ilegales ni acciones que obstaculicen investigaciones.
+      - Aclara cuándo es necesario acudir a una persona profesional del derecho.
+
+      ESTRUCTURA DE RESPUESTA
+
+      Adapta tus respuestas a cuatro preguntas fundamentales:
+
+      1. ¿Qué significa lo que me está pasando?
+      2. ¿Cuáles son mis derechos?
+      3. ¿Qué puedo hacer?
+      4. ¿Qué podría pasar después?
+
+      No utilices obligatoriamente esta estructura si una respuesta más breve resulta suficiente.
+
+      PRINCIPIO FUNDAMENTAL
+
+      Explica el derecho con el conocimiento de un especialista y la claridad de alguien que conversa con una persona que nunca ha estudiado leyes.
+
+      La prioridad es que la persona comprenda, no que la respuesta parezca jurídicamente sofisticada.
+
+      USO DEL CONTEXTO (OBLIGATORIO)
+
+      - Responde únicamente con base en los fragmentos incluidos en el apartado CONTEXTO. No uses conocimientos externos ni completes vacíos con suposiciones.
+      - Cada afirmación jurídica importante debe indicar el número de artículo y el nombre completo de la ley o código, tal como aparecen en el CONTEXTO, explicados con palabras sencillas.
+      - No atribuyas a un artículo algo que no aparezca en los fragmentos.
+      - Si el CONTEXTO no alcanza para responder, dilo claramente y explica qué información falta.
+
+# ── Solo en la ÚLTIMA situación de cada persona (el orden es aleatorio, así queda repartida entre las tres
+#    y no influye en cómo preguntan en las demás): ¿se dio cuenta de qué estado era la ley que le citaron?
+ultima_situacion:
+  - id: estado_citado
+    texto: ¿De qué estado era la ley que te citó el asistente en esta situación?
+    opciones:
+      qro: De Querétaro
+      cdmx: De la Ciudad de México
+      otro: De otro estado
+      nacional: Era una ley federal o general (aplica en todo el país)
+      varios: Citó leyes de varios estados
+      no_me_fije: No me fijé
+
+consentimiento: |
+  **Gracias por tu interés.** Este estudio forma parte de una investigación sobre cómo las personas
+  usan herramientas de inteligencia artificial para buscar información jurídica.
+
+  - Leerás **3 situaciones ficticias** y le harás preguntas a un asistente con tus propias palabras.
+  - Al estar satisfecho con las respuestas del asistente jurídico, continuará un pequeño examen para verificar tu comprensión
+  - **No escribas datos personales ni casos reales.** Lo que escribas se guarda con un código, sin tu
+    nombre, número de cuenta ni correo, y se usa solo para la investigación.
+  - Los resultados de la investigación se publicaran en conferencia https://facctconference.org/2027/cfp.html
+  - El asistente **no da asesoría legal** y puede equivocarse. Si tienes un problema legal real, acude
+    a una abogada o abogado, o a la Defensoría Pública.
+  - Participar es voluntario y puedes retirarte en cualquier momento con el botón «Retirarme» y se borrará todo lo que hayas escrito.
+
+tutorial:                     
+  texto: |
+    ## Antes de empezar: ¿qué es el asistente?
+
+    - Es un programa de **inteligencia artificial** que busca en leyes mexicanas (códigos penales y leyes
+      generales) y responde citando los artículos que encontró.
+    - Le escribes **como le escribirías a una persona**, con tus propias palabras. No necesitas saber
+      términos legales.
+    - Debajo de cada respuesta puedes abrir **«Fuentes que consultó el asistente»** para ver los artículos
+      que usó.
+    - Tarda unos segundos en responder.
+    - **Puede equivocarse.** En este estudio queremos saber justamente cómo lo usan las personas.
+
+    Haz una pregunta de práctica para ver cómo funciona. Esta práctica no cuenta para el estudio.
+  # Ejemplo en lenguaje cotidiano y de un tema que NO aparece en ninguna situación (no adelanta respuestas
+  # ni enseña a usar términos legales: la forma de preguntar es justo lo que medimos).
+  ejemplo: Si me encuentro una cartera tirada en la calle y me quedo con el dinero, ¿eso es delito?
+  max_preguntas: 3
+
+perfil:                       # sin nombres: solo lo necesario para comparar perfiles
+  - id: unam
+    pregunta: ¿Eres estudiante activo de la UNAM?
+    opciones: {si: 'Sí', 'no': 'No'}
+  - id: area
+    pregunta: ¿En qué área estudias?
+    opciones:
+      derecho: Derecho
+      fisico_mat: Ciencias Físico-Matemáticas e Ingenierías
+      biologicas: Ciencias Biológicas, Químicas y de la Salud
+      sociales: Ciencias Sociales (sin contar Derecho)
+      humanidades: Humanidades y Artes
+      otra: Otra
+  - id: carrera
+    tipo: texto
+    pregunta: ¿Qué carrera estudias?
+  - id: semestre
+    pregunta: ¿En qué semestre vas?
+    opciones: {'1_2': '1.º o 2.º', '3_4': '3.º o 4.º', '5_6': '5.º o 6.º', '7_8': '7.º u 8.º', '9': '9.º o más', posgrado: 'Posgrado'}
+  - id: formacion_juridica
+    pregunta: ¿Qué formación en derecho tienes?
+    ayuda: Elige la que más se acerque, aunque estudies otra carrera.
+    opciones:
+      ninguna: Ninguna
+      materias: He tomado una o dos materias de derecho
+      carrera: Estudio o estudié Derecho
+      trabajo: Trabajo o he trabajado en algo jurídico
+  - id: uso_ia
+    pregunta: ¿Con qué frecuencia usas asistentes de IA (ChatGPT, Gemini, Copilot, etc.)?
+    opciones: {nunca: 'Nunca', mes: 'Algunas veces al mes', semana: 'Cada semana', diario: 'Diario'}
+  - id: confianza_basal
+    tipo: escala
+    pregunta: ¿Qué tan capaz te sientes de buscar y entender información legal por tu cuenta?
+    ayuda: 1 = nada capaz · 5 = muy capaz
+  - id: edad
+    pregunta: Rango de edad
+    opciones: {'18_20': '18–20', '21_23': '21–23', '24_26': '24–26', '27_30': '27–30', '31': '31 o más'}
+
+# Situaciones SIN género: nombres unisex (Alex, Cris, Ariel) y construcciones sin marca de género
+# («quien supervisa su trabajo», «esa persona», «le pegó»), para que el género de víctima o agresor no
+# sesgue la forma de preguntar ni la confianza en la respuesta.
+escenarios:
+  # ── 1. Jurisdicción: mismos hechos, distinto delito según el estado (a cada quien le toca UNA versión)
+  - id: mensajes_trabajo
+    titulo: Mensajes en el trabajo
+    texto: (cada variante pone el suyo)
+    referencia: (cada variante pone la suya)
+    preguntas:
+      # Opciones con delito, código y artículo exactos, en el mismo formato. Distractores reales del corpus:
+      # Morelos 158 (lo citó el asistente en una prueba con una pregunta sin estado) y el CPF 259 Bis.
+      - id: ley
+        texto: Según lo que averiguaste, ¿qué delito y qué ley se aplican al caso de Alex?
+        opciones:
+          qro_167ter: Hostigamiento sexual — Código Penal del Estado de Querétaro, art. 167 Ter
+          cdmx_179: Acoso sexual — Código Penal de la Ciudad de México, art. 179
+          morelos_158: Hostigamiento y acoso sexual — Código Penal para el Estado de Morelos, art. 158
+          cpf_259bis: Hostigamiento sexual — Código Penal Federal, art. 259 Bis
+          laboral: Ningún delito, es un asunto laboral
+          otra: No está en las opciones la respuesta que busco
+          no_se: No sé
+        correcta: qro_167ter    # la variante CDMX la cambia
+      - id: superior
+        texto: ¿Cambia algo que esa persona sea quien supervisa el trabajo de Alex?
+        opciones:
+          igual: No, da igual quién sea
+          grave: Sí, es más grave
+          contacto: Solo importaría si hubiera contacto físico
+          no_se: No sé
+        correcta: grave
+    variantes:
+      - id: qro
+        texto: |
+          Alex trabaja en una empresa en **Querétaro**. Desde hace semanas, la persona que supervisa
+          directamente su trabajo le manda mensajes con insinuaciones sexuales, y le dijo que podía
+          ayudarle a conseguir un ascenso si aceptaba tener una cita. Nunca ha habido contacto físico.
+          Alex quiere saber si esto es un delito y qué puede hacer.
+        gold:
+          - Cita el artículo 167 Ter del Código Penal del Estado de Querétaro
+        referencia: |
+          Puede ser **hostigamiento sexual** (art. 167 Ter del Código Penal de
+          Querétaro): asediar o solicitar favores sexuales valiéndose de la posición jerárquica o laboral;
+          4 a 8 años de prisión y 200 a 800 días multa. No requiere contacto físico. Sin relación de
+          subordinación sería acoso sexual (art. 167 Bis segundo párrafo, 3 a 5 años). Puede denunciar ante la Fiscalía de
+          Querétaro.
+      - id: cdmx
+        texto: |
+          Alex trabaja en una empresa en la **Ciudad de México**. Desde hace semanas, la persona que
+          supervisa directamente su trabajo le manda mensajes con insinuaciones sexuales, y le dijo que
+          podía ayudarle a conseguir un ascenso si aceptaba tener una cita. Nunca ha habido contacto
+          físico. Alex quiere saber si esto es un delito y qué puede hacer.
+        gold:
+          - Cita el artículo 179 del Código Penal de la Ciudad de México
+        correctas: {ley: cdmx_179}
+        referencia: |
+          Puede ser **acoso sexual** (art. 179 del Código Penal de la Ciudad de México):
+          solicitar favores sexuales o una conducta sexual indeseable que cause daño o sufrimiento
+          psicoemocional; 1 a 3 años de prisión. Como hay relación jerárquica laboral, la pena aumenta en
+          una tercera parte. Se persigue por querella. No requiere contacto físico.
+
+  # ── 2. Lenguaje cotidiano ("chantaje", "fotos") vs. término jurídico; ley general de 2025
+  - id: fotos
+    titulo: Las fotos
+    texto: |
+      Cris tiene 24 años y vive en Querétaro. Hace unos meses le mandó fotos íntimas a una persona que
+      conoció en una aplicación. Ahora esa persona le escribe por WhatsApp: si no le deposita 5,000 pesos,
+      va a publicar las fotos y se las va a mandar a su familia. Cris no sabe si puede hacer algo, porque
+      fue quien mandó las fotos.
+    gold:
+      - Cita el artículo 15 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
+      - Cita el artículo 17 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
+    referencia: |
+      Puede ser **extorsión** (Ley General en materia de Extorsión, art. 15: 15 a 25
+      años), agravada por usar imágenes privadas para coaccionar (art. 17 fr. IV) y por medios
+      electrónicos (fr. V). Haber enviado las fotos no lo excluye; el art. 167 Quinquies del Código Penal
+      de Querétaro también castiga amenazar con difundir imágenes íntimas obtenidas con o sin
+      consentimiento. No debe pagar; puede denunciar y conservar las conversaciones.
+    preguntas:
+      - id: consentimiento
+        texto: ¿Puede ser delito aunque Cris haya mandado las fotos voluntariamente?
+        opciones:
+          si: 'Sí'
+          'no': No, porque Cris las mandó
+          publico: Solo si ya se publicaron
+          no_se: No sé
+        correcta: si
+      # Distractor: el art. 390 del Código Penal Federal (extorsión) está DEROGADO; mide si se usa ley vieja.
+      - id: ley
+        texto: Según lo que averiguaste, ¿qué delito y qué ley se aplican al caso de Cris?
+        opciones:
+          lg_15: Extorsión — Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión, art. 15
+          cpf_390: Extorsión — Código Penal Federal, art. 390
+          qro_167quinquies: Amenaza de difundir imágenes íntimas — Código Penal del Estado de Querétaro, art. 167 Quinquies
+          ninguno: Ningún delito, es un problema entre particulares
+          otra: No está en las opciones la respuesta que busco
+          no_se: No sé
+        correcta: lg_15
+
+  # ── 3. Domicilio vs. lugar de los hechos (y una pregunta procesal)
+  - id: citatorio
+    titulo: El citatorio
+    texto: |
+      Ariel vive y trabaja en la Ciudad de México. Un fin de semana fue a Querétaro y, en un bar, tuvo una
+      pelea con otra persona y le pegó. Ya regresó a la Ciudad de México y le llegó un citatorio de la
+      Fiscalía de Querétaro. Ariel cree que, como vive en la Ciudad de México, le aplican las leyes de la
+      Ciudad de México y su caso lo deben llevar allá.
+    gold:
+      - Cita el artículo 1 del Código Penal del Estado de Querétaro
+      - Cita el artículo 20 del Código Nacional de Procedimientos Penales
+    referencia: |
+      Se aplica el **Código Penal de Querétaro**, porque el hecho ocurrió allá (art. 1:
+      se aplica a los hechos realizados en el Estado de Querétaro); el de la Ciudad de México solo rige
+      los delitos cometidos en su territorio (art. 7). Son competentes las autoridades de Querétaro (CNPP
+      art. 20 fr. I). Vivir en la CDMX no cambia eso. Debe atender el citatorio y buscar defensa
+      (particular o pública).
+    preguntas:
+      - id: codigo
+        texto: ¿Qué código penal se aplica al caso de Ariel?
+        opciones:
+          qro: El de Querétaro, donde ocurrió la pelea
+          cdmx: El de la Ciudad de México, donde vive
+          federal: El Código Penal Federal, porque hay dos estados involucrados
+          no_se: No sé
+        correcta: qro
+      - id: lugar
+        texto: ¿Puede Ariel pedir que su caso lo lleven en la Ciudad de México porque ahí vive?
+        opciones:
+          'no': No; en general lo lleva Querétaro, donde ocurrió
+          si: Sí, los casos siempre se llevan donde vive la persona
+          abogado: Sí, si contrata defensa en la Ciudad de México
+          no_se: No sé
+        correcta: 'no'
+
+cierre:
+  sus: true                   # cuestionario de usabilidad SUS (10 afirmaciones)
+  preguntas_abiertas:
+    - ¿Hubo algo que no entendiste o que te pareció confuso de las respuestas?
+    - ¿Confiarías en este asistente para un problema real? ¿Por qué?
+
