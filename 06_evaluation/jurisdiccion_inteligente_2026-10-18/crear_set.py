@@ -121,6 +121,17 @@ for ley, a, p in [
     ('Código Nacional de Procedimientos Penales', '187', '¿En qué delitos se puede llegar a un acuerdo con la víctima para terminar el proceso penal?'),
     ('Código Nacional de Procedimientos Penales', '256', '¿Qué es un criterio de oportunidad y en qué casos no se puede aplicar?'),
     ('Ley General para Prevenir, Investigar y Sancionar Delitos en Materia de Extorsión', '15', 'Alguien me exige dinero por teléfono amenazando con hacerle daño a mi familia. ¿Qué delito es y qué pena tiene?'),
+    # 2026-10-19: 10 más (con 5 la categoría era muy ruidosa). Artículos verificados en el corpus ese día.
+    ('Código Nacional de Procedimientos Penales', '113', 'Si me detiene la policía, ¿qué derechos tengo?'),
+    ('Código Nacional de Procedimientos Penales', '109', 'Soy víctima de un delito y ya puse la denuncia. ¿Qué derechos tengo durante el proceso?'),
+    ('Código Nacional de Procedimientos Penales', '155', '¿Qué medidas cautelares le puede poner el juez a la persona que me agredió mientras dura el juicio?'),
+    ('Código Nacional de Procedimientos Penales', '167', '¿Para qué delitos procede la prisión preventiva oficiosa?'),
+    ('Código Nacional de Procedimientos Penales', '191', '¿Qué es la suspensión condicional del proceso?'),
+    ('Código Nacional de Procedimientos Penales', '201', 'Le ofrecieron a mi hermano un procedimiento abreviado. ¿Qué requisitos tiene?'),
+    ('Código Nacional de Procedimientos Penales', '313', 'Detuvieron a mi papá y ya tuvo su primera audiencia. ¿En cuánto tiempo el juez decide si lo vinculan a proceso?'),
+    ('Ley General para Prevenir y Sancionar los Delitos en Materia de Secuestro', '9', 'Se llevaron a mi hermano y nos piden dinero para soltarlo. ¿Qué delito es y qué pena tiene?'),
+    ('Ley Federal Contra la Delincuencia Organizada', '2o', '¿Cuándo se considera que un grupo de personas es delincuencia organizada?'),
+    ('Código Penal Federal', '400 Bis', '¿Qué es el lavado de dinero y qué pena tiene?'),
 ]:
     Q('nacional', p, [
         must(f'Cita el art. {a} de la {ley}' if ley.startswith('Ley') else f'Cita el art. {a} del {ley}'),
@@ -144,10 +155,10 @@ for estado, p in [
     ], expected=f'Ocurrió en {estado}, cuyo código penal no está en la base: lo correcto es decirlo y no usar el código de otro estado.',
       extra=f'estado_fuera={estado}')
 
-s = dict(name='Jurisdicción inteligente · ¿cuándo pedir el estado? (47)', topic='derecho_penal_mexicano',
-         description=('47 preguntas en 6 categorías: sin lugar (12, debe pedir el estado y no citar códigos estatales), un estado (8), '
+s = dict(name='Jurisdicción inteligente · ¿cuándo pedir el estado? (57)', topic='derecho_penal_mexicano',
+         description=('57 preguntas en 6 categorías: sin lugar (12, debe pedir el estado y no citar códigos estatales), un estado (8), '
                       'solo ciudad o municipio (8, debe deducir el estado), comparación (8, debe responder cada estado pedido), '
-                      'ley nacional (5, no debe pedir el estado) y estado fuera de la base (6, no debe sustituirlo por otro). '
+                      'ley nacional (15, no debe pedir el estado) y estado fuera de la base (6, no debe sustituirlo por otro). '
                       'Nace del estudio de usuarios: si el asistente responde con un estado que la persona no dijo, la persona '
                       'asume que le aplica. La categoría va en las notas de cada pregunta.'),
          judge_notes=('Mencionar un estado solo para explicar que la respuesta depende del estado, para preguntar cuál es, o para decir '

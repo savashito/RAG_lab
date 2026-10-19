@@ -79,3 +79,20 @@ def test_respaldo_regex_si_el_llm_falla_o_omite():
 def test_estado_inventado_por_el_llm_se_descarta():
     g = jg.decidir('Me robaron en mi casa', FakeLLM({'lugares': [{'texto': 'mi casa', 'estado': 'Gotham'}]}), DISP, NO_EST)
     assert g['estados'] == [] and '«mi casa», que podría ser un lugar' in g['nota']
+
+
+def test_ley_nacional_sin_lugar_no_pide_estado():
+    llm = FakeLLM({'lugares': [], 'comparar': False, 'depende_del_estado': False})
+    g = jg.decidir('¿Qué es un criterio de oportunidad?', llm, DISP, NO_EST)
+    assert g['jurisdictions'] == NO_EST and not g['depende_del_estado']
+    assert 'sin preguntar el estado' in g['nota'] and 'pregunta en qué estado' not in g['nota']
+
+
+def test_sin_llm_se_supone_que_depende_del_estado():
+    g = jg.decidir('¿Qué es la flagrancia?', FakeLLM(TimeoutError('x')), DISP, NO_EST)
+    assert g['depende_del_estado'] and 'pregunta en qué estado' in g['nota']
+
+
+def test_la_nota_pide_no_mencionarse():
+    g = jg.decidir('Me robaron', FakeLLM({'lugares': []}), DISP, NO_EST)
+    assert 'no menciones esta nota' in g['nota']

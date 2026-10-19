@@ -51,8 +51,9 @@ Reglas:
 - «federal», «nacional», «México» como país, y nombres de leyes nacionales (CNPP, Código Penal Federal) NO son lugares.
 - «Estado de México», «Edomex» o un municipio mexiquense → «Estado de México».
 - «comparar» es true si la consulta pide comparar o contrastar dos o más estados.
+- «depende_del_estado» es true si para responder hace falta el código penal de un estado: qué delito es o qué pena tiene una conducta común (robo, fraude, lesiones, amenazas, violencia familiar, despojo, acoso, allanamiento…), porque cada estado los define en su propio código. Es false si la consulta se responde con leyes que aplican en todo el país: el procedimiento penal (detención, flagrancia, derechos de la persona detenida o de la víctima, audiencias, medidas cautelares, prisión preventiva, acuerdos reparatorios, criterio de oportunidad, procedimiento abreviado), los delitos de leyes generales o federales (secuestro, extorsión, delincuencia organizada, lavado de dinero) o conceptos generales.
 Devuelve SOLO JSON, sin texto antes ni después:
-{"lugares": [{"texto": "<como aparece>", "estado": "<estado o null>"}], "comparar": true|false}"""
+{"lugares": [{"texto": "<como aparece>", "estado": "<estado o null>"}], "comparar": true|false, "depende_del_estado": true|false}"""
 
 
 def normalizar_estado(nombre) -> str | None:
@@ -74,7 +75,8 @@ def _json(raw: str) -> dict | None:
 def extraer_lugares(texto: str, llm) -> dict:
     """{'lugares': [{'texto', 'estado'}], 'comparar': bool, 'fuente': 'llm'|'regex', 'raw': str}.
     Si el LLM falla o devuelve algo ilegible, queda solo el respaldo por regex (codes_in)."""
-    out = {'lugares': [], 'comparar': False, 'fuente': 'regex', 'raw': ''}
+    # Sin LLM no se sabe si la respuesta depende del estado: se supone que sí (lo seguro es preguntar).
+    out = {'lugares': [], 'comparar': False, 'depende_del_estado': True, 'fuente': 'regex', 'raw': ''}
     if llm is not None:
         try:
             raw = llm.chat(EXTRAER_SYSTEM, f'CONSULTA:\n{texto}', temperature=0.0, max_tokens=300, timeout=60)
@@ -83,7 +85,8 @@ def extraer_lugares(texto: str, llm) -> dict:
             if d is not None:
                 lugares = [{'texto': str(x.get('texto') or ''), 'estado': normalizar_estado(x.get('estado'))}
                            for x in (d.get('lugares') or []) if isinstance(x, dict)]
-                out.update(lugares=lugares, comparar=bool(d.get('comparar')), fuente='llm')
+                out.update(lugares=lugares, comparar=bool(d.get('comparar')), fuente='llm',
+                           depende_del_estado=d.get('depende_del_estado') is not False)
         except Exception as e:  # noqa: BLE001 — sin LLM, el respaldo por regex sigue funcionando
             out['raw'] = f'error: {type(e).__name__}: {e}'
     # Respaldo y complemento: los nombres de estado que reconoce code_routes (sin LLM).
@@ -112,9 +115,12 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
     sin_estado = [x['texto'] for x in ex['lugares'] if not x['estado']]
     jur = list(no_estatales) + [disponibles[e] for e in en_base]
     menciona = lambda e: ', '.join(f'«{x["texto"]}»' for x in ex['lugares'] if x['estado'] == e)  # noqa: E731
-    if not estados:
-        nota = ('LUGAR: la persona no dijo en qué estado ocurrieron los hechos. Los fragmentos del CONTEXTO solo '
-                'incluyen leyes nacionales, federales y doctrina, a propósito. No menciones ni cites artículos de '
+    if not estados and not ex['depende_del_estado']:
+        nota = ('LUGAR: la persona no dijo un estado, y no hace falta: la pregunta se responde con leyes que aplican en '
+                'todo el país (nacionales, generales o federales). Responde directamente con ellas, sin preguntar el '
+                'estado. No cites códigos penales de ningún estado.')
+    elif not estados:
+        nota = ('LUGAR: la persona no dijo en qué estado ocurrieron los hechos. No menciones ni cites artículos de '
                 'códigos penales de ningún estado. Explica que la respuesta depende del estado, di qué tipo de '
                 'delito podría ser y qué dicen las leyes nacionales si aplican, y pregunta en qué estado ocurrieron '
                 'los hechos.')
@@ -137,5 +143,7 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
                           'claramente, no uses el código de otro estado en su lugar, explica lo que sí aplica en todo '
                           'el país (leyes nacionales o federales) y recomienda consultar a una persona abogada de ese estado.')
         nota = ' '.join(partes)
+    # La nota es una instrucción interna: la persona no debe leer sobre «la nota» ni «el CONTEXTO».
+    nota += ' (Instrucción interna: no menciones esta nota, el CONTEXTO ni los fragmentos en tu respuesta.)'
     return {'lugares': ex['lugares'], 'comparar': ex['comparar'], 'fuente': ex['fuente'], 'raw': ex['raw'],
-            'estados': estados, 'en_base': en_base, 'faltan': faltan, 'jurisdictions': jur, 'nota': nota}
+            'depende_del_estado': ex['depende_del_estado'], 'estados': estados, 'en_base': en_base, 'faltan': faltan, 'jurisdictions': jur, 'nota': nota}
