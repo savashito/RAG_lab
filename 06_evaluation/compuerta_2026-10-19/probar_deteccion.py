@@ -47,6 +47,11 @@ EXTRA = [   # (frase, estados esperados) — escritas para esta prueba, no vista
     ('¿Qué pena tiene el homicidio culposo según el Código Penal Federal?', set()),
     ('¿Es igual de grave el robo en Iztacalco que en Ecatepec?', {'Ciudad de México', 'Estado de México'}),
     ('Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.', {'Querétaro', 'Guanajuato'}),
+    # siglas y apodos (agregados tras la pregunta del usuario por «GLD»; «GLD» no es una sigla real)
+    ('Me robaron el celular en GDL, ¿qué pena tiene?', {'Jalisco'}),
+    ('Me robaron el celular en GLD, ¿qué pena tiene?', set()),
+    ('Me asaltaron en Mty', {'Nuevo León'}),
+    ('Me robaron en Cuerna', {'Morelos'}),
 ]
 
 def main():
@@ -62,8 +67,10 @@ def main():
         ok.setdefault(cat, []).append(bien)
         res.append({'fuente': fuente, 'cat': cat, 'texto': texto, 'esperado': sorted(esp), 'detectado': sorted(got),
                     'bien': bien, 'via': ex['fuente'], 'lugares': ex['lugares'], 'raw': ex['raw']})
-        if not bien:
-            print(f'✗ [{cat}] {texto[:90]}\n    esperado {sorted(esp)} · detectado {sorted(got)} · {ex["lugares"]}')
+        sin_estado = [x['texto'] for x in ex['lugares'] if not x['estado']]
+        res_extra = f' · sin estado: {sin_estado}' if sin_estado else ''
+        if not bien or sin_estado:
+            print(f'{"✓" if bien else "✗"} [{cat}] {texto[:90]}\n    esperado {sorted(esp)} · detectado {sorted(got)}{res_extra}')
     print()
     for cat, v in ok.items():
         print(f'{cat:16s} {sum(v)}/{len(v)}')

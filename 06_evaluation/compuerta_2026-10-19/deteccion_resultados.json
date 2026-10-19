@@ -449,7 +449,7 @@
     "estado": "Querétaro"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Corregidora\", \"estado\": \"Querétaro\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Corregidora\",\n      \"estado\": \"Querétaro\"\n    }\n  ],\n  \"comparar\": false\n}\n```"
  },
  {
   "fuente": "set14",
@@ -776,9 +776,13 @@
    {
     "texto": "Monterrey",
     "estado": "Nuevo León"
+   },
+   {
+    "texto": "Nuevo León",
+    "estado": "Nuevo León"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Monterrey\", \"estado\": \"Nuevo León\"}], \"comparar\": false}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Monterrey\",\n      \"estado\": \"Nuevo León\"\n    },\n    {\n      \"texto\": \"Nuevo León\",\n      \"estado\": \"Nuevo León\"\n    }\n  ],\n  \"comparar\": false\n}\n```"
  },
  {
   "fuente": "set14",
@@ -1198,7 +1202,7 @@
     "estado": "Estado de México"
    }
   ],
-  "raw": "```json\n{\"lugares\": [{\"texto\": \"Iztacalco\", \"estado\": \"Ciudad de México\"}, {\"texto\": \"Ecatepec\", \"estado\": \"Estado de México\"}], \"comparar\": true}\n```"
+  "raw": "```json\n{\n  \"lugares\": [\n    {\n      \"texto\": \"Iztacalco\",\n      \"estado\": \"Ciudad de México\"\n    },\n    {\n      \"texto\": \"Ecatepec\",\n      \"estado\": \"Estado de México\"\n    }\n  ],\n  \"comparar\": true\n}\n```"
  },
  {
   "fuente": "extra",
@@ -1225,5 +1229,81 @@
    }
   ],
   "raw": "```json\n{\"lugares\": [{\"texto\": \"Querétaro\", \"estado\": \"Querétaro\"}, {\"texto\": \"Celaya\", \"estado\": \"Guanajuato\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me robaron el celular en GDL, ¿qué pena tiene?",
+  "esperado": [
+   "Jalisco"
+  ],
+  "detectado": [
+   "Jalisco"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "GDL",
+    "estado": "Jalisco"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"GDL\", \"estado\": \"Jalisco\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me robaron el celular en GLD, ¿qué pena tiene?",
+  "esperado": [],
+  "detectado": [],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "GLD",
+    "estado": null
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"GLD\", \"estado\": null}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me asaltaron en Mty",
+  "esperado": [
+   "Nuevo León"
+  ],
+  "detectado": [
+   "Nuevo León"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Mty",
+    "estado": "Nuevo León"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Mty\", \"estado\": \"Nuevo León\"}], \"comparar\": false}\n```"
+ },
+ {
+  "fuente": "extra",
+  "cat": "extra",
+  "texto": "Me robaron en Cuerna",
+  "esperado": [
+   "Morelos"
+  ],
+  "detectado": [
+   "Morelos"
+  ],
+  "bien": true,
+  "via": "llm",
+  "lugares": [
+   {
+    "texto": "Cuerna",
+    "estado": "Morelos"
+   }
+  ],
+  "raw": "```json\n{\"lugares\": [{\"texto\": \"Cuerna\", \"estado\": \"Morelos\"}], \"comparar\": false}\n```"
  }
 ]

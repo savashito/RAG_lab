@@ -78,4 +78,4 @@ def test_respaldo_regex_si_el_llm_falla_o_omite():
 
 def test_estado_inventado_por_el_llm_se_descarta():
     g = jg.decidir('Me robaron en mi casa', FakeLLM({'lugares': [{'texto': 'mi casa', 'estado': 'Gotham'}]}), DISP, NO_EST)
-    assert g['estados'] == [] and 'no se pudo saber de qué estado' in g['nota']
+    assert g['estados'] == [] and '«mi casa», que podría ser un lugar' in g['nota']

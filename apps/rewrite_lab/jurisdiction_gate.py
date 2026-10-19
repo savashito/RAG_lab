@@ -47,6 +47,7 @@ EXTRAER_SYSTEM = """Lee una consulta jurídica escrita por una persona en Méxic
 Para cada lugar, escribe el ESTADO al que pertenece (una de las 32 entidades federativas; la capital es «Ciudad de México»). Si el lugar no está en México o no sabes a qué estado pertenece, pon null.
 Reglas:
 - Solo lugares que la consulta MENCIONA. No adivines un estado si no hay lugar.
+- Si una palabra parece un lugar pero no la reconoces (una sigla o un nombre que no conoces), inclúyela con estado null.
 - «federal», «nacional», «México» como país, y nombres de leyes nacionales (CNPP, Código Penal Federal) NO son lugares.
 - «Estado de México», «Edomex» o un municipio mexiquense → «Estado de México».
 - «comparar» es true si la consulta pide comparar o contrastar dos o más estados.
@@ -118,7 +119,8 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
                 'delito podría ser y qué dicen las leyes nacionales si aplican, y pregunta en qué estado ocurrieron '
                 'los hechos.')
         if sin_estado:
-            nota += f' (Mencionó {", ".join("«" + s + "»" for s in sin_estado)}, pero no se pudo saber de qué estado es: pregúntalo.)'
+            nota += (f' La persona escribió {", ".join("«" + s + "»" for s in sin_estado)}, que podría ser un lugar, '
+                     'pero no se reconoció: pregúntale a qué lugar se refiere y en qué estado ocurrió.')
     else:
         partes = []
         if en_base:
