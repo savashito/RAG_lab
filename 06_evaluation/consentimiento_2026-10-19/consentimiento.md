@@ -60,7 +60,7 @@ No recibirá compensación económica ni otro pago por participar en este estudi
 
 Durante el estudio podrán recopilarse los siguientes datos:
 
-- Respuestas al cuestionario inicial (área de estudios, facultad, edad, experiencia jurídica).
+- Respuestas al cuestionario inicial: si es estudiante activo de la UNAM, área de estudios, carrera, semestre, formación en derecho, frecuencia de uso de asistentes de IA, qué tan capaz se siente de buscar y entender información legal por su cuenta, y rango de edad.
 - Interacciones y mensajes intercambiados con el asistente.
 - Respuestas a preguntas de comprensión y evaluación.
 - Calificaciones de confianza y percepciones sobre posibles errores.
@@ -68,7 +68,9 @@ Durante el estudio podrán recopilarse los siguientes datos:
 - Comentarios escritos que decida proporcionar.
 - Registro de su consentimiento electrónico.
 
-No se recopilarán direcciones IP, direcciones de correo electrónico de los participantes ni metadatos técnicos para identificarlos, de acuerdo con el procedimiento descrito por el equipo investigador.
+No se pide su nombre ni su correo electrónico, y la base de datos del estudio no guarda su dirección IP ni otros metadatos técnicos para identificarle.
+
+**Registros técnicos del servidor.** Como ocurre con cualquier página de internet, el servidor web que aloja el estudio registra de forma automática, en sus bitácoras técnicas, la dirección IP desde la que se conecta cada visitante y la página que solicita. Es el funcionamiento normal de todos los servidores web y sirve para su seguridad y operación (por ejemplo, para detectar ataques o errores). Estos registros están separados de las respuestas del estudio, no se analizan como parte de la investigación ni se usan para identificarle.
 
 ### 9. Almacenamiento y confidencialidad de los datos
 
@@ -86,7 +88,9 @@ Su participación es completamente voluntaria.
 
 Puede negarse a participar o interrumpir su participación en cualquier momento, sin penalización ni pérdida de beneficios a los que tenga derecho.
 
-Si desea solicitar la eliminación de sus datos, podrá enviar un correo electrónico al investigador principal a la dirección indicada en la sección de contacto.
+Mientras participa, puede retirarse en cualquier momento con el botón **«Retirarme del estudio»**, en la parte superior de la página: se borrará de inmediato todo lo que haya escrito.
+
+Al terminar, la página le mostrará su **código anónimo de participante** (por ejemplo, ABCD-EF23). Anótelo. Si más adelante desea que se eliminen sus datos, envíe ese código por correo electrónico a cualquiera de los investigadores de la sección de contacto. Como no guardamos su nombre ni su correo, **sin ese código no hay forma de saber cuáles son sus respuestas** y no podríamos eliminarlas.
 
 ### 11. Contacto del equipo de investigación
 
@@ -100,7 +104,11 @@ Teléfono: +52 (55) 85 61 08 89
 Correo electrónico del PI: marmolf@bc.edu\
 Teléfono: +1 (857) 320-8804
 
-Si tiene preguntas sobre sus derechos como participante o desea plantear una preocupación independiente del equipo investigador, debe poder contactar con la oficina de protección de participantes de Boston College mediante los datos oficiales que se incluyan en la versión aprobada del consentimiento.
+Si tiene preguntas sobre sus derechos como participante o desea plantear una preocupación de forma independiente del equipo investigador, puede contactar con la oficina que protege a los participantes en investigaciones de Boston College:
+
+**Office for Research Protections (IRB), Boston College**\
+Correo electrónico: irb@bc.edu\
+Teléfono: +1 (617) 552-4778 (lunes a viernes, de 9:00 a 17:00, hora de Boston)
 
 ### 12. Declaración de consentimiento electrónico
 
