@@ -84,6 +84,10 @@ ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS fase text;
 ALTER TABLE estudio_intentos ADD COLUMN IF NOT EXISTS version int;
 ALTER TABLE estudio_turnos ADD COLUMN IF NOT EXISTS sistema_md5 text;
 CREATE TABLE IF NOT EXISTS estudio_prompts (md5 text PRIMARY KEY, texto text NOT NULL, visto_at timestamptz DEFAULT now());
+-- Registro del consentimiento electrónico: qué versión exacta del texto aceptó cada participante (por md5;
+-- el texto va aparte, una vez por versión). Quien consintió antes de esta columna queda en NULL.
+ALTER TABLE estudio_participantes ADD COLUMN IF NOT EXISTS consentimiento_md5 text;
+CREATE TABLE IF NOT EXISTS estudio_consentimientos (md5 text PRIMARY KEY, texto text NOT NULL, visto_at timestamptz DEFAULT now());
 -- Enlace público (para contestar desde casa): igual que un kiosco, pero el token va en el enlace que se
 -- comparte (por eso se guarda, para poder volver a copiarlo) y tiene un cupo máximo de participantes.
 ALTER TABLE estudio_kioscos ADD COLUMN IF NOT EXISTS tipo text NOT NULL DEFAULT 'kiosco';
@@ -291,10 +295,13 @@ class StudyStore:
                              "USING (codigo) WHERE k.estudio = %s AND k.grupo = %s AND p.fase IS NOT DISTINCT FROM %s "
                              "GROUP BY 1", (acceso['estudio'], acceso['grupo'], spec.get('fase')))
             condicion = asignar_variante(cids, {u['c']: u['n'] for u in usadas}, rng)
-        self._q("INSERT INTO estudio_participantes (codigo, perfil, asignados, variantes, condicion, fase) "
-                "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
+        texto = spec.get('consentimiento') or ''
+        md5 = hashlib.md5(texto.encode()).hexdigest()
+        self._q("INSERT INTO estudio_consentimientos (md5, texto) VALUES (%s,%s) ON CONFLICT DO NOTHING", (md5, texto), commit=True)
+        self._q("INSERT INTO estudio_participantes (codigo, perfil, asignados, variantes, condicion, fase, consentimiento_md5) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT DO NOTHING",
                 (acceso['codigo'], json.dumps(perfil or {}), json.dumps(asignados), json.dumps(variantes), condicion,
-                 spec.get('fase')), commit=True)
+                 spec.get('fase'), md5), commit=True)
         return self.participante(acceso['codigo'])
 
     def intentos(self, codigo: str) -> list[dict]:

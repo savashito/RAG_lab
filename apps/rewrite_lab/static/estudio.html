@@ -51,6 +51,21 @@
   .err{color:var(--bad)}
   .aviso{border-left:3px solid var(--warn);padding:2px 0 2px 10px;font-size:14px}
   .thinking{color:var(--muted);font-style:italic}
+  /* Consentimiento: ventana que hay que leer hasta el final para poder responder */
+  .velo{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+  .velo .caja{background:var(--card);border:1px solid var(--line);border-radius:14px;width:100%;max-width:760px;max-height:calc(100vh - 32px);
+              display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .velo .cab{padding:14px 18px;border-bottom:1px solid var(--line)}
+  .velo .cuerpo{padding:4px 18px 12px;overflow-y:auto;flex:1;min-height:0;overscroll-behavior:contain}
+  .velo .cuerpo:focus{outline:none}
+  .velo .pie{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .velo .pie .pista{flex-basis:100%;font-size:13px;color:var(--warn)}
+  .velo .pie .pista.ok{color:var(--ok)}
+  .velo .barra{height:4px;background:var(--line)} .velo .barra i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+  .velo .pie button{flex:1;min-width:200px}
+  .velo .pie .ghost:disabled{opacity:.45;cursor:default}
+  .velo .cuerpo a{color:var(--accent);text-decoration:underline}
+  @media (prefers-color-scheme: dark){ .velo .cuerpo a{color:#93c5fd} }
 </style>
 </head>
 <body>
@@ -146,7 +161,7 @@ function barajar(opciones, semilla) {
   for (let i = xs.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; }
   return [...xs, ...FIJAS.filter(k => k in opciones).map(k => [k, opciones[k]])];
 }
-function guardarCodigo(c) { codigo = c; try { c ? localStorage.setItem('estudio_codigo', c) : localStorage.removeItem('estudio_codigo'); } catch (e) {} }
+function guardarCodigo(c) { codigo = c; aceptoLeido = false; try { c ? localStorage.setItem('estudio_codigo', c) : localStorage.removeItem('estudio_codigo'); } catch (e) {} }
 
 // ── Pantallas ────────────────────────────────────────────────────────────────
 function pantallaCodigo(msg) {
@@ -208,7 +223,18 @@ function pasos(actual, hechos) {
   return `<div class="steps">${ps.join('')}</div>`;
 }
 
+// Consentimiento informado: una ventana encima de la página. Los botones «Acepto» / «No acepto» se
+// activan solo al llegar al final del texto. Después de aceptar, la persona contesta «Sobre ti» y al
+// pulsar «Empezar» se registra el consentimiento (con la versión exacta del texto, en el servidor).
+let aceptoLeido = false;
 function pantallaConsentimiento() {
+  if (!aceptoLeido) {
+    app.innerHTML = `<div class="card"><h2>Consentimiento informado</h2>
+      <p>Antes de empezar, lee la información del estudio. Para poder responder, desplázate hasta el final del texto.</p>
+      <button class="primary" id="leer">Leer el consentimiento</button></div>`;
+    document.getElementById('leer').onclick = ventanaConsentimiento;
+    return ventanaConsentimiento();
+  }
   const campoPerfil = p => {
     const tipo = p.tipo || 'opcion';
     const ayuda = p.ayuda ? `<div class="muted small">${esc(p.ayuda)}</div>` : '';
@@ -219,18 +245,64 @@ function pantallaConsentimiento() {
       ${Object.entries(p.opciones).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</select>`;
   };
   const perfil = (E.perfil || []).map(campoPerfil).join('');
-  app.innerHTML = `<div class="card">${md(E.consentimiento)}</div>
+  app.innerHTML = `<div class="card"><p class="small" style="margin:0">✅ Aceptaste participar.
+      <a href="#" id="releer">Volver a leer el consentimiento</a></p></div>
     <div class="card"><h2>Sobre ti</h2><p class="muted small">Solo para comparar grupos. No pedimos tu nombre.</p>${perfil}
-    <label class="opt" style="margin-top:14px"><input type="checkbox" id="acepto"> <span>Leí la información y acepto participar.</span></label>
-    <button class="primary" id="go">Empezar</button> <span id="msg" class="err"></span></div>`;
+    <button class="primary" id="go" style="margin-top:14px">Empezar</button> <span id="msg" class="err"></span></div>`;
+  document.getElementById('releer').onclick = e => { e.preventDefault(); ventanaConsentimiento(true); };
   document.getElementById('go').onclick = async () => {
     const perfilVals = {};
     app.querySelectorAll('[data-perfil]').forEach(s => { if (s.value.trim()) perfilVals[s.dataset.perfil] = s.value.trim(); });
     app.querySelectorAll('[data-escala]:checked').forEach(r => { perfilVals[r.dataset.escala] = parseInt(r.value); });
-    if (!document.getElementById('acepto').checked) return document.getElementById('msg').textContent = 'Marca la casilla para aceptar.';
     try { E = await api('consentir', {acepto: true, perfil: perfilVals}); render(); }
     catch (e) { document.getElementById('msg').textContent = e.message; }
   };
+}
+
+// soloLeer: ya aceptó y solo quiere releerlo (un botón «Cerrar» en vez de Acepto / No acepto).
+function ventanaConsentimiento(soloLeer) {
+  document.querySelector('.velo')?.remove();
+  const v = document.createElement('div');
+  v.className = 'velo';
+  v.innerHTML = `<div class="caja" role="dialog" aria-modal="true" aria-labelledby="cTit">
+      <div class="cab"><h2 id="cTit" style="margin:0">Consentimiento informado</h2></div>
+      <div class="barra"><i id="cBarra"></i></div>
+      <div class="cuerpo" id="cCuerpo" tabindex="0">${md(E.consentimiento)}</div>
+      <div class="pie">${soloLeer ? '<button class="primary" id="cCerrar">Cerrar</button>' : `
+        <span class="pista" id="cPista">↓ Desplázate hasta el final del texto para poder responder.</span>
+        <button class="primary" id="cSi" disabled>Acepto participar en el estudio</button>
+        <button class="ghost" id="cNo" disabled>No acepto participar</button>`}</div></div>`;
+  document.body.appendChild(v);
+  document.body.style.overflow = 'hidden';
+  const cuerpo = v.querySelector('#cCuerpo'), cerrar = () => { v.remove(); document.body.style.overflow = ''; };
+  cuerpo.focus({preventScroll: true});
+  if (soloLeer) { v.querySelector('#cCerrar').onclick = cerrar; return; }
+  const si = v.querySelector('#cSi'), no = v.querySelector('#cNo'), pista = v.querySelector('#cPista'), barra = v.querySelector('#cBarra');
+  const revisar = () => {
+    const falta = cuerpo.scrollHeight - cuerpo.clientHeight - cuerpo.scrollTop;
+    const avance = cuerpo.scrollHeight <= cuerpo.clientHeight ? 1 : cuerpo.scrollTop / (cuerpo.scrollHeight - cuerpo.clientHeight);
+    barra.style.width = Math.round(100 * Math.min(1, avance)) + '%';
+    if (falta <= 8 && si.disabled) {   // llegó al final: ya puede responder (y se queda así aunque vuelva a subir)
+      si.disabled = no.disabled = false;
+      pista.textContent = 'Llegaste al final. Elige una opción.'; pista.classList.add('ok');
+    }
+  };
+  cuerpo.addEventListener('scroll', revisar, {passive: true});
+  window.addEventListener('resize', revisar);
+  requestAnimationFrame(revisar);   // si el texto cabe sin desplazarse, se activan de inmediato
+  si.onclick = () => { aceptoLeido = true; cerrar(); window.scrollTo(0, 0); render(); };
+  no.onclick = () => { cerrar(); pantallaNoAcepto(); };
+}
+
+// No acepta: no se guarda nada de la persona (solo existía su código anónimo, sin datos).
+function pantallaNoAcepto() {
+  guardarCodigo(''); E = null;
+  document.getElementById('btnRetirar').hidden = true;
+  document.getElementById('btnSalir').hidden = true;
+  app.innerHTML = `<div class="card"><h2>Gracias por tu tiempo</h2>
+    <p>Elegiste no participar en el estudio. No se guardó ninguna respuesta tuya.</p>
+    ${kiosco && !enlace ? '<button class="primary" id="sig">Dejar la computadora para la siguiente persona</button>' : '<p>Ya puedes cerrar esta página.</p>'}</div>`;
+  if (kiosco && !enlace) document.getElementById('sig').onclick = siguientePersona;
 }
 
 let practica = [];   // preguntas de práctica de esta pantalla (no se guardan en el estudio)
