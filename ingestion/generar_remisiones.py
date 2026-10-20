@@ -95,6 +95,22 @@ for cid, src, title, pos, _ in rows:
         indice[src][k] = (title, cid)
         orden[src].append(title)
 
+# Artículos que no tienen fragmento propio pero están DENTRO de otro: el separador une los artículos cortos (menos de
+# MIN_WORDS palabras) con su vecino, y los derogados en una sola línea («ARTÍCULO 174.- Derogado. ARTÍCULO 175.- …»)
+# quedan juntos. Su texto está en la base; solo falta poder encontrarlos por número: se indexa el fragmento que los
+# contiene («Artículo 27 (incluye el 28)»).
+from shared.legal_chunking import ARTICLE_RE, _article_label  # noqa: E402
+incluidos = 0
+for cid, src, title, pos, txt in rows:
+    dentro = [_article_label(m.group(1)) for m in ARTICLE_RE.finditer(txt)]
+    dentro += [r["articulo"] for r in rm.detectar(txt) if r["rechazo"] == "encabezado_pegado"]
+    for art in dentro:
+        k = clave(art)
+        if k and k not in indice[src]:
+            indice[src][k] = (f"{title} (incluye el {art})", cid)
+            incluidos += 1
+print(f"artículos sin fragmento propio, encontrados dentro de otro fragmento: {incluidos}")
+
 ver = version()
 filas, cuenta = [], collections.Counter()
 for cid, src, title, pos, txt in rows:
