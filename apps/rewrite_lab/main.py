@@ -966,6 +966,9 @@ CONDUCTAS_SYSTEM = (
 )
 
 
+CRIME_EXTRA_K = int(os.environ.get('CRIME_EXTRA_K', '3'))   # lugares extra en el contexto por cada conducta adicional
+
+
 def decompose_conducts(question: str) -> list[str]:
     """Relato → una consulta de búsqueda por conducta. [question] si hay una sola o si el LLM falla."""
     try:
@@ -1064,6 +1067,8 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions, neighbors,
                                                  hyde, rerank, decompose, debug=dbg, route=route, crimes=crimes)
+        if crimes:   # cada conducta trae sus propios lugares: con k fijo se repartían y la búsqueda original perdía
+            k = min(k + CRIME_EXTRA_K * max(0, len(dbg.get('subqueries') or [question]) - 1), 2 * k)
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
