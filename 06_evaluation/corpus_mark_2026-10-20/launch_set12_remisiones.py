@@ -12,7 +12,7 @@ text = q("SELECT text FROM bench_prompt_tags WHERE tag = 'tlacua-v1'")[0][0]
 for rep in (1, 2):
     cfg = {'setting': 'orig', 'k': 10, 'neighbors': True, 'hyde': True, 'decompose': False, 'route': False, 'gate': True,
            'remisiones': True, 'set_id': 12, 'system': text,
-           'label': f'set12-remisiones · tlacua-v1 · karen50 + filtro + remisiones · rep {rep}'}
+           'label': f'set12-remisiones-v2 · tlacua-v1 · karen50 + filtro + remisiones (sin listas largas) · rep {rep}'}
     while q("select id from bench_runs where status='running'"):
         time.sleep(15)
     req = urllib.request.Request('http://127.0.0.1:8099/api/bench/run', json.dumps(cfg).encode(), {'Content-Type': 'application/json'})
