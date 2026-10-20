@@ -1,0 +1,493 @@
+{
+ "descripcion": "Validación del detector de remisiones (apps/rewrite_lab/remisiones.py): 50 artículos al azar (semilla 20261020) de los 5 códigos penales del corpus, 40 con alguna mención de «artículo» y 10 sin. Etiquetado a mano a ciegas el 2026-10-20, antes de correr el detector. Textos recortados a 1600 caracteres.",
+ "articulos": [
+  {
+   "id": 37256,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 36",
+   "texto": "**ARTÍCULO *36.** - La reparación de daños y perjuicios comprende: I.- La restitución de la cosa obtenida por el delito, y si no es posible, el pago del precio de la misma, a valor de reposición según el grado de uso, conservación y deterioro que corresponda; II.- La indemnización del daño material y moral, incluyendo el pago de la atención médica que requiera la víctima u ofendido como consecuencia del delito. En los casos de delitos contra la libertad y el normal desarrollo psicosexual y de violencia familiar, además se comprenderá el pago de los tratamientos psicoterapéuticos que sean necesarios para la víctima y los familiares directos que lo requieran, y ## III.- El resarcimiento de los perjuicios ocasionados. Tratándose de delitos que afecten la vida y la integridad corporal, el monto de la reparación del daño no podrá ser menor del que resulte de aplicar las disposiciones relativas de la Ley Federal del Trabajo. **NOTAS:** **REFORMA VIGENTE.-** Reformada la fracción I por Artículo Primero y adicionada la fracción III y un segundo párrafo por Artículo Segundo del Decreto No. 1221 de 2000/08/30. Publicado en el POEM No. 4083 de 2000/10/18. Vigencia: 2000/10/19. **REFORMA VIGENTE.-** Reformada la fracción II del presente artículo por Artículo Primero del Decreto No. 1558, publicado en el Periódico Oficial “Tierra y Libertad” No. 4730 Segunda Sección de fecha 2009/07/29 **. Antes decía:** II.- La indemnización del daño material y moral, incluyendo el pago de la atención médica que requiera el ofendido como consecuencia del delito; y **REFORMA SIN VIGENCIA.-** Reformada l",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46625,
+   "codigo": "Código Penal del Estado de México",
+   "articulo": "Artículo 277",
+   "texto": "**Artículo 277.** Cuando por motivo del supuesto establecido en la fracción I del artículo anterior se cause la muerte del producto de la concepción, con independencia de las penas que se señalan, además se aplicarán las establecidas para el delito de homicidio.",
+   "remisiones": [],
+   "relativas": [
+    "anterior"
+   ],
+   "nota": ""
+  },
+  {
+   "id": 47576,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 218",
+   "texto": "**Artículo 218** .- Comete el delito de concusión el servidor público que con el carácter de tal y a título de impuesto o contribución, recargo, renta, rédito, salario o emolumento, exija, por sí o por medio de otro, dinero, valores, servicios o cualquiera otra cosa que sepa no ser debida, o en mayor cantidad que la señalada por la Ley. Al que cometa el delito de concusión se le impondrán las siguientes sanciones: Cuando la cantidad o el valor de lo exigido indebidamente no exceda del equivalente de quinientos días de Unidades de Medida y Actualización en el momento de cometerse el delito, o no sea valuable, se impondrán de tres meses a dos años de prisión y de treinta a cien días multa. _Párrafo reformado DOF 18-07-2016_ Cuando la cantidad o el valor de lo exigido indebidamente exceda de quinientos días de Unidades de Medida y Actualización en el momento de cometerse el delito, se impondrán de dos años a doce años de prisión y multa de cien a ciento cincuenta días multa. _Párrafo reformado DOF 18-07-2016 Fe de erratas al artículo DOF 31-08-1931. Reformado DOF 05-01-1983_ # **CAPITULO VII Intimidación** _Capítulo adicionado DOF 05-01-1983_",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47873,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 1",
+   "texto": "Decimotercero del Libro Segundo, y las fracciones XIV y XV del artículo 381; se adicionan un segundo párrafo al artículo 178; los artículos 240 Bis y la fracción XVI al artículo 381, todos del Código Penal para el Distrito Federal en Materia de Fuero Común y para toda la República en Materia de Fuero Federal, para quedar como sigue: **PRIMERO.-** El presente Decreto entrará en vigor al día siguiente de su publicación en el **Diario Oficial de la Federación** . **SEGUNDO.-** A las personas que a la fecha de entrada en vigor del presente Decreto se encuentren sujetas a proceso penal por alguno de los delitos contenidos en las disposiciones del Código Penal para el Distrito Federal en Materia de Fuero Común y para toda la República en Materia de Fuero Federal, mencionadas en el Artículo Primero de este Decreto, le serán aplicables las disposiciones de dichos artículos vigentes al momento de la comisión del delito. Los procedimientos penales y de amparo no concluidos en la fecha señalada en el transitorio anterior, seguirán tramitándose conforme a las disposiciones del Código Federal de Procedimientos Penales y de la Ley de Amparo vigentes con anterioridad a la fecha de entrada en vigor del presente Decreto. **TERCERO.-** La resoluciones de la autoridad judicial en las que se hubiere prorrogado el arraigo domiciliario decretado originalmente seguirán subsistiendo por todo el término que se hubiere señalado en la prórroga. México, D.F., a 2 de diciembre de 1998.- Sen. **José Ramírez Gamero** , Presidente.- Dip. **Salvador Sánchez Vázquez** , Presidente.- Sen. **Gabriel Covarrubi",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37637,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 305",
+   "texto": "## **ARTÍCULO *305.** - Derogado. **NOTAS:** **REFORMA VIGENTE.-** Derogado por artículo segundo del Decreto No. 1114, publicado en el Periódico Oficial “Tierra y Libertad” No. 5935 de fecha 2021/04/21. Vigencia: 2021/04/22. **Antes decía:** Si para favorecer la fuga se hubiere empleado violencia en las personas o fuerza en las cosas, se aplicará, además, la sanción que corresponda por el delito que resulte de los medios empleados.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37653,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 320",
+   "texto": "## **ARTÍCULO *320.** - DEROGADO **REFORMA VIGENTE** : Se deroga el artículo 320 que forma parte del Libro Segundo de presente ordenamiento, por ARTÍCULO ÚNICO dispositivo del Decreto 1701, publicado en el Periódico Oficial “Tierra y Libertad” No. 6285, de fecha 2024/02/28. Vigencia: 2024/02/29. **Antes decía:** ARTÍCULO *320.- Se hará del conocimiento de la autoridad competente al extranjero que se inmiscuya en los asuntos políticos del Estado, independientemente de las sanciones a que se haga acreedor conforme a este Código. **REFORMA SIN VIGENCIA.** - Reformado por Decreto No. 929 de 1997/02/13. POEM No. 3846 de 1997/02/19. Vigencia: 1997/02/20.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47512,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 194",
+   "texto": "**Artículo 194** .- Se impondrá prisión de diez a veinticinco años y de cien hasta quinientos días multa al que: - **I.-** Produzca, transporte, trafique, comercie, suministre aun gratuitamente o prescriba alguno de los narcóticos señalados en el artículo anterior, sin la autorización correspondiente a que se refiere la Ley General de Salud; Para los efectos de esta fracción, por producir se entiende: manufacturar, fabricar, elaborar, preparar o acondicionar algún narcótico, y por comerciar: vender, comprar, adquirir o enajenar algún narcótico. Por suministro se entiende la transmisión material de forma directa o indirecta, por cualquier concepto, de la tenencia de narcóticos. _Párrafo adicionado DOF 20-08-2009_ El comercio y suministro de narcóticos podrán ser investigados, perseguidos y, en su caso sancionados por las autoridades del fuero común en los términos de la Ley General de Salud, cuando se colmen los supuestos del artículo 474 de dicho ordenamiento. _Párrafo adicionado DOF 20-08-2009_ - **II.-** Introduzca o extraiga del país alguno de los narcóticos comprendidos en el artículo anterior, aunque fuere en forma momentánea o en tránsito. Si la introducción o extracción a que se refiere esta fracción no llegare a consumarse, pero de los actos realizados se desprenda claramente que esa era la finalidad del agente, la pena aplicable será de hasta las dos terceras partes de la prevista en el presente artículo. - **III.-** Aporte recursos económicos o de cualquier especie, o colabore de cualquier manera al financiamiento, supervisión o fomento para posibilitar la ejecuci",
+   "remisiones": [],
+   "relativas": [
+    "anterior"
+   ],
+   "nota": "art. 474 «de dicho ordenamiento» = Ley General de Salud (otra ley, no se sigue)"
+  },
+  {
+   "id": 30903,
+   "codigo": "Código Penal del Estado de Querétaro",
+   "articulo": "Artículo 216",
+   "texto": "**ARTÍCULO 216.-** Al que fuera del caso de bigamia contraiga matrimonio con conocimiento de la existencia de un impedimento dirimente, se le impondrá prisión de 3 meses a 2 años.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47263,
+   "codigo": "Código Penal de la Ciudad de México",
+   "articulo": "Artículo 365",
+   "texto": "DE INSTITUCIONES Y PROCEDIMIENTOS ELECTORALES DE LA CIUDAD DE MÉXICO Y LA LEY PROCESAL ELECTORAL PARA CIUDAD DE MÉXICO; Y SE REFORMAN** **DIVERSAS DISPOSICIONES DE LA LEY DE PARTICIPACIÓN CIUDADANA DEL DISTRITO FEDERAL Y DEL CÓDIGO PENAL PARA EL DISTRITO FEDERAL, PUBLICADO EN LA GACETA OFICIAL DE LA CIUDAD DE MÉXICO EL 07 DE JUNIO DE 2017.** **PRIMERO. -** El presente decreto entrará en vigor al día siguiente de su publicación en la Gaceta Oficial de la Ciudad de México. **SEGUNDO.-** Para su mayor difusión, publíquese en el Diario Oficial de la Federación. **TERCERO.-** El presente decreto deberá estar vigente a más tardar 90 días antes de que inicie el proceso electoral 2017- 2018. # **Recinto de la Asamblea Legislativa del Distrito Federal, a los seis días del mes de junio del año dos mil diecisiete.- POR LA MESA DIRECTIVA.- DIP. MAURICIO ALONSO TOLEDO GUTIÉRREZ, PRESIDENTE.DIP. REBECA PERALTA LEÓN, SECRETARIA.- DIP. LUCIANO JIMENO HUANOSTA, SECRETARIO.- (Firmas)** la Ciudad de México. **SEGUNDO.-** Para su mayor difusión, publíquese en el Diario Oficial de la Federación. **TERCERO.-** El presente decreto deberá estar vigente a más tardar 90 días antes de que inicie el proceso electoral 2017- 2018. # **Recinto de la Asamblea Legislativa del Distrito Federal, a los seis días del mes de junio del año dos mil diecisiete.- POR LA MESA DIRECTIVA.- DIP. MAURICIO ALONSO TOLEDO GUTIÉRREZ, PRESIDENTE.DIP. REBECA PERALTA LEÓN, SECRETARIA.- DIP. LUCIANO JIMENO HUANOSTA, SECRETARIO.- (Firmas)** LAS PERSONAS CON DISCAPACIDAD DEL DISTRITO FEDERAL Y DEL CÓDIGO PENAL PARA EL DISTRITO FE",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47073,
+   "codigo": "Código Penal de la Ciudad de México",
+   "articulo": "Artículo 265",
+   "texto": "**ARTÍCULO 265.-** Al servidor público que con cualquier pretexto obtenga de un subalterno parte del sueldo de éste, dádivas o cualquier otro provecho, se le impondrán de dos a nueve años de prisión y de cien a ochocientos días multa.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 30978,
+   "codigo": "Código Penal del Estado de Querétaro",
+   "articulo": "Artículo 258",
+   "texto": "**ARTÍCULO 258.-** Además de las penas por los delitos a que alude este Título, se aplicará a los responsables según las circunstancias la medida de seguridad prevista por el Artículo 59 de este Código. Tratándose de extranjeros se aumentarán hasta la mitad las penas previstas para cada delito. A los mexicanos que cometan algún delito de carácter político, se les privará de sus derechos políticos o se les suspenderá en el ejercicio de éstos hasta por 8 años, contados a partir de que se extinga la pena de prisión o la potestad de ejecutarla. # **TÍTULO SEGUNDO** # **DELITOS POR HECHOS DE CORRUPCIÓN** (Ref. P. O. No. 39, 27-V-22)",
+   "remisiones": [
+    "59"
+   ],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47678,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 303",
+   "texto": "**Artículo 303** .- Para la aplicación de las sanciones que correspondan al que infrinja el artículo anterior, no se tendrá como mortal una lesión, sino cuando se verifiquen las tres circunstancias siguientes: - **I.-** Que la muerte se deba a las alteraciones causadas por la lesión en el órgano u órganos interesados, alguna de sus consecuencias inmediatas o alguna complicación determinada por la misma lesión y que no pudo combatirse, ya sea por ser incurable, ya por no tenerse al alcance los recursos necesarios; _Fe de erratas a la fracción DOF 31-08-1931_ - **II.-** Se deroga. _Fracción derogada DOF 10-01-1994_ - **III.-** Que si se encuentra el cadáver del occiso, declaren dos peritos después de hacer la autopsia, cuando ésta sea necesaria, que la lesión fue mortal, sujetándose para ello a las reglas contenidas en este artículo, en los dos siguientes y en el Código de Procedimientos Penales. Cuando el cadáver no se encuentre, o por otro motivo no se haga la autopsia, bastará que los peritos, en vista de los datos que obren en la causa, declaren que la muerte fue resultado de las lesiones inferidas.",
+   "remisiones": [],
+   "relativas": [
+    "anterior",
+    "siguientes"
+   ],
+   "nota": "«en este artículo, en los dos siguientes» = relativa a los 2 artículos siguientes"
+  },
+  {
+   "id": 47094,
+   "codigo": "Código Penal de la Ciudad de México",
+   "articulo": "Artículo 283",
+   "texto": "**ARTÍCULO 283.-** La pena será de uno a cinco años de prisión, cuando la desobediencia o resistencia sea a un mandato judicial o al cumplimiento a una sentencia.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37399,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 148 undécimus",
+   "texto": "## **ARTÍCULO *148 undécimus.-** Derogado. **NOTAS:** **REFORMA VIGENTE.-** Derogado por el artículo Cuarto del Decreto No. 2193, publicado en el Periódico Oficial “Tierra y Libertad”, No. 5514, de fecha 2017/07/19. Vigencia 2017/07/19. **Antes decía:** En ningún caso y bajo ninguna circunstancia, serán eximentes ni atenuantes de responsabilidad la obediencia debida por razones de jerarquía, así corno las órdenes o instrucciones recibidas por superiores, y no podrán invocarse circunstancias de excepción, tales como el estado o amenaza de guerra, inestabilidad política interna o cualquier otra emergencia, como justificación para cometer el delito de desaparición forzada de personas. **REFORMA VIGENTE.-** Adicionado por artículo Primero del Decreto No. 1438, publicado en el Periódico Oficial “Tierra y Libertad” No. 5194 de fecha 2014/06/11. Vigencia 2014/06/12. ## ***CAPÍTULO X DELITO DE RECLUTAMIENTO FORZADO** **REFORMA VIGENTE.-** Adicionado por ARTÍCULO ÚNICO del Decreto No. 482, publicado en el Periódico Oficial “Tierra y Libertad”, número 6467 Segunda Sección, de fecha 2025/09/10. Vigencia: 2025/09/11.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46837,
+   "codigo": "Código Penal de la Ciudad de México",
+   "articulo": "Artículo 78",
+   "texto": "**ARTÍCULO 78.-** _(Punibilidad de la tentativa)_ . La punibilidad aplicable a la tentativa, será de entre una tercera parte de la mínima y dos terceras partes de la máxima, previstas para el correspondiente delito doloso consumado que el agente quiso realizar. En la aplicación de las penas o medidas de seguridad a que se refiere este artículo, el juzgador tendrá en cuenta, además de lo previsto en el artículo 72 de este Código, el mayor o menor grado de aproximación a la consumación del delito y la magnitud del peligro en que se puso al bien jurídico protegido. Este artículo será aplicable para los casos en que la persona moral o jurídica incurra en una tentativa.",
+   "remisiones": [
+    "72"
+   ],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47788,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 400 Bis 1",
+   "texto": "**Artículo 400 Bis 1.** Las penas previstas en este Capítulo se aumentarán desde un tercio hasta en una mitad, cuando el que realice cualquiera de las conductas previstas en el artículo 400 Bis de este Código tiene el carácter de consejero, administrador, funcionario, empleado, apoderado o prestador de servicios de cualquier persona sujeta al régimen de prevención de operaciones con recursos de procedencia ilícita, o las realice dentro de los dos años siguientes de haberse separado de alguno de dichos cargos. Además, se les impondrá inhabilitación para desempeñar empleo, cargo o comisión en personas morales sujetas al régimen de prevención hasta por un tiempo igual al de la pena de prisión impuesta. La inhabilitación comenzará a correr a partir de que se haya cumplido la pena de prisión. Las penas previstas en este Capítulo se duplicarán, si la conducta es cometida por servidores públicos encargados de prevenir, detectar, denunciar, investigar o juzgar la comisión de delitos o ejecutar las sanciones penales, así como a los ex servidores públicos encargados de tales funciones que cometan dicha conducta en los dos años posteriores a su terminación. Además, se les impondrá inhabilitación para desempeñar empleo, cargo o comisión hasta por un tiempo igual al de la pena de prisión impuesta. La inhabilitación comenzará a correr a partir de que se haya cumplido la pena de prisión. Asimismo, las penas previstas en este Capítulo se aumentarán hasta en una mitad si quien realice cualquiera de las conductas previstas en el artículo 400 Bis, fracciones I y II, utiliza a personas menores",
+   "remisiones": [
+    "400 Bis"
+   ],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37671,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 329",
+   "texto": "AL CÓDIGO PENAL PARA EL ESTADO DE MORELOS Y SE REFORMA Y ADICIONA LA LEY DE CULTURA CÍVICA DEL ESTADO DE MORELOS, PARA ESTABLECER SANCIONES AL MALTRATO ANIMAL, BAJO LOS SIGUIENTES TÉRMINOS:** ### **POEM No. 5380 de fecha 2016/03/16** **PRIMERO.-** Remítase el presente Decreto al Titular del Poder Ejecutivo del Estado, para su promulgación y publicación respectiva de conformidad con los artículos 44 y 70 fracción XVII, inciso a) de la Constitución Política del Estado Libre y Soberano de Morelos. **SEGUNDO.-** El presente Decreto, entrará en vigor al día siguiente de su publicación en el Periódico Oficial “Tierra y Libertad”, órgano de difusión del Gobierno del Estado de Morelos. ***DECRETO NÚMERO CUATROCIENTOS CINCUENTA Y CUATRO POR EL QUE SE ADICIONA AL LIBRO SEGUNDO PARTE ESPECIAL DELITOS CONTRA EL INDIVIDUO, TÍTULO NOVENO DELITOS CONTRA EL PATRIMONIO, UN CAPÍTULO V BIS DENOMINADO SUPLANTACIÓN DE IDENTIDAD Y UN ARTÍCULO 189 BIS, TODOS AL CÓDIGO PENAL PARA EL ESTADO DE MORELOS** **NOTAS:** **FE DE ERRATAS.-** Publicada en el Periódico Oficial “Tierra y Libertad” No. 5404 de fecha 2016/06/15. ### **POEM No. 5394 de fecha 2016/05/04** **PRIMERA.** - Remítase el presente Decreto al Titular del Poder Ejecutivo, para su promulgación y publicación respectiva de conformidad con los artículos 44, 47 y 70 fracción XVII inciso a) de la Constitución Política del Estado Libre y Soberano de Morelos. **SEGUNDA.-** El presente Decreto, entrará en vigor a partir del día siguiente de su publicación en el Periódico Oficial “Tierra y Libertad”, Órgano de difusión del Gobierno del Estado de Mo",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46322,
+   "codigo": "Código Penal del Estado de México",
+   "articulo": "Artículo 45",
+   "texto": "**Artículo 45.-** Quienes concurran con las personas que estuvieran bajo su patria potestad, tutela, curatela, guarda, o de un sujeto a interdicción, a la comisión de un delito o cometa alguno de ellos contra bienes jurídicos de éstos, será privado definitivamente de los derechos inherentes a la patria potestad, tutela, curatela o la guarda.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47665,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 290",
+   "texto": "**Artículo 290** .- Se impondrán de dos a cinco años de prisión y multa de cien a trescientos pesos, al que infiera una lesión que deje al ofendido cicatriz en la cara, perpetuamente notable.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37480,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 206",
+   "texto": "**ARTÍCULO 206.** - La misma sanción a que alude el artículo que precede, se impondrá a quien: I. Desconozca o haga incierta la relación de filiación, para liberarse de las obligaciones derivadas de la patria potestad; II. Sustituya a un menor por otro o lo oculte para ocasionarle perjuicio en sus derechos de familia.",
+   "remisiones": [],
+   "relativas": [
+    "anterior"
+   ],
+   "nota": "«el artículo que precede» = anterior"
+  },
+  {
+   "id": 31057,
+   "codigo": "Código Penal del Estado de Querétaro",
+   "articulo": "Artículo 317",
+   "texto": "Arteaga”. **Artículo Primero.** La presente Ley entrará en vigor al día siguiente de su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro “La Sombra de Arteaga”. **Artículo Segundo.** Se derogan todas las disposiciones de igual o menor jerarquía que se opongan a la presente Ley. **Artículo Tercero.** Envíese al titular del Poder Ejecutivo del Estado de Querétaro para su publicación en el Periódico Oficial del Gobierno del Estado Libre y Soberano de Querétaro, “La Sombra de Arteaga”. **Artículo Primero.** La presente Ley entrará en vigor al día siguiente de su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro “La Sombra de Arteaga”. **Artículo Segundo.** Se derogan todas las disposiciones de igual o menor jerarquía que se opongan a la presente Ley. **Artículo Tercero.** Remítase al titular del Poder Ejecutivo del Estado de Querétaro para su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro “La Sombra de Arteaga”. # **TRANSITORIOS** 29 de agosto de 2025 (P. O. No. 72) **Artículo Primero.** La presente Ley entrará en vigor al día siguiente de su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro “La Sombra de Arteaga”. **Artículo Segundo.** Se derogan todas las disposiciones de igual o menor jerarquía que se opongan a la presente Ley. **Artículo Tercero.** Remítase al titular del Poder Ejecutivo del Estado de Querétaro, para su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro “La Sombra de Arteaga”. 07 de noviembre de 2025 (P. O. No. 90) **Artículo Primero.** La p",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47417,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 119",
+   "texto": "**Artículo 119** .- (Se deroga). _Fe de erratas al artículo DOF 31-08-1931. Parcialmente derogado DOF 02-08-1974. Derogado DOF 24-12-1991_",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37345,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 117",
+   "texto": "**ARTÍCULO *117.** - Se impondrá de uno a cinco años de prisión y de veinte a doscientos días-multa, a la madre embarazada que voluntariamente procure su aborto o consintiere que otro la haga abortar. La sanción a que se refiere este artículo, podrá sustituirse por tratamiento médico o psicológico, bastará que lo solicite y ratifique la indiciada, asimismo quedará sujeta a la ley y reglamentación de sustitución de penas por medidas alternativas. Procesos y procedimientos judiciales. (SIC) I. Derogada; II. Derogada; III. Derogada. **REFORMA VIGENTE.-** Reformado por Artículo Único del Decreto No. 1152 publicado en el POEM No. 4665 de fecha 2008/12/11. **Antes decía:** Se impondrá de uno a cinco años de prisión, a la madre que voluntariamente procure su aborto o consintiere que otro la haga abortar. **REFORMA SIN VIGENCIA.-** Reformado el párrafo primero por Artículo Primero y derogadas las fracciones I, II y III, por Artículo Tercero del Decreto No. 1221 de 2000/08/30. Publicado en el POEM No. 4083 de 2000/10/18. Vigencia: 2000/10/19.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47339,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 50",
+   "texto": "**Artículo 50** .- Si el delito por el que se impuso la publicación de sentencia, fue cometido por medio de la prensa, además de la publicación a que se refieren los artículos anteriores, se hará también en el periódico empleado para cometer el delito, con el mismo tipo de letra, igual color de tinta y en el mismo lugar. # **CAPITULO XI Vigilancia de la autoridad** _Capítulo adicionado DOF 13-01-1984_",
+   "remisiones": [],
+   "relativas": [
+    "anteriores"
+   ],
+   "nota": "«los artículos anteriores» (plural)"
+  },
+  {
+   "id": 37630,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 298",
+   "texto": "**ARTÍCULO *298.-** Al que por cualquier medio intente influir en quien sea denunciante, querellante o parte; defensor, agente del ministerio público, abogado, procurador, perito, intérprete o testigo en un procedimiento, para que se retracte de su denuncia o querella; desista de la acción o deje de prestar su defensa, representación, declaración, informe, dictamen o traducción, o los preste faltando a su deber o a la verdad, se le impondrán de uno a dos años de prisión y de cien a trescientos días multa. Si el autor del hecho alcanza su objetivo, se aplicará de dos a cuatro años de prisión y de doscientos a quinientos días multa. **REFORMA VIGENTE.-** Reformado el primer párrafo del presente artículo por Artículo Primero del Decreto No. 1558, publicado en el Periódico Oficial “Tierra y Libertad” No. 4730 Segunda Sección de fecha 2009/07/29. **Antes decía:** Al que por cualquier medio intente influir en quien sea denunciante o parte, abogado, procurador, perito, intérprete o testigo en un procedimiento, para que se retracte de su denuncia, desista de la acción o deje de prestar su defensa, representación, declaración, informe o traducción, o los preste faltando a su deber o a la verdad, se le sancionará con uno a dos años de prisión y de cien a trescientos días multa. Cuando el medio empleado fuese la violencia, la sanción se incrementará en una mitad.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37344,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 116",
+   "texto": "**ARTÍCULO 116.** - Si el aborto lo causare un médico, cirujano, comadrona o partero, además de las sanciones que le correspondan conforme al artículo anterior, se le suspenderá de dos a cinco años en el ejercicio de su profesión u oficio.",
+   "remisiones": [],
+   "relativas": [
+    "anterior"
+   ],
+   "nota": ""
+  },
+  {
+   "id": 31055,
+   "codigo": "Código Penal del Estado de Querétaro",
+   "articulo": "Artículo 317",
+   "texto": "correspondan o adecuarán las existentes, a efecto de que los daños que se cometan por medio de pintas de signos o grabados, mensajes o dibujos sobre bienes muebles o inmuebles ajenos o propios que no estén bajo posesión legal de quien los realiza y sin el consentimiento de quien esté facultado para otorgarlo conforme a la ley, sean sancionados de manera administrativa. **Artículo Tercero.** Se derogan todas las disposiciones de igual o menor jerarquía que se opongan a esta Ley. **Artículo Primero.** La presente Ley entrará en vigor al día siguiente de su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro \"La Sombra de Arteaga\". **Artículo Segundo.** Se derogan todas las disposiciones de igual o menor jerarquía que se opongan a esta Ley. **Artículo Primero.** La presente Ley entrará en vigor al día siguiente de su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro “La Sombra de Arteaga”. **Artículo Segundo.** Se derogan las disposiciones de igual o menor jerarquía que se opongan a la presente Ley. **TRANSITORIOS** 21 de diciembre de 2016 (P. O. No. 71) **Artículo Primero.** La presente Ley entrará en vigor a partir del día siguiente de su publicación en el Periódico Oficial del Gobierno del Estado de Querétaro “La Sombra de Arteaga”. **Artículo Segundo.** Se derogan todas las disposiciones de igual o menor jerarquía que se opongan a esta Ley. **TRANSITORIOS** 6 de enero de 2017 (P. O. No. 1) **Artículo Primero.** La presente Ley entrará en vigor a partir del día siguiente de su publicación en el Periódico Oficial del Gobierno del E",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46897,
+   "codigo": "Código Penal de la Ciudad de México",
+   "articulo": "Artículo 135 TER",
+   "texto": "**ARTÍCULO 135 TER.** Cuando las lesiones por ataques con ácido o similares sean cometidos en contra de una mujer en razón de su género, la pena establecida en el artículo anterior aumentará hasta en una mitad. Se considera que las lesiones por ataques con ácido o similares son cometidos en razón de género cuando ocurra cualquiera de las siguientes circunstancias: - **I.** Si entre el sujeto activo y la víctima existe o haya existido una relación sentimental, sexual, afectiva o de confianza, o cualquier otra relación de hecho o amistad; - **II.** Si entre el sujeto activo y la víctima existe o haya existido una relación laboral, docente, religiosa, institucional, de servicio o cualquier otra que implique, de manera formal o de hecho, una relación de subordinación o superioridad; - **III.** Si entre el sujeto activo y la víctima existe parentesco por consanguinidad o afinidad; - **IV.** Que previo a la lesión infligida existan antecedentes de violencia contra las mujeres o delitos de género, se hayan cometido amenazas, acecho, acoso o cualquier tipo de violencia o acto de agresión en el ámbito familiar, laboral, docente ejercido por parte del sujeto activo contra la mujer, o - **V.** Cuando se cometa en contra de las mujeres transexuales o transgénero, en el ámbito laboral, relaciones sentimentales o cualquier otra, por razones que deriven de su orientación sexual, identidad o expresión de género. _Artículo adicionado G.O. CDMX 19/02/24_ **(SIC) 135 QUÁTER.-** Este delito se considerará tentativa de feminicidio, cuando las lesiones cometidas contra la mujer provoquen: - **I.",
+   "remisiones": [],
+   "relativas": [
+    "anterior"
+   ],
+   "nota": ""
+  },
+  {
+   "id": 37369,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 135",
+   "texto": "**ARTÍCULO 135.** - Al que omita prestar el auxilio posible y adecuado a quien se encuentre ante él, desamparado y en peligro concreto y manifiesto con respecto a su persona, cuando pudiere prestarlo sin riesgo propio o de terceros, o al que no estando en condiciones de brindar dicho auxilio no de aviso inmediato a la autoridad o no solicite auxilio a quienes puedan prestarlo, se aplicará de tres meses a dos años de trabajo en favor de la comunidad.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37492,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 212",
+   "texto": "**ARTÍCULO *212.** - Comete el delito de utilización de imágenes y/o voz de personas menores de edad y de personas que no tengan la capacidad para comprender el significado del hecho para la pornografía: I. Quien produzca, fije, grabe, videograbe, fotografíe o filme de cualquier forma imágenes, sonidos o la voz de una persona menor de edad o de una persona que no tenga la capacidad para comprender el significado del hecho, sea en forma directa, informática, audiovisual, virtual o por cualquier otro medio en las que se manifiesten actividades sexuales o eróticas, explícitas o no, reales o simuladas, con o sin fines lucrativos; II. Quien reproduzca, publique, ofrezca, publicite, distribuya, difunda, exponga, envíe, transmita, importe, exporte o comercialice de cualquier forma imágenes, sonidos o la voz de una persona menor de edad o de una persona que no tenga la capacidad para comprender el significado del hecho, sea en forma directa, informática, audiovisual, virtual o por cualquier otro medio en las que se manifiesten actividades sexuales o eróticas, explícitas o no, reales o simuladas; III. Quien posea o almacene intencionalmente para cualquier fin, imágenes, sonidos o la voz de personas menores de edad o de personas que no tengan la capacidad de comprender el significado del hecho, sea en forma directa, informática, audiovisual, virtual o por cualquier otro medio en las que se manifiesten actividades sexuales o eróticas, explícitas o no, reales o simuladas; y IV. Quien produzca, facilite, incite, financie, distribuya, publique o divulgue, por si o tercera persona, median",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 31025,
+   "codigo": "Código Penal del Estado de Querétaro",
+   "articulo": "Artículo 299",
+   "texto": "**ARTÍCULO 299.-** Derogado. (P. O. No. 39, 27-V-22)",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46450,
+   "codigo": "Código Penal del Estado de México",
+   "articulo": "Artículo 149",
+   "texto": "**Artículo 149.** Comete el delito de encubrimiento, el que: **I.** Sin haber participado en el hecho delictuoso, albergue, oculte o proporcione la fuga al inculpado de un delito con el propósito de que se substraiga a la acción de la justicia; **II.** Sin haber participado en el hecho delictuoso, altere, destruya o sustraiga las huellas o los instrumentos del delito u oculte los objetos o los efectos del mismo para impedir su descubrimiento; y **III.** Sin haber participado en el hecho delictuoso altere, destruya o sustraiga las huellas o los instrumentos del delito u oculte los objetos o efectos del mismo para evitar o dificultar la investigación o reconstrucción del hecho delictuoso. A los responsables de este delito se les impondrán de uno a tres años de prisión y de treinta a ciento cincuenta días multa. Cuando las conductas establecidas en este artículo se refieran a procedimientos penales por los delitos previstos en los artículos 241, 268 Bis, 274 y 281 de este Código, se impondrá por el encubrimiento de cuatro a ocho años de prisión y de cien a trescientos días multa. Si el delito fuera cometido por servidores públicos de las Instituciones de Seguridad Pública o de administración de justicia, la pena se aumentará hasta en una mitad más de la que le corresponda, y será destituido e inhabilitado por un plazo igual a la pena privativa de libertad impuesta.",
+   "remisiones": [
+    "241",
+    "268 Bis",
+    "274",
+    "281"
+   ],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37633,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 301",
+   "texto": "**ARTÍCULO *301.-** Se aplicará de cuatro a ocho años de prisión y de cuatrocientos a seiscientos días multa, al que a sabiendas impute falsamente a otro un hecho considerado como delito por la ley, si esta imputación se hace ante un funcionario que, por razón de su cargo, deba proceder a la persecución del delito. No se procederá contra el autor de este delito, sino cuando la inocencia del imputado se desprenda de resolución ejecutoriada dictada por el juez o tribunal que hubiese conocido del delito imputado. **NOTAS:** **REFORMA VIGENTE.-** Reformado el primer párrafo del presente artículo por Artículo Primero del Decreto No. 1558, publicado en el Periódico Oficial “Tierra y Libertad” No. 4730 Segunda Sección de fecha 2009/07/29. **Antes decía:** Se aplicará de tres a cinco años de prisión y de trescientos a quinientos días multa, al que impute falsamente a otro un hecho considerado como delito por la ley, si esta imputación se hace ante un funcionario que, por razón de su cargo, deba proceder a la persecución del delito.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47928,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 1",
+   "texto": "de enero de 2023 **Artículo Único.-** Se reforma la fracción IV del artículo 148 del Código Penal Federal, para quedar como sigue: **Único.-** El presente Decreto entrará en vigor el día siguiente al de su publicación en el Diario Oficial de la Federación. **Ciudad de México, a 24 de noviembre de 2022** .- Dip. **Santiago Creel Miranda** , Presidente.- Sen. **Alejandro Armenta Mier** , Presidente.- Dip. **Brenda Espinoza Lopez** , Secretaria.- Sen. **Verónica Noemí Camino Farjat** , Secretaria.- Rúbricas. **\"** En cumplimiento de lo dispuesto por la fracción I del Artículo 89 de la Constitución Política de los Estados Unidos Mexicanos, y para su debida publicación y observancia, expido el presente Decreto en la Residencia del Poder Ejecutivo Federal, en la Ciudad de México, a 4 de enero de 2023.- **Andrés Manuel López Obrador** .- Rúbrica.- El Secretario de Gobernación, Lic. **Adán Augusto López Hernández** .- Rúbrica. **<u>CÓDIGO PENAL FEDERAL</u>** _Última Reforma DOF 13-03-2026_ # **DECRETO por el que se reforma el artículo 205-Bis y se adiciona un Capítulo IX al Título Octavo del Código Penal Federal.** Publicado en el Diario Oficial de la Federación el 25 de abril de 2023 **Artículo Único.-** Se reforma el primer párrafo del artículo 205-Bis y se adiciona un Capítulo IX con un artículo 209 Quáter al Título Octavo del Código Penal Federal, para quedar como sigue: **Único.** El presente Decreto entrará en vigor el día siguiente al de su publicación en el Diario Oficial de la Federación. **Ciudad de México, a 15 de marzo de 2023** .- Dip. **Santiago Creel Miranda** , Pres",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47691,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 315 Bis",
+   "texto": "**Artículo 315 Bis** .- Se impondrá la pena del artículo 320 de este Código, cuando el homicidio sea cometido intencionalmente, a propósito de una violación o un robo por el sujeto activo de éstos, contra su víctima o víctimas. También se aplicará la pena a que se refiere el Artículo 320 de este Código, cuando el homicidio se cometiera intencionalmente en casa-habitación, habiéndose penetrado en la misma de manera furtiva, con engaño o violencia, o sin permiso de la persona autorizada para darlo. _Artículo adicionado DOF 03-01-1989_",
+   "remisiones": [
+    "320"
+   ],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 30926,
+   "codigo": "Código Penal del Estado de Querétaro",
+   "articulo": "Artículo 228",
+   "texto": "**ARTÍCULO 228.-** Al que maneje un vehículo de motor hallándose en estado de ebriedad o bajo el influjo de estupefacientes, psicotrópicos, substancias volátiles inhalables u otras que impidan o perturben su adecuada conducción, se le aplicará prisión de 3 meses a 2 años o de noventa a trescientas sesenta horas de trabajo a favor de la comunidad y de 50 a 200 días multa e inhabilitación de tres meses a un año para manejar vehículos de motor, independientemente de las sanciones que correspondan por la comisión de otros delitos. (Ref. P. O. No. 41, 25-VII-08) En caso de reincidencia, se le aplicará prisión de 6 meses a 3 años o de trescientas sesenta a setecientas veinte horas de trabajo a favor de la comunidad de 100 a 300 días multa e inhabilitación por un año o de manera definitiva para manejar vehículos de motor, independientemente de las sanciones que correspondan por la comisión de otros delitos. (Ref. P. O. No. 41, 25-VII-08) Se duplicarán las sanciones establecidas en el párrafo anterior al que maneje un vehículo de motor hallándose en estado de ebriedad o bajo el influjo de estupefacientes, psicotrópicos, substancias volátiles inhalables u otras que impidan o perturben su adecuada conducción y cause una lesión que produzca incapacidad parcial o total permanente o provoque la muerte. (Ref. P. O. No. 41, 25-VII-08) Las sanciones previstas en este artículo se impondrán sin perjuicio del concurso de delitos. (Ref. P. O. No. 41, 25-VII-08) Si este delito se comete por conductores de vehículos de transporte escolar o de servicio público de pasajeros o de carga, se duplicar",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37638,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 306",
+   "texto": "## **ARTÍCULO *306.** - Derogado. **NOTAS:** **REFORMA VIGENTE.-** Derogado por artículo segundo del Decreto No. 1114, publicado en el Periódico Oficial “Tierra y Libertad” No. 5935 de fecha 2021/04/21. Vigencia: 2021/04/22. **Antes decía:** Se incrementará hasta en una mitad la sanción prevista en el artículo 304 cuando se proporcione al mismo tiempo o en un sólo acto, la evasión de varias personas privadas de su libertad por la autoridad competente.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46859,
+   "codigo": "Código Penal de la Ciudad de México",
+   "articulo": "Artículo 100",
+   "texto": "**ARTÍCULO 100.-** _(Extinción por perdón del ofendido)._ El perdón del ofendido o del legitimado para otorgarlo, extingue la pretensión punitiva respecto de los delitos que se persiguen por querella, siempre que se conceda ante el Ministerio Público si éste no ha ejercitado la acción penal, o ante el órgano jurisdiccional antes de que cause ejecutoria la sentencia. En caso de que la sentencia haya causado ejecutoria, el ofendido podrá acudir ante la autoridad judicial a otorgar el perdón. Ésta deberá proceder de inmediato a decretar la extinción de la potestad de ejecutar las penas y medidas de seguridad. Una vez otorgado el perdón, éste no podrá revocarse, a excepción de los supuestos previstos en los artículos 200 y 201 de este Código, en cuyo caso el perdón previamente otorgado solamente suspende la pretensión punitiva o la ejecución de las penas y medidas de seguridad, y podrá revocarse hasta un año posterior a su otorgamiento. Lo dispuesto en el párrafo anterior es igualmente aplicable a los delitos que sólo pueden ser perseguidos por declaratoria de perjuicio o por un acto equivalente a la querella. Para la extinción de la pretensión punitiva es suficiente la manifestación de quien está autorizado para ello, de que el interés afectado ha sido satisfecho. El perdón solo beneficia al inculpado en cuyo favor se otorga. Cuando sean varios los ofendidos y cada uno pueda ejercer separadamente la facultad de perdonar al responsable del delito y al encubridor, el perdón sólo surtirá efectos por lo que hace a quien lo otorga.",
+   "remisiones": [
+    "200",
+    "201"
+   ],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37353,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 125",
+   "texto": "**ARTÍCULO *125.** - Son perseguibles por querella las lesiones previstas en la fracción I del artículo 121, las consideradas en las fracciones II, III y IV del mismo precepto, si fueron inferidas en forma culposa, y las ocasionadas al ascendiente o descendiente en ambas líneas, hermano, cónyuge, concubina o concubino de quien inflige las lesiones. En todo caso se perseguirán de oficio las lesiones causadas con motivo del tránsito de vehículos y el conductor responsable se encuentre en los casos previstos por el artículo 128. **REFORMA VIGENTE.-** Reformado por artículo único del Decreto No. 577, publicado en el Periódico Oficial “Tierra y Libertad”, No. 5401, de fecha 2016/06/01. Vigencia 2016/06/02. **Antes decía:** Son perseguibles por querella las lesiones previstas en la fracción I del artículo 121, las consideradas en las fracciones II, III y IV del mismo precepto, si fueron inferidas en forma culposa, y las ocasionadas al ascendiente o descendiente, en ambas líneas, hermano, cónyuge, concubina, concubinario, adoptante o adoptado de quien inflige las lesiones, salvo cuando se trate de delito cometido con motivo del tránsito de vehículos y el conductor responsable se encuentre en los casos previstos por el segundo párrafo del artículo 128. En todo caso se perseguirán de oficio las lesiones causadas en los términos del artículo 128. ## ***CAPITULO IV BIS LESIONES POR ATAQUES CON ÁCIDO, SUSTANCIAS QUÍMICAS O CORROSIVAS** **REFORMA VIGENTE.-** Adicionado por ARTÍCULO PRIMERO dispositivo del Decreto No. 309, publicado en el Periódico Oficial “Tierra y Libertad”, número 644",
+   "remisiones": [
+    "121",
+    "128"
+   ],
+   "relativas": [],
+   "nota": "«fracciones II, III y IV del mismo precepto» = el mismo 121; el 121 y 128 también aparecen en «Antes decía»"
+  },
+  {
+   "id": 46584,
+   "codigo": "Código Penal del Estado de México",
+   "articulo": "Artículo 249",
+   "texto": "**Artículo 249.** Derogado.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47923,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 1",
+   "texto": "de su publicación en el Diario Oficial de la Federación, con las salvedades previstas en los siguientes transitorios. **Segundo.** Las reformas a los artículos 28, fracción I; 81, fracción XXV; 82, fracción XXV; la derogación del artículo 111, fracción VII, y la adición del artículo 111 Bis, del Código Fiscal de la Federación, entrarán en vigor a los 30 días de la publicación del presente Decreto en el Diario Oficial de la Federación. **Tercero.** (Se deroga). _Artículo derogado DOF 12-11-2021_ **Cuarto.** A partir de la entrada en vigor del presente Decreto, quedan sin efecto las disposiciones que contravengan las modificaciones al artículo 108 de la Ley Aduanera. **Quinto.** Para efectos de lo dispuesto en el artículo 22 de la Ley del Impuesto sobre la Renta vigente o de los artículos correlativos en las leyes vigentes con anterioridad a dicha ley, los contribuyentes que estuvieron a lo dispuesto en la fracción VIII del artículo segundo de las disposiciones transitorias del Decreto por el que se reforman, adicionan y derogan diversas disposiciones de la Ley del Impuesto sobre la Renta, de la Ley del Impuesto Especial sobre Producción y Servicios, del Código Fiscal de la Federación y de la Ley Federal de Presupuesto y Responsabilidad Hacendaria, publicado en el Diario Oficial de la Federación el 18 de noviembre de 2015, deberán considerar en la determinación del costo comprobado de adquisición de acciones que se enajenan, el monto de las pérdidas fiscales que hayan considerado en la determinación del crédito a que se refiere la citada fracción VIII. Ciudad de México, a 17 ",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47485,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 170",
+   "texto": "**Artículo 170.-** Al que empleando explosivos o materias incendiarias, o por cualquier otro medio destruya total o parcialmente instalaciones o servicios de navegación aérea o marítima o de aeropuertos que presten servicios a la aviación civil, alguna plataforma fija, o una nave, aeronave, u otro vehículo de servicio público federal o local, o que proporcione servicios al público, si se encontraren ocupados por una o más personas, se le aplicarán de veinte a treinta años de prisión. A quien utilice aeronaves pilotadas a distancia en la ejecución de los hechos descritos en el párrafo anterior se aumentará la pena hasta en una tercera parte. _Párrafo adicionado DOF 07-06-2024_ Cuando el bien que resulte afectado pertenezca o esté destinado a las Fuerzas Armadas, seguridad nacional o seguridad pública, la pena establecida se aumentará hasta en una mitad. _Párrafo adicionado DOF 07-06-2024_ Si en el vehículo, instalación o plataforma de que se trate no se hallare persona alguna se aplicará prisión de cinco a veinte años. Asimismo se impondrán de tres a veinte años de prisión y multa de cien a cuatrocientas veces el valor diario de la Unidad de Medida y Actualización, sin perjuicio de la pena que corresponda por otros delitos que cometa, al que mediante violencia, amenazas o engaño, se apodere o ejerza el control de una plataforma fija, instalaciones o servicios de navegación aérea o marítima o de aeropuertos que presten servicios a la aviación civil; así como de una nave, aeronave, máquina o tren ferroviarios, autobuses o cualquier otro medio de transporte público colectivo, i",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47525,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 199 Sextus",
+   "texto": "**Artículo 199 Sextus.** Los delitos previstos en este capítulo serán perseguibles de oficio, a excepción de los que se señalen por querella de parte ofendida. _Artículo adicionado DOF 14-06-2012_ # **TÍTULO SÉPTIMO BIS DELITOS CONTRA LA INDEMNIDAD DE PRIVACIDAD DE LA INFORMACIÓN SEXUAL** _Título adicionado DOF 15-06-2018_ # **CAPÍTULO I** **<u>CÓDIGO PENAL FEDERAL</u>** _Última Reforma DOF 13-03-2026_ # **Comunicación de Contenido Sexual con Personas Menores de Dieciocho Años de Edad o de Personas que no tienen Capacidad para comprender el Significado del Hecho o de Personas que no tienen la Capacidad para Resistirlo** _Capítulo adicionado DOF 15-06-2018_",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46601,
+   "codigo": "Código Penal del Estado de México",
+   "articulo": "Artículo 264",
+   "texto": "**Artículo 264.-** Se le impondrán de uno a cuatro años de prisión y de cien a quinientos días multa, a quien ejerza con fines ilícitos un derecho o use cualquier tipo de datos, informaciones o documentos que legítimamente pertenezcan a otra persona física o jurídico colectiva, que la individualiza ante la sociedad y que le permite a una persona física o jurídica colectiva ser identificada o identificable, para hacerse pasar por ella. Se equiparan a la usurpación de identidad y se impondrán las mismas penas previstas en el párrafo que precede prevista en el presente artículo a quienes: **I.** Cometan un hecho ilícito previsto en las disposiciones legales con motivo de la usurpación de la identidad; **II.** Utilicen datos personales, sin consentimiento de quien deba otorgarlo; **III.** Otorguen el consentimiento para llevar a cabo la usurpación de su identidad; y **IV.** Se valgan de la homonimia para cometer algún ilícito. Las sanciones previstas en este artículo se impondrán con independencia de las que correspondan por la comisión de otro u otros delitos.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 47622,
+   "codigo": "Código Penal Federal",
+   "articulo": "Artículo 254",
+   "texto": "**Artículo 254** .- Se aplicarán igualmente las sanciones del Artículo 253: _Párrafo reformado DOF 05-12-1979, 30-12-1980_ - **I.-** Por destrucción indebida de materias primas, productos agrícolas o industriales o medios de producción, que se haga con perjuicio del consumo nacional; _Fracción reformada DOF 13-12-1996_ - **II.-** Cuando se ocasione la difusión de una enfermedad de las plantas o de los animales con peligro de la economía rural; _Fracción reformada DOF 13-12-1996_ - **III.-** Cuando se publiquen noticias falsas, exageradas o tendenciosas o por cualquier otro medio indebido se produzcan trastornos en el mercado interior, ya sea tratándose de mercancías, de monedas o títulos y efectos de comercio. - **IV.-** Al que dolosamente, en operaciones mercantiles exporte mercancías nacionales de calidad inferior, o en menor cantidad de lo convenido. - _Fracción adicionada DOF 05-01-1955_ - **V.-** Al que dolosamente adquiera, posea o trafique con semillas, fertilizantes, plaguicidas, implementos y otros materiales destinados a la producción agropecuaria que se hayan entregado a los productores por alguna entidad o dependencia pública a precio subsidiado. En los distritos de riego, el agua de riego será considerada como material a precio subsidiado. Si el que entregue los insumos referidos, fuere el productor que los recibió de las instituciones oficiales, se le aplicará una pena de 3 días a 3 años de prisión. _Fracción adicionada DOF 30-12-1980_ - **VI.-** A los funcionarios o empleados de cualquiera entidad o dependencia pública que entreguen estos insumos a quienes no",
+   "remisiones": [
+    "253"
+   ],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 46606,
+   "codigo": "Código Penal del Estado de México",
+   "articulo": "Artículo 268",
+   "texto": "**Artículo 268.-** Al que sin causa justificada, sin mandamiento de autoridad competente, o sin el consentimiento de la persona que lo deba otorgar se introduzca en casa habitación ajena, se le impondrán de seis meses a cinco años de prisión y de treinta a cincuenta días multa. Este delito sólo se perseguirá por querella.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37266,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 45",
+   "texto": "**ARTÍCULO *45.** - Los objetos o valores que no sean recogidos por quien tenga derecho a ellos, dentro de los sesenta días naturales siguientes a la notificación que se le haga, se enajenarán en pública subasta y el producto de la venta se aplicará a quien esté facultado para recibirlo. Si éste no se presenta para ello, dentro de los seis meses siguientes a la notificación que se le haga, el producto de la venta se aplicará conforme a lo previsto en el primer párrafo del artículo anterior. En el caso de los bienes que se hallen a disposición de la autoridad, que no se deban destruir y tampoco se puedan conservar, o sean de costoso mantenimiento, se procederá a su venta en subasta pública y el producto se dejará a disposición de quien tenga derecho a recibirlo, durante seis meses contados a partir de la notificación respectiva. En caso de que no se presente en ese tiempo, se aplicará en la forma prevista por el primer párrafo del artículo anterior. El aseguramiento de bienes recuperados con motivo de la investigación del delito y puestos a disposición del Ministerio Público, podrán aplicarse a favor del Estado cuando hayan sido objeto de abandono, por parte de quien con legitimo derecho, hubiere podido reclamar su entrega desde su aseguramiento. Se decretará el abandono por parte del Ministerio Público o de la autoridad judicial, respecto de los bienes cuya devolución proceda y que no sean reclamados o recogidos dentro del plazo de 1 año a partir de que dicho bien fue puesto a disposición de la autoridad judicial o del Ministerio Público, según sea el caso. El Ministerio Pú",
+   "remisiones": [],
+   "relativas": [
+    "anterior"
+   ],
+   "nota": ""
+  },
+  {
+   "id": 37318,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 93",
+   "texto": "**ARTÍCULO *93.** - El perdón del ofendido o del legitimado para otorgarlo extingue la pretensión punitiva y la potestad ejecutiva con respecto a los responsables del hecho, cuando se trate de delitos perseguibles mediante querella u otro requisito de procedibilidad equivalente. El perdón debe ser otorgado expresamente, es irrevocable y puede ser concedido en cualquier tiempo, hasta el cumplimiento de la sanción. El perdón sólo surte efectos en lo que respecta a quien lo formula y beneficia a quien se concede siempre y cuando haya cumplido a satisfacción con el pago de la reparación del daño. Cuando sean varios los inculpados y el ofendido hubiese obtenido la satisfacción de sus intereses o derechos, el perdón beneficiará a todos. Se aplicarán las disposiciones contenidas en los párrafos anteriores cuando la persecución del delito esté sujeta a un requisito de procedibilidad equivalente a la querella, que deba ser satisfecho por alguna autoridad, y ésta manifieste que no solicita dicha persecución o que se desiste de la que hubiese promovido. **NOTAS:** **REFORMA VIGENTE.-** Reformado el segundo párrafo del presente artículo por Artículo Primero del Decreto No. 1558, publicado en el Periódico Oficial “Tierra y Libertad” No. 4730 Segunda Sección de fecha 2009/07/29. **Antes decía:** El perdón sólo surte efectos en lo que respecta a quien lo formula y beneficia a quien se concede. Cuando sean varios los inculpados y el ofendido hubiese obtenido la satisfacción de sus intereses o derechos, el perdón beneficiará a todos.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37502,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 213 quater",
+   "texto": "## **ARTÍCULO *213 quater.-** Derogado. **NOTAS:** **REFORMA VIGENTE.-** Derogado por Artículo Tercero del Decreto No. 821, publicado en el Periódico Oficial “Tierra y Libertad” No. 4625 de fecha 2008/07/09. **Antes decía:** Al que induzca, procure u obligue a un menor de edad o a quien no tenga la capacidad para comprender el significado del hecho, a realizar actos de exhibicionismo corporal, lascivos o sexuales, de prostitución, de consumo de narcóticos, a tener prácticas sexuales, a la práctica de la ebriedad o a cometer hechos delictuosos, se le aplicará de cinco a diez años de prisión y de cien a quinientos días-multa. Se duplicará la sanción a la persona que cometa o consienta cualquiera de las conductas descritas, si fuere ascendiente, hermano, hermana, padrastro, madrastra, tutor, tutora o todo aquel que tenga sobre el menor el ejercicio de la patria potestad. Si además del delito citado resultase cometido otro, se aplicarán las reglas de acumulación. Al que procure, facilite o induzca por cualquier medio a un menor, o a un incapaz, a realizar actos de exhibicionismo corporal, lascivos o sexuales, con el objeto y fin de videograbarlo, fotografiarlo o exhibirlo mediante anuncios impresos o electrónicos, incluyendo la Internet, se le impondrá de seis a quince años de prisión y de cien a quinientos días-multa. Se duplicará la sanción a la persona que cometa o consienta cualquiera de las conductas descritas, si fuere ascendiente, hermano, hermana, padrastro, madrastra, tutor, tutora o todo aquel que tenga sobre el menor el ejercicio de la patria potestad. Al que filme, ",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  },
+  {
+   "id": 37651,
+   "codigo": "Código PENALEM",
+   "articulo": "Artículo 318",
+   "texto": "## **ARTÍCULO *318.** - DEROGADO. **NOTAS:** **REFORMA VIGENTE** : Se deroga el artículo 318 que forma parte del Libro Segundo de presente ordenamiento, por ARTÍCULO ÚNICO dispositivo del Decreto 1701, publicado en el Periódico Oficial “Tierra y Libertad” No. 6285, de fecha 2024/02/28. Vigencia: 2024/02/29. **Antes decía:** ARTÍCULO *318.- Se impondrá hasta 500 días multa a los ministros de cultos religiosos, que por cualquier medio en el desarrollo de actos propios de su ministerio, induzcan al electorado a votar en favor o en contra de un candidato, partido político, o favorezcan la abstención **REFORMA SIN VIGENCIA.** - Reformado por Decreto No. 929 de 1997/02/13. POEM No. 3846 de 1997/02/19. Vigencia: 1997/02/20.",
+   "remisiones": [],
+   "relativas": [],
+   "nota": ""
+  }
+ ]
+}
