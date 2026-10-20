@@ -346,6 +346,7 @@
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="ask-route"> routing por código 🧭</label>
    <label class="chk" title="Filtro por estado: antes de buscar, el LLM detecta dónde ocurrieron los hechos. El buscador solo usa el código penal de ese estado, más las leyes nacionales y la doctrina. Si no hay estado, no usa ningún código estatal y Gemma pregunta dónde ocurrió. Reemplaza el filtro «Lugar». Tarda ~1 segundo más."><input type="checkbox" id="ask-gate"> filtro por estado 🚧</label>
    <label class="chk" title="Descomponer por delito: si el relato tiene varias conductas que podrían ser delito, el LLM escribe una búsqueda por conducta, y el buscador entrega 3 chunks más por cada conducta adicional, para que lleguen los artículos de cada delito."><input type="checkbox" id="ask-crimes"> descomponer por delito ⚖️</label>
+   <label class="chk" title="Seguir remisiones: si un artículo del contexto remite a otro («las penas previstas en el artículo 220»), se agrega también el artículo remitido (hasta 4, primero los de pena), marcado «↪ remitido por». Usa la tabla corpus_remisiones (búsqueda exacta, sin LLM). Si quedan remisiones fuera, Gemma recibe un aviso para no inventar su contenido."><input type="checkbox" id="ask-remisiones"> seguir remisiones ↪</label>
  </div>
  <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
  <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
@@ -380,6 +381,7 @@
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="chat-route"> routing por código 🧭</label>
    <label class="chk" title="Filtro por estado: antes de buscar, el LLM detecta dónde ocurrieron los hechos. El buscador solo usa el código penal de ese estado, más las leyes nacionales y la doctrina. Si no hay estado, no usa ningún código estatal y Gemma pregunta dónde ocurrió. Reemplaza el filtro «Lugar». Tarda ~1 segundo más."><input type="checkbox" id="chat-gate"> filtro por estado 🚧</label>
    <label class="chk" title="Descomponer por delito: si el relato tiene varias conductas que podrían ser delito, el LLM escribe una búsqueda por conducta, y el buscador entrega 3 chunks más por cada conducta adicional, para que lleguen los artículos de cada delito."><input type="checkbox" id="chat-crimes"> descomponer por delito ⚖️</label>
+   <label class="chk" title="Seguir remisiones: si un artículo del contexto remite a otro («las penas previstas en el artículo 220»), se agrega también el artículo remitido (hasta 4, primero los de pena), marcado «↪ remitido por». Usa la tabla corpus_remisiones (búsqueda exacta, sin LLM). Si quedan remisiones fuera, Gemma recibe un aviso para no inventar su contenido."><input type="checkbox" id="chat-remisiones"> seguir remisiones ↪</label>
    <details id="chat-prompt-box" style="margin:0">
      <summary>⚙️ System prompt <span id="chat-psum"></span></summary>
      <div class="row" style="margin:8px 0 0"><label>Usar un prompt etiquetado: <select id="chat-psel" style="max-width:420px"></select></label>
@@ -518,6 +520,7 @@
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="bench-route"> routing por código 🧭</label>
    <label class="chk" title="Filtro por estado: antes de buscar, el LLM detecta el lugar de los hechos. La búsqueda solo ve los códigos penales de los estados que la persona mencionó (más leyes nacionales, federales y doctrina). Si no mencionó ninguno, no ve ningún código estatal y el LLM recibe la instrucción de preguntar el estado. Reemplaza el filtro «Lugar». Cuesta una llamada corta al LLM."><input type="checkbox" id="bench-gate"> filtro por estado 🚧</label>
    <label class="chk" title="Descomponer por delito: si el relato tiene varias conductas que podrían ser delito (por ejemplo, inyectar una sustancia y robar), el LLM escribe una búsqueda por conducta y se busca cada una por separado, para que los artículos de cada delito lleguen al contexto. Con el filtro por estado, cada búsqueda se hace solo en los códigos que el filtro permite. Cuesta una llamada extra al LLM."><input type="checkbox" id="bench-crimes"> descomponer por delito ⚖️</label>
+   <label class="chk" title="Seguir remisiones: si un artículo del contexto remite a otro («las penas previstas en el artículo 220»), se agrega también el artículo remitido (hasta 4, primero los de pena), marcado «↪ remitido por». Usa la tabla corpus_remisiones (búsqueda exacta, sin LLM). Si quedan remisiones fuera, Gemma recibe un aviso para no inventar su contenido."><input type="checkbox" id="bench-remisiones"> seguir remisiones ↪</label>
    <label title="Chunks extra que el buscador entrega por cada conducta adicional (con 1 conducta no cambia nada). Tope: el doble del top-k.">chunks extra por delito: <select id="bench-crimes-k"><option>2</option><option selected>3</option><option>5</option></select></label>
      </div>
      <div class="row">
@@ -1031,7 +1034,7 @@ async function askRun(){
         jurisdictions:readJur('ask-jur'),
         neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked, rerank:$('ask-rerank').checked,
         decompose:$('ask-decompose').checked, route:$('ask-route').checked,
-        gate:$('ask-gate').checked, crimes:$('ask-crimes').checked})});
+        gate:$('ask-gate').checked, crimes:$('ask-crimes').checked, remisiones:$('ask-remisiones').checked})});
     await readSSE(resp, ev=>{
       if(ev.stage==='retrieving'){
         setStatus(ev.hyde?'🧪 generando respuesta hipotética (HyDE) + recuperando…':'⏳ recuperando…');
@@ -1040,6 +1043,9 @@ async function askRun(){
       }else if(ev.stage==='decompose'){
         $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>🧩 Pregunta descompuesta en ${ev.subqueries.length} sub-búsquedas (resultados intercalados)</summary>
           <ol style="margin:6px 0 0;padding-left:20px">${ev.subqueries.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`);
+      }else if(ev.stage==='remisiones'){
+        $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>↪ Remisiones: se agregaron ${ev.agregadas.length} artículo(s)${ev.omitidas.length?` · ${ev.omitidas.length} no cupieron`:''}</summary>
+          <ul style="margin:6px 0 0;padding-left:20px">${ev.agregadas.map(r=>`<li>${esc(r.a)} ← remitido por el ${esc(r.de)} («${esc(r.texto)}», ${esc(r.materia)})</li>`).join('')}${ev.omitidas.map(r=>`<li class="muted">no cupo: ${esc(r.a)} ← ${esc(r.de)}</li>`).join('')}</ul></details>`);
       }else if(ev.stage==='filtro'){
         $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>🚧 Filtro por estado: ${filtroTexto(ev)}</summary>
           <div class="muted" style="margin:6px 0 0">El buscador solo usó: ${(ev.jurisdictions||[]).map(esc).join(', ')}</div></details>`);
@@ -1641,12 +1647,13 @@ async function chatSend(){
         jurisdictions:readJur('chat-jur'),
         neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked, rerank:$('chat-rerank').checked,
         decompose:$('chat-decompose').checked, route:$('chat-route').checked,
-        gate:$('chat-gate').checked, crimes:$('chat-crimes').checked})});
+        gate:$('chat-gate').checked, crimes:$('chat-crimes').checked, remisiones:$('chat-remisiones').checked})});
     if(resp.status===401){ throw new Error('Sesión expirada. Recarga la página.'); }
     if(!resp.ok||!resp.body){ throw new Error('HTTP '+resp.status); }
     await readSSE(resp, ev=>{
       if(ev.stage==='search'){ if(!answer) live.innerHTML='<span class="muted">🔎 buscando: '+esc(ev.query||'')+'</span>'; }
       else if(ev.stage==='retrieving'){ if(!answer) live.innerHTML='<span class="muted">⏳ recuperando…</span>'; }
+      else if(ev.stage==='remisiones'){ meta.remisiones=ev; if(!answer) live.innerHTML='<span class="muted">↪ siguiendo '+ev.agregadas.length+' remisión(es)</span>'; }
       else if(ev.stage==='filtro'){ meta.filtro=ev; if(!answer) live.innerHTML='<span class="muted">🚧 '+filtroTexto(ev)+'</span>'; }
       else if(ev.stage==='route'){ meta.routes=ev.routes; if(!answer) live.innerHTML='<span class="muted">🧭 buscando también en: '+ev.routes.map(r=>esc(r.label)).join(' · ')+'</span>'; }
       else if(ev.stage==='decompose'){ meta.subqueries=ev.subqueries; if(!answer) live.innerHTML='<span class="muted">🧩 buscando por partes: '+ev.subqueries.map(esc).join(' · ')+'</span>'; }

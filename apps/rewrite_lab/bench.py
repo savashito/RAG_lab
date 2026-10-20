@@ -852,7 +852,8 @@ class Bench:
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
                                                 cfg['rerank'], decompose=cfg.get('decompose', False),
                                                 route=cfg.get('route', False), gate=cfg.get('gate', False),
-                                                crimes=cfg.get('crimes', False), crime_extra_k=cfg.get('crime_extra_k')),
+                                                crimes=cfg.get('crimes', False), crime_extra_k=cfg.get('crime_extra_k'),
+                                                remisiones=cfg.get('remisiones', False)),
                                self._cancel)
                     t_juez = time.time()
                     g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or '',
@@ -873,7 +874,7 @@ class Bench:
                                judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'),
                                retrieval=row['retrieval'], citations=row['citations'], subqueries=a.get('subqueries'),
                                routes=a.get('routes'), gate=a.get('gate'), timings=row['timings'], k=a.get('k'),
-                               n_chunks=a.get('n_chunks'))
+                               n_chunks=a.get('n_chunks'), remisiones=a.get('remisiones'))
                 except Exception as e:  # noqa: BLE001 — una pregunta que falla no tumba la corrida
                     row['error'] = det['error'] = f'{type(e).__name__}: {e}'
                 row['seconds'] = round(time.time() - t0, 1)
@@ -1259,7 +1260,7 @@ class Bench:
                        'neighbors': bool(b.get('neighbors', True)), 'hyde': bool(b.get('hyde', False)),
                        'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
                        'route': bool(b.get('route', False)), 'gate': bool(b.get('gate', False)),
-                       'crimes': bool(b.get('crimes', False)),
+                       'crimes': bool(b.get('crimes', False)), 'remisiones': bool(b.get('remisiones', False)),
                        'crime_extra_k': (int(b['crime_extra_k']) if b.get('crime_extra_k') not in (None, '') else None),
                        'system': b.get('system') or '',
                        'jurisdictions': b.get('jurisdictions') or []}

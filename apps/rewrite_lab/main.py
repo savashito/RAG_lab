@@ -969,6 +969,73 @@ CONDUCTAS_SYSTEM = (
 CRIME_EXTRA_K = int(os.environ.get('CRIME_EXTRA_K', '3'))   # chunks extra en el top-k por cada conducta adicional (default)
 
 
+# ── Seguir remisiones (tabla corpus_remisiones, ingestion/generar_remisiones.py) ─────────────────────────────────
+# Un artículo del contexto a veces remite a otro para la pena («además de las penas previstas en el artículo 220»): el
+# buscador trae el 224 por parecido, pero no el 220. Con esta opción, tras elegir el contexto se consultan las remisiones
+# YA RESUELTAS de esos artículos (búsqueda exacta por código + número, calculada una vez) y se agregan hasta
+# REMISIONES_MAX artículos remitidos, primero los de pena. Un solo nivel: no se siguen las remisiones de los remitidos.
+REMISIONES_MAX = int(os.environ.get('REMISIONES_MAX', '4'))
+_MATERIA_ORDEN = {'pena': 0, 'calificativa': 1}
+
+
+def ctx_line(ch: dict) -> str:
+    """Un chunk como lo lee el LLM; si llegó por una remisión, lo dice."""
+    rem = f" (↪ remitido por el {ch['remitido_por']})" if ch.get('remitido_por') else ''
+    return (f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — "
+            f"{ch.get('hierarchy') or ch.get('title', '')}{rem}\n{ch.get('text', '')}")
+
+
+def follow_remisiones(cur, ids: list, jurisdictions=None) -> tuple[list, dict, dict]:
+    """(ids agregados, {id: artículo que lo remite}, info) para el contexto `ids`. info = {'agregadas': [...],
+    'omitidas': [...]} (omitidas = resueltas que no cupieron en REMISIONES_MAX: el LLM debe saberlo)."""
+    origen = []   # (source, título) de los artículos del contexto, en su orden
+    for cid in ids:
+        m = DOC_BY_ID.get(cid) or {}
+        t = m.get('title') or ''
+        if t.startswith('Artículo') and (m.get('source'), t) not in origen:
+            origen.append((m.get('source'), t))
+    if not origen:
+        return [], {}, {'agregadas': [], 'omitidas': []}
+    try:
+        cur.execute("SELECT r.source, r.articulo_origen, r.titulo_destino, r.materia, r.texto FROM corpus_remisiones r "
+                    "JOIN unnest(%s::text[], %s::text[]) AS o(source, titulo) ON o.source = r.source AND o.titulo = r.articulo_origen "
+                    "WHERE r.estado = 'resuelta'", ([s for s, _ in origen], [t for _, t in origen]))
+        filas = cur.fetchall()
+    except Exception as e:  # noqa: BLE001 — sin la tabla, la búsqueda sigue igual
+        cur.connection.rollback()
+        return [], {}, {'agregadas': [], 'omitidas': [], 'error': f'{type(e).__name__}: {e}'}
+    presentes = {((DOC_BY_ID.get(c) or {}).get('source'), (DOC_BY_ID.get(c) or {}).get('title')) for c in ids}
+    pos = {o: i for i, o in enumerate(origen)}
+    cand, vistos = [], set()
+    for src, de, a, materia, texto in sorted(filas, key=lambda f: (_MATERIA_ORDEN.get(f[3], 2), pos.get((f[0], f[1]), 99))):
+        base = re.sub(r'\s*\(incluye.*$', '', a or '')
+        if (src, base) in presentes or (src, base) in vistos:
+            continue
+        vistos.add((src, base))
+        cand.append({'source': src, 'de': de, 'a': base, 'incluye': a if a != base else None, 'materia': materia, 'texto': texto})
+    jset = _jur_set(jurisdictions)
+    agregados, rem_map, agregadas = [], {}, []
+    for c in cand[:REMISIONES_MAX]:
+        cur.execute(f"SELECT id FROM {TABLE} WHERE source = %s AND title = %s ORDER BY position, id LIMIT 2", (c['source'], c['a']))
+        nuevos = [r[0] for r in cur.fetchall()
+                  if r[0] not in ids and _jur_match(jset, (DOC_BY_ID.get(r[0]) or {}).get('jurisdiction'))]
+        for cid in nuevos:
+            agregados.append(cid); rem_map[cid] = c['de']
+        if nuevos:
+            agregadas.append(c)
+    return agregados, rem_map, {'agregadas': agregadas, 'omitidas': cand[REMISIONES_MAX:]}
+
+
+def remisiones_nota(info: dict) -> str:
+    """Si quedaron remisiones fuera del contexto por el tope, el LLM debe saberlo para no inventar su contenido."""
+    om = (info or {}).get('omitidas') or []
+    if not om:
+        return ''
+    lista = '; '.join(f"{o['a']} (remitido por el {o['de']})" for o in om[:8])
+    return (f'REMISIONES: los artículos del CONTEXTO remiten también a {lista}, que NO se incluyeron. No inventes su '
+            'contenido: si hacen falta para responder, dilo. (Instrucción interna: no menciones esta nota.)\n\n')
+
+
 def crime_k(k: int, crimes: bool, crime_extra_k, dbg: dict, question: str) -> int:
     """Top-k final con «descomponer por delito»: cada conducta adicional suma sus propios chunks (tope: 2k)."""
     if not crimes:
@@ -1078,7 +1145,7 @@ def gate_for(question: str, topic=None) -> dict:
 
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
         neighbors=True, hyde=False, rerank=False, decompose=False, route=False, gate=False, crimes=False,
-        crime_extra_k=None):
+        crime_extra_k=None, remisiones=False):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -1099,18 +1166,24 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
                                                  hyde, rerank, decompose, debug=dbg, route=route, crimes=crimes)
         k = crime_k(k, crimes, crime_extra_k, dbg, question)   # cada conducta suma sus propios chunks al top-k
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
-    tiempos['busqueda'] = round(time.time() - t, 2)   # incluye HyDE y las descomposiciones (desglosadas abajo)
+        rem_map, rinfo = {}, None
+        if remisiones:
+            tr = time.time()
+            nuevos, rem_map, rinfo = follow_remisiones(cur, ids, jurisdictions)
+            ids = ids + nuevos
+            tiempos['remisiones'] = round(time.time() - tr, 2)
+    tiempos['busqueda'] = round(time.time() - t, 2)   # incluye HyDE, las descomposiciones y las remisiones (desglosadas)
     for clave in ('t_descomponer', 't_por_delito'):
         if clave in dbg:
             tiempos[clave[2:]] = dbg[clave]
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
-            'score_kind': score_kind, 'neighbor': cid in extra, 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
+            'score_kind': score_kind, 'neighbor': cid in extra, 'remitido_por': rem_map.get(cid), 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
            for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
-        f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+        ctx_line(ch)
         for ch in top)
-    nota = f"{g['nota']}\n\n" if g else ''
+    nota = (f"{g['nota']}\n\n" if g else '') + remisiones_nota(rinfo)
     t = time.time()
     answer = llm.chat((system or '').strip() or system_for(topic),
                       f'CONTEXTO:\n{context}\n\n{nota}PREGUNTA: {question}',
@@ -1118,7 +1191,7 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
             'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
             'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
-            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes'), 'gate': g,
+            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes'), 'gate': g, 'remisiones': rinfo,
             'timings': {**tiempos, 'respuesta': round(time.time() - t, 2)}, 'k': k, 'n_chunks': len(top)}
 
 
@@ -1192,7 +1265,7 @@ def chat_answer(messages, setting, k=5, system=None, topic=None, jurisdictions=N
             'score_kind': score_kind, 'neighbor': cid in extra, 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
            for rank, cid in enumerate(ids, 1)]
     context = '\n\n'.join(
-        f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+        ctx_line(ch)
         for ch in top)
     # El contexto RAG se inyecta en el ÚLTIMO turno del usuario; los turnos previos van
     # tal cual para dar memoria conversacional al LLM.
@@ -1277,7 +1350,8 @@ def _study_chat_stream(messages, cfg):
                             bool(cfg.get('hyde', False)), False, bool(cfg.get('descomponer', False)),
                             bool(cfg.get('route', False)), history=int(cfg.get('historial', 0)) or None,
                             gate=bool(cfg.get('filtro_estado', False)), crimes=bool(cfg.get('por_delito', False)),
-                            crime_extra_k=cfg.get('chunks_por_delito'))
+                            crime_extra_k=cfg.get('chunks_por_delito'),
+                            remisiones=bool(cfg.get('seguir_remisiones', False)))
 
 
 def _study_chat(messages, cfg):
@@ -1716,7 +1790,7 @@ async def ask_route(req: Request):
 
 
 def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False,
-                route=False, gate=False, crimes=False, crime_extra_k=None):
+                route=False, gate=False, crimes=False, crime_extra_k=None, remisiones=False):
     """Generador SSE que transparenta el PROCESO paso a paso en lugar de esperar al final:
     1) 'hyde' (borrador hipotético + texto exacto que se embebe),
     2) 'context' (las referencias recuperadas, ya con su jerarquía),
@@ -1744,6 +1818,12 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
                                                      crimes=crimes)
             k = crime_k(k, crimes, crime_extra_k, dbg, question)
             ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
+            rem_map, rinfo = {}, None
+            if remisiones:
+                nuevos, rem_map, rinfo = follow_remisiones(cur, ids, jurisdictions)
+                ids = ids + nuevos
+        if rinfo and (rinfo['agregadas'] or rinfo['omitidas']):
+            yield sse({'stage': 'remisiones', **rinfo})
         if len(dbg.get('subqueries') or []) > 1:
             yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
         if dbg.get('routes'):
@@ -1751,16 +1831,16 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
-                'score_kind': score_kind, 'neighbor': cid in extra, 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
+                'score_kind': score_kind, 'neighbor': cid in extra, 'remitido_por': rem_map.get(cid), 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
                for rank, cid in enumerate(ids, 1)]
         if hyde:
             yield sse({'stage': 'hyde', 'passage': dbg.get('hyde_passage', ''),
                        'embed_text': dbg.get('embed_text', '')})
         yield sse({'stage': 'context', 'chunks': top, 'rewrite': rw, 'score_kind': score_kind})
         context = '\n\n'.join(
-            f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+            ctx_line(ch)
             for ch in top)
-        nota = f"{g['nota']}\n\n" if g else ''
+        nota = (f"{g['nota']}\n\n" if g else '') + remisiones_nota(rinfo)
         messages = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)},
                     {'role': 'user', 'content': f'CONTEXTO:\n{context}\n\n{nota}PREGUNTA: {question}'}]
         for piece in llm.chat_stream(messages, max_tokens=4096, timeout=180):
@@ -1781,7 +1861,7 @@ async def ask_stream_route(req: Request):
                       bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
                       bool(body.get('rerank', False)), bool(body.get('decompose', False)),
                    bool(body.get('route', False)), bool(body.get('gate', False)), bool(body.get('crimes', False)),
-                   body.get('crime_extra_k'))
+                   body.get('crime_extra_k'), bool(body.get('remisiones', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
@@ -1803,17 +1883,19 @@ async def chat_route(req: Request):
 
 
 def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False,
-                 route=False, gate=False, crimes=False, crime_extra_k=None):
+                 route=False, gate=False, crimes=False, crime_extra_k=None, remisiones=False):
     """Igual que `chat_answer` pero en streaming (SSE): condensa la consulta, transparenta
     el proceso (search → retrieving → hyde → context → token* → done) y streamea la
     respuesta. La generación recibe todos los turnos; la búsqueda usa la consulta condensada."""
     for ev in chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank,
-                               decompose, route, gate=gate, crimes=crimes, crime_extra_k=crime_extra_k):
+                               decompose, route, gate=gate, crimes=crimes, crime_extra_k=crime_extra_k,
+                               remisiones=remisiones):
         yield f'data: {json.dumps(ev, ensure_ascii=False)}\n\n'
 
 
 def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False,
-                     decompose=False, route=False, history=None, gate=False, crimes=False, crime_extra_k=None):
+                     decompose=False, route=False, history=None, gate=False, crimes=False, crime_extra_k=None,
+                     remisiones=False):
     """Los eventos de `_chat_events` como diccionarios (los usa también el estudio con usuarios,
     que guarda el turno completo al terminar). `history` = mensajes previos que ve el LLM
     (default CHAT_HISTORY_MESSAGES)."""
@@ -1845,6 +1927,12 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
                                                      crimes=crimes)
             k = crime_k(k, crimes, crime_extra_k, dbg, search_q)
             ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
+            rem_map, rinfo = {}, None
+            if remisiones:
+                nuevos, rem_map, rinfo = follow_remisiones(cur, ids, jurisdictions)
+                ids = ids + nuevos
+        if rinfo and (rinfo['agregadas'] or rinfo['omitidas']):
+            yield sse({'stage': 'remisiones', **rinfo})
         if len(dbg.get('subqueries') or []) > 1:
             yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
         if dbg.get('routes'):
@@ -1852,7 +1940,7 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
         score_map = dict(scored)
         top = [{'id': cid, 'rank': rank,
                 'score': (round(score_map[cid], 4) if cid in score_map else None),
-                'score_kind': score_kind, 'neighbor': cid in extra,
+                'score_kind': score_kind, 'neighbor': cid in extra, 'remitido_por': rem_map.get(cid),
                 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
                for rank, cid in enumerate(ids, 1)]
         if hyde:
@@ -1862,11 +1950,11 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
                    'search_query': search_q if search_q != question else '',
                    'ranking': [cid for cid, _ in scored[:50]]})
         context = '\n\n'.join(
-            f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
+            ctx_line(ch)
             for ch in top)
         llm_msgs = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)}]
         llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1][-history:]]
-        nota = f"{g['nota']}\n\n" if g else ''
+        nota = (f"{g['nota']}\n\n" if g else '') + remisiones_nota(rinfo)
         llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\n{nota}PREGUNTA: {question}'})
         for piece in llm.chat_stream(llm_msgs, max_tokens=4096, timeout=180):
             yield sse({'stage': 'token', 'text': piece})
@@ -1885,7 +1973,7 @@ async def chat_stream_route(req: Request):
                        bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
                        bool(body.get('rerank', False)), bool(body.get('decompose', False)),
                    bool(body.get('route', False)), bool(body.get('gate', False)), bool(body.get('crimes', False)),
-                   body.get('crime_extra_k'))
+                   body.get('crime_extra_k'), bool(body.get('remisiones', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 

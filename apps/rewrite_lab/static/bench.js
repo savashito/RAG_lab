@@ -27,7 +27,7 @@ const attr = s => esc(s).replace(/"/g,'&quot;');
 const pct = v => v==null ? '—' : (100*v).toFixed(0)+'%';
 // ⏱ Segundos promedio por etapa (metrics.avg_timings; solo corridas desde 2026-10-19).
 const ETAPAS = [['filtro','filtro por estado'], ['descomponer','descomponer'], ['por_delito','descomponer por delito'],
-                ['busqueda','búsqueda (con HyDE y descomposiciones)'], ['respuesta','respuesta de Gemma'], ['juez','juez']];
+                ['remisiones','seguir remisiones'], ['busqueda','búsqueda (con HyDE, descomposiciones y remisiones)'], ['respuesta','respuesta de Gemma'], ['juez','juez']];
 const tiempos = t => t ? ETAPAS.filter(([e])=>t[e]!=null).map(([e,l])=>`${l} ${t[e].toFixed(1)} s`).join(' · ') : '';
 function scoreColor(v){ if(v==null) return '#374151'; if(v>=.85) return '#166534'; if(v>=.6) return '#3f6212'; if(v>=.35) return '#854d0e'; return '#7f1d1d'; }
 const topicLabel = t => ((window.__topics||[]).find(x=>x.topic===t)||{}).label || t;
@@ -462,7 +462,7 @@ async function startBenchRun(){
   if(!(await ensurePromptTag())) return;
   const body = {set_id: BENCH.set.id, label: $('bench-label').value, setting: $('bench-setting').value,
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
-    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked, route: $('bench-route').checked, gate: $('bench-gate').checked, crimes: $('bench-crimes').checked, crime_extra_k: $('bench-crimes-k').value,
+    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked, route: $('bench-route').checked, gate: $('bench-gate').checked, crimes: $('bench-crimes').checked, crime_extra_k: $('bench-crimes-k').value, remisiones: $('bench-remisiones').checked,
     system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
   const sub = currentSubset();
   if(!sub.ids.length){ bmsg('No hay preguntas seleccionadas en «🎯 Qué preguntas correr».', false); return; }
@@ -502,7 +502,7 @@ function watchBenchRun(rid){
 }
 function cfgSummary(c){
   c = c||{};
-  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'', c.route?'🧭 routing':'', c.gate?'🚧 filtro por estado':'', c.crimes?'⚖️ por delito'+(c.crime_extra_k!=null?` (+${c.crime_extra_k} chunks c/u)`:''):'',
+  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'', c.route?'🧭 routing':'', c.gate?'🚧 filtro por estado':'', c.remisiones?'↪ remisiones':'', c.crimes?'⚖️ por delito'+(c.crime_extra_k!=null?` (+${c.crime_extra_k} chunks c/u)`:''):'',
           (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'', (c.judge_notes||'').trim()?'📋 criterios juez':'',
           (c.question_ids||[]).length ? `🎯 ${c.question_ids.length}${c.set_total?'/'+c.set_total:''} preg.${c.subset?' ('+c.subset+')':''}` : '']
     .filter(Boolean).join(' · ');
@@ -647,7 +647,7 @@ async function rerunFailed(rid){
     const c = r.config;
     if([...$('bench-setting').options].some(o=>o.value===c.setting)) $('bench-setting').value = c.setting;
     $('bench-k').value = String(c.k); $('bench-neighbors').checked = !!c.neighbors; $('bench-hyde').checked = !!c.hyde;
-    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose; $('bench-route').checked = !!c.route; $('bench-gate').checked = !!c.gate; $('bench-crimes').checked = !!c.crimes; if(c.crime_extra_k!=null) $('bench-crimes-k').value = c.crime_extra_k;
+    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose; $('bench-route').checked = !!c.route; $('bench-gate').checked = !!c.gate; $('bench-crimes').checked = !!c.crimes; $('bench-remisiones').checked = !!c.remisiones; if(c.crime_extra_k!=null) $('bench-crimes-k').value = c.crime_extra_k;
   }
   $('bench-subset').open = true;
   $('bench-subset').scrollIntoView({behavior:'smooth', block:'center'});
