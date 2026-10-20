@@ -820,6 +820,9 @@ class Bench:
         if self.table:
             try:   # conexión propia para el resolver de citas (cachea los documentos durante la corrida)
                 rconn = self.connect()
+                # autocommit: sin él, el primer SELECT abría una transacción que duraba toda la corrida, y un
+                # ALTER TABLE al arrancar otra copia de la app esperaba detrás y bloqueaba las búsquedas (2026-10-20).
+                rconn.autocommit = True
                 resolver = cit.Resolver(rconn.cursor(), self.table)
             except Exception:  # noqa: BLE001
                 traceback.print_exc()

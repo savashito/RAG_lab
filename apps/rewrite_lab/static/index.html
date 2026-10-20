@@ -344,6 +344,8 @@
    <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="ask-rerank"> rerank 🎯</label>
    <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="ask-decompose" checked> descomponer 🧩</label>
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="ask-route"> routing por código 🧭</label>
+   <label class="chk" title="Filtro por estado: antes de buscar, el LLM detecta dónde ocurrieron los hechos. El buscador solo usa el código penal de ese estado, más las leyes nacionales y la doctrina. Si no hay estado, no usa ningún código estatal y Gemma pregunta dónde ocurrió. Reemplaza el filtro «Lugar». Tarda ~1 segundo más."><input type="checkbox" id="ask-gate"> filtro por estado 🚧</label>
+   <label class="chk" title="Descomponer por delito: si el relato tiene varias conductas que podrían ser delito, el LLM escribe una búsqueda por conducta, y el buscador entrega 3 chunks más por cada conducta adicional, para que lleguen los artículos de cada delito."><input type="checkbox" id="ask-crimes"> descomponer por delito ⚖️</label>
  </div>
  <textarea id="ask-question" placeholder="Escribe tu pregunta jurídica…  (Enter para enviar · Shift+Enter para salto de línea)" style="min-height:80px"></textarea>
  <select id="ask-golden-q" style="display:none;width:100%;margin-top:8px"></select>
@@ -376,6 +378,8 @@
    <label class="chk" title="Reranking: un cross-encoder reordena por relevancia los candidatos ya recuperados (segunda pasada, mayor precisión). Requiere el servicio reranker levantado."><input type="checkbox" id="chat-rerank"> rerank 🎯</label>
    <label class="chk" title="Query decomposition: si la pregunta compara varias cosas (estados, códigos, autores, enfoques), el LLM la divide en una sub-pregunta por cada una, se busca cada una por separado y se intercalan los resultados, para que ninguna acapare el contexto. Si no es comparativa, no cambia nada. Cuesta una llamada extra al LLM."><input type="checkbox" id="chat-decompose" checked> descomponer 🧩</label>
    <label class="chk" title="Routing por código: si la pregunta menciona una entidad o un código (Ciudad de México, Querétaro, CNPP, CPF…), además de la búsqueda normal busca la pregunta solo dentro de cada código mencionado e intercala los resultados, para que cada uno tenga lugares asegurados. La búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Detecta por nombre, tolera acentos y erratas; no usa el LLM ni añade tiempo apreciable."><input type="checkbox" id="chat-route"> routing por código 🧭</label>
+   <label class="chk" title="Filtro por estado: antes de buscar, el LLM detecta dónde ocurrieron los hechos. El buscador solo usa el código penal de ese estado, más las leyes nacionales y la doctrina. Si no hay estado, no usa ningún código estatal y Gemma pregunta dónde ocurrió. Reemplaza el filtro «Lugar». Tarda ~1 segundo más."><input type="checkbox" id="chat-gate"> filtro por estado 🚧</label>
+   <label class="chk" title="Descomponer por delito: si el relato tiene varias conductas que podrían ser delito, el LLM escribe una búsqueda por conducta, y el buscador entrega 3 chunks más por cada conducta adicional, para que lleguen los artículos de cada delito."><input type="checkbox" id="chat-crimes"> descomponer por delito ⚖️</label>
    <details id="chat-prompt-box" style="margin:0">
      <summary>⚙️ System prompt <span id="chat-psum"></span></summary>
      <div class="row" style="margin:8px 0 0"><label>Usar un prompt etiquetado: <select id="chat-psel" style="max-width:420px"></select></label>
@@ -904,6 +908,16 @@ function canIngestTopic(t){
 let firstTopicsLoad=true;
 function topicObj(selId){ return (window.__topics||[]).find(t=>t.topic===$(selId).value); }
 // Carga el system prompt del tópico elegido en el textbox editable del tab.
+// 🚧 Qué decidió el filtro por estado (evento 'filtro' de /ask/stream y /chat/stream).
+const TIPO_ASUNTO = {delito_comun:'delito común', delito_federal:'delito federal', ley_general:'ley general', procedimiento:'procedimiento', otro:'otro'};
+function filtroTexto(f){
+  const l = [];
+  l.push(f.estados && f.estados.length ? 'estado de los hechos: <b>'+f.estados.map(esc).join(', ')+'</b>' : 'sin estado de los hechos');
+  if((f.otros||[]).length) l.push('mencionó también (vive/trabaja): '+f.otros.map(esc).join(', '));
+  if((f.faltan||[]).length) l.push('⚠️ no está en los documentos: '+f.faltan.map(esc).join(', '));
+  if(f.tipo) l.push('tipo: '+esc(TIPO_ASUNTO[f.tipo]||f.tipo));
+  return l.join(' · ');
+}
 function syncSystem(selId, taId){ const t=topicObj(selId); if(t && t.system_prompt!=null) $(taId).value=t.system_prompt; promptTagOf(taId); }
 // 🏷️ Prompts etiquetados (los mismos de 🧪 Benchmark → 🗂️ Prompts): un menú para elegir uno y, junto al
 // título, el nombre del texto que está en la caja (o «sin etiqueta» si se editó).
@@ -1016,7 +1030,8 @@ async function askRun(){
         system:$('ask-system').value, topic:$('ask-topic').value,
         jurisdictions:readJur('ask-jur'),
         neighbors:$('ask-neighbors').checked, hyde:$('ask-hyde').checked, rerank:$('ask-rerank').checked,
-        decompose:$('ask-decompose').checked, route:$('ask-route').checked})});
+        decompose:$('ask-decompose').checked, route:$('ask-route').checked,
+        gate:$('ask-gate').checked, crimes:$('ask-crimes').checked})});
     await readSSE(resp, ev=>{
       if(ev.stage==='retrieving'){
         setStatus(ev.hyde?'🧪 generando respuesta hipotética (HyDE) + recuperando…':'⏳ recuperando…');
@@ -1025,6 +1040,9 @@ async function askRun(){
       }else if(ev.stage==='decompose'){
         $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>🧩 Pregunta descompuesta en ${ev.subqueries.length} sub-búsquedas (resultados intercalados)</summary>
           <ol style="margin:6px 0 0;padding-left:20px">${ev.subqueries.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></details>`);
+      }else if(ev.stage==='filtro'){
+        $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>🚧 Filtro por estado: ${filtroTexto(ev)}</summary>
+          <div class="muted" style="margin:6px 0 0">El buscador solo usó: ${(ev.jurisdictions||[]).map(esc).join(', ')}</div></details>`);
       }else if(ev.stage==='route'){
         $('ax-hyde').insertAdjacentHTML('beforebegin', `<details class="hyde-box" open><summary>🧭 Routing por código: además buscó dentro de ${ev.routes.length===1?'1 código':ev.routes.length+' códigos'}</summary>
           <ul style="margin:6px 0 0;padding-left:20px">${ev.routes.map(r=>`<li>«${esc(r.match)}» → ${esc(r.source.replace(/\.md$/,''))}</li>`).join('')}</ul></details>`);
@@ -1573,6 +1591,7 @@ function msgBubble(m,isLastAssistant){
     src=`<div class="chat-src"><details><summary>📄 ${m.chunks.length} fuentes de esta pregunta`+
       (m.setting?` · <span class="muted">${esc(m.setting)}</span>`:'')+
       (m.search_query?` · 🔎 búsqueda: <span class="rw">${esc(m.search_query)}</span>`:'')+
+      (m.filtro?` · 🚧 ${filtroTexto(m.filtro)}`:'')+
       (m.rewrite?` · reescritura: <span class="rw">${esc(m.rewrite)}</span>`:'')+`</summary>`+
       m.chunks.map(ch=>`<div class="chunk"><h4>[${ch.rank}] ${esc(ch.doc_label||ch.source)} — ${esc(ch.hierarchy||ch.title||'')}
         <span class="badge">${ch.neighbor?"↕ vecino":esc(skind)+": "+fmt(ch.score)}</span></h4>
@@ -1621,12 +1640,14 @@ async function chatSend(){
         system:$('chat-system').value, topic:$('chat-topic').value,
         jurisdictions:readJur('chat-jur'),
         neighbors:$('chat-neighbors').checked, hyde:$('chat-hyde').checked, rerank:$('chat-rerank').checked,
-        decompose:$('chat-decompose').checked, route:$('chat-route').checked})});
+        decompose:$('chat-decompose').checked, route:$('chat-route').checked,
+        gate:$('chat-gate').checked, crimes:$('chat-crimes').checked})});
     if(resp.status===401){ throw new Error('Sesión expirada. Recarga la página.'); }
     if(!resp.ok||!resp.body){ throw new Error('HTTP '+resp.status); }
     await readSSE(resp, ev=>{
       if(ev.stage==='search'){ if(!answer) live.innerHTML='<span class="muted">🔎 buscando: '+esc(ev.query||'')+'</span>'; }
       else if(ev.stage==='retrieving'){ if(!answer) live.innerHTML='<span class="muted">⏳ recuperando…</span>'; }
+      else if(ev.stage==='filtro'){ meta.filtro=ev; if(!answer) live.innerHTML='<span class="muted">🚧 '+filtroTexto(ev)+'</span>'; }
       else if(ev.stage==='route'){ meta.routes=ev.routes; if(!answer) live.innerHTML='<span class="muted">🧭 buscando también en: '+ev.routes.map(r=>esc(r.label)).join(' · ')+'</span>'; }
       else if(ev.stage==='decompose'){ meta.subqueries=ev.subqueries; if(!answer) live.innerHTML='<span class="muted">🧩 buscando por partes: '+ev.subqueries.map(esc).join(' · ')+'</span>'; }
       else if(ev.stage==='context'){ meta.chunks=ev.chunks||[]; meta.rewrite=ev.rewrite; meta.score_kind=ev.score_kind; meta.search_query=ev.search_query;
@@ -1638,7 +1659,7 @@ async function chatSend(){
     if(errMsg) throw new Error(errMsg);
     sugerirTramite(text, $('chat-tramite'));
     await dbAdd('messages',{convId:curConv,role:'assistant',content:answer||'(sin respuesta)',ts:Date.now(),
-      chunks:meta.chunks,rewrite:meta.rewrite,setting:$('chat-setting').value,score_kind:meta.score_kind,seconds:meta.seconds,search_query:meta.search_query});
+      chunks:meta.chunks,rewrite:meta.rewrite,setting:$('chat-setting').value,score_kind:meta.score_kind,seconds:meta.seconds,search_query:meta.search_query,filtro:meta.filtro});
     const c2=(await listConvs()).find(c=>c.id===curConv);
     if(c2){ c2.updated=Date.now(); await dbPut('conversations',c2); }
   }catch(e){

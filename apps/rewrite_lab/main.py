@@ -969,6 +969,25 @@ CONDUCTAS_SYSTEM = (
 CRIME_EXTRA_K = int(os.environ.get('CRIME_EXTRA_K', '3'))   # chunks extra en el top-k por cada conducta adicional (default)
 
 
+def crime_k(k: int, crimes: bool, crime_extra_k, dbg: dict, question: str) -> int:
+    """Top-k final con «descomponer por delito»: cada conducta adicional suma sus propios chunks (tope: 2k)."""
+    if not crimes:
+        return k
+    extra_k = CRIME_EXTRA_K if crime_extra_k in (None, '') else int(crime_extra_k)
+    return min(k + extra_k * max(0, len(dbg.get('subqueries') or [question]) - 1), 2 * k)
+
+
+def gate_event(g: dict) -> dict:
+    """Lo que la UI muestra de la decisión del filtro por estado."""
+    return {'stage': 'filtro', **{x: g.get(x) for x in ('estados', 'otros', 'faltan', 'tipo', 'lugares', 'jurisdictions')}}
+
+
+def gate_text(msgs: list[dict]) -> str:
+    """En una conversación el lugar puede llegar en otro turno («me robaron» … «fue en Toluca»): el filtro lee los
+    mensajes de la PERSONA (no los del asistente, que mencionan estados al explicar); los últimos 4000 caracteres."""
+    return '\n'.join(m['content'].strip() for m in msgs if m['role'] == 'user')[-4000:]
+
+
 def decompose_conducts(question: str) -> list[str]:
     """Relato → una consulta de búsqueda por conducta. [question] si hay una sola o si el LLM falla."""
     try:
@@ -1078,9 +1097,7 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions, neighbors,
                                                  hyde, rerank, decompose, debug=dbg, route=route, crimes=crimes)
-        if crimes:   # cada conducta suma sus propios chunks al top-k: con k fijo se repartían y la búsqueda original perdía
-            extra_k = CRIME_EXTRA_K if crime_extra_k is None else int(crime_extra_k)
-            k = min(k + extra_k * max(0, len(dbg.get('subqueries') or [question]) - 1), 2 * k)
+        k = crime_k(k, crimes, crime_extra_k, dbg, question)   # cada conducta suma sus propios chunks al top-k
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     tiempos['busqueda'] = round(time.time() - t, 2)   # incluye HyDE y las descomposiciones (desglosadas abajo)
     for clave in ('t_descomponer', 't_por_delito'):
@@ -1258,7 +1275,9 @@ def _study_chat_stream(messages, cfg):
     return chat_event_dicts(messages, cfg.get('setting', 'híbrido'), int(cfg.get('k', 5)), cfg.get('sistema'),
                             cfg.get('tema'), cfg.get('jurisdicciones'), bool(cfg.get('vecinos', True)),
                             bool(cfg.get('hyde', False)), False, bool(cfg.get('descomponer', False)),
-                            bool(cfg.get('route', False)), history=int(cfg.get('historial', 0)) or None)
+                            bool(cfg.get('route', False)), history=int(cfg.get('historial', 0)) or None,
+                            gate=bool(cfg.get('filtro_estado', False)), crimes=bool(cfg.get('por_delito', False)),
+                            crime_extra_k=cfg.get('chunks_por_delito'))
 
 
 def _study_chat(messages, cfg):
@@ -1697,7 +1716,7 @@ async def ask_route(req: Request):
 
 
 def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False,
-                route=False):
+                route=False, gate=False, crimes=False, crime_extra_k=None):
     """Generador SSE que transparenta el PROCESO paso a paso en lugar de esperar al final:
     1) 'hyde' (borrador hipotético + texto exacto que se embebe),
     2) 'context' (las referencias recuperadas, ya con su jerarquía),
@@ -1713,11 +1732,17 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         if find_article_ref(question):
             k = max(k, 8)
         t0 = time.time()
+        g = gate_for(question, topic) if gate else None
+        if g:   # el filtro por estado decide los lugares (reemplaza el filtro «Lugar»)
+            jurisdictions = g['jurisdictions']
+            yield sse(gate_event(g))
         yield sse({'stage': 'retrieving', 'hyde': hyde})
         dbg: dict = {}
         with connect() as c, c.cursor() as cur:
             scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions,
-                                                     neighbors, hyde, rerank, decompose, debug=dbg, route=route)
+                                                     neighbors, hyde, rerank, decompose, debug=dbg, route=route,
+                                                     crimes=crimes)
+            k = crime_k(k, crimes, crime_extra_k, dbg, question)
             ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
         if len(dbg.get('subqueries') or []) > 1:
             yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
@@ -1735,8 +1760,9 @@ def _ask_events(question, setting, k, system, topic, jurisdictions, neighbors, h
         context = '\n\n'.join(
             f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
             for ch in top)
+        nota = f"{g['nota']}\n\n" if g else ''
         messages = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)},
-                    {'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'}]
+                    {'role': 'user', 'content': f'CONTEXTO:\n{context}\n\n{nota}PREGUNTA: {question}'}]
         for piece in llm.chat_stream(messages, max_tokens=4096, timeout=180):
             yield sse({'stage': 'token', 'text': piece})
         yield sse({'stage': 'done', 'seconds': round(time.time() - t0, 1)})
@@ -1754,7 +1780,8 @@ async def ask_stream_route(req: Request):
                       body.get('jurisdictions') or body.get('jurisdiction'),
                       bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
                       bool(body.get('rerank', False)), bool(body.get('decompose', False)),
-                   bool(body.get('route', False)))
+                   bool(body.get('route', False)), bool(body.get('gate', False)), bool(body.get('crimes', False)),
+                   body.get('crime_extra_k'))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
@@ -1776,17 +1803,17 @@ async def chat_route(req: Request):
 
 
 def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False, decompose=False,
-                 route=False):
+                 route=False, gate=False, crimes=False, crime_extra_k=None):
     """Igual que `chat_answer` pero en streaming (SSE): condensa la consulta, transparenta
     el proceso (search → retrieving → hyde → context → token* → done) y streamea la
     respuesta. La generación recibe todos los turnos; la búsqueda usa la consulta condensada."""
     for ev in chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank,
-                               decompose, route):
+                               decompose, route, gate=gate, crimes=crimes, crime_extra_k=crime_extra_k):
         yield f'data: {json.dumps(ev, ensure_ascii=False)}\n\n'
 
 
 def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False,
-                     decompose=False, route=False, history=None):
+                     decompose=False, route=False, history=None, gate=False, crimes=False, crime_extra_k=None):
     """Los eventos de `_chat_events` como diccionarios (los usa también el estudio con usuarios,
     que guarda el turno completo al terminar). `history` = mensajes previos que ve el LLM
     (default CHAT_HISTORY_MESSAGES)."""
@@ -1806,11 +1833,17 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
         t0 = time.time()
         if search_q != question:
             yield sse({'stage': 'search', 'query': search_q})
+        g = gate_for(gate_text(msgs), topic) if gate else None
+        if g:   # el filtro lee todos los mensajes de la persona: el lugar puede venir de un turno anterior
+            jurisdictions = g['jurisdictions']
+            yield sse(gate_event(g))
         yield sse({'stage': 'retrieving', 'hyde': hyde})
         dbg: dict = {}
         with connect() as c, c.cursor() as cur:
             scored, score_kind, rw = retrieve_ranked(cur, search_q, setting, topic, jurisdictions,
-                                                     neighbors, hyde, rerank, decompose, debug=dbg, route=route)
+                                                     neighbors, hyde, rerank, decompose, debug=dbg, route=route,
+                                                     crimes=crimes)
+            k = crime_k(k, crimes, crime_extra_k, dbg, search_q)
             ids, extra = select_context_ids(cur, scored, k, search_q, topic, jurisdictions, neighbors)
         if len(dbg.get('subqueries') or []) > 1:
             yield sse({'stage': 'decompose', 'subqueries': dbg['subqueries']})
@@ -1833,7 +1866,8 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
             for ch in top)
         llm_msgs = [{'role': 'system', 'content': (system or '').strip() or system_for(topic)}]
         llm_msgs += [{'role': m['role'], 'content': m['content']} for m in msgs[:-1][-history:]]
-        llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\nPREGUNTA: {question}'})
+        nota = f"{g['nota']}\n\n" if g else ''
+        llm_msgs.append({'role': 'user', 'content': f'CONTEXTO:\n{context}\n\n{nota}PREGUNTA: {question}'})
         for piece in llm.chat_stream(llm_msgs, max_tokens=4096, timeout=180):
             yield sse({'stage': 'token', 'text': piece})
         yield sse({'stage': 'done', 'seconds': round(time.time() - t0, 1)})
@@ -1850,7 +1884,8 @@ async def chat_stream_route(req: Request):
                        body.get('jurisdictions') or body.get('jurisdiction'),
                        bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
                        bool(body.get('rerank', False)), bool(body.get('decompose', False)),
-                   bool(body.get('route', False)))
+                   bool(body.get('route', False)), bool(body.get('gate', False)), bool(body.get('crimes', False)),
+                   body.get('crime_extra_k'))
     return StreamingResponse(gen, media_type='text/event-stream',
                              headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
