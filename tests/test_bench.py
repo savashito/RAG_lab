@@ -405,3 +405,8 @@ def test_clean_tag_normalizes_and_rejects():
     for bad in ('', 'x', 'penal/v2', '-penal', 'á-v1', 'a' * 61):
         tag, err = bench.clean_tag(bad)
         assert tag is None and err
+
+
+def test_parse_judge_tolerates_misspelled_verdict_key():
+    raw = '{"elementos": [{"n": 1, "veredicto": "presente"}, {"n": 2, "verdicto": "ausente"}, {"n": 3, "veridicto": "parcial"}]}'
+    assert [v['verdict'] for v in parse_judge(raw, 3)] == ['presente', 'ausente', 'parcial']

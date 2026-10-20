@@ -142,6 +142,19 @@ def _norm_verdict(v) -> str | None:
     return _VERDICT_ALIASES.get(s)
 
 
+def _verdict_value(it: dict):
+    """El veredicto de un elemento, aunque el juez escriba mal la clave: un modelo chico a veces pasa de
+    «veredicto» a «verdicto» o «veridicto» a mitad de la lista (corrida 58: 5 de 11 must quedaron sin
+    veredicto por eso y contaron como ausentes)."""
+    for k in ('veredicto', 'verdict'):
+        if k in it:
+            return it[k]
+    for k, v in it.items():
+        if isinstance(k, str) and re.fullmatch(r'ver[ei]?d[ií]?ct[oa]?s?', k.strip().lower()):
+            return v
+    return None
+
+
 def parse_judge(raw: str, n: int) -> list[dict]:
     """Salida cruda del juez → lista de n veredictos {verdict, evidence}. Tolera texto
     alrededor del JSON, bloques ```json y claves en inglés. Elementos que falten o no se
@@ -169,7 +182,7 @@ def parse_judge(raw: str, n: int) -> list[dict]:
         except (TypeError, ValueError):
             idx = pos
         if 0 <= idx < n:
-            out[idx] = {'verdict': _norm_verdict(it.get('veredicto', it.get('verdict'))),
+            out[idx] = {'verdict': _norm_verdict(_verdict_value(it)),
                         'evidence': str(it.get('evidencia', it.get('evidence', '')) or '')[:400]}
     return out
 
