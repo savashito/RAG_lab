@@ -6,7 +6,7 @@ las métricas de la corrida y el artefacto. Respaldo previo en _bak_20261019_jud
 Sin --aplicar solo muestra qué cambiaría."""
 import json, sys
 from dotenv import load_dotenv; load_dotenv('.env')
-sys.path.insert(0, '../..')
+sys.path[:0] = ['.', '../..']
 from shared.db import connect
 from shared.object_store import store
 from bench import aggregate, parse_judge, score_question
