@@ -467,13 +467,13 @@
   {
    "question": "En el Estado de México alguien compartió en un grupo de WhatsApp un video íntimo mío sin mi consentimiento. ¿Qué delito es?",
    "difficulty": "facil",
-   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: imágenes íntimas, art. 269 Bis.",
+   "expected_answer": "Los hechos ocurrieron en el Estado de México, así que se rige por el Código Penal del Estado de México: imágenes íntimas, art. 211 Ter.",
    "notes": "jurisdiccion · estado=EDOMEX · delito=imágenes íntimas",
    "components": [
     {
      "kind": "must",
      "weight": 1,
-     "text": "Cita el art. 269 Bis del Código Penal del Estado de México"
+     "text": "Cita el art. 211 Ter del Código Penal del Estado de México"
     },
     {
      "kind": "should",

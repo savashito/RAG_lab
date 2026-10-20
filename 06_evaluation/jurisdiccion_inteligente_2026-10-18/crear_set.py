@@ -24,7 +24,7 @@ ART = {   # (estado, delito) → artículo verificado
  ('QRO', 'robo'): '182', ('QRO', 'fraude'): '193', ('QRO', 'violencia familiar'): '217 Bis', ('QRO', 'acoso'): '167 Bis',
  ('QRO', 'hostigamiento'): '167 Ter', ('QRO', 'imágenes íntimas'): '167 Quinquies', ('QRO', 'allanamiento'): '158', ('QRO', 'despojo'): '199',
  ('EDOMEX', 'robo'): '287', ('EDOMEX', 'fraude'): '305', ('EDOMEX', 'violencia familiar'): '218', ('EDOMEX', 'hostigamiento'): '269',
- ('EDOMEX', 'imágenes íntimas'): '269 Bis', ('EDOMEX', 'allanamiento'): '268', ('EDOMEX', 'despojo'): '308',
+ ('EDOMEX', 'imágenes íntimas'): '211 Ter', ('EDOMEX', 'allanamiento'): '268', ('EDOMEX', 'despojo'): '308',
  ('MOR', 'robo'): '174', ('MOR', 'fraude'): '188', ('MOR', 'amenazas'): '147', ('MOR', 'violencia familiar'): '202 Bis',
  ('MOR', 'hostigamiento'): '158', ('MOR', 'imágenes íntimas'): '150 Bis', ('MOR', 'allanamiento'): '149', ('MOR', 'despojo'): '184',
 }

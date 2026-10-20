@@ -28,7 +28,7 @@ P = [
  ('EDOMEX', 'fraude', '305', 'Vivo en el Estado de México y me vendieron un coche con papeles falsos. ¿Qué delito es?'),
  ('EDOMEX', 'violencia familiar', '218', 'En el Estado de México mi pareja me controla el dinero, me insulta y a veces me pega. ¿Qué dice la ley penal?'),
  ('EDOMEX', 'acoso con jerarquía', '269', 'Trabajo en el Estado de México y mi jefe me presiona para tener una relación sexual a cambio de no despedirme. ¿Es delito?'),
- ('EDOMEX', 'imágenes íntimas', '269 Bis', 'En el Estado de México alguien compartió en un grupo de WhatsApp un video íntimo mío sin mi consentimiento. ¿Qué delito es?'),
+ ('EDOMEX', 'imágenes íntimas', '211 Ter', 'En el Estado de México alguien compartió en un grupo de WhatsApp un video íntimo mío sin mi consentimiento. ¿Qué delito es?'),
  ('EDOMEX', 'allanamiento', '268', 'En el Estado de México mi casero entró a mi departamento sin avisar ni pedir permiso. ¿Es delito?'),
  ('EDOMEX', 'despojo', '308', 'En el Estado de México un familiar cambió la chapa de mi casa y ya no me deja entrar. ¿Qué delito es?'),
  ('MOR', 'robo', '174', 'En Morelos me robaron una bocina de mi coche estacionado. ¿Qué pena tiene ese delito?'),
