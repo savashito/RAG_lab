@@ -81,7 +81,9 @@ args = ap.parse_args()
 with connect() as c, c.cursor() as cur:
     cur.execute(f"SELECT id, source, title, position, text FROM {TABLE} WHERE topic = %s AND title LIKE 'Artículo%%' "
                 f"ORDER BY source, position, id", (TOPIC,))
-    rows = cur.fetchall()
+    # Solo códigos y leyes: un libro de doctrina con fragmentos «Artículo …» cita OTRAS leyes, y resolver «artículo 20»
+    # dentro del mismo libro no tiene sentido.
+    rows = [r for r in cur.fetchall() if re.match(r"(?i)(c[oó]digo|ley)\b", r[1])]
 
 # Índice exacto por código: clave del número → (título, id del primer fragmento); y el orden de los artículos
 # (para «el artículo anterior / siguiente»).
