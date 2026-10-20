@@ -82,7 +82,8 @@ def test_muestras_etiquetadas_a_mano():
     tp = fp = fn = 0
     for nombre in ('remisiones_muestra.json', 'remisiones_holdout.json'):
         for x in json.load(open(raiz / nombre, encoding='utf-8'))['articulos']:
-            seg = rm.a_seguir(x['texto'])
+            # Se mide la DETECCIÓN: las listas y rangos largos son remisiones reales que, por política, no se siguen.
+            seg = [r for r in rm.detectar(x['texto']) if r['rechazo'] in (None, 'lista_larga', 'rango_amplio')]
             got = {r['articulo'] for r in seg if r['tipo'] != 'relativa'} | {'rel:' + r['relativa'] for r in seg if r['tipo'] == 'relativa'}
             gold = set(x['remisiones']) | {'rel:' + r for r in x['relativas']}
             tp, fp, fn = tp + len(got & gold), fp + len(got - gold), fn + len(gold - got)
