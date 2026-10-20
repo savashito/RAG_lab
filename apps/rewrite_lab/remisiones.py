@@ -18,7 +18,7 @@ Cada remisión:
   tipo       'directa' | 'multiple' (lista «220 y 224») | 'rango' («220 a 225») | 'relativa' («el artículo anterior»)
   materia    'pena' (habla de penas o sanciones), 'calificativa' (agravantes, calificativas) u 'otra'
   rechazo    None si es una remisión a seguir; si no: 'encabezado_pegado' (el encabezado de otro artículo quedó dentro de
-             este fragmento), 'nota_reforma', 'transitorio', 'otra_ley', 'rango_amplio'
+             este fragmento), 'nota_reforma', 'transitorio', 'otra_ley', 'rango_amplio', 'lista_larga'
   texto      el fragmento donde se detectó (para revisar a mano)
 """
 from __future__ import annotations
@@ -63,7 +63,8 @@ _LEY_NOMBRADA = re.compile(r'(?-i:\b(?:Ley|C[oó]digo|Constituci[oó]n|Reglament
 _TRANSITORIOS = re.compile(r'(?-i:\bT\s?R\s?A\s?N\s?S\s?I\s?T\s?O\s?R\s?I\s?O\s?S\b)')
 _PENA = re.compile(r'(?i)\bpenas?\b|\bsanci[oó]n|\bsancionar|\bprisi[oó]n|\bmulta|\bse\s+impondr|\bpunibilidad|\bpunible')
 _CALIF = re.compile(r'(?i)\bcalificad|\bcalificativ|\bagravant|\batenuant|\bagravad')
-# Rangos de más de estos artículos no se siguen (son referencias a capítulos enteros).
+# Rangos y listas de más de estos artículos no se siguen: son enumeraciones («los delitos previstos en los artículos
+# 224, 228, 229, 230, 232…»), no remisiones para completar un artículo, y llenaban el tope de remisiones (corrida 95).
 RANGO_MAX = 3
 
 
@@ -127,7 +128,8 @@ def detectar(texto: str) -> list[dict]:
             m.group(0).split()[0].isupper() and len(nums) == 1 and re.match(r'\s*[.:]', texto[m.end():m.end() + 2]))
         rechazo = ('encabezado_pegado' if encabezado else 'transitorio' if m.start() >= desde_transitorios
                    else 'nota_reforma' if _NOTA.search(oracion) or _DECRETO.search(larga) else 'otra_ley' if ambito == 'otra_ley'
-                   else 'rango_amplio' if tipo == 'rango' and len(nums) > RANGO_MAX else None)
+                   else 'rango_amplio' if tipo == 'rango' and len(nums) > RANGO_MAX
+                   else 'lista_larga' if tipo == 'multiple' and len(nums) > RANGO_MAX else None)
         materia = 'pena' if _PENA.search(oracion) else 'calificativa' if _CALIF.search(oracion) else 'otra'
         for n in nums:
             out.append({'articulo': n, 'fraccion': fr.group(1) if fr else None, 'ambito': ambito, 'ley': ley,

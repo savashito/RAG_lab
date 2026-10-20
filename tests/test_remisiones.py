@@ -94,3 +94,9 @@ def test_encabezado_de_otro_articulo_pegado_no_es_remision():
     d = rm.detectar(t)
     assert [x['rechazo'] for x in d if x['articulo'] == '214'] == ['encabezado_pegado']
     assert rm.a_seguir('las penas previstas en el artículo 214. Además, se aplicará…') != []   # fin de oración ≠ encabezado
+
+
+def test_lista_larga_no_se_sigue():
+    t = 'Se perseguirán por querella los delitos previstos en los artículos 224, 228, 229, 230 y 232 de este Código.'
+    assert {x['rechazo'] for x in rm.detectar(t)} == {'lista_larga'}
+    assert seguir('conforme a los artículos 220, 221 y 224 de este Código') == [('220', None, 'mismo'), ('221', None, 'mismo'), ('224', None, 'mismo')]
