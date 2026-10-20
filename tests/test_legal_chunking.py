@@ -342,3 +342,13 @@ def test_chunks_of_a_code_carry_the_law_name():
           + ''.join(f'**ARTÍCULO {n}.-** Texto del artículo {n} con varias palabras.\n\n' for n in range(1, 30)))
     df = lc.chunk_documents({'Código PENALEM.md': md})
     assert df.text_for_embedding.str.startswith('Fuente: CÓDIGO PENAL PARA EL ESTADO DE MORELOS (Código PENALEM.md)\n').all()
+
+
+def test_article_heading_inside_mark_tag_opens_its_own_unit():
+    # Estado de México: los artículos reformados vienen resaltados con <mark>; sin reconocerlo, el 211 Ter
+    # quedaba pegado dentro del 211 Bis (hallado el 2026-10-20).
+    text = ('**Artículo 211 Bis.-** Al que provoque públicamente a cometer un delito.\n\n'
+            '**<mark>Artículo 211 Ter.-</mark>** <mark>A quien difunda contenido íntimo sin consentimiento.</mark>\n\n'
+            'Según el <mark>artículo 211 Ter</mark> de este código, la pena aumenta.\n')
+    titles = [u['title'] for u in lc.article_units(text)]
+    assert titles == ['Artículo 211 Bis', 'Artículo 211 Ter']   # la mención en prosa no abre artículo

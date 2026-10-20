@@ -274,10 +274,12 @@ _ARTICLE_LABEL = (
 #     Jurídica de Morelos; el '*' va entre la palabra y el número);
 #   · erratas del documento fuente: "ARTÍULO", "ARTCULO", "ARTICULO" (sin acento);
 #   · viñeta de lista que dejó el conversor: "- **Artículo 167.-**" (CPF, CDMX, Querétaro);
-#   · fila de tabla: "|**ARTÍCULO 68.-**Se deroga.|" (LGEEPA).
+#   · fila de tabla: "|**ARTÍCULO 68.-**Se deroga.|" (LGEEPA);
+#   · etiqueta de resaltado del texto fuente en artículos reformados: "**<mark>Artículo 211 Ter.-</mark>**"
+#     (Estado de México, CDMX; sin esto el 211 Ter quedaba pegado al 211 Bis — hallado el 2026-10-20).
 _ARTICLE_WORD = r'art(?:[íi]culo|[íi]ulo|culo)'
 ARTICLE_RE = re.compile(
-    r'(?im)^[ \t#>*_|]*(?:[-•·][ \t]+[ \t#>*_]*)?(?:<u>[ \t#>*_]*)?' + _ARTICLE_WORD + r'(?:[ \t]+\*?|[ \t]*\*)[ \t]*' + _ARTICLE_LABEL,
+    r'(?im)^[ \t#>*_|]*(?:[-•·][ \t]+[ \t#>*_]*)?(?:<(?:u|mark)>[ \t#>*_]*)?' + _ARTICLE_WORD + r'(?:[ \t]+\*?|[ \t]*\*)[ \t]*' + _ARTICLE_LABEL,
 )
 # Igual que ARTICLE_RE pero SIN anclar a inicio de línea: para detectar en una PREGUNTA
 # ("¿qué dice el artículo 167 de…?") a qué artículo se refiere y hacer búsqueda directa.
