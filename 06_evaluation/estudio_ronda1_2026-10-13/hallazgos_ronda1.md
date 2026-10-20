@@ -560,6 +560,73 @@ saber, «sin ley identificable» y no se clasifica) y se verifica contra el corp
   «Derogado»: el texto del corpus empieza con «se deroga»; 0–3 por corrida, casi siempre citado precisamente para
   decir que está derogado.
 
+## 8d. Filtro por estado y descomposición por delito (18–20 oct, benchmark, después de la ronda 1)
+
+Trabajo hecho **después** de cerrar la ronda 1, para diseñar la ronda 2. Nada de esto estuvo activo durante el
+estudio. Detalle, scripts y datos: `06_evaluation/compuerta_2026-10-19/` y `06_evaluation/jurisdiccion_inteligente_2026-10-18/`.
+
+**Set 14 «Jurisdicción inteligente» (57 preguntas, 6 categorías):** sin lugar (12), un estado (8), solo ciudad o
+municipio (8), comparación (8), ley nacional (15) y estado fuera del corpus (6). Se revisa con regex, sin LLM (qué
+estados cita la respuesta y si pide el lugar), y además con el juez.
+
+**1. Un system prompt no basta.** Sin lugar en la pregunta, con el prompt original el LLM citó códigos estatales en
+12 de 12 respuestas. Con un prompt candidato que exige preguntar el estado (`penal-sencillo-jur-v1`), el LLM preguntó
+12 de 12 veces, pero **aun así citó códigos estatales en 7 de 12** («mientras me confirmas el estado…»). Si el buscador
+le entrega artículos de otros estados, el LLM los usa aunque la instrucción diga lo contrario (coincide con Shi et al.
+2023 y Cuconasu et al. 2024; ver `06_evaluation/related_work/related_work.md`).
+
+**2. El filtro por estado (`jurisdiction_gate.py`) sí lo resuelve.** Antes de buscar, un LLM (el mismo Gemma)
+extrae los lugares de la pregunta, su estado y su rol (lugar de los hechos u otro, como donde vive la persona), y el
+tipo de asunto (delito común, federal, de ley general o procedimiento). El buscador solo puede usar el código penal
+del estado de los hechos, más las leyes nacionales y la doctrina; el Código Penal Federal solo entra si el delito es
+federal. Sin estado, no entra ningún código estatal y el LLM recibe la instrucción de preguntar dónde ocurrió.
+
+| Set 14 · comportamiento correcto (regex) | Sin filtro | Con filtro |
+|---|---|---|
+| `penal-original-v1` (prompt A de la ronda 1) | 55 % (#45) | **96 %** (#84, #85) |
+| `penal-sencillo-jur-v1` (candidato) | 74 % (#47) | 89–93 % (#86, #87) |
+
+- **Sin lugar:** en 47 de 48 respuestas el LLM no cita ningún código estatal. La excepción: el LLM nombró uno de
+  memoria (el buscador no se lo entregó), así que el filtro controla lo que el LLM lee, no lo que ya sabe.
+- **Ley nacional:** el LLM responde sin pedir el estado (15/15).
+- **Estado fuera del corpus** (Puebla, Jalisco…): el LLM dice que no tiene ese código, en vez de sustituirlo por
+  otro (6/6).
+- **Detección de lugares** (prueba aparte): 86/86, incluidos ciudades, apodos y siglas (Neza, GDL, Qro) y el rol
+  «lugar de los hechos vs. lugar donde vive» (5/5). **Tipo de asunto:** delitos comunes y procedimiento sin errores
+  en frases nuevas; **delitos federales poco comunes, 0/4** (billete falso, pólvora): falla del lado seguro (el LLM
+  pregunta el estado).
+- **Costo:** ~0.6–1.3 s por pregunta. Una persona espera en total ~8–12 s por respuesta.
+- **Lectura:** casi toda la mejora viene del filtro, no del prompt. Con filtro, el prompt original supera al
+  candidato. El candidato aún vuelve a preguntar el estado cuando ya lo tiene (2/8) y en comparaciones explica sin
+  números de artículo.
+
+**3. Problemas encontrados y corregidos en el camino.** (a) El LLM usaba el Código Penal Federal como sustituto en
+delitos comunes. (b) El LLM pedía el estado en preguntas de ley nacional. (c) Querétaro y Morelos estaban etiquetados
+como `general` en la base, así que un filtro por estado no los excluía (corregido, respaldo `_bak_20261019_jurisdiction`).
+(d) El juez a veces escribe la clave «verdicto» en vez de «veredicto» y esos componentes contaban como ausentes
+(5 preguntas recalificadas, respaldo `_bak_20261019_judge_rescore`).
+
+**4. Casos complejos de la experta (set 12, 3 casos con 3–4 delitos cada uno).** El filtro no cambia nada aquí (los
+casos dicen el estado). Los puntajes son bajos (~50 %) porque: el buscador entrega 1–3 de los 4–6 artículos
+necesarios (faltan sobre todo los que otro artículo remite, p. ej. 182 → 181); aun con el artículo en el contexto, el
+LLM omite penas y fracciones exactas; y la rúbrica pide 11–14 requisitos exactos. **Descomponer por delito** (una
+búsqueda por conducta del relato) ayuda **solo si el top-k crece** con cada conducta (+3 chunks por conducta, tope 20):
+score ~53 % → ~59 % y artículos necesarios en el contexto ~42 % → ~62 % (configuración de la experta). 2, 3 o 5 chunks
+extra dan lo mismo, y en el set 14 no empeora las preguntas simples. Con 3 casos, la misma configuración varía hasta
+12 puntos entre repeticiones: es una señal, no una conclusión.
+
+**5. Artículos escondidos en el corpus (hallado el 20-oct).** En el texto fuente, los artículos reformados vienen
+marcados con `<mark>`, y el separador de artículos no los reconoce: quedan pegados dentro del fragmento del artículo
+anterior. Son 6: Estado de México **211 Ter** (difusión de contenido íntimo por medios digitales, 1–5 años),
+211 Quáter, 211 Quinquies y 268 Quáter; CDMX **141 Quáter** (administración de sustancias sin consentimiento); CPF 1°.
+Consecuencias: el buscador los entrega con el número de otro artículo; el verificador de citas cuenta como «inventado»
+un 211 Ter citado correctamente; y la pregunta del set 13/14 sobre un video íntimo difundido en el Estado de México
+esperaba el **269 Bis** (acoso sexual, cuyo segundo párrafo menciona publicar imágenes) en vez del **211 Ter**, que es
+el específico. Pendiente: corregir el separador, reingestar esos códigos y corregir la pregunta.
+
+**6. Para la ronda 2.** El filtro por estado es la intervención que responde al hallazgo principal del estudio y
+debería estar en la ronda 2. Una comparación limpia para el paper sería el mismo prompt **con y sin filtro**.
+
 ## 9. Decisiones y cambios durante la ronda 1 (para el método)
 
 | Fecha | Cambio |
