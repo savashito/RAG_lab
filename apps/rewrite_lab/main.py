@@ -45,7 +45,7 @@ from shared.legal_chunking import find_article_ref
 from shared.code_routes import codes_in
 from shared.diag_reviews import DOC as REVIEW_DOC, review_state, signature_for
 from shared.lexical import BM25, interleave_scored, rank_indices_by_score, rrf, tokenize
-from shared.llm_client import HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient
+from shared.llm_client import HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient, parse_subquestions
 from shared.rerank_client import RerankClient
 from shared.tei_client import TEIClient
 
@@ -948,8 +948,36 @@ def routed_codes(question, topic=None) -> list[dict]:
     return [h for h in codes_in(question) if h['source'] in have]
 
 
+# ── Descomponer por delito ───────────────────────────────────────────────────────────
+# Un relato con varias conductas (inyectar una sustancia + robar + dañar el hígado) se busca mal de una sola vez:
+# una conducta acapara el top-k y los artículos de las demás no llegan al contexto (set 12 de Karen: de 4–6
+# artículos necesarios llegaban 1–3). El LLM separa las conductas y se busca cada una, dentro de los lugares que
+# permita el filtro por estado. Distinto de `decompose` (genérico, por entidades comparadas), que no se toca: es
+# el que usó la ronda 1 del estudio.
+CONDUCTAS_SYSTEM = (
+    "Lee el relato de una persona y separa cada CONDUCTA distinta que podría ser un delito (por ejemplo: golpear, "
+    "robar, amenazar, administrar una sustancia sin consentimiento, negar atención médica urgente). Para cada una "
+    "escribe una consulta de búsqueda breve en lenguaje jurídico que describa la conducta y las circunstancias que "
+    "pueden cambiar el delito o la pena (dónde ocurrió, como transporte público o casa habitación; si hubo arma, "
+    "violencia o una sustancia; el daño causado; quién la cometió, como un médico o un servidor público; el monto). "
+    "No menciones estados, códigos ni números de artículo. Si hay una sola conducta, devuelve una sola consulta. "
+    "Máximo 4. No respondas la pregunta. "
+    'Devuelve SOLO un JSON: {"subpreguntas": ["…", "…"]}'
+)
+
+
+def decompose_conducts(question: str) -> list[str]:
+    """Relato → una consulta de búsqueda por conducta. [question] si hay una sola o si el LLM falla."""
+    try:
+        raw = llm.chat(CONDUCTAS_SYSTEM, question, temperature=0.0, max_tokens=500, timeout=60,
+                       extra={'response_format': {'type': 'json_object'}})
+    except Exception:   # noqa: BLE001 — descomponer nunca debe romper la búsqueda
+        return [question]
+    return parse_subquestions(raw, question)
+
+
 def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neighbors=True,
-                    hyde=False, rerank=False, decompose=False, debug=None, route=False):
+                    hyde=False, rerank=False, decompose=False, debug=None, route=False, crimes=False):
     """Búsqueda completa de una pregunta: retrieve_scored + reranker opcional y, con
     `decompose`, query decomposition: el LLM divide la pregunta comparativa en sub-preguntas
     (una por entidad: ley, estado, autor, enfoque…), se busca cada una con la MISMA config y
@@ -961,7 +989,9 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
     búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Sin LLM: la
     detección es por nombre (tolera acentos y erratas). Devuelve (scored, score_kind, rewrite)."""
     subqs = llm.decompose(question) if decompose else [question]
-    if debug is not None and decompose:
+    if crimes:   # descomponer por delito: se suma a la descomposición por entidades
+        subqs = [q for q in subqs if q is not question] + decompose_conducts(question)
+    if debug is not None and (decompose or crimes):
         debug['subqueries'] = subqs
     # La búsqueda de la pregunta ORIGINAL siempre entra a la mezcla: la descomposición es un
     # complemento (asegura a cada entidad su lugar), no un reemplazo; si el LLM divide mal, lo
@@ -1019,7 +1049,7 @@ def gate_for(question: str, topic=None) -> dict:
 
 
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
-        neighbors=True, hyde=False, rerank=False, decompose=False, route=False, gate=False):
+        neighbors=True, hyde=False, rerank=False, decompose=False, route=False, gate=False, crimes=False):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -1033,7 +1063,7 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
         jurisdictions = g['jurisdictions']
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions, neighbors,
-                                                 hyde, rerank, decompose, debug=dbg, route=route)
+                                                 hyde, rerank, decompose, debug=dbg, route=route, crimes=crimes)
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),

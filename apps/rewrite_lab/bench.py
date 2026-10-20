@@ -835,7 +835,8 @@ class Bench:
                     a = _retry(lambda: self.ask(q['question'], cfg['setting'], cfg['k'], cfg['system'], s['topic'],
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
                                                 cfg['rerank'], decompose=cfg.get('decompose', False),
-                                                route=cfg.get('route', False), gate=cfg.get('gate', False)),
+                                                route=cfg.get('route', False), gate=cfg.get('gate', False),
+                                                crimes=cfg.get('crimes', False)),
                                self._cancel)
                     g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or '',
                                                   cfg.get('judge_notes') or ''),
@@ -1238,6 +1239,7 @@ class Bench:
                        'neighbors': bool(b.get('neighbors', True)), 'hyde': bool(b.get('hyde', False)),
                        'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
                        'route': bool(b.get('route', False)), 'gate': bool(b.get('gate', False)),
+                       'crimes': bool(b.get('crimes', False)),
                        'system': b.get('system') or '',
                        'jurisdictions': b.get('jurisdictions') or []}
                 qids = [int(x) for x in (b.get('question_ids') or [])]
