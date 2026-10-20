@@ -334,9 +334,20 @@ def aggregate(results: list[dict]) -> dict:
         'must_coverage': round(sum(r['must_ok'] for r in ok) / must_total, 4) if must_total else None,
         'violations': sum(r['violations'] for r in ok),
         'avg_seconds': round(sum(r.get('seconds') or 0 for r in ok) / n, 1) if n else None,
+        'avg_timings': _timings_agg(ok),
         **_retrieval_agg(ok),
         **cit.aggregate(ok),   # verificación de citas sin LLM (citations.py): de memoria, cruzadas, inexistentes, otro estado
     }
+
+
+def _timings_agg(ok: list[dict]) -> dict | None:
+    """Segundos promedio por etapa (filtro, búsqueda, descomponer, por_delito, respuesta, juez) sobre las
+    preguntas que registraron tiempos. None en corridas anteriores a 2026-10-19 (no los guardaban)."""
+    ts = [r['timings'] for r in ok if r.get('timings')]
+    if not ts:
+        return None
+    etapas = sorted({e for t in ts for e in t})
+    return {e: round(sum(t.get(e, 0) for t in ts) / len(ts), 2) for e in etapas}
 
 
 def _retrieval_agg(ok: list[dict]) -> dict:
@@ -510,6 +521,7 @@ CREATE TABLE IF NOT EXISTS bench_results (
 CREATE INDEX IF NOT EXISTS bench_results_run ON bench_results (run_id, position);
 ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS retrieval jsonb;   -- ¿llegó el artículo correcto al contexto?
 ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS citations jsonb;   -- verificación de citas sin LLM (citations.py)
+ALTER TABLE bench_results ADD COLUMN IF NOT EXISTS timings jsonb;     -- segundos por etapa: filtro, búsqueda, respuesta, juez…
 -- Latido de la corrida: se actualiza con cada pregunta terminada (ver STALE_MINUTES).
 ALTER TABLE bench_runs ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 -- Criterios para el juez del set (equivalencias, trampas conocidas): se añaden a JUDGE_SYSTEM.
@@ -827,7 +839,8 @@ class Bench:
                 t0 = time.time()
                 row = {'question_id': q['id'], 'position': pos, 'question': q['question'],
                        'score': 0.0, 'passed': False, 'must_total': 0, 'must_ok': 0, 'violations': 0,
-                       'verdicts': [], 'seconds': None, 'error': None, 'retrieval': None, 'citations': None}
+                       'verdicts': [], 'seconds': None, 'error': None, 'retrieval': None, 'citations': None,
+                       'timings': None}
                 det = {'question_id': q['id'], 'question': q['question'],
                        'expected_answer': q.get('expected_answer') or '', 'difficulty': q.get('difficulty'),
                        'components': comps}
@@ -836,12 +849,14 @@ class Bench:
                                                 cfg.get('jurisdictions') or None, cfg['neighbors'], cfg['hyde'],
                                                 cfg['rerank'], decompose=cfg.get('decompose', False),
                                                 route=cfg.get('route', False), gate=cfg.get('gate', False),
-                                                crimes=cfg.get('crimes', False)),
+                                                crimes=cfg.get('crimes', False), crime_extra_k=cfg.get('crime_extra_k')),
                                self._cancel)
+                    t_juez = time.time()
                     g = _retry(lambda: self.grade(q['question'], a['answer'], comps, q.get('expected_answer') or '',
                                                   cfg.get('judge_notes') or ''),
                                self._cancel)
                     sc = score_question(comps, g['verdicts'])
+                    row['timings'] = {**(a.get('timings') or {}), 'juez': round(time.time() - t_juez, 2)}
                     row.update(sc)
                     if gold.get(q['id']):
                         row['retrieval'] = retrieval_check(gold[q['id']], [ch.get('id') for ch in a.get('chunks', [])])
@@ -854,7 +869,8 @@ class Bench:
                                rewrite=a.get('rewrite'), score_kind=a.get('score_kind'), hyde_passage=a.get('hyde_passage'),
                                judge_prompt=g['prompt'], judge_raw=g['raw'], answer_seconds=a.get('seconds'),
                                retrieval=row['retrieval'], citations=row['citations'], subqueries=a.get('subqueries'),
-                               routes=a.get('routes'), gate=a.get('gate'))
+                               routes=a.get('routes'), gate=a.get('gate'), timings=row['timings'], k=a.get('k'),
+                               n_chunks=a.get('n_chunks'))
                 except Exception as e:  # noqa: BLE001 — una pregunta que falla no tumba la corrida
                     row['error'] = det['error'] = f'{type(e).__name__}: {e}'
                 row['seconds'] = round(time.time() - t0, 1)
@@ -863,13 +879,14 @@ class Bench:
                 with self.connect() as c, c.cursor() as cur:
                     cur.execute(
                         "INSERT INTO bench_results (run_id, question_id, position, question, score, passed, "
-                        "must_total, must_ok, violations, verdicts, seconds, error, retrieval, citations) "
-                        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s::jsonb,%s::jsonb)",
+                        "must_total, must_ok, violations, verdicts, seconds, error, retrieval, citations, timings) "
+                        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb)",
                         (rid, row['question_id'], pos, row['question'], row['score'], row['passed'],
                          row['must_total'], row['must_ok'], row['violations'],
                          json.dumps(row['verdicts'], ensure_ascii=False), row['seconds'], row['error'],
                          json.dumps(row['retrieval'], ensure_ascii=False) if row['retrieval'] else None,
-                         json.dumps(row['citations'], ensure_ascii=False) if row['citations'] else None))
+                         json.dumps(row['citations'], ensure_ascii=False) if row['citations'] else None,
+                         json.dumps(row['timings']) if row['timings'] else None))
                     cur.execute("UPDATE bench_runs SET done = %s, metrics = %s::jsonb, updated_at = now() WHERE id = %s",
                                 (len(results), json.dumps(aggregate(results)), rid))
                     c.commit()
@@ -916,9 +933,9 @@ class Bench:
                             (json.dumps(cj, ensure_ascii=False), rid, x.get('question_id')))
                 n += cur.rowcount
             cur.execute("SELECT score, passed, must_total, must_ok, violations, verdicts, seconds, error, retrieval, "
-                        "citations FROM bench_results WHERE run_id = %s", (rid,))
+                        "citations, timings FROM bench_results WHERE run_id = %s", (rid,))
             cols = ['score', 'passed', 'must_total', 'must_ok', 'violations', 'verdicts', 'seconds', 'error',
-                    'retrieval', 'citations']
+                    'retrieval', 'citations', 'timings']
             rows = [dict(zip(cols, r)) for r in cur.fetchall()]
             metrics = aggregate(rows)
             cur.execute("UPDATE bench_runs SET metrics = %s::jsonb WHERE id = %s", (json.dumps(metrics), rid))
@@ -1240,6 +1257,7 @@ class Bench:
                        'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
                        'route': bool(b.get('route', False)), 'gate': bool(b.get('gate', False)),
                        'crimes': bool(b.get('crimes', False)),
+                       'crime_extra_k': (int(b['crime_extra_k']) if b.get('crime_extra_k') not in (None, '') else None),
                        'system': b.get('system') or '',
                        'jurisdictions': b.get('jurisdictions') or []}
                 qids = [int(x) for x in (b.get('question_ids') or [])]

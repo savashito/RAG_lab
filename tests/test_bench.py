@@ -410,3 +410,11 @@ def test_clean_tag_normalizes_and_rejects():
 def test_parse_judge_tolerates_misspelled_verdict_key():
     raw = '{"elementos": [{"n": 1, "veredicto": "presente"}, {"n": 2, "verdicto": "ausente"}, {"n": 3, "veridicto": "parcial"}]}'
     assert [v['verdict'] for v in parse_judge(raw, 3)] == ['presente', 'ausente', 'parcial']
+
+
+def test_aggregate_timings_per_stage():
+    base = dict(score=1.0, passed=True, must_total=1, must_ok=1, violations=0, verdicts=[], seconds=10)
+    m = aggregate([dict(base, timings={'filtro': 0.5, 'respuesta': 8.0}), dict(base, timings={'filtro': 0.7, 'respuesta': 6.0}),
+                   dict(base, timings=None)])
+    assert m['avg_timings'] == {'filtro': 0.6, 'respuesta': 7.0}
+    assert aggregate([dict(base)])['avg_timings'] is None

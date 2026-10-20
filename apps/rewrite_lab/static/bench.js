@@ -25,6 +25,10 @@ function bmsg(html, ok){
 }
 const attr = s => esc(s).replace(/"/g,'&quot;');
 const pct = v => v==null ? '—' : (100*v).toFixed(0)+'%';
+// ⏱ Segundos promedio por etapa (metrics.avg_timings; solo corridas desde 2026-10-19).
+const ETAPAS = [['filtro','filtro por estado'], ['descomponer','descomponer'], ['por_delito','descomponer por delito'],
+                ['busqueda','búsqueda (con HyDE y descomposiciones)'], ['respuesta','respuesta de Gemma'], ['juez','juez']];
+const tiempos = t => t ? ETAPAS.filter(([e])=>t[e]!=null).map(([e,l])=>`${l} ${t[e].toFixed(1)} s`).join(' · ') : '';
 function scoreColor(v){ if(v==null) return '#374151'; if(v>=.85) return '#166534'; if(v>=.6) return '#3f6212'; if(v>=.35) return '#854d0e'; return '#7f1d1d'; }
 const topicLabel = t => ((window.__topics||[]).find(x=>x.topic===t)||{}).label || t;
 // Dificultad (criterio en la ayuda «¿Cómo se califica?»).
@@ -458,7 +462,7 @@ async function startBenchRun(){
   if(!(await ensurePromptTag())) return;
   const body = {set_id: BENCH.set.id, label: $('bench-label').value, setting: $('bench-setting').value,
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
-    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked, route: $('bench-route').checked, gate: $('bench-gate').checked, crimes: $('bench-crimes').checked,
+    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked, route: $('bench-route').checked, gate: $('bench-gate').checked, crimes: $('bench-crimes').checked, crime_extra_k: $('bench-crimes-k').value,
     system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
   const sub = currentSubset();
   if(!sub.ids.length){ bmsg('No hay preguntas seleccionadas en «🎯 Qué preguntas correr».', false); return; }
@@ -498,7 +502,7 @@ function watchBenchRun(rid){
 }
 function cfgSummary(c){
   c = c||{};
-  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'', c.route?'🧭 routing':'', c.gate?'🚧 filtro por estado':'', c.crimes?'⚖️ por delito':'',
+  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'', c.route?'🧭 routing':'', c.gate?'🚧 filtro por estado':'', c.crimes?'⚖️ por delito'+(c.crime_extra_k!=null?` (+${c.crime_extra_k} chunks c/u)`:''):'',
           (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'', (c.judge_notes||'').trim()?'📋 criterios juez':'',
           (c.question_ids||[]).length ? `🎯 ${c.question_ids.length}${c.set_total?'/'+c.set_total:''} preg.${c.subset?' ('+c.subset+')':''}` : '']
     .filter(Boolean).join(' · ');
@@ -643,7 +647,7 @@ async function rerunFailed(rid){
     const c = r.config;
     if([...$('bench-setting').options].some(o=>o.value===c.setting)) $('bench-setting').value = c.setting;
     $('bench-k').value = String(c.k); $('bench-neighbors').checked = !!c.neighbors; $('bench-hyde').checked = !!c.hyde;
-    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose; $('bench-route').checked = !!c.route; $('bench-gate').checked = !!c.gate; $('bench-crimes').checked = !!c.crimes;
+    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose; $('bench-route').checked = !!c.route; $('bench-gate').checked = !!c.gate; $('bench-crimes').checked = !!c.crimes; if(c.crime_extra_k!=null) $('bench-crimes-k').value = c.crime_extra_k;
   }
   $('bench-subset').open = true;
   $('bench-subset').scrollIntoView({behavior:'smooth', block:'center'});
@@ -726,6 +730,7 @@ function renderBenchDetail(){
       ${card('preguntas que pasan', pct(m.pass_rate), `${nPass} de ${r.results.length}`)}
       ${card('cobertura de must', pct(m.must_coverage))}
       ${card('violaciones must_not', m.violations??'—')}
+      ${m.avg_timings ? card('⏱ segundos por pregunta', m.avg_seconds??'—', esc(tiempos(m.avg_timings))) : ''}
       ${m.retrieval_recall!=null ? card('artículos recuperados 🔎', pct(m.retrieval_recall), `${pct(m.retrieval_full)} de las preguntas con todos`) : ''}
       ${m.cit_n!=null ? (()=>{ const ln = (k, v, red) => `<div class="m" title="${attr(CIT[k][3])}"><span>${CIT[k][0]} ${CIT[k][1]}</span><b${red?' style="color:#f87171"':''}>${v}</b></div>
             <div class="muted" style="font-size:11px;margin:-2px 0 4px 22px">${CIT[k][2]}</div>`;
@@ -1003,6 +1008,8 @@ function renderCompare(){
       ${two?`<th title="diferencia de score (puntos) de #${runs[1].id} respecto a #${runs[0].id}">Δ</th>`:''}</tr>
     <tr><td><b>score medio</b>${partial?` <span class="muted" style="font-size:11px">(${common.length} comunes)</span>`:''}</td>${runs.map(r=>`<td class="sc" style="background:${scoreColor(met(r).score)}">${pct(met(r).score)}</td>`).join('')}${two?'<td></td>':''}</tr>
     ${mrow('pasan', m=>pct(m.pass_rate))}${mrow('cobertura de must', m=>pct(m.must_coverage))}${mrow('violaciones', m=>m.violations??'—')}${mrow('🔎 artículos recuperados', m=>pct(m.retrieval_recall))}
+    ${runs.some(r=>(r.metrics||{}).avg_timings) ? mrow('⏱ s por pregunta (total)', m=>m.avg_seconds??'—')
+      + ETAPAS.map(([e,l])=>runs.some(r=>((r.metrics||{}).avg_timings||{})[e]!=null) ? mrow('&nbsp;&nbsp;⏱ '+l, m=>(m.avg_timings||{})[e]!=null ? m.avg_timings[e].toFixed(1)+' s' : '—') : '').join('') : ''}
     ${runs.some(r=>(r.metrics||{}).cit_n!=null) ? mrow('🧾 sin respaldo en los documentos', m=>m.cit_n!=null?pct(citSinRespaldo(m)):'—')
       +mrow('&nbsp;&nbsp;🔴 inventados', m=>m.cit_n!=null?m.cit_missing:'—')+mrow('&nbsp;&nbsp;🟡 sin fundamento', m=>m.cit_n!=null?pct(m.cit_memory):'—')
       +mrow('&nbsp;&nbsp;🟠 ley mal atribuida', m=>m.cit_n!=null?pct(m.cit_cross):'—') : ''}

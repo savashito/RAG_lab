@@ -12,7 +12,7 @@ from shared.object_store import store
 from bench import aggregate, parse_judge, score_question
 
 APLICAR = '--aplicar' in sys.argv
-COLS = ['score', 'passed', 'must_total', 'must_ok', 'violations', 'verdicts', 'seconds', 'error', 'retrieval', 'citations']
+COLS = ['score', 'passed', 'must_total', 'must_ok', 'violations', 'verdicts', 'seconds', 'error', 'retrieval', 'citations', 'timings']
 with connect() as c, c.cursor() as cur:
     if APLICAR:
         cur.execute("""CREATE TABLE IF NOT EXISTS _bak_20261019_judge_rescore (

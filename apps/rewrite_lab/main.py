@@ -966,7 +966,7 @@ CONDUCTAS_SYSTEM = (
 )
 
 
-CRIME_EXTRA_K = int(os.environ.get('CRIME_EXTRA_K', '3'))   # lugares extra en el contexto por cada conducta adicional
+CRIME_EXTRA_K = int(os.environ.get('CRIME_EXTRA_K', '3'))   # chunks extra en el top-k por cada conducta adicional (default)
 
 
 def decompose_conducts(question: str) -> list[str]:
@@ -991,9 +991,15 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
     de cada código mencionado y todo se intercala: cada código tiene lugares asegurados y la
     búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Sin LLM: la
     detección es por nombre (tolera acentos y erratas). Devuelve (scored, score_kind, rewrite)."""
+    t = time.time()
     subqs = llm.decompose(question) if decompose else [question]
+    if debug is not None and decompose:
+        debug['t_descomponer'] = round(time.time() - t, 2)
     if crimes:   # descomponer por delito: se suma a la descomposición por entidades
+        t = time.time()
         subqs = [q for q in subqs if q is not question] + decompose_conducts(question)
+        if debug is not None:
+            debug['t_por_delito'] = round(time.time() - t, 2)
     if debug is not None and (decompose or crimes):
         debug['subqueries'] = subqs
     # La búsqueda de la pregunta ORIGINAL siempre entra a la mezcla: la descomposición es un
@@ -1052,7 +1058,8 @@ def gate_for(question: str, topic=None) -> dict:
 
 
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
-        neighbors=True, hyde=False, rerank=False, decompose=False, route=False, gate=False, crimes=False):
+        neighbors=True, hyde=False, rerank=False, decompose=False, route=False, gate=False, crimes=False,
+        crime_extra_k=None):
     if not (question or '').strip():
         raise ValueError('pregunta vacía')
     if setting not in ASK_SETTINGS:
@@ -1061,15 +1068,24 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
         k = max(k, 8)   # deja espacio para la familia (bis) + los ±2 vecinos
     t0 = time.time()
     dbg: dict = {}
+    tiempos: dict = {}   # segundos por etapa (se guardan en cada resultado del benchmark)
     g = gate_for(question, topic) if gate else None
+    if gate:
+        tiempos['filtro'] = round(time.time() - t0, 2)
+    t = time.time()
     if g:   # la compuerta decide los lugares (reemplaza el filtro «Lugar»)
         jurisdictions = g['jurisdictions']
     with connect() as c, c.cursor() as cur:
         scored, score_kind, rw = retrieve_ranked(cur, question, setting, topic, jurisdictions, neighbors,
                                                  hyde, rerank, decompose, debug=dbg, route=route, crimes=crimes)
-        if crimes:   # cada conducta trae sus propios lugares: con k fijo se repartían y la búsqueda original perdía
-            k = min(k + CRIME_EXTRA_K * max(0, len(dbg.get('subqueries') or [question]) - 1), 2 * k)
+        if crimes:   # cada conducta suma sus propios chunks al top-k: con k fijo se repartían y la búsqueda original perdía
+            extra_k = CRIME_EXTRA_K if crime_extra_k is None else int(crime_extra_k)
+            k = min(k + extra_k * max(0, len(dbg.get('subqueries') or [question]) - 1), 2 * k)
         ids, extra = select_context_ids(cur, scored, k, question, topic, jurisdictions, neighbors)
+    tiempos['busqueda'] = round(time.time() - t, 2)   # incluye HyDE y las descomposiciones (desglosadas abajo)
+    for clave in ('t_descomponer', 't_por_delito'):
+        if clave in dbg:
+            tiempos[clave[2:]] = dbg[clave]
     score_map = dict(scored)
     top = [{'id': cid, 'rank': rank, 'score': (round(score_map[cid], 4) if cid in score_map else None),
             'score_kind': score_kind, 'neighbor': cid in extra, 'citation': citation_for((DOC_BY_ID.get(cid) or {}).get('source', '')), 'doc_label': doc_label((DOC_BY_ID.get(cid) or {}).get('source', '')), **DOC_BY_ID.get(cid, {})}
@@ -1078,13 +1094,15 @@ def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
         f"[{ch['rank']}] Fuente: {ch.get('citation') or ch.get('source', '')} — {ch.get('hierarchy') or ch.get('title', '')}\n{ch.get('text', '')}"
         for ch in top)
     nota = f"{g['nota']}\n\n" if g else ''
+    t = time.time()
     answer = llm.chat((system or '').strip() or system_for(topic),
                       f'CONTEXTO:\n{context}\n\n{nota}PREGUNTA: {question}',
                       max_tokens=4096, timeout=180)
     return {'answer': answer, 'rewrite': rw, 'setting': setting, 'score_kind': score_kind,
             'question': question, 'chunks': top, 'seconds': round(time.time() - t0, 1),
             'hyde_passage': dbg.get('hyde_passage', ''), 'embed_text': dbg.get('embed_text', ''),
-            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes'), 'gate': g}
+            'subqueries': dbg.get('subqueries'), 'routes': dbg.get('routes'), 'gate': g,
+            'timings': {**tiempos, 'respuesta': round(time.time() - t, 2)}, 'k': k, 'n_chunks': len(top)}
 
 
 # ── Tab "Conversacional" ──────────────────────────────────────────────────────────
