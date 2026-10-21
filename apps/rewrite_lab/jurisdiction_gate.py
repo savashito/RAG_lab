@@ -49,6 +49,7 @@ Reglas:
 - Solo lugares que la consulta MENCIONA. No adivines un estado si no hay lugar.
 - Si una palabra parece un lugar pero no la reconoces (una sigla o un nombre que no conoces), inclúyela con estado null.
 - «federal», «nacional», «México» como país, y nombres de leyes nacionales (CNPP, Código Penal Federal) NO son lugares.
+- «en México» como país («¿esto es delito en México?») NO es la Ciudad de México ni el Estado de México: no lo incluyas.
 - «Estado de México», «Edomex» o un municipio mexiquense → «Estado de México».
 - «rol» de cada lugar: «hechos» si ahí ocurrió lo que se pregunta, o si la consulta pregunta por la ley de ese lugar («¿qué dice el código de Querétaro?»); «otro» si es solo donde la persona vive, trabaja o de donde es, sin decir que ahí ocurrieron los hechos. Si algo pasó en su casa, su trabajo o su colonia, ese lugar es de los «hechos».
 - «comparar» es true si la consulta pide comparar o contrastar dos o más estados.
@@ -58,11 +59,21 @@ Reglas:
   «ley_general»: delitos definidos en una ley general que aplica igual en todo el país: secuestro, extorsión (incluido el cobro de piso y el secuestro virtual), trata de personas, desaparición de personas, tortura, delincuencia organizada.
   «procedimiento»: cómo funciona el proceso penal, sin preguntar qué delito es: detención, flagrancia, derechos de la persona detenida o de la víctima, audiencias, plazos, medidas cautelares, prisión preventiva, acuerdos reparatorios, criterio de oportunidad, procedimiento abreviado, reparación del daño.
   «otro»: nada de lo anterior.
+- «teorica» es true si la consulta es una pregunta de estudio o de teoría del derecho penal, SIN contar algo que le pasó a alguien: qué es la tentativa, el dolo o la culpa, formas de autoría, diferencias entre figuras («¿qué distingue al estupro de la violación?»). Es false si la consulta cuenta un caso concreto (algo que le pasó a la persona o a otra persona).
 Devuelve SOLO JSON, sin texto antes ni después:
-{"lugares": [{"texto": "<como aparece>", "estado": "<estado o null>", "rol": "hechos"|"otro"}], "comparar": true|false, "tipo": "delito_comun"|"delito_federal"|"ley_general"|"procedimiento"|"otro"}"""
+{"lugares": [{"texto": "<como aparece>", "estado": "<estado o null>", "rol": "hechos"|"otro"}], "comparar": true|false, "tipo": "delito_comun"|"delito_federal"|"ley_general"|"procedimiento"|"otro", "teorica": true|false}"""
 
 
 TIPOS = ('delito_comun', 'delito_federal', 'ley_general', 'procedimiento', 'otro')
+
+# La pregunta pide el Código Penal Federal por nombre o el ámbito federal («¿y en el ámbito federal?»): entonces el CPF
+# entra aunque el delito no sea federal (set 3: «Compara la CDMX, el Estado de México y el Código Penal Federal»).
+# Se detecta con regex, sin LLM; el nombre del código lo reconoce code_routes (`codes_in`, etiqueta 'CPF').
+FEDERAL_RE = re.compile(r'(?i)\b(?:[áa]mbito|fuero|orden|nivel|plano|materia)\s+federal\b|\ben\s+lo\s+federal\b')
+
+
+def pide_federal(texto: str) -> bool:
+    return any(h['label'] == 'CPF' for h in codes_in(texto)) or bool(FEDERAL_RE.search(texto or ''))
 
 
 def normalizar_estado(nombre) -> str | None:
@@ -86,7 +97,7 @@ def extraer_lugares(texto: str, llm) -> dict:
     Si el LLM falla o devuelve algo ilegible, queda solo el respaldo por regex (codes_in)."""
     # Sin LLM no se sabe si la respuesta depende del estado: se supone que sí (lo seguro es preguntar).
     out = {'lugares': [], 'comparar': False, 'tipo': None, 'depende_del_estado': True, 'delito_federal': False,
-           'fuente': 'regex', 'raw': ''}
+           'pide_federal': pide_federal(texto), 'teorica': False, 'fuente': 'regex', 'raw': ''}
     if llm is not None:
         try:
             raw = llm.chat(EXTRAER_SYSTEM, f'CONSULTA:\n{texto}', temperature=0.0, max_tokens=300, timeout=60)
@@ -100,7 +111,10 @@ def extraer_lugares(texto: str, llm) -> dict:
                            tipo=d.get('tipo') if d.get('tipo') in TIPOS else 'otro')
                 # Lo que el filtro necesita sale del tipo, no de un «sí/no» del LLM (que resultó inestable):
                 # los delitos comunes y lo que no se reconoce dependen del estado (lo seguro es preguntar).
-                out['depende_del_estado'] = out['tipo'] in ('delito_comun', 'otro')
+                # Una pregunta de teoría sin caso concreto («¿qué es la tentativa?») no tiene hechos que ubicar: no
+                # depende del estado (set 3). Solo cuenta para los tipos que, si no, harían preguntar el estado.
+                out['teorica'] = d.get('teorica') is True and out['tipo'] in ('delito_comun', 'otro')
+                out['depende_del_estado'] = out['tipo'] in ('delito_comun', 'otro') and not out['teorica']
                 out['delito_federal'] = out['tipo'] == 'delito_federal'
         except Exception as e:  # noqa: BLE001 — sin LLM, el respaldo por regex sigue funcionando
             out['raw'] = f'error: {type(e).__name__}: {e}'
@@ -133,9 +147,20 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
     en_base = [e for e in estados if e in disponibles]
     faltan = [e for e in estados if e not in disponibles]
     sin_estado = [x['texto'] for x in ex['lugares'] if not x['estado']]
-    jur = [j for j in no_estatales if j != federal or ex['delito_federal']] + [disponibles[e] for e in en_base]
+    con_federal = ex['delito_federal'] or ex.get('pide_federal') or (ex['teorica'] and not estados)
+    jur = [j for j in no_estatales if j != federal or con_federal] + [disponibles[e] for e in en_base]
     menciona = lambda e: ', '.join(f'«{x["texto"]}»' for x in ex['lugares'] if x['estado'] == e)  # noqa: E731
-    if not estados and otros and ex['depende_del_estado']:
+    if not estados and ex['teorica']:
+        # Pregunta de teoría sin caso concreto: no hay hechos que ubicar. Los códigos sirven como ejemplos (set 3:
+        # «¿qué es la tentativa punible?» espera los artículos de la CDMX, el CPF y el Estado de México).
+        jur = list(dict.fromkeys(no_estatales + list(disponibles.values())))
+        nota = ('LUGAR: es una pregunta teórica, sin un caso concreto: no preguntes el estado. Responde con los conceptos '
+                'del derecho penal. Si citas artículos como ejemplo, di de qué código es cada uno y aclara que cada estado '
+                'lo regula en su propio código penal.')
+    elif not estados and ex.get('pide_federal'):
+        nota = ('LUGAR: la persona pregunta por el Código Penal Federal (ámbito federal). Responde con él y con las leyes '
+                'nacionales que apliquen, sin preguntar el estado. No cites códigos penales de ningún estado.')
+    elif not estados and otros and ex['depende_del_estado']:
         # Solo se sabe dónde vive o trabaja la persona, no dónde ocurrió: ese código puede servir como hipótesis,
         # pero no se puede dar por hecho (set 12 de Karen, caso de Carlos).
         jur += [disponibles[e] for e in otros if e in disponibles]
@@ -159,9 +184,10 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
         partes = []
         if en_base:
             partes.append('LUGAR: ' + '; '.join(f'{e} (la persona mencionó {menciona(e)})' for e in en_base) + '.')
-            if len(en_base) > 1:
-                partes.append('La persona pregunta por varios estados: responde para CADA uno de ellos, con su '
-                              'propio código penal, y no agregues estados que no pidió.')
+            if len(en_base) > 1 or ex.get('pide_federal'):
+                pedidos = 'varios estados' + (' y el Código Penal Federal' if ex.get('pide_federal') else '')
+                partes.append(f'La persona pregunta por {pedidos}: responde para CADA uno, con su propio código, y no '
+                              'agregues estados que no pidió.')
             else:
                 partes.append('Responde con el código penal de ese estado y las leyes nacionales o federales que '
                               'apliquen. No cites códigos penales de otros estados. No vuelvas a preguntar el estado.')
@@ -174,5 +200,6 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
     # La nota es una instrucción interna: la persona no debe leer sobre «la nota» ni «el CONTEXTO».
     nota += ' (Instrucción interna: no menciones esta nota, el CONTEXTO ni los fragmentos en tu respuesta.)'
     return {'lugares': ex['lugares'], 'comparar': ex['comparar'], 'fuente': ex['fuente'], 'raw': ex['raw'],
-            'tipo': ex['tipo'], 'depende_del_estado': ex['depende_del_estado'], 'delito_federal': ex['delito_federal'], 'estados': estados,
+            'tipo': ex['tipo'], 'depende_del_estado': ex['depende_del_estado'], 'delito_federal': ex['delito_federal'],
+            'pide_federal': ex.get('pide_federal', False), 'teorica': ex['teorica'], 'estados': estados,
             'otros': otros, 'en_base': en_base, 'faltan': faltan, 'jurisdictions': jur, 'nota': nota}

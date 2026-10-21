@@ -120,3 +120,42 @@ def test_lugar_de_los_hechos_manda_sobre_residencia():
     g = jg.decidir('Trabajo en Querétaro pero el fraude me lo hicieron en Celaya', llm, DISP, NO_EST)
     assert g['estados'] == ['Guanajuato'] and g['faltan'] == ['Guanajuato']
     assert 'queretaro' not in g['jurisdictions']
+
+
+def test_codigo_penal_federal_nombrado_en_la_pregunta_entra():
+    llm = FakeLLM({'lugares': [], 'tipo': 'delito_comun'})
+    g = jg.decidir('En el Código Penal Federal, ¿cómo se tipifica el estupro?', llm, DISP, NO_EST)
+    assert 'federal' in g['jurisdictions'] and g['pide_federal']
+    assert 'Código Penal Federal' in g['nota'] and 'pregunta en qué estado' not in g['nota']
+    llm = FakeLLM({'lugares': [{'texto': 'Ciudad de México', 'estado': 'Ciudad de México', 'rol': 'hechos'},
+                               {'texto': 'Estado de México', 'estado': 'Estado de México', 'rol': 'hechos'}],
+                   'comparar': True, 'tipo': 'delito_comun'})
+    g = jg.decidir('¿El abuso sexual se persigue de oficio en la Ciudad de México, en el Estado de México y en el '
+                   'ámbito federal?', llm, DISP, NO_EST)
+    assert {'federal', 'cdmx', 'edomex'} <= set(g['jurisdictions']) and 'Código Penal Federal' in g['nota']
+
+
+def test_federal_sin_nombrar_el_codigo_no_cuenta():
+    assert not jg.pide_federal('Me robaron en la carretera federal')
+    assert not jg.pide_federal('Delitos de la Ley Federal contra la Delincuencia Organizada')
+    assert jg.pide_federal('¿y en el fuero federal?') and jg.pide_federal('según el CPF')
+
+
+def test_doctrina_no_pide_estado_y_ve_todos_los_codigos():
+    llm = FakeLLM({'lugares': [], 'tipo': 'otro', 'teorica': True})
+    g = jg.decidir('¿Qué es la tentativa punible?', llm, DISP, NO_EST)
+    assert set(g['jurisdictions']) == set(NO_EST) | set(DISP.values()) and not g['depende_del_estado']
+    assert 'no preguntes el estado' in g['nota']
+
+
+def test_doctrina_con_estado_nombrado_no_agrega_el_cpf():
+    llm = FakeLLM({'lugares': [{'texto': 'Ciudad de México', 'estado': 'Ciudad de México', 'rol': 'hechos'}],
+                   'tipo': 'delito_comun', 'teorica': True})
+    g = jg.decidir('¿Cuáles son los elementos del estupro en la Ciudad de México?', llm, DISP, NO_EST)
+    assert g['jurisdictions'] == ['nacional', 'general', 'cdmx']
+
+
+def test_teorica_no_cambia_delitos_federales_ni_leyes_generales():
+    g = jg.decidir('¿Qué es el lavado de dinero?', FakeLLM({'lugares': [], 'tipo': 'delito_federal', 'teorica': True}),
+                   DISP, NO_EST)
+    assert not g['teorica'] and g['jurisdictions'] == ['federal', 'nacional', 'general']
