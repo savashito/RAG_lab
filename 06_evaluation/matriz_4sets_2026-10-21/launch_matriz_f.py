@@ -1,4 +1,4 @@
-"""Matriz, parte F: B, C y D de launch_matriz.py otra vez, con el filtro por estado corregido (commit 50af8e3: el CPF
+"""Matriz, parte F: B, C y D de launch_matriz.py otra vez, más G (= C sin remisiones, para aislar las remisiones), con el filtro por estado corregido (commit 50af8e3: el CPF
 entra si la pregunta lo nombra; las preguntas teóricas no piden estado). Sets 3, 13, 14, 12; 2 repeticiones.
 
 Espera a que terminen launch_matriz.py y launch_matriz_e.py; luego reinicia la copia temporal (8099) con el
@@ -35,10 +35,11 @@ base = {'setting': 'híbrido', 'k': 10, 'neighbors': True, 'hyde': True, 'rerank
         'jurisdictions': [], 'gate': True}
 configs = {
     'B2': dict(base, system=prompt['penal-original-v1']),
+    'G2': dict(base, crimes=True, crime_extra_k=3, system=prompt['penal-original-v1']),
     'C2': dict(base, crimes=True, crime_extra_k=3, remisiones=True, system=prompt['penal-original-v1']),
     'D2': dict(base, crimes=True, crime_extra_k=3, remisiones=True, system=prompt['tlacua-v1-penas']),
 }
-nombre = {'B2': '+ filtro corregido', 'C2': '+ filtro corregido + por delito (+3) + remisiones', 'D2': 'C2 con tlacua-v1-penas'}
+nombre = {'B2': '+ filtro corregido', 'G2': '+ filtro corregido + por delito (+3), sin remisiones', 'C2': '+ filtro corregido + por delito (+3) + remisiones', 'D2': 'C2 con tlacua-v1-penas'}
 try:
     for rep in (1, 2):
         for letra, cfg in configs.items():
