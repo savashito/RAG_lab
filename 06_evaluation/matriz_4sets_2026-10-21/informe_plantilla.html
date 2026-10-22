@@ -56,6 +56,9 @@
  .toc a{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none;font-size:14px}
  h2{scroll-margin-top:12px}
  .tag{font-size:12px;border-radius:4px;padding:1px 6px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+ pre.prompt{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:13px/1.5 ui-monospace,monospace;margin:8px 0}
+ details.p{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;margin:8px 0}
+ details.p>summary{font-weight:700}
  .ok{color:var(--good)} .x{color:var(--bad)}
  details{margin:8px 0} summary{cursor:pointer;color:var(--acc)}
  ol.flow li{margin:4px 0}
@@ -73,8 +76,8 @@
 <p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones.</p>
 
 <nav class="toc">
-  <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a>
+  <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#pordelito">¿Funciona por delito?</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -142,6 +145,24 @@
 </table></div>
 <p class="mut">Sets 3, 13 y 14: 276 preguntas por configuración (2 repeticiones). En el benchmark, el juez agrega 1.90 ± 0.36 s. «Descomponer por delito» es lo que más tiempo agrega: +2.1 s de media y +3 s en el p90.</p>
 
+
+<h3 id="descomponer">Descomponer y descomponer por delito: en qué se diferencian</h3>
+<p>Son dos llamadas distintas al LLM, con instrucciones opuestas en un punto:</p>
+<div class="scroll"><table>
+  <tr><th></th><th>Descomponer 🧩</th><th>Descomponer por delito ⚖️</th></tr>
+  <tr><td><b>Divide por</b></td><td>Entidades que se comparan: estados, códigos, autores, teorías</td><td>Conductas del relato que pueden ser delito</td></tr>
+  <tr><td><b>Ejemplo</b></td><td>«Estupro en Morelos y en la CDMX» → una búsqueda para Morelos y otra para la CDMX</td><td>«Me drogó y me robó» → una búsqueda para «administrar una sustancia sin consentimiento» y otra para «robo»</td></tr>
+  <tr><td><b>Tiene prohibido</b></td><td>Dividir por partes de una misma cosa (definición, pena, requisitos…). Un relato con varias conductas en un solo estado <b>no</b> se divide.</td><td>Mencionar estados o códigos (de eso se encarga el filtro por estado).</td></tr>
+  <tr><td><b>Contexto</b></td><td>El mismo tamaño (top-k 10); las búsquedas se intercalan</td><td>+3 chunks por cada conducta adicional</td></tr>
+  <tr><td><b>Temas</b></td><td>Todos (también psicología: «condicionamiento clásico vs operante»)</td><td>Solo derecho penal</td></tr>
+  <tr><td><b>Origen</b></td><td>Es el que usó la ronda 1 del estudio</td><td>Se agregó el 19 de octubre para los casos de Karen (set 12)</td></tr>
+</table></div>
+<p>Con las dos activas, se <b>suman</b>: el buscador corre la pregunta original, más una búsqueda por cada entidad, más una por cada conducta. <b>No se cruzan</b>: no hay una búsqueda de «robo en Morelos» y otra de «robo en la CDMX». Están separadas por cómo se construyó el sistema (no quisimos tocar la del estudio), no por una razón de diseño.</p>
+<p><b>Propuesta (pendiente):</b> en el tema penal, una sola llamada que devuelva las entidades y las conductas, y una búsqueda por cada combinación (estado × conducta), con un tope de 4 a 6 búsquedas para no alargar demasiado el tiempo. El tema de psicología se quedaría con la descomposición genérica. Se probaría en los sets 12, 14 y 3 con 2 repeticiones; para el set 12 harían falta más casos con varias conductas.</p>
+
+<h3 id="prompts">Los prompts de cada llamada al LLM</h3>
+<p>En una pregunta, el LLM se llama hasta 6 veces, en este orden. Toca cada una para ver el texto exacto que recibe (el que está en prod).</p>
+<div id="prompts-box"></div>
 
 <h2 id="v1">3. El filtro por estado v1 (el original)</h2>
 <p>Nació del hallazgo de la ronda 1. Pedirle al LLM en el prompt «no cites otros estados» no bastó: con los artículos en el contexto, los citaba igual (set 14: 7 de 12 preguntas sin estado). Por eso el filtro quita esos artículos <b>antes</b> de que lleguen al LLM. Funciona en dos pasos.</p>
@@ -236,6 +257,25 @@
 <p class="mut" style="font-size:14px">Cada fila dice qué cambia entre las dos configuraciones (por ejemplo, G·v2 → C·v2 agrega solo las remisiones).</p>
 <div class="scroll"><table id="t-pares"></table></div>
 
+<h3 id="pordelito">¿Funciona descomponer por delito?</h3>
+<p>Para saberlo se comparan B·v2 y G·v2, que son iguales salvo esa opción. En el total de cada set la diferencia no es significativa (tabla de comparaciones pareadas, fila B·v2 → G·v2). Pero la opción solo debería notarse en las preguntas donde el LLM encontró <b>más de una conducta</b>, así que se separaron:</p>
+<div class="scroll"><table>
+  <tr><th>Set</th><th class="n">Preguntas con ≥2 conductas</th><th class="n">Score B·v2 → G·v2</th><th class="n">Artículos esperados en el contexto B·v2 → G·v2</th><th class="n">Preguntas con 1 conducta: score B·v2 → G·v2</th></tr>
+  <tr><td>Set 3</td><td class="n">16 de 50</td><td class="n">89.4 → 91.2</td><td class="n">52/52 → 50/52</td><td class="n">89.6 → 90.0</td></tr>
+  <tr><td>Set 13</td><td class="n">14 de 31</td><td class="n">75.0 → 80.4</td><td class="n">26/28 → 28/28</td><td class="n">82.4 → 73.5</td></tr>
+  <tr><td>Set 14</td><td class="n">20 de 57</td><td class="n">73.8 → 77.5</td><td class="n ok">21/32 → 28/32</td><td class="n">88.1 → 88.1</td></tr>
+  <tr><td>Set 12</td><td class="n">3 de 3</td><td class="n">30.5 → 30.2</td><td class="n">16/26 → 18/26</td><td class="n">—</td></tr>
+</table></div>
+<p class="mut" style="font-size:13px">Promedio de las 2 repeticiones. «Artículos esperados en el contexto» suma las dos repeticiones. Una pregunta cuenta como «≥2 conductas» si el LLM escribió al menos dos búsquedas de conducta en alguna repetición.</p>
+<p><b>Lectura:</b></p>
+<ul>
+  <li><b>Al buscador sí le ayuda donde debe:</b> en las preguntas con varias conductas del set 14, los artículos esperados que llegan al contexto pasan de 21 de 32 (66 %) a 28 de 32 (88 %).</li>
+  <li><b>En el score, todavía no se puede distinguir del ruido.</b> En las preguntas con varias conductas sube de 2 a 5 puntos en los sets 3, 13 y 14, pero son grupos de 14 a 20 preguntas, donde el ruido de la media es de ±4 a ±7 puntos. En el set 13, las preguntas de una conducta bajan 9 puntos, también dentro del ruido (con una sola conducta la opción agrega una búsqueda, pero no chunks extra).</li>
+  <li><b>En el set 12</b> llegan más artículos (16 → 18 de 26) pero el score no se mueve: ahí el límite es que el prompt penal-original-v1 no hace que Gemma escriba las penas (con tlacua-v1-penas, el set 12 sube a 63–69 %).</li>
+  <li><b>Costo:</b> +2.1 s por pregunta en promedio (sección 2).</li>
+</ul>
+<p><b>Conclusión: no hay evidencia de que mejore la calificación.</b> Mejora lo que llega al contexto en relatos con varias conductas, pero los sets tienen pocos relatos así (el set 12, el único diseñado para eso, tiene 3 casos). Para decidir hace falta un set con 15–20 relatos de varias conductas.</p>
+
 <h2 id="v3">7. El problema del v2, y el v3</h2>
 <div class="box">
 <p style="margin-top:0"><b>El v2 se optimizó para el benchmark, no para la persona real.</b> La regla de las preguntas teóricas (dejar ver todos los códigos estatales) se decidió mirando el set 3: sus respuestas esperadas para «¿qué es la tentativa?» piden artículos de la CDMX, el CPF y el Estado de México. Con esa regla, el set 3 sube. Pero el set 3 está escrito para estudiantes o profesionales del derecho, y Tlacua es para cualquier persona. Es <b>sobreajuste al set</b>: una decisión que mejora la calificación y empeora el uso real.</p>
@@ -280,6 +320,7 @@
 
 <script>
 const DATA = __DATA__;
+const PROMPTS = __PROMPTS__;
 // Claves de los datos (las etiquetas de las corridas) → nombre que se muestra: letra = opciones, sufijo = versión del filtro.
 const NOMBRE = {A:'A', B:'B·v1', C:'C·v1', D:'D·v1', E:'E·v1', B2:'B·v2', G2:'G·v2', C2:'C·v2', D2:'D·v2'};
 const CFG = {
@@ -410,6 +451,25 @@ function renderSet(){
     toggler(tr, () => `${esc(que)}<div class="mut" style="margin-top:4px"><b>${NOMBRE[a]}:</b> ${esc(CFG[a].para)}<br><b>${NOMBRE[b]}:</b> ${esc(CFG[b].para)}</div>
       <div class="mut" style="margin-top:4px">La diferencia está en puntos de score (${NOMBRE[b]} menos ${NOMBRE[a]}): positiva = ${NOMBRE[b]} es mejor.</div>`);
   }
+})();
+
+// Prompts de cada llamada al LLM (prompts_sistema.json, sacados del código y de la base de prod)
+(function(){
+  const P = PROMPTS, pre = t => `<pre class="prompt">${esc(t)}</pre>`;
+  const det = (titulo, cuerpo) => `<details class="p"><summary>${titulo}</summary>${cuerpo}</details>`;
+  const notas = P.notas_filtro.map(n => `<p style="margin:10px 0 2px"><b>«${esc(n.pregunta)}»</b> <span class="mut">· el buscador ve: ${esc(n.buscador_ve.join(', '))}</span></p>${pre(n.nota)}`).join('');
+  $('prompts-box').innerHTML = [
+    det('1 · Filtro por estado (si está activo)', '<p>Recibe la pregunta y devuelve los lugares, su papel y el tipo de asunto, en JSON. Temperatura 0.</p>' + pre(P.filtro) +
+      '<p><b>Lo que el filtro le deja al LLM que responde</b> (se agrega al prompt de respuesta). Generado con el código real del filtro v3 para un ejemplo de cada caso:</p>' + notas),
+    det('2 · HyDE', '<p>Recibe la pregunta y escribe un borrador del artículo que respondería; con ese borrador se busca. El prompt es por tema; este es el del tema penal:</p>' + pre(P.hyde_penal) +
+      `<p>Además, a la pregunta se le antepone, para el modelo de embeddings: <code>Instruct: ${esc(P.instruct_penal)}</code></p>`),
+    det('3 · Descomponer', '<p>Recibe la pregunta y devuelve las sub-búsquedas por entidad, en JSON. Temperatura 0.</p>' + pre(P.descomponer)),
+    det('4 · Descomponer por delito (si está activo)', '<p>Recibe la pregunta y devuelve una búsqueda por conducta, en JSON.</p>' + pre(P.por_delito)),
+    det('5 · Respuesta', '<p>Recibe este prompt + la instrucción del filtro (si está activo) + el CONTEXTO (los chunks) + la pregunta. Los tres prompts de la matriz:</p>' +
+      Object.entries(P.respuesta).map(([t, x]) => `<details class="p"><summary>${esc(t)}</summary>${pre(x)}</details>`).join('')),
+    det('6 · Juez (solo en el benchmark)', '<p>Recibe la pregunta, la respuesta de referencia, los criterios numerados y la respuesta a evaluar. Temperatura 0. Prompt fijo:</p>' + pre(P.juez) +
+      '<p>Cada set agrega sus propios criterios para el juez:</p>' + P.criterios_juez.map(c => `<p style="margin:10px 0 2px"><b>Set ${c.set}</b> · ${esc(c.nombre)}</p>` + (c.criterios ? pre(c.criterios) : '<p class="mut">(sin criterios adicionales)</p>')).join('')),
+  ].join('');
 })();
 
 $('defs').innerHTML = DEFS.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
