@@ -20,6 +20,7 @@
  main{max-width:1080px;margin:0 auto;padding:8px 16px 60px}
  h2{font-size:18px;margin:34px 0 8px}
  h3{font-size:15px;margin:18px 0 6px}
+ h4{font-size:14px;margin:16px 0 4px}
  p,li{color:var(--txt)} .mut{color:var(--mut)} small{color:var(--mut)}
  a{color:var(--acc)}
  .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
@@ -77,7 +78,7 @@
 
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#componentes">Pruebas por componente</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -311,6 +312,45 @@
 </div>
 <p><b>Conclusión:</b> descomponer ayuda al buscador en las preguntas comparativas; en la calificación, la ventaja no se distingue del ruido en estos sets. <b>Para la ronda 2 se mantiene igual que en la ronda 1</b> (descomponer y routing activos), por comparabilidad.</p>
 
+<h3 id="componentes">Pruebas por componente</h3>
+<p>Las pruebas de arriba miden el sistema completo: si el score baja, no se sabe qué pieza falló. Estas miden <b>una sola llamada al LLM contra su propio objetivo</b>, y cuando se puede, sin el juez (22 de octubre). Pendientes: una prueba propia de «descomponer» y otra de «descomponer por delito» (necesitan preguntas etiquetadas; Karen para las conductas), y el acuerdo del juez con una persona abogada.</p>
+
+<h4>HyDE · objetivo: que el buscador encuentre el artículo correcto</h4>
+<p>Buscador híbrido con y sin HyDE, pregunta por pregunta: porcentaje de artículos esperados entre los 10 primeros resultados (sin vecinos, sin juez).</p>
+<div class="scroll"><table>
+  <tr><th>Set</th><th class="n">Artículos</th><th class="n">Sin HyDE</th><th class="n">Con HyDE</th><th class="n">Artículos que HyDE sube / baja de posición</th></tr>
+  <tr><td>3</td><td class="n">80</td><td class="n">76 %</td><td class="n ok">84 %</td><td class="n">29 / 16</td></tr>
+  <tr><td>13</td><td class="n">31</td><td class="n">42 %</td><td class="n ok">71 %</td><td class="n">20 / 6</td></tr>
+  <tr><td>14</td><td class="n">48</td><td class="n">52 %</td><td class="n ok">65 %</td><td class="n">26 / 10</td></tr>
+</table></div>
+<p>Las reglas de su prompt, revisadas con regex en los 2,538 borradores de la matriz: <b>0</b> traen un número de artículo (el prompt lo prohíbe); <b>107 (4.2 %)</b> nombran un estado que la pregunta no nombró. <b>Conclusión:</b> HyDE cumple su objetivo, sobre todo en preguntas en lenguaje cotidiano (set 13: +29 puntos).</p>
+
+<h4>Juez · objetivo: calificar siempre igual la misma respuesta</h4>
+<p>El juez volvió a calificar dos veces las mismas respuestas guardadas de B·v3 (#179 set 3, #180 set 14), con el mismo prompt y temperatura 0:</p>
+<div class="scroll"><table>
+  <tr><th>Set</th><th class="n">Respuestas</th><th class="n">Acuerdo por criterio</th><th class="n">DE del score de una misma respuesta</th><th class="n">Respuestas cuyo score cambia ≥20 puntos</th></tr>
+  <tr><td>3</td><td class="n">50</td><td class="n">100 %</td><td class="n">0.0</td><td class="n">0</td></tr>
+  <tr><td>14</td><td class="n">57</td><td class="n">99.7 %</td><td class="n">2.1</td><td class="n">1</td></tr>
+</table></div>
+<p><b>Conclusión:</b> el juez es casi perfectamente consistente. Por lo tanto, la «DE repetición» de 15 a 30 puntos (sección 8) <b>no viene del juez</b>: viene de que el sistema genera contextos y respuestas distintos cada vez. Que el juez sea consistente no quiere decir que tenga razón: falta medir su acuerdo con Karen.</p>
+
+<h4>Respuesta · objetivos del prompt</h4>
+<p>Sin juez, con regex sobre las respuestas guardadas: C·v2 (penal-original-v1) contra D·v2 (tlacua-v1-penas), iguales salvo el prompt, 8 corridas cada uno.</p>
+<div class="scroll"><table>
+  <tr><th>Objetivo</th><th class="n">penal-original-v1</th><th class="n">tlacua-v1-penas</th></tr>
+  <tr><td>Pide el estado cuando el filtro se lo indica</td><td class="n">27/48 (56 %)</td><td class="n ok">36/48 (75 %)</td></tr>
+  <tr><td>Lo vuelve a pedir cuando ya lo sabe</td><td class="n">0/110 (0 %)</td><td class="n">4/110 (4 %)</td></tr>
+  <tr><td>Da la pena cuando está en el contexto</td><td class="n">105/207 (51 %)</td><td class="n ok">139/207 (67 %)</td></tr>
+  <tr><td>Citas sin respaldo en el contexto</td><td class="n">14 %</td><td class="n ok">10 %</td></tr>
+  <tr><td>Cumple «Cita el art. …» en el set 14</td><td class="n ok">95 %</td><td class="n x">60 %</td></tr>
+</table></div>
+<p><b>¿Por qué tlacua-v1-penas cita menos artículos en el set 14?</b> Se probaron dos hipótesis con las respuestas guardadas:</p>
+<ul>
+  <li><b>H1: pregunta en lugar de responder</b> (su sección «Interacción» pide preguntar antes de concluir). <b>No se sostiene:</b> las respuestas que sí citan hacen preguntas igual o más (80 %) que las que no (71 %), y tienen el mismo largo.</li>
+  <li><b>H2: no tiene una sección obligatoria de fundamentos.</b> penal-original-v1 exige el apartado «Fundamento jurídico» y lo trae en el 100 % de sus respuestas; tlacua-v1-penas solo dice «Cita ordenamiento, artículo y fracción». De sus respuestas que no citan el artículo pedido, el 68 % no trae <b>ningún</b> número de artículo (de las que sí, 4 %). <b>Se sostiene en la observación.</b></li>
+</ul>
+<p id="causal-pendiente"><b>Prueba causal (corriendo):</b> tlacua-v1-penas tal cual, + sección obligatoria «Fundamento jurídico», y + además «no preguntes el estado si ya está determinado», en el set 14 con la configuración de la ronda 2 (con routing), 2 repeticiones. Los resultados se agregarán aquí.</p>
+
 <h2 id="v3">7. El problema del v2, y el v3</h2>
 <div class="box">
 <p style="margin-top:0"><b>El v2 se optimizó para el benchmark, no para la persona real.</b> La regla de las preguntas teóricas (dejar ver todos los códigos estatales) se decidió mirando el set 3: sus respuestas esperadas para «¿qué es la tentativa?» piden artículos de la CDMX, el CPF y el Estado de México. Con esa regla, el set 3 sube. Pero el set 3 está escrito para estudiantes o profesionales del derecho, y Tlacua es para cualquier persona. Es <b>sobreajuste al set</b>: una decisión que mejora la calificación y empeora el uso real.</p>
@@ -407,7 +447,7 @@ const DEFS = [
   ['Media', 'El promedio de las dos repeticiones. Primero se promedia cada pregunta entre las dos corridas, y luego entre preguntas.'],
   ['IC 95 %', 'El intervalo de confianza de la media, por bootstrap sobre las preguntas (2,000 remuestreos). Mide qué tanto cambiaría la media con otras preguntas del mismo tipo.'],
   ['DE preguntas', 'Desviación estándar del score entre las preguntas de la configuración (cada pregunta, promediada entre las dos repeticiones). Alta = la configuración responde muy bien unas preguntas y muy mal otras.'],
-  ['DE repetición', 'Cuánto cambia el score de la MISMA pregunta entre las dos repeticiones: raíz de la media de (rep 1 − rep 2)² / 2 sobre todas las preguntas. Es el ruido de una sola pregunta. En los sets 13 y 14 es de 15 a 30 puntos: una pregunta suelta puede cambiar mucho de una corrida a otra.'],
+  ['DE repetición', 'Cuánto cambia el score de la MISMA pregunta entre las dos repeticiones: raíz de la media de (rep 1 − rep 2)² / 2 sobre todas las preguntas. Es el ruido de una sola pregunta. En los sets 13 y 14 es de 15 a 30 puntos: una pregunta suelta puede cambiar mucho de una corrida a otra. Casi todo ese ruido viene de la generación, no del juez (prueba del juez: el score de una misma respuesta cambia 0 a 2 puntos).'],
   ['Ruido de la media', 'DE repetición dividida entre √n (n = preguntas del set): cuánto se espera que cambie el score medio de una corrida a otra solo por ruido. Una diferencia entre configuraciones menor a unas dos veces este número no es concluyente.'],
   ['Must', 'El porcentaje de criterios «must» que el juez marcó como presentes.'],
   ['Pasa', 'El porcentaje de preguntas con todos los «must» presentes y ningún «must_not».'],
