@@ -73,7 +73,7 @@
 <p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones.</p>
 
 <nav class="toc">
-  <a href="#camino">1. Cómo responde Tlacua</a><a href="#opciones">2. Cada opción</a><a href="#v1">3. Filtro v1</a>
+  <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#v1">3. Filtro v1</a>
   <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
@@ -86,6 +86,33 @@
   <li><b>Responder:</b> el LLM (Gemma) escribe la respuesta siguiendo las instrucciones del <b>prompt</b>.</li>
   <li><b>Calificar</b> (solo en el benchmark): un juez (el mismo Gemma) revisa si la respuesta cumple los criterios que una persona escribió para esa pregunta.</li>
 </ol>
+
+<h3 id="modelos">Los modelos y dónde corren</h3>
+<div class="scroll"><table>
+  <tr><th></th><th>Modelo</th><th>Detalle</th></tr>
+  <tr><td><b>LLM</b> (responde, y en el benchmark también califica)</td><td><code>gemma-4-26B-A4B-it</code> de Google, versión QAT cuantizada a 4 bits (archivo GGUF <code>UD-Q4_K_XL</code> de Unsloth, 14.2 GB)</td><td>Es un modelo «mixture of experts»: 25.2 mil millones de parámetros en total, de los que se activan ~4 mil millones por palabra; por eso es rápido para su tamaño. Ventana de contexto: 32,768 tokens; 4 conversaciones en paralelo. Se sirve con <b>llama.cpp</b> (llama-server). En la app aparece con el alias «Gemma-4-4B-8b», pero el modelo real es el de esta fila. Para calificar se usa con temperatura 0.</td></tr>
+  <tr><td><b>Embeddings</b> (convierte textos en vectores para buscar por significado)</td><td><code>Qwen/Qwen3-Embedding-0.6B</code> de Alibaba</td><td>600 millones de parámetros; vectores de 1,024 números; en float16. Acepta textos largos (hasta 16,384 tokens en nuestro servidor; un artículo entero cabe). Es multilingüe y «instruction-aware»: a la pregunta se le antepone la instrucción «Recupera el pasaje del código o la doctrina que responde la pregunta.». Se sirve con <b>TEI</b> (Text Embeddings Inference de Hugging Face, versión 1.9.3).</td></tr>
+  <tr><td><b>Hardware</b></td><td>Una GPU NVIDIA <b>RTX 5090</b> (32 GB)</td><td>Los dos modelos corren en el mismo servidor con esa GPU. La app (legis.tlacua.cloud) corre en otro servidor y se conecta a la GPU por un túnel SSH. Los vectores y los textos viven en PostgreSQL con pgvector.</td></tr>
+</table></div>
+
+<h3 id="buscador">El buscador por dentro</h3>
+<ol class="flow">
+  <li><b>El corpus está partido en chunks.</b> Los códigos, un artículo por chunk; los libros de doctrina, en fragmentos de texto. A cada chunk se le antepone el nombre de la ley y su lugar en el código («Fuente: Código Penal de la Ciudad de México · Sección: Título Quinto › Artículo 224»). Esto importó mucho: en códigos cuyo nombre solo aparecía en el encabezado de página, la posición mediana del artículo correcto en la búsqueda por significado pasó del lugar 21 al 4.</li>
+  <li><b>Búsqueda por significado (dense):</b> Qwen3-Embedding convierte la pregunta en un vector y se buscan los chunks con los vectores más cercanos. Encuentra «me tocaron sin permiso» aunque el código diga «actos sexuales sin consentimiento».</li>
+  <li><b>Búsqueda por palabras (BM25):</b> busca las palabras exactas, con más peso a las raras. Encuentra «artículo 211 Ter» o «estupro» aunque el significado general no ayude.</li>
+  <li><b>Fusión (RRF):</b> se juntan las dos listas por posición (Reciprocal Rank Fusion, k = 60): un chunk que sale arriba en las dos queda arriba en la mezcla. Eso es el método «híbrido».</li>
+</ol>
+<p><b>Por qué la base usa estas opciones.</b> En una prueba del 8 de octubre en el corpus penal (163 preguntas de tres sets escritos por una experta, 254 artículos esperados), medimos qué porcentaje de los artículos esperados sale entre los 10 primeros resultados del buscador. Esta medida no usa al juez:</p>
+<div class="scroll"><table>
+  <tr><th>Buscador</th><th class="n">Artículos esperados en los 10 primeros</th><th class="n">Segundos por pregunta</th></tr>
+  <tr><td>Solo BM25 (palabras)</td><td class="n">63 %</td><td class="n">0.1</td></tr>
+  <tr><td>Solo embeddings (significado)</td><td class="n">77 %</td><td class="n">0.3</td></tr>
+  <tr><td>Híbrido</td><td class="n">82 %</td><td class="n">0.4</td></tr>
+  <tr><td>Híbrido + HyDE</td><td class="n">85 %</td><td class="n">1.1</td></tr>
+  <tr><td>Híbrido + descomponer</td><td class="n">85 %</td><td class="n">1.1–1.7</td></tr>
+  <tr><td><b>Híbrido + HyDE + descomponer</b> (la base)</td><td class="n"><b>88 %</b></td><td class="n">2.3–4.0</td></tr>
+</table></div>
+<p><b>¿Por qué Qwen3-Embedding y no otro?</b> Se eligió en una prueba anterior con otro corpus (artículos científicos; ahí acertó el documento correcto en el primer lugar en 87 % de 15 preguntas) y por ser multilingüe y aceptar textos largos. <b>No lo hemos comparado con otros modelos de embeddings en el corpus legal mexicano</b>, así que no sabemos si es el mejor para esta materia. Lo que sí sabemos es que, en este corpus, la búsqueda por significado con Qwen3 encuentra más artículos que la búsqueda por palabras (77 % contra 63 %), y que juntas encuentran más (82 %). La prueba que falta: correr la misma medida con otros modelos (por ejemplo <code>BAAI/bge-m3</code>, <code>Qwen3-Embedding-4B</code> o <code>multilingual-e5-large-instruct</code>); requiere volver a calcular los vectores de todo el corpus con cada uno.</p>
 
 <h2 id="opciones">2. Qué hace cada opción</h2>
 <p>Son las casillas y menús de «Preguntar», «Conversacional» y «Benchmark», en el orden del camino de arriba. <b>Tiempo medido</b>: media ± desviación estándar por pregunta en las corridas de esta matriz (sets 3, 13 y 14; el set 12, de relatos largos, va aparte cuando cambia). <b>p90</b>: el 90 % de las preguntas tardó eso o menos; es lo que espera la persona en las preguntas más lentas. Cada corrida guarda cuánto tardó cada etapa. Las opciones que no tienen su propia etapa no se midieron por separado.</p>
@@ -157,12 +184,13 @@
 <div class="box">
 <p style="margin-top:0"><b>Base</b> = la configuración que usó el estudio con usuarios (corrida #102):</p>
 <ul style="margin-bottom:0">
-  <li><b>método híbrido</b>: busca por significado (vectores) y por palabras exactas (BM25), y mezcla los resultados;</li>
+  <li><b>método híbrido</b>: busca por significado (embeddings de Qwen3-Embedding-0.6B) y por palabras exactas (BM25), y mezcla los resultados (<a href="#buscador">cómo funciona</a>);</li>
   <li><b>top-k 10</b>: entran al contexto los 10 primeros resultados del buscador;</li>
   <li><b>vecinos</b>: más la familia (bis, ter…) y los 2 artículos de antes y de después de cada uno;</li>
   <li><b>HyDE</b>: se busca con un borrador del artículo que respondería, escrito por el LLM;</li>
   <li><b>descomponer</b>: si la pregunta compara varias cosas, se busca cada una por separado;</li>
   <li><b>prompt penal-original-v1</b>: el de la ronda 1;</li>
+  <li><b>LLM gemma-4-26B-A4B-it</b> (4 bits) para responder y para calificar, en una RTX 5090 (<a href="#modelos">detalle</a>);</li>
   <li><b>sin</b> filtro por estado, <b>sin</b> descomponer por delito, <b>sin</b> remisiones, <b>sin</b> rerank y <b>sin</b> routing por código.</li>
 </ul>
 </div>
