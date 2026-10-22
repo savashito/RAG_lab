@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Matriz de configuraciones</title>
+<style>
+ :root{color-scheme:light dark;
+   --bg:#0f1115;--panel:#171a21;--panel2:#1d212b;--line:#2a2f3a;--txt:#e6e6e6;--mut:#9aa4b2;--acc:#3b82f6;
+   --good:#22c55e;--bad:#ef4444;--warn:#f59e0b;--bar:#3b82f6}
+ @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+   --bg:#f7f8fa;--panel:#fff;--panel2:#f0f2f5;--line:#dde1e7;--txt:#1b1f27;--mut:#5b6573;--acc:#2563eb;
+   --good:#15803d;--bad:#b91c1c;--warn:#b45309;--bar:#2563eb}}
+ :root[data-theme="dark"]{--bg:#0f1115;--panel:#171a21;--panel2:#1d212b;--line:#2a2f3a;--txt:#e6e6e6;--mut:#9aa4b2;--acc:#3b82f6}
+ *{box-sizing:border-box}
+ body{font:15px/1.55 system-ui,sans-serif;margin:0;background:var(--bg);color:var(--txt)}
+ header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+ header a{color:var(--acc);text-decoration:none;font-size:14px}
+ header h1{font-size:17px;margin:0}
+ main{max-width:1080px;margin:0 auto;padding:8px 16px 60px}
+ h2{font-size:18px;margin:34px 0 8px}
+ h3{font-size:15px;margin:18px 0 6px}
+ p,li{color:var(--txt)} .mut{color:var(--mut)} small{color:var(--mut)}
+ a{color:var(--acc)}
+ .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+ .key{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+ .key .box{margin:0} .key b{display:block;font-size:14px;margin-bottom:4px}
+ .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+ table{border-collapse:collapse;width:100%;font-size:14px}
+ th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+ th{background:var(--panel2);font-weight:600;white-space:nowrap;font-size:13px}
+ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+ tr.click{cursor:pointer} tr.click:hover td{background:var(--panel2)}
+ tr.open td{background:var(--panel2)}
+ tr.det td{background:var(--bg);padding:12px 14px}
+ .cfg{display:inline-block;min-width:30px;text-align:center;font-weight:700;border-radius:6px;padding:1px 6px;background:var(--panel2);border:1px solid var(--line)}
+ .chev{color:var(--mut);display:inline-block;width:14px;transition:transform .15s}
+ tr.open .chev{transform:rotate(90deg)}
+ .barcell{min-width:150px}
+ .bar{position:relative;height:16px;background:var(--panel2);border-radius:4px;overflow:hidden}
+ .bar i{position:absolute;top:0;bottom:0;background:var(--bar);opacity:.85;border-radius:4px}
+ .bar s{position:absolute;top:2px;bottom:2px;border-left:2px solid var(--txt);border-right:2px solid var(--txt);opacity:.5;text-decoration:none}
+ .best{color:var(--good);font-weight:700}
+ .pos{color:var(--good);font-weight:700} .neg{color:var(--bad);font-weight:700}
+ .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+ .tabs button{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+ .tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+ .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
+ .met{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+ .met b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+ .met span{font-size:12px;color:var(--mut)}
+ .links a{display:inline-block;margin:6px 10px 0 0;font-size:14px}
+ dl.defs dt{font-weight:700;margin-top:10px} dl.defs dd{margin:2px 0 0 0;color:var(--txt)}
+ .tag{font-size:12px;border-radius:4px;padding:1px 6px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+ .ok{color:var(--good)} .x{color:var(--bad)}
+ details{margin:8px 0} summary{cursor:pointer;color:var(--acc)}
+ @media (max-width:640px){ body{font-size:14px} th,td{padding:7px 8px} .barcell{min-width:110px} }
+</style>
+</head>
+<body>
+<header>
+  <a href="/benchmark?vista=informes">← Benchmark · Informes</a>
+  <h1>Matriz de configuraciones · 21 de octubre de 2026</h1>
+</header>
+<main>
+
+<p class="mut">72 corridas del benchmark (#107–#178): 9 configuraciones × 4 sets × 2 repeticiones. El modelo que responde y el juez son el mismo, Gemma-4-4B-8b. Toca cualquier fila para ver su detalle.</p>
+
+<div class="key">
+  <div class="box"><b>✅ El filtro corregido funciona</b>Quita las citas a otro estado (de 21–25 % a 0 %) y ya no empeora las preguntas generales: el set 3 vuelve a 90 %, igual que sin filtro.</div>
+  <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14 («¿cuándo pedir el estado?»). Hay que revisarlo antes de la ronda 2.</div>
+  <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes. Las remisiones ayudan un poco en el set 14 (+5) y restan un poco en los sets 3 y 13 (−2).</div>
+  <div class="box"><b>📏 Ruido</b>La misma configuración cambia hasta 6 puntos entre repeticiones (sets 13 y 14). Diferencias menores a ~5 puntos no son concluyentes.</div>
+</div>
+
+<h2>Qué se probó</h2>
+<p>Todas las configuraciones tienen la misma base, la de la corrida #102 (la del estudio): buscador híbrido (vectores + BM25), los 10 primeros resultados del buscador + sus chunks vecinos, HyDE (el LLM escribe una respuesta hipotética para buscar con ella) y «descomponer» (el LLM divide la pregunta en sub-preguntas). Cada letra activa o desactiva algunas opciones. El «2» quiere decir «con el filtro corregido», no «repetición 2».</p>
+<div class="scroll"><table id="t-cfg"></table></div>
+
+<h2>El filtro por estado: qué hace y qué cambió</h2>
+<div class="box">
+<p style="margin-top:0"><b>Qué es.</b> Un paso <b>antes de buscar</b>. Un LLM lee la pregunta y decide qué códigos puede ver el buscador. También le deja una instrucción al LLM que responde. Existe porque en la ronda 1 del estudio, si la persona no decía dónde ocurrieron los hechos, el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba.</p>
+<p><b>Cómo funciona:</b></p>
+<ol>
+  <li>El LLM del filtro anota los <b>lugares</b> que menciona la pregunta y su estado («Toluca» → Estado de México); si cada lugar es <b>donde ocurrieron los hechos</b> o solo donde vive o trabaja la persona; y el <b>tipo de asunto</b>: delito común, delito federal, ley general, procedimiento u otro.</li>
+  <li>El buscador ve <b>siempre</b> las leyes nacionales y la doctrina (CNPP, leyes generales, libros de doctrina); además, <b>solo</b> los códigos de los estados donde ocurrieron los hechos, y el Código Penal Federal (CPF) solo en ciertos casos.</li>
+  <li>El LLM que responde recibe una instrucción, por ejemplo: «no dijo el estado: pregúntalo y no cites códigos estatales».</li>
+</ol>
+<p><b>Qué cambió en la versión corregida</b> (todavía no está en prod):</p>
+<ul>
+  <li><b>El CPF.</b> Antes solo entraba si el LLM decía «delito federal», incluso cuando la persona lo pedía por nombre. Ahora también entra si la pregunta lo nombra: «Código Penal Federal», «CPF», «ámbito federal», «fuero federal». Lo detecta una regex, sin LLM.</li>
+  <li><b>Las preguntas teóricas</b> («¿qué es la tentativa?»). Antes se trataban como un caso al que le falta el estado: el filtro quitaba los códigos estatales y pedía el estado. Ahora el LLM del filtro marca si la pregunta es teórica, y en ese caso el buscador ve todos los códigos y no se pide el estado.</li>
+  <li><b>«México» como país.</b> Una regla para que «¿puedo denunciar en México?» no se lea como «Ciudad de México».</li>
+</ul>
+</div>
+<div class="scroll"><table>
+  <tr><th>Pregunta</th><th>Filtro viejo: qué ve el buscador</th><th>Filtro corregido</th></tr>
+  <tr><td>«Me robaron el celular en Toluca»</td><td>Edomex + nacionales</td><td>igual</td></tr>
+  <tr><td>«Me robaron el celular» (sin lugar)</td><td>solo nacionales; pide el estado</td><td>igual</td></tr>
+  <tr><td>«¿Qué pena tiene el lavado de dinero?»</td><td>CPF + nacionales</td><td>igual</td></tr>
+  <tr><td>«En el Código Penal Federal, ¿cómo se tipifica el estupro?»</td><td class="x">solo nacionales: sin el CPF, y pide el estado</td><td class="ok">CPF + nacionales; no pide estado</td></tr>
+  <tr><td>«Compara la violación en la CDMX, el Edomex y el CPF»</td><td class="x">CDMX + Edomex + nacionales: sin el CPF</td><td class="ok">CDMX + Edomex + CPF + nacionales</td></tr>
+  <tr><td>«¿Qué es la tentativa punible?»</td><td class="x">solo nacionales; pide el estado</td><td class="ok">todos los códigos; no pide estado</td></tr>
+</table></div>
+<p class="mut">Validación del filtro corregido con el LLM real: detección de lugar 86/86 en 5 corridas; clasificación del tipo 39/44 (igual que el filtro viejo); 12/12 frases nuevas escritas para esta prueba; ninguna de las 31 preguntas del set 13 se marcó como teórica.</p>
+
+<h2>Resultados por set</h2>
+<div class="tabs" id="set-tabs"></div>
+<p id="set-desc" class="mut"></p>
+<div class="scroll"><table id="t-res"></table></div>
+<p class="mut" style="font-size:13px">La barra es la media; las marcas verticales, su intervalo de confianza de 95 %. En verde, la mejor media del set.</p>
+
+<h2>Comparaciones pareadas</h2>
+<p>Cada pregunta se compara contra sí misma en las dos configuraciones (promedio de las dos repeticiones). Así, la diferencia no depende de qué preguntas tiene el set. Entre paréntesis está el intervalo de confianza de 95 %. <b>En color:</b> el intervalo no incluye el 0, así que la diferencia probablemente no es ruido. El set 12 tiene solo 3 preguntas: sus intervalos no son confiables.</p>
+<div class="scroll"><table id="t-pares"></table></div>
+
+<h2>Cómo leer las columnas</h2>
+<div class="box"><dl class="defs" id="defs"></dl></div>
+
+<h2>Limitaciones</h2>
+<ul>
+  <li>El juez es el mismo modelo que responde. Falta medir qué tanto coincide con una persona abogada; Karen puede calificar a mano una muestra de respuestas.</li>
+  <li>Solo hay 2 repeticiones por configuración: alcanzan para ver el ruido, no para estimar bien una desviación estándar.</li>
+  <li>El set 12 tiene 3 preguntas; cada una pesa un tercio del score.</li>
+  <li>El set 3 se recalificó el 21 de octubre: se quitaron 11 criterios duplicados y se corrigió la pregunta sobre la prescripción en el CPF (art. 107 Bis). Todos los scores del set 3 de esta página ya usan los criterios corregidos.</li>
+  <li>La configuración E (tlacua-secuencia-y-penas) solo se corrió con el filtro viejo: compárala con D, no con D2.</li>
+</ul>
+</main>
+
+<script>
+const DATA = __DATA__;
+const CFG = {
+  A:  {filtro:'no', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Línea base: el sistema sin los cambios de esta semana.'},
+  B:  {filtro:'viejo', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Efecto del filtro, en la versión que está hoy en prod.'},
+  C:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Todo lo nuevo junto: filtro + descomponer por delito + remisiones.'},
+  D:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como C, con el prompt tlacua-v1-penas (tlacua-v1 + una sección que pide dar las penas).'},
+  E:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'tlacua-secuencia-y-penas', para:'Como C, con el prompt tlacua-secuencia-y-penas (del 20 de octubre). Compárala con D.'},
+  B2: {filtro:'corregido', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Como B, con el filtro corregido. B → B2 mide el arreglo del filtro.'},
+  G2: {filtro:'corregido', delito:'sí', rem:'no', prompt:'penal-original-v1', para:'Como C2, pero sin remisiones. G2 → C2 mide solo el efecto de las remisiones.'},
+  C2: {filtro:'corregido', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Como C, con el filtro corregido.'},
+  D2: {filtro:'corregido', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como D, con el filtro corregido. C2 → D2 mide el prompt tlacua-v1-penas.'},
+};
+const ORD = ['A','B','C','D','E','B2','G2','C2','D2'];
+const SETS = {
+  3:  {nombre:'Set 3 · general', n:50, desc:'50 preguntas de delitos sexuales, parte general (dogmática) y CNPP. Las preguntas dicen qué ley quieren, o son teóricas. Es la prueba de regresión: el filtro no debería cambiar su score.'},
+  13: {nombre:'Set 13 · un estado', n:31, desc:'31 preguntas en lenguaje cotidiano que dicen un solo estado (CDMX, Querétaro, Edomex, Morelos). Mide si la respuesta usa solo el código de ese estado.'},
+  14: {nombre:'Set 14 · ¿pedir el estado?', n:57, desc:'57 preguntas: sin lugar (hay que pedir el estado), con lugar indirecto (dónde vive la persona), comparaciones, estados fuera del corpus y leyes nacionales (no hay que pedirlo).'},
+  12: {nombre:'Set 12 · casos de Karen', n:3, desc:'3 casos complejos con control de tipicidad, escritos por Karen. Con solo 3 preguntas, cada una pesa un tercio del score.'},
+};
+const DEFS = [
+  ['Score (rep 1 y rep 2)', 'El score de cada corrida. El juez revisa cada criterio de la pregunta (presente, parcial o ausente). El score es la suma ponderada de los criterios «must» y «should» cumplidos, menos los «must_not» violados, dividida entre el peso total de los «must» y «should». Se promedia sobre las preguntas y va de 0 a 100.'],
+  ['Media', 'El promedio de las dos repeticiones. Primero se promedia cada pregunta entre las dos corridas, y luego entre preguntas.'],
+  ['IC 95 %', 'El intervalo de confianza de la media, por bootstrap sobre las preguntas (2,000 remuestreos). Mide qué tanto cambiaría la media con otras preguntas del mismo tipo. No es la variación entre repeticiones: para eso, compara rep 1 contra rep 2.'],
+  ['Must', 'El porcentaje de criterios «must» que el juez marcó como presentes.'],
+  ['Pasa', 'El porcentaje de preguntas con todos los «must» presentes y ningún «must_not».'],
+  ['Recall', 'El porcentaje de los artículos que la pregunta necesita (los que nombran sus «must» de cita) que llegaron al contexto del LLM. Lo calcula un script, sin LLM. Mide al buscador, no la respuesta.'],
+  ['Otro estado', 'El porcentaje de respuestas que citan el código penal de un estado que no corresponde. Lo mide el verificador de citas (regex, sin LLM), solo en las preguntas donde aplica.'],
+  ['Citas sin respaldo', 'El porcentaje de los artículos citados que no están en el contexto: inventados (no existen en el corpus), citados de memoria o atribuidos a la ley equivocada.'],
+  ['De memoria', 'La parte de las citas sin respaldo que son artículos reales, pero que el LLM citó sin tenerlos en el contexto.'],
+  ['Seg/preg', 'Segundos promedio por pregunta: búsqueda, respuesta y juez.'],
+];
+const PARES = [
+  ['A','B','Filtro viejo','¿Qué hace el filtro, en la versión de prod?'],
+  ['B','B2','Arreglo del filtro','La misma configuración con el filtro viejo y con el corregido.'],
+  ['A','B2','Filtro corregido','¿Qué hace el filtro corregido contra no tener filtro?'],
+  ['B2','G2','Descomponer por delito','Agrega «descomponer por delito» (+3 chunks por cada conducta extra).'],
+  ['G2','C2','Solo remisiones','Lo único que cambia es seguir las remisiones entre artículos.'],
+  ['C2','D2','Prompt tlacua-v1-penas','Lo único que cambia es el prompt: penal-original-v1 → tlacua-v1-penas.'],
+  ['C','D','tlacua-v1-penas (filtro viejo)','Lo mismo, con el filtro viejo.'],
+  ['D','E','tlacua-secuencia-y-penas','tlacua-v1-penas → tlacua-secuencia-y-penas, con el filtro viejo.'],
+];
+const $ = id => document.getElementById(id);
+const pc = x => x == null ? '—' : (x*100).toFixed(1);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const row = (sid, c) => DATA.tabla.find(t => t.set === +sid && t.cfg === c);
+
+function toggler(tr, html){
+  tr.addEventListener('click', () => {
+    const next = tr.nextElementSibling;
+    if(next && next.classList.contains('det')){ next.remove(); tr.classList.remove('open'); return; }
+    const d = document.createElement('tr'); d.className = 'det';
+    d.innerHTML = `<td colspan="${tr.children.length}">${html()}</td>`;
+    tr.after(d); tr.classList.add('open');
+  });
+}
+
+// Configuraciones
+(function(){
+  const t = $('t-cfg');
+  t.innerHTML = '<tr><th>Config</th><th>Filtro por estado</th><th>Descomponer por delito</th><th>Remisiones</th><th>Prompt</th></tr>';
+  for(const c of ORD){
+    const x = CFG[c], tr = document.createElement('tr'); tr.className = 'click';
+    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${c}</span></td><td>${x.filtro}</td><td>${x.delito}</td><td>${x.rem}</td><td>${esc(x.prompt)}</td>`;
+    t.appendChild(tr);
+    toggler(tr, () => `${esc(x.para)}<div class="mut" style="margin-top:6px">Score medio: ` +
+      [3,13,14,12].map(s => `${SETS[s].nombre.split(' · ')[0]} <b>${pc(row(s,c).media)}</b>`).join(' · ') + '</div>');
+  }
+})();
+
+// Resultados por set
+let SET = 3;
+function renderSet(){
+  document.querySelectorAll('#set-tabs button').forEach(b => b.classList.toggle('on', +b.dataset.s === SET));
+  $('set-desc').textContent = SETS[SET].desc;
+  const rows = ORD.map(c => row(SET, c)), best = Math.max(...rows.map(r => r.media));
+  const t = $('t-res');
+  t.innerHTML = '<tr><th>Config</th><th class="n">Rep 1</th><th class="n">Rep 2</th><th class="n">Media</th><th class="barcell">Media e IC 95 %</th><th class="n">IC 95 %</th><th class="n">Otro estado</th></tr>';
+  for(const r of rows){
+    const tr = document.createElement('tr'); tr.className = 'click';
+    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${r.cfg}</span></td>
+      <td class="n">${pc(r.scores[0])}</td><td class="n">${pc(r.scores[1])}</td>
+      <td class="n ${r.media === best ? 'best' : ''}">${pc(r.media)}</td>
+      <td class="barcell"><div class="bar"><i style="left:0;width:${r.media*100}%"></i><s style="left:${r.ic[0]*100}%;width:${(r.ic[1]-r.ic[0])*100}%"></s></div></td>
+      <td class="n mut">${pc(r.ic[0])}–${pc(r.ic[1])}</td><td class="n">${pc(r.otro)}</td>`;
+    t.appendChild(tr);
+    toggler(tr, () => {
+      const x = CFG[r.cfg], [a, b] = r.runs;
+      const m = (v, k) => `<div class="met"><b>${v}</b><span>${k}</span></div>`;
+      return `<div>${esc(x.para)} <span class="mut">Filtro: ${x.filtro} · descomponer por delito: ${x.delito} · remisiones: ${x.rem} · prompt: ${esc(x.prompt)}</span></div>
+        <div class="grid2">${m(pc(r.must), 'Must presentes')}${m(pc(r.pass), 'Pasa')}${m(pc(r.recall), 'Recall del buscador')}
+          ${m(pc(r.otro), 'Cita otro estado')}${m(pc(r.unsup), 'Citas sin respaldo')}${m(pc(r.memoria), 'Citas de memoria')}
+          ${m(r.seg.toFixed(1) + ' s', 'Segundos por pregunta')}${m(r.n, 'Preguntas')}</div>
+        <div class="links">
+          <a href="/benchmark?set=${SET}&corrida=${a}">Abrir corrida #${a} (rep 1) ↗</a>
+          <a href="/benchmark?set=${SET}&corrida=${b}">Abrir corrida #${b} (rep 2) ↗</a>
+          <a href="/benchmark?set=${SET}&vista=comparar&comparar=${a},${b}">Comparar las dos, pregunta por pregunta ↗</a>
+        </div>`;
+    });
+  }
+}
+(function(){
+  const tabs = $('set-tabs');
+  for(const s of [3,13,14,12]){
+    const b = document.createElement('button'); b.dataset.s = s; b.textContent = `${SETS[s].nombre} (${SETS[s].n})`;
+    b.onclick = () => { SET = s; renderSet(); }; tabs.appendChild(b);
+  }
+  renderSet();
+})();
+
+// Comparaciones pareadas
+(function(){
+  const t = $('t-pares');
+  t.innerHTML = '<tr><th>Cambio</th><th>Qué mide</th>' + [3,13,14,12].map(s => `<th class="n">Set ${s}</th>`).join('') + '</tr>';
+  for(const [a, b, nombre, que] of PARES){
+    const tr = document.createElement('tr'); tr.className = 'click';
+    const cells = [3,13,14,12].map(s => {
+      const p = DATA.pares.find(x => x.set === s && x.a === a && x.b === b);
+      const sig = p.ic[0] > 0 || p.ic[1] < 0, cls = sig ? (p.dif > 0 ? 'pos' : 'neg') : '';
+      const f = v => (v >= 0 ? '+' : '') + (v*100).toFixed(1);
+      return `<td class="n"><span class="${cls}">${f(p.dif)}</span><br><small>(${f(p.ic[0])} a ${f(p.ic[1])})</small></td>`;
+    }).join('');
+    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${a}</span> → <span class="cfg">${b}</span></td><td>${esc(nombre)}</td>${cells}`;
+    t.appendChild(tr);
+    toggler(tr, () => `${esc(que)}<div class="mut" style="margin-top:4px"><b>${a}:</b> ${esc(CFG[a].para)}<br><b>${b}:</b> ${esc(CFG[b].para)}</div>
+      <div class="mut" style="margin-top:4px">La diferencia está en puntos de score (${b} menos ${a}): positiva = ${b} es mejor.</div>`);
+  }
+})();
+
+// Definiciones
+$('defs').innerHTML = DEFS.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+</script>
+</body>
+</html>

@@ -1402,6 +1402,28 @@ def bench_editor():
     return FileResponse(STATIC / 'bench_editor.html', headers={'Cache-Control': 'no-store'})
 
 
+# Informes del benchmark (🧪 Benchmark → 📑 Informes): páginas fijas en static/informes/, generadas desde
+# 06_evaluation (p. ej. matriz_4sets_2026-10-21/generar_informe.py). Lista en static/informes/index.json.
+INFORMES = STATIC / 'informes'
+
+
+@app.get('/api/bench/informes')
+def bench_informes(request: Request):
+    if not can_ingest(current_email(request)):
+        return JSONResponse({'error': 'sin permiso'}, status_code=403)
+    return json.loads((INFORMES / 'index.json').read_text()) if (INFORMES / 'index.json').exists() else []
+
+
+@app.get('/benchmark/informe/{slug}')
+def bench_informe(slug: str, request: Request):
+    if not can_ingest(current_email(request)):
+        return JSONResponse({'error': 'sin permiso'}, status_code=403)
+    f = INFORMES / f'{slug}.html'
+    if not re.fullmatch(r'[a-z0-9-]+', slug) or not f.exists():
+        return JSONResponse({'error': 'no existe ese informe'}, status_code=404)
+    return FileResponse(f, headers={'Cache-Control': 'no-store'})
+
+
 @app.get('/preguntar')
 def preguntar():
     return FileResponse(STATIC / 'preguntar.html', headers={'Cache-Control': 'no-store'})

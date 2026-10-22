@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Matriz de configuraciones</title>
+<style>
+ :root{color-scheme:light dark;
+   --bg:#0f1115;--panel:#171a21;--panel2:#1d212b;--line:#2a2f3a;--txt:#e6e6e6;--mut:#9aa4b2;--acc:#3b82f6;
+   --good:#22c55e;--bad:#ef4444;--warn:#f59e0b;--bar:#3b82f6}
+ @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+   --bg:#f7f8fa;--panel:#fff;--panel2:#f0f2f5;--line:#dde1e7;--txt:#1b1f27;--mut:#5b6573;--acc:#2563eb;
+   --good:#15803d;--bad:#b91c1c;--warn:#b45309;--bar:#2563eb}}
+ :root[data-theme="dark"]{--bg:#0f1115;--panel:#171a21;--panel2:#1d212b;--line:#2a2f3a;--txt:#e6e6e6;--mut:#9aa4b2;--acc:#3b82f6}
+ *{box-sizing:border-box}
+ body{font:15px/1.55 system-ui,sans-serif;margin:0;background:var(--bg);color:var(--txt)}
+ header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+ header a{color:var(--acc);text-decoration:none;font-size:14px}
+ header h1{font-size:17px;margin:0}
+ main{max-width:1080px;margin:0 auto;padding:8px 16px 60px}
+ h2{font-size:18px;margin:34px 0 8px}
+ h3{font-size:15px;margin:18px 0 6px}
+ p,li{color:var(--txt)} .mut{color:var(--mut)} small{color:var(--mut)}
+ a{color:var(--acc)}
+ .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+ .key{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+ .key .box{margin:0} .key b{display:block;font-size:14px;margin-bottom:4px}
+ .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+ table{border-collapse:collapse;width:100%;font-size:14px}
+ th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+ th{background:var(--panel2);font-weight:600;white-space:nowrap;font-size:13px}
+ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+ tr.click{cursor:pointer} tr.click:hover td{background:var(--panel2)}
+ tr.open td{background:var(--panel2)}
+ tr.det td{background:var(--bg);padding:12px 14px}
+ .cfg{display:inline-block;min-width:30px;text-align:center;font-weight:700;border-radius:6px;padding:1px 6px;background:var(--panel2);border:1px solid var(--line)}
+ .chev{color:var(--mut);display:inline-block;width:14px;transition:transform .15s}
+ tr.open .chev{transform:rotate(90deg)}
+ .barcell{min-width:150px}
+ .bar{position:relative;height:16px;background:var(--panel2);border-radius:4px;overflow:hidden}
+ .bar i{position:absolute;top:0;bottom:0;background:var(--bar);opacity:.85;border-radius:4px}
+ .bar s{position:absolute;top:2px;bottom:2px;border-left:2px solid var(--txt);border-right:2px solid var(--txt);opacity:.5;text-decoration:none}
+ .best{color:var(--good);font-weight:700}
+ .pos{color:var(--good);font-weight:700} .neg{color:var(--bad);font-weight:700}
+ .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+ .tabs button{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+ .tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+ .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
+ .met{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+ .met b{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+ .met span{font-size:12px;color:var(--mut)}
+ .links a{display:inline-block;margin:6px 10px 0 0;font-size:14px}
+ dl.defs dt{font-weight:700;margin-top:10px} dl.defs dd{margin:2px 0 0 0;color:var(--txt)}
+ .tag{font-size:12px;border-radius:4px;padding:1px 6px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+ .ok{color:var(--good)} .x{color:var(--bad)}
+ details{margin:8px 0} summary{cursor:pointer;color:var(--acc)}
+ @media (max-width:640px){ body{font-size:14px} th,td{padding:7px 8px} .barcell{min-width:110px} }
+</style>
+</head>
+<body>
+<header>
+  <a href="/benchmark?vista=informes">← Benchmark · Informes</a>
+  <h1>Matriz de configuraciones · 21 de octubre de 2026</h1>
+</header>
+<main>
+
+<p class="mut">72 corridas del benchmark (#107–#178): 9 configuraciones × 4 sets × 2 repeticiones. El modelo que responde y el juez son el mismo, Gemma-4-4B-8b. Toca cualquier fila para ver su detalle.</p>
+
+<div class="key">
+  <div class="box"><b>✅ El filtro corregido funciona</b>Quita las citas a otro estado (de 21–25 % a 0 %) y ya no empeora las preguntas generales: el set 3 vuelve a 90 %, igual que sin filtro.</div>
+  <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14 («¿cuándo pedir el estado?»). Hay que revisarlo antes de la ronda 2.</div>
+  <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes. Las remisiones ayudan un poco en el set 14 (+5) y restan un poco en los sets 3 y 13 (−2).</div>
+  <div class="box"><b>📏 Ruido</b>La misma configuración cambia hasta 6 puntos entre repeticiones (sets 13 y 14). Diferencias menores a ~5 puntos no son concluyentes.</div>
+</div>
+
+<h2>Qué se probó</h2>
+<p>Todas las configuraciones tienen la misma base, la de la corrida #102 (la del estudio): buscador híbrido (vectores + BM25), los 10 primeros resultados del buscador + sus chunks vecinos, HyDE (el LLM escribe una respuesta hipotética para buscar con ella) y «descomponer» (el LLM divide la pregunta en sub-preguntas). Cada letra activa o desactiva algunas opciones. El «2» quiere decir «con el filtro corregido», no «repetición 2».</p>
+<div class="scroll"><table id="t-cfg"></table></div>
+
+<h2>El filtro por estado: qué hace y qué cambió</h2>
+<div class="box">
+<p style="margin-top:0"><b>Qué es.</b> Un paso <b>antes de buscar</b>. Un LLM lee la pregunta y decide qué códigos puede ver el buscador. También le deja una instrucción al LLM que responde. Existe porque en la ronda 1 del estudio, si la persona no decía dónde ocurrieron los hechos, el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba.</p>
+<p><b>Cómo funciona:</b></p>
+<ol>
+  <li>El LLM del filtro anota los <b>lugares</b> que menciona la pregunta y su estado («Toluca» → Estado de México); si cada lugar es <b>donde ocurrieron los hechos</b> o solo donde vive o trabaja la persona; y el <b>tipo de asunto</b>: delito común, delito federal, ley general, procedimiento u otro.</li>
+  <li>El buscador ve <b>siempre</b> las leyes nacionales y la doctrina (CNPP, leyes generales, libros de doctrina); además, <b>solo</b> los códigos de los estados donde ocurrieron los hechos, y el Código Penal Federal (CPF) solo en ciertos casos.</li>
+  <li>El LLM que responde recibe una instrucción, por ejemplo: «no dijo el estado: pregúntalo y no cites códigos estatales».</li>
+</ol>
+<p><b>Qué cambió en la versión corregida</b> (todavía no está en prod):</p>
+<ul>
+  <li><b>El CPF.</b> Antes solo entraba si el LLM decía «delito federal», incluso cuando la persona lo pedía por nombre. Ahora también entra si la pregunta lo nombra: «Código Penal Federal», «CPF», «ámbito federal», «fuero federal». Lo detecta una regex, sin LLM.</li>
+  <li><b>Las preguntas teóricas</b> («¿qué es la tentativa?»). Antes se trataban como un caso al que le falta el estado: el filtro quitaba los códigos estatales y pedía el estado. Ahora el LLM del filtro marca si la pregunta es teórica, y en ese caso el buscador ve todos los códigos y no se pide el estado.</li>
+  <li><b>«México» como país.</b> Una regla para que «¿puedo denunciar en México?» no se lea como «Ciudad de México».</li>
+</ul>
+</div>
+<div class="scroll"><table>
+  <tr><th>Pregunta</th><th>Filtro viejo: qué ve el buscador</th><th>Filtro corregido</th></tr>
+  <tr><td>«Me robaron el celular en Toluca»</td><td>Edomex + nacionales</td><td>igual</td></tr>
+  <tr><td>«Me robaron el celular» (sin lugar)</td><td>solo nacionales; pide el estado</td><td>igual</td></tr>
+  <tr><td>«¿Qué pena tiene el lavado de dinero?»</td><td>CPF + nacionales</td><td>igual</td></tr>
+  <tr><td>«En el Código Penal Federal, ¿cómo se tipifica el estupro?»</td><td class="x">solo nacionales: sin el CPF, y pide el estado</td><td class="ok">CPF + nacionales; no pide estado</td></tr>
+  <tr><td>«Compara la violación en la CDMX, el Edomex y el CPF»</td><td class="x">CDMX + Edomex + nacionales: sin el CPF</td><td class="ok">CDMX + Edomex + CPF + nacionales</td></tr>
+  <tr><td>«¿Qué es la tentativa punible?»</td><td class="x">solo nacionales; pide el estado</td><td class="ok">todos los códigos; no pide estado</td></tr>
+</table></div>
+<p class="mut">Validación del filtro corregido con el LLM real: detección de lugar 86/86 en 5 corridas; clasificación del tipo 39/44 (igual que el filtro viejo); 12/12 frases nuevas escritas para esta prueba; ninguna de las 31 preguntas del set 13 se marcó como teórica.</p>
+
+<h2>Resultados por set</h2>
+<div class="tabs" id="set-tabs"></div>
+<p id="set-desc" class="mut"></p>
+<div class="scroll"><table id="t-res"></table></div>
+<p class="mut" style="font-size:13px">La barra es la media; las marcas verticales, su intervalo de confianza de 95 %. En verde, la mejor media del set.</p>
+
+<h2>Comparaciones pareadas</h2>
+<p>Cada pregunta se compara contra sí misma en las dos configuraciones (promedio de las dos repeticiones). Así, la diferencia no depende de qué preguntas tiene el set. Entre paréntesis está el intervalo de confianza de 95 %. <b>En color:</b> el intervalo no incluye el 0, así que la diferencia probablemente no es ruido. El set 12 tiene solo 3 preguntas: sus intervalos no son confiables.</p>
+<div class="scroll"><table id="t-pares"></table></div>
+
+<h2>Cómo leer las columnas</h2>
+<div class="box"><dl class="defs" id="defs"></dl></div>
+
+<h2>Limitaciones</h2>
+<ul>
+  <li>El juez es el mismo modelo que responde. Falta medir qué tanto coincide con una persona abogada; Karen puede calificar a mano una muestra de respuestas.</li>
+  <li>Solo hay 2 repeticiones por configuración: alcanzan para ver el ruido, no para estimar bien una desviación estándar.</li>
+  <li>El set 12 tiene 3 preguntas; cada una pesa un tercio del score.</li>
+  <li>El set 3 se recalificó el 21 de octubre: se quitaron 11 criterios duplicados y se corrigió la pregunta sobre la prescripción en el CPF (art. 107 Bis). Todos los scores del set 3 de esta página ya usan los criterios corregidos.</li>
+  <li>La configuración E (tlacua-secuencia-y-penas) solo se corrió con el filtro viejo: compárala con D, no con D2.</li>
+</ul>
+</main>
+
+<script>
+const DATA = {"tabla": [{"set": 3, "cfg": "A", "runs": [109, 125], "scores": [0.8966, 0.9144], "media": 0.9055, "ic": [0.8684, 0.94], "n": 50, "recall": 0.9062, "otro": 0.0173, "must": 0.9517, "pass": 0.8, "seg": 10.3, "unsup": 0.1126, "memoria": 0.1034}, {"set": 3, "cfg": "B", "runs": [113, 129], "scores": [0.8062, 0.805], "media": 0.8056, "ic": [0.7226, 0.8768], "n": 50, "recall": 0.675, "otro": 0.0, "must": 0.829, "pass": 0.62, "seg": 12.15, "unsup": 0.2158, "memoria": 0.2117}, {"set": 3, "cfg": "B2", "runs": [147, 163], "scores": [0.9002, 0.8902], "media": 0.8952, "ic": [0.8528, 0.9324], "n": 50, "recall": 0.9, "otro": 0.0, "must": 0.932, "pass": 0.77, "seg": 10.8, "unsup": 0.0998, "memoria": 0.0867}, {"set": 3, "cfg": "C", "runs": [117, 133], "scores": [0.7758, 0.7754], "media": 0.7756, "ic": [0.6994, 0.8468], "n": 50, "recall": 0.675, "otro": 0.0, "must": 0.8026, "pass": 0.55, "seg": 12.95, "unsup": 0.211, "memoria": 0.211}, {"set": 3, "cfg": "C2", "runs": [155, 171], "scores": [0.8958, 0.8773], "media": 0.8866, "ic": [0.8472, 0.9233], "n": 50, "recall": 0.9, "otro": 0.0, "must": 0.9342, "pass": 0.75, "seg": 12.75, "unsup": 0.1137, "memoria": 0.083}, {"set": 3, "cfg": "D", "runs": [121, 137], "scores": [0.7783, 0.8044], "media": 0.7913, "ic": [0.7188, 0.8537], "n": 50, "recall": 0.6875, "otro": 0.0, "must": 0.7916, "pass": 0.56, "seg": 13.05, "unsup": 0.092, "memoria": 0.092}, {"set": 3, "cfg": "D2", "runs": [159, 175], "scores": [0.8949, 0.9034], "media": 0.8992, "ic": [0.8608, 0.9335], "n": 50, "recall": 0.9, "otro": 0.0, "must": 0.9342, "pass": 0.76, "seg": 13.0, "unsup": 0.0418, "memoria": 0.0383}, {"set": 3, "cfg": "E", "runs": [141, 145], "scores": [0.781, 0.7817], "media": 0.7814, "ic": [0.7082, 0.8453], "n": 50, "recall": 0.6937, "otro": 0.0, "must": 0.7741, "pass": 0.45, "seg": 13.2, "unsup": 0.1152, "memoria": 0.1085}, {"set": 3, "cfg": "G2", "runs": [151, 167], "scores": [0.9013, 0.9068], "media": 0.904, "ic": [0.8708, 0.9354], "n": 50, "recall": 0.8875, "otro": 0.0, "must": 0.9408, "pass": 0.76, "seg": 12.85, "unsup": 0.0576, "memoria": 0.0508}, {"set": 12, "cfg": "A", "runs": [110, 126], "scores": [0.2854, 0.2548], "media": 0.2701, "ic": [0.0949, 0.3636], "n": 3, "recall": 0.5, "otro": 0.5, "must": 0.3611, "pass": 0.0, "seg": 17.2, "unsup": 0.0556, "memoria": 0.0}, {"set": 12, "cfg": "B", "runs": [114, 130], "scores": [0.3495, 0.3216], "media": 0.3356, "ic": [0.2844, 0.3889], "n": 3, "recall": 0.5769, "otro": 0.0, "must": 0.4028, "pass": 0.0, "seg": 18.6, "unsup": 0.0, "memoria": 0.0}, {"set": 12, "cfg": "B2", "runs": [150, 166], "scores": [0.3206, 0.2896], "media": 0.3051, "ic": [0.2672, 0.3333], "n": 3, "recall": 0.6154, "otro": 0.0, "must": 0.375, "pass": 0.0, "seg": 16.65, "unsup": 0.0, "memoria": 0.0}, {"set": 12, "cfg": "C", "runs": [118, 134], "scores": [0.4067, 0.3725], "media": 0.3896, "ic": [0.3636, 0.4259], "n": 3, "recall": 0.7692, "otro": 0.0, "must": 0.4583, "pass": 0.0, "seg": 21.55, "unsup": 0.0, "memoria": 0.0}, {"set": 12, "cfg": "C2", "runs": [158, 174], "scores": [0.4008, 0.3125], "media": 0.3567, "ic": [0.3276, 0.4091], "n": 3, "recall": 0.7692, "otro": 0.0, "must": 0.4305, "pass": 0.0, "seg": 21.55, "unsup": 0.0, "memoria": 0.0}, {"set": 12, "cfg": "D", "runs": [122, 138], "scores": [0.6959, 0.6881], "media": 0.692, "ic": [0.6207, 0.8257], "n": 3, "recall": 0.7692, "otro": 0.0, "must": 0.6805, "pass": 0.0, "seg": 22.8, "unsup": 0.0, "memoria": 0.0}, {"set": 12, "cfg": "D2", "runs": [162, 178], "scores": [0.6272, 0.6326], "media": 0.6299, "ic": [0.6061, 0.6724], "n": 3, "recall": 0.7692, "otro": 0.0, "must": 0.6111, "pass": 0.0, "seg": 22.35, "unsup": 0.0, "memoria": 0.0}, {"set": 12, "cfg": "E", "runs": [142, 146], "scores": [0.5616, 0.616], "media": 0.5888, "ic": [0.574, 0.6061], "n": 3, "recall": 0.7692, "otro": 0.0, "must": 0.625, "pass": 0.0, "seg": 22.85, "unsup": 0.1111, "memoria": 0.1111}, {"set": 12, "cfg": "G2", "runs": [154, 170], "scores": [0.3133, 0.291], "media": 0.3021, "ic": [0.2727, 0.319], "n": 3, "recall": 0.6923, "otro": 0.0, "must": 0.3611, "pass": 0.0, "seg": 20.8, "unsup": 0.0, "memoria": 0.0}, {"set": 13, "cfg": "A", "runs": [107, 123], "scores": [0.6452, 0.7097], "media": 0.6774, "ic": [0.5565, 0.7903], "n": 31, "recall": 0.8226, "otro": 0.2097, "must": 0.7903, "pass": 0.6935, "seg": 9.5, "unsup": 0.0679, "memoria": 0.0318}, {"set": 13, "cfg": "B", "runs": [111, 127], "scores": [0.7742, 0.7258], "media": 0.75, "ic": [0.6532, 0.8468], "n": 31, "recall": 0.9032, "otro": 0.0, "must": 0.8871, "pass": 0.8871, "seg": 10.95, "unsup": 0.0824, "memoria": 0.0281}, {"set": 13, "cfg": "B2", "runs": [148, 164], "scores": [0.7903, 0.7903], "media": 0.7903, "ic": [0.6935, 0.879], "n": 31, "recall": 0.9516, "otro": 0.0, "must": 0.9355, "pass": 0.9355, "seg": 10.0, "unsup": 0.0627, "memoria": 0.044}, {"set": 13, "cfg": "C", "runs": [115, 131], "scores": [0.7581, 0.7258], "media": 0.7419, "ic": [0.6452, 0.8306], "n": 31, "recall": 0.9355, "otro": 0.0, "must": 0.871, "pass": 0.871, "seg": 11.7, "unsup": 0.0707, "memoria": 0.0069}, {"set": 13, "cfg": "C2", "runs": [156, 172], "scores": [0.7097, 0.7742], "media": 0.7419, "ic": [0.6613, 0.8226], "n": 31, "recall": 0.9516, "otro": 0.0, "must": 0.9194, "pass": 0.9032, "seg": 11.9, "unsup": 0.0858, "memoria": 0.0059}, {"set": 13, "cfg": "D", "runs": [119, 135], "scores": [0.8226, 0.8387], "media": 0.8306, "ic": [0.75, 0.9032], "n": 31, "recall": 0.9194, "otro": 0.0, "must": 0.9194, "pass": 0.9194, "seg": 12.25, "unsup": 0.0134, "memoria": 0.0066}, {"set": 13, "cfg": "D2", "runs": [160, 176], "scores": [0.8145, 0.8226], "media": 0.8185, "ic": [0.7581, 0.879], "n": 31, "recall": 0.9516, "otro": 0.0, "must": 0.9194, "pass": 0.9032, "seg": 12.25, "unsup": 0.0134, "memoria": 0.0134}, {"set": 13, "cfg": "E", "runs": [139, 143], "scores": [0.8145, 0.871], "media": 0.8427, "ic": [0.7863, 0.8992], "n": 31, "recall": 0.9355, "otro": 0.0, "must": 0.9194, "pass": 0.9194, "seg": 12.3, "unsup": 0.0069, "memoria": 0.0069}, {"set": 13, "cfg": "G2", "runs": [152, 168], "scores": [0.7581, 0.7742], "media": 0.7661, "ic": [0.6935, 0.8387], "n": 31, "recall": 0.9677, "otro": 0.0, "must": 0.9194, "pass": 0.9194, "seg": 11.55, "unsup": 0.084, "memoria": 0.0138}, {"set": 14, "cfg": "A", "runs": [108, 124], "scores": [0.3713, 0.4123], "media": 0.3918, "ic": [0.2844, 0.5], "n": 57, "recall": 0.7188, "otro": 0.25, "must": 0.6061, "pass": 0.3597, "seg": 9.55, "unsup": 0.1141, "memoria": 0.1099}, {"set": 14, "cfg": "B", "runs": [112, 128], "scores": [0.8012, 0.8158], "media": 0.8085, "ic": [0.7208, 0.8816], "n": 57, "recall": 0.8229, "otro": 0.0, "must": 0.8712, "pass": 0.8158, "seg": 11.25, "unsup": 0.1223, "memoria": 0.0992}, {"set": 14, "cfg": "B2", "runs": [149, 165], "scores": [0.8538, 0.807], "media": 0.8304, "ic": [0.75, 0.9035], "n": 57, "recall": 0.8229, "otro": 0.0, "must": 0.8788, "pass": 0.8246, "seg": 9.95, "unsup": 0.1551, "memoria": 0.1144}, {"set": 14, "cfg": "C", "runs": [116, 132], "scores": [0.8933, 0.9035], "media": 0.8984, "ic": [0.8333, 0.9503], "n": 57, "recall": 0.9375, "otro": 0.0, "must": 0.9469, "pass": 0.886, "seg": 11.9, "unsup": 0.187, "memoria": 0.1526}, {"set": 14, "cfg": "C2", "runs": [157, 173], "scores": [0.9123, 0.8772], "media": 0.8947, "ic": [0.8377, 0.943], "n": 57, "recall": 0.9584, "otro": 0.0, "must": 0.9621, "pass": 0.9123, "seg": 11.85, "unsup": 0.1894, "memoria": 0.1572}, {"set": 14, "cfg": "D", "runs": [120, 136], "scores": [0.7939, 0.8158], "media": 0.8048, "ic": [0.7193, 0.8838], "n": 57, "recall": 0.9479, "otro": 0.0, "must": 0.7727, "pass": 0.7983, "seg": 12.2, "unsup": 0.2409, "memoria": 0.2246}, {"set": 14, "cfg": "D2", "runs": [161, 177], "scores": [0.7368, 0.7281], "media": 0.7325, "ic": [0.636, 0.8289], "n": 57, "recall": 0.9167, "otro": 0.0, "must": 0.7046, "pass": 0.7106, "seg": 12.15, "unsup": 0.2377, "memoria": 0.2184}, {"set": 14, "cfg": "E", "runs": [140, 144], "scores": [0.7544, 0.7105], "media": 0.7325, "ic": [0.6404, 0.8202], "n": 57, "recall": 0.9583, "otro": 0.0, "must": 0.7122, "pass": 0.7105, "seg": 12.35, "unsup": 0.2423, "memoria": 0.2308}, {"set": 14, "cfg": "G2", "runs": [153, 169], "scores": [0.8333, 0.8538], "media": 0.8436, "ic": [0.7632, 0.9152], "n": 57, "recall": 0.8854, "otro": 0.0, "must": 0.9015, "pass": 0.8421, "seg": 11.65, "unsup": 0.1903, "memoria": 0.1666}], "pares": [{"set": 3, "a": "A", "b": "B", "dif": -0.0999, "ic": [-0.1666, -0.0445], "n": 50}, {"set": 3, "a": "B", "b": "B2", "dif": 0.0896, "ic": [0.0277, 0.1625], "n": 50}, {"set": 3, "a": "A", "b": "B2", "dif": -0.0103, "ic": [-0.0341, 0.0094], "n": 50}, {"set": 3, "a": "B2", "b": "G2", "dif": 0.0088, "ic": [-0.0203, 0.0414], "n": 50}, {"set": 3, "a": "G2", "b": "C2", "dif": -0.0175, "ic": [-0.0413, 0.004], "n": 50}, {"set": 3, "a": "C2", "b": "D2", "dif": 0.0126, "ic": [-0.0108, 0.0374], "n": 50}, {"set": 3, "a": "C", "b": "D", "dif": 0.0157, "ic": [-0.0169, 0.0532], "n": 50}, {"set": 3, "a": "D", "b": "E", "dif": -0.01, "ic": [-0.0314, 0.0121], "n": 50}, {"set": 13, "a": "A", "b": "B", "dif": 0.0726, "ic": [-0.0161, 0.1694], "n": 31}, {"set": 13, "a": "B", "b": "B2", "dif": 0.0403, "ic": [-0.0161, 0.0968], "n": 31}, {"set": 13, "a": "A", "b": "B2", "dif": 0.1129, "ic": [0.0, 0.2258], "n": 31}, {"set": 13, "a": "B2", "b": "G2", "dif": -0.0242, "ic": [-0.129, 0.0968], "n": 31}, {"set": 13, "a": "G2", "b": "C2", "dif": -0.0242, "ic": [-0.0968, 0.0403], "n": 31}, {"set": 13, "a": "C2", "b": "D2", "dif": 0.0766, "ic": [-0.0081, 0.1694], "n": 31}, {"set": 13, "a": "C", "b": "D", "dif": 0.0887, "ic": [-0.0081, 0.1855], "n": 31}, {"set": 13, "a": "D", "b": "E", "dif": 0.0121, "ic": [-0.0685, 0.0887], "n": 31}, {"set": 14, "a": "A", "b": "B", "dif": 0.4167, "ic": [0.3026, 0.5241], "n": 57}, {"set": 14, "a": "B", "b": "B2", "dif": 0.0219, "ic": [-0.0132, 0.057], "n": 57}, {"set": 14, "a": "A", "b": "B2", "dif": 0.4386, "ic": [0.3246, 0.5461], "n": 57}, {"set": 14, "a": "B2", "b": "G2", "dif": 0.0132, "ic": [-0.0439, 0.0746], "n": 57}, {"set": 14, "a": "G2", "b": "C2", "dif": 0.0512, "ic": [-0.0058, 0.117], "n": 57}, {"set": 14, "a": "C2", "b": "D2", "dif": -0.1623, "ic": [-0.2632, -0.0658], "n": 57}, {"set": 14, "a": "C", "b": "D", "dif": -0.0936, "ic": [-0.1703, -0.0234], "n": 57}, {"set": 14, "a": "D", "b": "E", "dif": -0.0724, "ic": [-0.1601, 0.0175], "n": 57}, {"set": 12, "a": "A", "b": "B", "dif": 0.0655, "ic": [-0.0303, 0.1896], "n": 3}, {"set": 12, "a": "B", "b": "B2", "dif": -0.0304, "ic": [-0.0741, 0.0], "n": 3}, {"set": 12, "a": "A", "b": "B2", "dif": 0.035, "ic": [-0.0371, 0.1724], "n": 3}, {"set": 12, "a": "B2", "b": "G2", "dif": -0.003, "ic": [-0.0606, 0.0517], "n": 3}, {"set": 12, "a": "G2", "b": "C2", "dif": 0.0545, "ic": [0.0086, 0.1364], "n": 3}, {"set": 12, "a": "C2", "b": "D2", "dif": 0.2732, "ic": [0.197, 0.3449], "n": 3}, {"set": 12, "a": "C", "b": "D", "dif": 0.3024, "ic": [0.2037, 0.4622], "n": 3}, {"set": 12, "a": "D", "b": "E", "dif": -0.1032, "ic": [-0.2197, -0.0345], "n": 3}]};
+const CFG = {
+  A:  {filtro:'no', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Línea base: el sistema sin los cambios de esta semana.'},
+  B:  {filtro:'viejo', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Efecto del filtro, en la versión que está hoy en prod.'},
+  C:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Todo lo nuevo junto: filtro + descomponer por delito + remisiones.'},
+  D:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como C, con el prompt tlacua-v1-penas (tlacua-v1 + una sección que pide dar las penas).'},
+  E:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'tlacua-secuencia-y-penas', para:'Como C, con el prompt tlacua-secuencia-y-penas (del 20 de octubre). Compárala con D.'},
+  B2: {filtro:'corregido', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Como B, con el filtro corregido. B → B2 mide el arreglo del filtro.'},
+  G2: {filtro:'corregido', delito:'sí', rem:'no', prompt:'penal-original-v1', para:'Como C2, pero sin remisiones. G2 → C2 mide solo el efecto de las remisiones.'},
+  C2: {filtro:'corregido', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Como C, con el filtro corregido.'},
+  D2: {filtro:'corregido', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como D, con el filtro corregido. C2 → D2 mide el prompt tlacua-v1-penas.'},
+};
+const ORD = ['A','B','C','D','E','B2','G2','C2','D2'];
+const SETS = {
+  3:  {nombre:'Set 3 · general', n:50, desc:'50 preguntas de delitos sexuales, parte general (dogmática) y CNPP. Las preguntas dicen qué ley quieren, o son teóricas. Es la prueba de regresión: el filtro no debería cambiar su score.'},
+  13: {nombre:'Set 13 · un estado', n:31, desc:'31 preguntas en lenguaje cotidiano que dicen un solo estado (CDMX, Querétaro, Edomex, Morelos). Mide si la respuesta usa solo el código de ese estado.'},
+  14: {nombre:'Set 14 · ¿pedir el estado?', n:57, desc:'57 preguntas: sin lugar (hay que pedir el estado), con lugar indirecto (dónde vive la persona), comparaciones, estados fuera del corpus y leyes nacionales (no hay que pedirlo).'},
+  12: {nombre:'Set 12 · casos de Karen', n:3, desc:'3 casos complejos con control de tipicidad, escritos por Karen. Con solo 3 preguntas, cada una pesa un tercio del score.'},
+};
+const DEFS = [
+  ['Score (rep 1 y rep 2)', 'El score de cada corrida. El juez revisa cada criterio de la pregunta (presente, parcial o ausente). El score es la suma ponderada de los criterios «must» y «should» cumplidos, menos los «must_not» violados, dividida entre el peso total de los «must» y «should». Se promedia sobre las preguntas y va de 0 a 100.'],
+  ['Media', 'El promedio de las dos repeticiones. Primero se promedia cada pregunta entre las dos corridas, y luego entre preguntas.'],
+  ['IC 95 %', 'El intervalo de confianza de la media, por bootstrap sobre las preguntas (2,000 remuestreos). Mide qué tanto cambiaría la media con otras preguntas del mismo tipo. No es la variación entre repeticiones: para eso, compara rep 1 contra rep 2.'],
+  ['Must', 'El porcentaje de criterios «must» que el juez marcó como presentes.'],
+  ['Pasa', 'El porcentaje de preguntas con todos los «must» presentes y ningún «must_not».'],
+  ['Recall', 'El porcentaje de los artículos que la pregunta necesita (los que nombran sus «must» de cita) que llegaron al contexto del LLM. Lo calcula un script, sin LLM. Mide al buscador, no la respuesta.'],
+  ['Otro estado', 'El porcentaje de respuestas que citan el código penal de un estado que no corresponde. Lo mide el verificador de citas (regex, sin LLM), solo en las preguntas donde aplica.'],
+  ['Citas sin respaldo', 'El porcentaje de los artículos citados que no están en el contexto: inventados (no existen en el corpus), citados de memoria o atribuidos a la ley equivocada.'],
+  ['De memoria', 'La parte de las citas sin respaldo que son artículos reales, pero que el LLM citó sin tenerlos en el contexto.'],
+  ['Seg/preg', 'Segundos promedio por pregunta: búsqueda, respuesta y juez.'],
+];
+const PARES = [
+  ['A','B','Filtro viejo','¿Qué hace el filtro, en la versión de prod?'],
+  ['B','B2','Arreglo del filtro','La misma configuración con el filtro viejo y con el corregido.'],
+  ['A','B2','Filtro corregido','¿Qué hace el filtro corregido contra no tener filtro?'],
+  ['B2','G2','Descomponer por delito','Agrega «descomponer por delito» (+3 chunks por cada conducta extra).'],
+  ['G2','C2','Solo remisiones','Lo único que cambia es seguir las remisiones entre artículos.'],
+  ['C2','D2','Prompt tlacua-v1-penas','Lo único que cambia es el prompt: penal-original-v1 → tlacua-v1-penas.'],
+  ['C','D','tlacua-v1-penas (filtro viejo)','Lo mismo, con el filtro viejo.'],
+  ['D','E','tlacua-secuencia-y-penas','tlacua-v1-penas → tlacua-secuencia-y-penas, con el filtro viejo.'],
+];
+const $ = id => document.getElementById(id);
+const pc = x => x == null ? '—' : (x*100).toFixed(1);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const row = (sid, c) => DATA.tabla.find(t => t.set === +sid && t.cfg === c);
+
+function toggler(tr, html){
+  tr.addEventListener('click', () => {
+    const next = tr.nextElementSibling;
+    if(next && next.classList.contains('det')){ next.remove(); tr.classList.remove('open'); return; }
+    const d = document.createElement('tr'); d.className = 'det';
+    d.innerHTML = `<td colspan="${tr.children.length}">${html()}</td>`;
+    tr.after(d); tr.classList.add('open');
+  });
+}
+
+// Configuraciones
+(function(){
+  const t = $('t-cfg');
+  t.innerHTML = '<tr><th>Config</th><th>Filtro por estado</th><th>Descomponer por delito</th><th>Remisiones</th><th>Prompt</th></tr>';
+  for(const c of ORD){
+    const x = CFG[c], tr = document.createElement('tr'); tr.className = 'click';
+    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${c}</span></td><td>${x.filtro}</td><td>${x.delito}</td><td>${x.rem}</td><td>${esc(x.prompt)}</td>`;
+    t.appendChild(tr);
+    toggler(tr, () => `${esc(x.para)}<div class="mut" style="margin-top:6px">Score medio: ` +
+      [3,13,14,12].map(s => `${SETS[s].nombre.split(' · ')[0]} <b>${pc(row(s,c).media)}</b>`).join(' · ') + '</div>');
+  }
+})();
+
+// Resultados por set
+let SET = 3;
+function renderSet(){
+  document.querySelectorAll('#set-tabs button').forEach(b => b.classList.toggle('on', +b.dataset.s === SET));
+  $('set-desc').textContent = SETS[SET].desc;
+  const rows = ORD.map(c => row(SET, c)), best = Math.max(...rows.map(r => r.media));
+  const t = $('t-res');
+  t.innerHTML = '<tr><th>Config</th><th class="n">Rep 1</th><th class="n">Rep 2</th><th class="n">Media</th><th class="barcell">Media e IC 95 %</th><th class="n">IC 95 %</th><th class="n">Otro estado</th></tr>';
+  for(const r of rows){
+    const tr = document.createElement('tr'); tr.className = 'click';
+    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${r.cfg}</span></td>
+      <td class="n">${pc(r.scores[0])}</td><td class="n">${pc(r.scores[1])}</td>
+      <td class="n ${r.media === best ? 'best' : ''}">${pc(r.media)}</td>
+      <td class="barcell"><div class="bar"><i style="left:0;width:${r.media*100}%"></i><s style="left:${r.ic[0]*100}%;width:${(r.ic[1]-r.ic[0])*100}%"></s></div></td>
+      <td class="n mut">${pc(r.ic[0])}–${pc(r.ic[1])}</td><td class="n">${pc(r.otro)}</td>`;
+    t.appendChild(tr);
+    toggler(tr, () => {
+      const x = CFG[r.cfg], [a, b] = r.runs;
+      const m = (v, k) => `<div class="met"><b>${v}</b><span>${k}</span></div>`;
+      return `<div>${esc(x.para)} <span class="mut">Filtro: ${x.filtro} · descomponer por delito: ${x.delito} · remisiones: ${x.rem} · prompt: ${esc(x.prompt)}</span></div>
+        <div class="grid2">${m(pc(r.must), 'Must presentes')}${m(pc(r.pass), 'Pasa')}${m(pc(r.recall), 'Recall del buscador')}
+          ${m(pc(r.otro), 'Cita otro estado')}${m(pc(r.unsup), 'Citas sin respaldo')}${m(pc(r.memoria), 'Citas de memoria')}
+          ${m(r.seg.toFixed(1) + ' s', 'Segundos por pregunta')}${m(r.n, 'Preguntas')}</div>
+        <div class="links">
+          <a href="/benchmark?set=${SET}&corrida=${a}">Abrir corrida #${a} (rep 1) ↗</a>
+          <a href="/benchmark?set=${SET}&corrida=${b}">Abrir corrida #${b} (rep 2) ↗</a>
+          <a href="/benchmark?set=${SET}&vista=comparar&comparar=${a},${b}">Comparar las dos, pregunta por pregunta ↗</a>
+        </div>`;
+    });
+  }
+}
+(function(){
+  const tabs = $('set-tabs');
+  for(const s of [3,13,14,12]){
+    const b = document.createElement('button'); b.dataset.s = s; b.textContent = `${SETS[s].nombre} (${SETS[s].n})`;
+    b.onclick = () => { SET = s; renderSet(); }; tabs.appendChild(b);
+  }
+  renderSet();
+})();
+
+// Comparaciones pareadas
+(function(){
+  const t = $('t-pares');
+  t.innerHTML = '<tr><th>Cambio</th><th>Qué mide</th>' + [3,13,14,12].map(s => `<th class="n">Set ${s}</th>`).join('') + '</tr>';
+  for(const [a, b, nombre, que] of PARES){
+    const tr = document.createElement('tr'); tr.className = 'click';
+    const cells = [3,13,14,12].map(s => {
+      const p = DATA.pares.find(x => x.set === s && x.a === a && x.b === b);
+      const sig = p.ic[0] > 0 || p.ic[1] < 0, cls = sig ? (p.dif > 0 ? 'pos' : 'neg') : '';
+      const f = v => (v >= 0 ? '+' : '') + (v*100).toFixed(1);
+      return `<td class="n"><span class="${cls}">${f(p.dif)}</span><br><small>(${f(p.ic[0])} a ${f(p.ic[1])})</small></td>`;
+    }).join('');
+    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${a}</span> → <span class="cfg">${b}</span></td><td>${esc(nombre)}</td>${cells}`;
+    t.appendChild(tr);
+    toggler(tr, () => `${esc(que)}<div class="mut" style="margin-top:4px"><b>${a}:</b> ${esc(CFG[a].para)}<br><b>${b}:</b> ${esc(CFG[b].para)}</div>
+      <div class="mut" style="margin-top:4px">La diferencia está en puntos de score (${b} menos ${a}): positiva = ${b} es mejor.</div>`);
+  }
+})();
+
+// Definiciones
+$('defs').innerHTML = DEFS.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+</script>
+</body>
+</html>

@@ -501,6 +501,7 @@
      <button data-sub="run" class="active">▶ Correr y resultados</button>
      <button data-sub="questions">📝 Preguntas <span id="bench-qcount" class="pill"></span></button>
      <button data-sub="prompts" title="Nombre de cada system prompt usado en las corridas">🗂️ Prompts</button>
+     <button data-sub="informes" title="Resúmenes de varias corridas, con tablas y explicación">📑 Informes</button>
      <button data-sub="compare" hidden>📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
    </div>
  </div>
@@ -608,6 +609,13 @@
      <button class="ghost" id="bench-pdiff" disabled title="Marca ☑ dos prompts">🔀 Comparar textos (☑ 2)</button>
      <button class="ghost" id="bench-preload" title="Recargar">↻</button></div>
    <div id="bench-prompts"></div>
+ </div>
+
+ <!-- 📑 Informes -->
+ <div id="bsub-informes" class="bsubpage" hidden>
+   <p class="muted" style="font-size:13px;margin-top:0">Resúmenes de varias corridas a la vez, con tablas, la explicación de cada
+     configuración y enlaces a cada corrida. No dependen del set elegido arriba.</p>
+   <div id="bench-informes"></div>
  </div>
 
  <div id="bsub-compare" class="bsubpage" hidden>

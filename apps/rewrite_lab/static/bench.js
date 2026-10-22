@@ -101,12 +101,13 @@ function diffStats(results){
 // ── Navegación ──────────────────────────────────────────────────────────────────
 // La URL refleja lo que se ve, para recargar o compartir el enlace:
 //   /benchmark?set=3&vista=preguntas · ?set=3&corrida=12 · ?set=3&vista=comparar&comparar=11,12
-const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', compare: 'comparar'};
+const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', informes: 'informes', compare: 'comparar'};
 function benchSub(name){
   BENCH.sub = name;
   document.querySelectorAll('.bsub button').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
-  for(const s of ['run','questions','prompts','compare']) $('bsub-'+s).hidden = (s!==name);
+  for(const s of ['run','questions','prompts','informes','compare']) $('bsub-'+s).hidden = (s!==name);
   if(name==='prompts') loadPrompts();
+  if(name==='informes') loadInformes();
   benchUrlSync();
 }
 function benchUrlSync(){
@@ -1028,6 +1029,16 @@ function ptagChip(r){
   return r.prompt_md5 ? `<span class="ptag none" title="Este system prompt aún no tiene nombre: ponlo en 🗂️ Prompts">sin etiqueta · ${esc(short(r.prompt_md5))}</span>` : '';
 }
 const checkedPrompts = () => [...document.querySelectorAll('.bp-cmp:checked')].map(c=>c.value);
+// 📑 Informes: páginas fijas en static/informes/ (lista en index.json), una por informe.
+async function loadInformes(){
+  const box = $('bench-informes');
+  const r = await fetch('/api/bench/informes');
+  const list = r.ok ? await r.json() : [];
+  box.innerHTML = list.length ? list.map(x => `<div class="bcard"><a href="/benchmark/informe/${esc(x.slug)}" style="font-weight:700;font-size:15px">${esc(x.titulo)} ↗</a>
+      <div class="muted" style="font-size:13px;margin-top:4px">${esc(x.resumen || '')}</div></div>`).join('')
+    : '<p class="muted">Todavía no hay informes.</p>';
+}
+
 async function loadPrompts(){
   try{ BENCH.prompts = await bjson('/api/bench/prompts'); }catch(e){ bmsg(esc(e.message), false); return; }
   const tagged = BENCH.prompts.filter(p=>p.tag);
