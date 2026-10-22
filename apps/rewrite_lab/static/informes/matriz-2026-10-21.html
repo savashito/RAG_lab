@@ -349,7 +349,17 @@
   <li><b>H1: pregunta en lugar de responder</b> (su sección «Interacción» pide preguntar antes de concluir). <b>No se sostiene:</b> las respuestas que sí citan hacen preguntas igual o más (80 %) que las que no (71 %), y tienen el mismo largo.</li>
   <li><b>H2: no tiene una sección obligatoria de fundamentos.</b> penal-original-v1 exige el apartado «Fundamento jurídico» y lo trae en el 100 % de sus respuestas; tlacua-v1-penas solo dice «Cita ordenamiento, artículo y fracción». De sus respuestas que no citan el artículo pedido, el 68 % no trae <b>ningún</b> número de artículo (de las que sí, 4 %). <b>Se sostiene en la observación.</b></li>
 </ul>
-<p id="causal-pendiente"><b>Prueba causal (corriendo):</b> tlacua-v1-penas tal cual, + sección obligatoria «Fundamento jurídico», y + además «no preguntes el estado si ya está determinado», en el set 14 con la configuración de la ronda 2 (con routing), 2 repeticiones. Los resultados se agregarán aquí.</p>
+<p id="causal"><b>Prueba causal (22 de octubre).</b> Set 14, configuración de la ronda 2 (la de la ronda 1, con routing) + filtro v3 + descomponer por delito + remisiones, 2 repeticiones. Lo único que cambia es el prompt:</p>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">a) tlacua-v1-penas</th><th class="n">b) a + «Fundamento jurídico» obligatorio</th><th class="n">c) b + «no preguntes el estado si ya está determinado o se comparan estados»</th></tr>
+  <tr><td>Score (rep 1 / rep 2 → media)</td><td class="n">86.8 / 80.1 → <b>83.5</b></td><td class="n">88.3 / 86.3 → <b>87.3</b></td><td class="n">94.2 / 90.1 → <b>92.1</b></td></tr>
+  <tr><td>Respuestas con sección «Fundamento»</td><td class="n">4 %</td><td class="n ok">100 %</td><td class="n ok">100 %</td></tr>
+  <tr><td>Cumple «Cita el art. …»</td><td class="n">81 %</td><td class="n">92 %</td><td class="n ok">95 %</td></tr>
+  <tr><td>Pide el estado de más</td><td class="n">5/32</td><td class="n">7/32</td><td class="n">4/32</td></tr>
+  <tr><td>Palabras por respuesta · tiempo de respuesta</td><td class="n">499 · 6.05 s</td><td class="n">515 · 6.24 s</td><td class="n">513 · 6.18 s</td></tr>
+</table></div>
+<p>Diferencias pareadas (pregunta por pregunta, IC 95 %): a → b <b>+3.8</b> (−1.8 a +9.9, no significativa); b → c <b>+4.8</b> (+0.9 a +8.8); a → c <b>+8.6</b> (+3.4 a +14.6). Corridas #193, #195–#199.</p>
+<p><b>Conclusión:</b> H2 se confirma en el mecanismo: con la instrucción, la sección «Fundamento» aparece en el 100 % de las respuestas y las citas suben de 81 % a 92 %; con las dos reglas, a 95 %, igual que penal-original-v1. Juntas suben el score 8.6 puntos, a un costo de +14 palabras y +0.1–0.2 s por respuesta. El control (a) sacó más que D·v2 en la matriz (83.5 contra 73.2) porque la configuración es otra (routing, filtro v3) y por ruido: estas tres versiones solo se comparan entre sí.</p>
 
 <h2 id="v3">7. El problema del v2, y el v3</h2>
 <div class="box">
