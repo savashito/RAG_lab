@@ -77,7 +77,7 @@
 
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#pordelito">¿Funciona por delito?</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -203,7 +203,7 @@
 <h2 id="probado">5. Qué se probó</h2>
 <p>Una <b>configuración</b> es una combinación de opciones (<a href="#opciones">sección 2</a>). Todas las configuraciones comparten una <b>base</b>, y cada una le agrega o cambia algo.</p>
 <div class="box">
-<p style="margin-top:0"><b>Base</b> = la configuración que usó el estudio con usuarios (corrida #102):</p>
+<p style="margin-top:0"><b>Base</b> = la configuración de la corrida #102. Es la del estudio con usuarios, <b>salvo el routing por código</b>: la ronda 1 lo tenía activado y la base no (se notó después de correr la matriz). La ronda 2 usará la configuración de la ronda 1, con routing.</p>
 <ul style="margin-bottom:0">
   <li><b>método híbrido</b>: busca por significado (embeddings de Qwen3-Embedding-0.6B) y por palabras exactas (BM25), y mezcla los resultados (<a href="#buscador">cómo funciona</a>);</li>
   <li><b>top-k 10</b>: entran al contexto los 10 primeros resultados del buscador;</li>
@@ -275,6 +275,41 @@
   <li><b>Costo:</b> +2.1 s por pregunta en promedio (sección 2).</li>
 </ul>
 <p><b>Conclusión: no hay evidencia de que mejore la calificación.</b> Mejora lo que llega al contexto en relatos con varias conductas, pero los sets tienen pocos relatos así (el set 12, el único diseñado para eso, tiene 3 casos). Para decidir hace falta un set con 15–20 relatos de varias conductas.</p>
+
+<h3 id="desc-sirve">¿Sirven descomponer y routing?</h3>
+<p>En la matriz, «descomponer» estuvo activo en todas las configuraciones, así que no se podía saber qué aporta. El 22 de octubre se corrieron tres versiones de B·v3 (filtro v3, penal-original-v1), iguales salvo esto, en los sets 3 y 14 con 2 repeticiones:</p>
+<div class="scroll"><table>
+  <tr><th>B·v3</th><th class="n">Set 3 · score (rep 1 / rep 2 → media)</th><th class="n">Set 3 · recall</th><th class="n">Set 14 · score</th><th class="n">Set 14 · recall</th></tr>
+  <tr><td><b>Con descomponer</b> (#179–#182)</td><td class="n">89.9 / 91.0 → <b>90.4</b></td><td class="n">92.5 %</td><td class="n">81.6 / 80.7 → <b>81.1</b></td><td class="n">80.2 %</td></tr>
+  <tr><td>Sin descomponer (#185, #186, #189, #190)</td><td class="n">89.6 / 90.8 → <b>90.2</b></td><td class="n">87.5 %</td><td class="n">81.9 / 83.9 → <b>82.9</b></td><td class="n">78.1 %</td></tr>
+  <tr><td>Routing en lugar de descomponer (#187, #188, #191, #192)</td><td class="n">88.0 / 89.7 → <b>88.8</b></td><td class="n">86.9 %</td><td class="n">80.7 / 81.4 → <b>81.1</b></td><td class="n">76.0 %</td></tr>
+</table></div>
+<p>En el score, las tres empatan (diferencias de −1.6 a +1.8, dentro del ruido). En el recall, descomponer trae 5 puntos más en el set 3 y 2 a 4 más en el set 14.</p>
+<p><b>Separando las preguntas comparativas.</b> Descomponer y routing están hechos para preguntas que comparan. Aquí, una pregunta es comparativa si <b>nombra dos o más códigos o estados</b> (lo detecta la regex del routing, sin LLM):</p>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">Con descomponer</th><th class="n">Sin descomponer</th><th class="n">Routing</th></tr>
+  <tr><td><b>Set 3 · comparativas (12)</b> · score</td><td class="n">91.6</td><td class="n">89.5</td><td class="n">83.3</td></tr>
+  <tr><td>Set 3 · comparativas · recall</td><td class="n ok">94 %</td><td class="n">84 %</td><td class="n">86 %</td></tr>
+  <tr><td>Set 3 · no comparativas (38) · score / recall</td><td class="n">90.1 / 92 %</td><td class="n">90.4 / 90 %</td><td class="n">90.6 / 88 %</td></tr>
+  <tr><td><b>Set 14 · comparativas (8)</b> · score</td><td class="n">78.1</td><td class="n">78.1</td><td class="n">82.3</td></tr>
+  <tr><td>Set 14 · comparativas · recall</td><td class="n">82 %</td><td class="n">76 %</td><td class="n">82 %</td></tr>
+  <tr><td>Set 14 · no comparativas (49) · score / recall</td><td class="n">81.6 / 79 %</td><td class="n">83.7 / 79 %</td><td class="n">80.9 / 73 %</td></tr>
+</table></div>
+<ul>
+  <li><b>Donde debe ayudar, ayuda al buscador:</b> en las comparativas del set 3, el recall sube de 84 % a 94 % con descomponer. En las no comparativas casi no cambia (90 % → 92 %).</li>
+  <li><b>En el score, la ventaja es chica y en pocas preguntas:</b> +2.1 en 12 comparativas del set 3, 0 en 8 del set 14. Con grupos tan chicos, eso no se distingue del ruido.</li>
+  <li><b>Routing no sustituye a descomponer en el set 3</b> (83.3 contra 91.6 en las comparativas), pero sí empata en las 8 del set 14. Son pocas preguntas para concluir.</li>
+</ul>
+<div class="box">
+<p style="margin-top:0"><b>Hallazgo: descomponer divide preguntas que no debe.</b> Dividió <b>44 de 76</b> respuestas no comparativas del set 3 y <b>53 de 98</b> del set 14. Casi siempre las divide por aspectos de una misma pregunta, que es justo lo que su prompt prohíbe («NO dividas por aspectos de una misma entidad: definición, pena, requisitos, procedimiento»). Ejemplos:</p>
+<ul style="margin-bottom:0">
+  <li>«Me robaron el celular en la calle… ¿Es delito y cuánta cárcel le pueden dar?» → «¿Qué establece la legislación sobre el robo de celular…?» + «¿Cuál es la pena de prisión para el robo simple…?»</li>
+  <li>«¿Cuáles son los elementos del delito de estupro en la CDMX y cómo se persigue?» → «elementos del estupro en la CDMX» + «cómo se persigue el estupro en la CDMX»</li>
+  <li>Permitido por su prompt: «¿Diferencia entre estupro y violación?» → «¿Qué es el estupro?» + «¿Qué es la violación?»</li>
+</ul>
+<p style="margin-bottom:0">No parece hacer daño (el recall y el score de las no comparativas no bajan), pero gasta búsquedas y muestra que Gemma no sigue esa regla. Es justo lo que mediría una prueba propia de «descomponer» (pendiente).</p>
+</div>
+<p><b>Conclusión:</b> descomponer ayuda al buscador en las preguntas comparativas; en la calificación, la ventaja no se distingue del ruido en estos sets. <b>Para la ronda 2 se mantiene igual que en la ronda 1</b> (descomponer y routing activos), por comparabilidad.</p>
 
 <h2 id="v3">7. El problema del v2, y el v3</h2>
 <div class="box">
