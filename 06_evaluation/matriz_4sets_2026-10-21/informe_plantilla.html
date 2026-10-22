@@ -78,7 +78,7 @@
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
   <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#pordelito">¿Funciona por delito?</a>
-  <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#limitaciones">9. Limitaciones</a>
+  <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
 <h2 id="camino">1. Cómo responde Tlacua una pregunta</h2>
@@ -307,6 +307,31 @@
 
 <h2 id="columnas">8. Cómo leer los números</h2>
 <div class="box"><dl class="defs" id="defs"></dl></div>
+<h3 id="recall">El recall, en detalle</h3>
+<div class="box">
+<p style="margin-top:0">Es la misma medida en todos los sets. Sale de los criterios que escribió quien hizo cada pregunta, y no usa al juez.</p>
+<ol>
+  <li><b>Qué artículos necesita la pregunta.</b> Un script lee los criterios <code>must</code> que piden citar un artículo, por ejemplo «Cita el art. 220 del Código Penal de la Ciudad de México», y saca el código y el número. Si el criterio dice «Cita al menos uno: …», cualquiera de esos artículos cuenta.</li>
+  <li><b>Dónde está ese artículo en el corpus.</b> Busca el chunk de ese código cuya jerarquía termina en «Artículo 220». Si el artículo no tiene chunk propio (por ejemplo, porque quedó pegado a otro), lo busca en el texto. Si no existe en el corpus, no cuenta en el total.</li>
+  <li><b>Si llegó al contexto.</b> Revisa si ese chunk está entre los que recibió el LLM: los resultados del buscador más los vecinos, los chunks extra por delito y las remisiones.</li>
+  <li><b>Recall</b> = artículos que llegaron ÷ artículos que existen en el corpus. Cada corrida también guarda la posición de cada artículo en el contexto y el porcentaje de preguntas con <b>todos</b> sus artículos.</li>
+</ol>
+<div class="scroll"><table>
+  <tr><th>Set</th><th>¿Tiene recall?</th><th>Detalle</th></tr>
+  <tr><td>3</td><td>Sí</td><td>Casi todas sus preguntas piden citar artículos.</td></tr>
+  <tr><td>13</td><td>Sí</td><td>Una cita por pregunta.</td></tr>
+  <tr><td>14</td><td>En parte</td><td>Las preguntas «sin lugar» no tienen artículo esperado (lo correcto es pedir el estado), así que no cuentan.</td></tr>
+  <tr><td>12</td><td>Sí</td><td>Los artículos que pidió Karen: 13 por corrida.</td></tr>
+</table></div>
+<p><b>Límites:</b></p>
+<ul style="margin-bottom:0">
+  <li><b>Depende de cómo esté escrito el criterio.</b> Si quien escribió la pregunta no puso «Cita el art. X», ese artículo no se mide.</li>
+  <li><b>Mide todo el contexto, no solo los primeros resultados.</b> Un artículo puede llegar como vecino de otro y contar como encontrado. Por eso no se compara directo con la prueba del 8 de octubre (sección 1), que miraba los 10 primeros resultados del buscador antes de agregar los vecinos.</li>
+  <li><b>Solo mide lo que llega, no lo que sobra.</b> No dice cuántos artículos irrelevantes o de otros estados llegaron también; para eso está «Otro estado».</li>
+  <li><b>Un contexto más grande sube el recall solo por tamaño.</b> «Descomponer por delito» y las remisiones agregan chunks, así que una parte de su recall extra viene de tener más espacio. «Descomponer» y routing reparten el mismo top-k, así que no tienen ese problema.</li>
+  <li><b>Recall no es calificación.</b> Que el artículo llegue no garantiza que el LLM lo use bien; por eso una opción puede subir el recall sin subir el score (por ejemplo, «descomponer por delito» en el set 12).</li>
+</ul>
+</div>
 
 <h2 id="limitaciones">9. Limitaciones</h2>
 <ul>
@@ -351,7 +376,7 @@ const DEFS = [
   ['Ruido de la media', 'DE repetición dividida entre √n (n = preguntas del set): cuánto se espera que cambie el score medio de una corrida a otra solo por ruido. Una diferencia entre configuraciones menor a unas dos veces este número no es concluyente.'],
   ['Must', 'El porcentaje de criterios «must» que el juez marcó como presentes.'],
   ['Pasa', 'El porcentaje de preguntas con todos los «must» presentes y ningún «must_not».'],
-  ['Recall', 'El porcentaje de los artículos que la pregunta necesita que llegaron al contexto. Lo calcula un script, sin LLM. Mide al buscador, no la respuesta.'],
+  ['Recall', 'El porcentaje de los artículos que la pregunta necesita que llegaron al contexto. Lo calcula un script, sin LLM: mide al buscador, no la respuesta. Cómo se calcula y sus límites: ver «El recall, en detalle», abajo.'],
   ['Otro estado', 'El porcentaje de respuestas que citan el código penal de un estado que no corresponde. Lo mide el verificador de citas (regex, sin LLM), solo en las preguntas donde aplica.'],
   ['Citas sin respaldo', 'El porcentaje de los artículos citados que no están en el contexto: inventados, citados de memoria o atribuidos a la ley equivocada.'],
   ['De memoria', 'La parte de las citas sin respaldo que son artículos reales, pero que el LLM citó sin tenerlos en el contexto.'],
