@@ -1,7 +1,8 @@
 """Recalifica las corridas guardadas del set 3 con los criterios corregidos por corregir_set3.py (correrlo antes).
 
-- Preguntas a las que solo se les quitó un `should` duplicado: se quita su veredicto y se recalcula el puntaje. No
-  hace falta llamar al juez (cada criterio tiene su propio veredicto en el JSON del juez).
+- Preguntas a las que solo se les quitó un `should` duplicado: se quita SOLO el veredicto de ese criterio y se
+  recalcula el puntaje. No hace falta llamar al juez (cada criterio tiene su propio veredicto en el JSON del juez).
+  Los demás veredictos quedan como estaban, aunque la corrida sea anterior a otras ediciones del set.
 - La pregunta de la prescripción (criterios nuevos): el juez vuelve a calificar la respuesta GUARDADA (no se genera
   una respuesta nueva), con el mismo prompt del juez y los criterios del set.
 
@@ -31,6 +32,16 @@ with connect() as c, c.cursor() as cur:
     for qid, exp, text, kind, w in cur.fetchall():
         nuevos.setdefault(qid, []).append({'text': text, 'kind': kind, 'weight': float(w or 1)})
         esperada[qid] = exp or ''
+    # Lo que cambió corregir_set3.py: criterios borrados (respaldo − actuales) y la pregunta con criterios nuevos.
+    cur.execute("SELECT b.question_id, b.text, b.kind FROM _bak_20261021_set3_components b "
+                "LEFT JOIN bench_components k ON k.id = b.id WHERE k.id IS NULL")
+    borrados = {}
+    for qid, text, kind in cur.fetchall():
+        borrados.setdefault(qid, set()).add((text, kind))
+    cur.execute("SELECT q.id FROM bench_questions q JOIN _bak_20261021_set3_questions b ON b.id = q.id "
+                "WHERE q.expected_answer IS DISTINCT FROM b.expected_answer")
+    rejuzgar = {r[0] for r in cur.fetchall()}
+    print('criterios borrados en', sorted(q for q in borrados if q not in rejuzgar), '· rejuzgar', sorted(rejuzgar))
     if APLICAR:
         cur.execute("""CREATE TABLE IF NOT EXISTS _bak_20261021_set3_rescore (
             run_id int, question_id int, score real, passed boolean, must_total int, must_ok int, violations int,
@@ -45,16 +56,16 @@ with connect() as c, c.cursor() as cur:
         cambios = []
         for d in art.get('results', []):
             qid, ver = d.get('question_id'), d.get('verdicts') or []
-            if d.get('error') or not ver or qid not in nuevos:
+            if d.get('error') or not ver or (qid not in borrados and qid not in rejuzgar):
                 continue
-            comps = nuevos[qid]
-            viejos = {(v['text'], v['kind']): v for v in ver}
-            if [(x['text'], x['kind']) for x in comps] == [(v['text'], v['kind']) for v in ver]:
-                continue   # sin cambios en esta pregunta
-            if all((x['text'], x['kind']) in viejos for x in comps):
-                nv = [{**x, **{kk: viejos[(x['text'], x['kind'])].get(kk) for kk in ('verdict', 'evidence', 'reason') if kk in viejos[(x['text'], x['kind'])]}} for x in comps]
+            if qid not in rejuzgar:
+                nv = [v for v in ver if (v['text'], v['kind']) not in borrados[qid]]
+                if len(nv) == len(ver):
+                    continue   # esta corrida no tenía ese criterio
+                comps = [{'text': v['text'], 'kind': v['kind'], 'weight': v.get('weight', 1)} for v in nv]
                 como = 'sin juez'
             else:
+                comps = nuevos[qid]
                 if not d.get('answer'):
                     continue
                 prompt = build_judge_prompt(d['question'], d['answer'], comps, esperada[qid])
@@ -77,8 +88,9 @@ with connect() as c, c.cursor() as cur:
                             "must_ok = %s, violations = %s WHERE run_id = %s AND question_id = %s",
                             (json.dumps(nv, ensure_ascii=False), sc['score'], sc['passed'], sc['must_total'],
                              sc['must_ok'], sc['violations'], rid, qid))
-                d.update(verdicts=nv, components=comps, score=sc['score'], passed=sc['passed'],
-                         expected_answer=esperada[qid])
+                d.update(verdicts=nv, components=comps, score=sc['score'], passed=sc['passed'])
+                if qid in rejuzgar:
+                    d['expected_answer'] = esperada[qid]
         if not cambios:
             continue
         linea = ' · '.join(f'q{q} {a:.2f}→{"?" if b is None else f"{b:.2f}"}' for q, a, b, _ in cambios if a is not None)
