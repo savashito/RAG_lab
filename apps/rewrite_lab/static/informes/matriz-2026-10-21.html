@@ -179,8 +179,22 @@
   <li>no pide el estado antes de responder, pero <b>al final ofrece</b> explicar el código del estado de la persona.</li>
 </ul>
 <p>El CPF sí entra porque no es «otro estado»: no se confunde con la ley local, y los conceptos generales (tentativa, dolo, legítima defensa) son casi iguales en todos los códigos. Las otras dos correcciones del v2 (CPF nombrado y «México» como país) siguen igual.</p>
-<p style="margin-bottom:0"><b>Estado: corriendo.</b> Se mide el costo del v3 con la misma configuración que B·v2 (sets 3 y 14, 2 repeticiones). Lo esperado: algunas preguntas teóricas del set 3 bajan, porque su respuesta esperada pide artículos estatales. Si es así, la solución correcta es ajustar esas respuestas esperadas (set 3 v2, con Karen), no volver al v2.</p>
-<p style="margin-bottom:0"><b>Primer resultado (parcial, 1 de 4 corridas):</b> set 3, rep 1 (#179): <b>89.9</b>, contra 90.0 y 89.0 del B·v2. Por ahora el v3 no cuesta puntos en el set 3. Faltan el set 14 y la repetición 2; también falta revisar, pregunta por pregunta, que las respuestas teóricas no citen códigos estatales y ofrezcan ver el del estado.</p>
+<p><b>Resultados del v3</b> (misma configuración que B·v2, 2 repeticiones; corridas #179–#182):</p>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">B·v2 (rep 1 / rep 2)</th><th class="n">B·v3 (rep 1 / rep 2)</th><th class="n">Media v2 → v3</th></tr>
+  <tr><td>Set 3 · general</td><td class="n">90.0 / 89.0</td><td class="n">89.9 / 91.0</td><td class="n">89.5 → 90.4</td></tr>
+  <tr><td>Set 14 · ¿pedir el estado?</td><td class="n">85.4 / 80.7</td><td class="n">81.6 / 80.7</td><td class="n">83.0 → 81.1</td></tr>
+  <tr><td>Cita otro estado (sets 3 y 14)</td><td class="n">0 %</td><td class="n">0 %</td><td class="n">igual</td></tr>
+</table></div>
+<p>Las diferencias de score están dentro del ruido entre repeticiones (la rep 2 del set 14 da 80.7 en las dos versiones). <b>El v3 no cuesta puntos.</b></p>
+<p><b>Lo que sí cambia</b> está en las 8 preguntas teóricas sin estado del set 3 (revisadas una por una, 2 repeticiones = 16 respuestas por versión):</p>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">v2</th><th class="n">v3</th></tr>
+  <tr><td>Preguntas cuya respuesta cita un código estatal</td><td class="n x">5 de 8</td><td class="n ok">0 de 8</td></tr>
+  <tr><td>Respuestas que ofrecen ver el código del estado de la persona</td><td class="n x">0 de 16</td><td class="n ok">14 de 16</td></tr>
+</table></div>
+<p class="mut">Ejemplo (v3, «¿Qué es la tentativa punible?»): explica el concepto con el CPF (art. 12 y 63) y la doctrina, aclara que cada estado lo regula en su código, y dice «Si usted requiere conocer la regulación específica de su entidad, puede indicarme cuál es». La oferta aparece a la mitad de la respuesta y no al final, como pedía la instrucción.</p>
+<p style="margin-bottom:0"><b>Conclusión:</b> el v3 se queda. Cumple el hallazgo de la ronda 1 (no cita estados que la persona no pidió) sin perder calificación. Está en prod desde el 22 de octubre.</p>
 </div>
 
 <h2 id="columnas">8. Cómo leer los números</h2>
