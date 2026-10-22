@@ -269,7 +269,8 @@ async function loadBenchSet(id){
   await loadBenchRuns();
   // Primera carga: aplica lo que pedía la URL (vista, corrida abierta, corridas comparadas).
   const w = BENCH.want; BENCH.want = null;
-  if(w && String(w.set)===String(id)){
+  // Sin ?set= en la URL (p. ej. /benchmark?vista=informes) se abre el set por omisión, y la vista pedida se aplica igual.
+  if(w && (!w.set || String(w.set)===String(id))){
     if(w.cmp.length >= 2){
       document.querySelectorAll('.bench-cmp').forEach(c=>{ c.checked = w.cmp.includes(+c.value); });
       syncCompareTab();
