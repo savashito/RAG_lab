@@ -153,9 +153,22 @@
 </div>
 
 <h2 id="probado">5. Qué se probó</h2>
-<p>Una <b>configuración</b> es una combinación de opciones. Todas parten de la misma base, la del estudio (corrida #102): método híbrido, top-k 10 + vecinos, HyDE y descomponer. A cada configuración le pusimos un nombre corto:</p>
+<p>Una <b>configuración</b> es una combinación de opciones (<a href="#opciones">sección 2</a>). Todas las configuraciones comparten una <b>base</b>, y cada una le agrega o cambia algo.</p>
+<div class="box">
+<p style="margin-top:0"><b>Base</b> = la configuración que usó el estudio con usuarios (corrida #102):</p>
+<ul style="margin-bottom:0">
+  <li><b>método híbrido</b>: busca por significado (vectores) y por palabras exactas (BM25), y mezcla los resultados;</li>
+  <li><b>top-k 10</b>: entran al contexto los 10 primeros resultados del buscador;</li>
+  <li><b>vecinos</b>: más la familia (bis, ter…) y los 2 artículos de antes y de después de cada uno;</li>
+  <li><b>HyDE</b>: se busca con un borrador del artículo que respondería, escrito por el LLM;</li>
+  <li><b>descomponer</b>: si la pregunta compara varias cosas, se busca cada una por separado;</li>
+  <li><b>prompt penal-original-v1</b>: el de la ronda 1;</li>
+  <li><b>sin</b> filtro por estado, <b>sin</b> descomponer por delito, <b>sin</b> remisiones, <b>sin</b> rerank y <b>sin</b> routing por código.</li>
+</ul>
+</div>
+<p>A cada configuración le pusimos un nombre corto:</p>
 <ul>
-  <li><b>La letra dice qué opciones se agregan a la base:</b>
+  <li><b>La letra dice qué se agrega a la base:</b>
     <ul>
       <li><b>A</b> = la base sola, sin filtro por estado.</li>
       <li><b>B</b> = base + filtro por estado.</li>
@@ -184,7 +197,7 @@
   <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14. Hay que revisarlo antes de la ronda 2.</div>
   <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes.</div>
 </div>
-<div class="box mut" style="font-size:14px"><b>Recordatorio de nombres:</b> A = sin filtro · B = + filtro · G = + filtro + descomponer por delito · C = G + remisiones · D = C con tlacua-v1-penas · E = C con tlacua-secuencia-y-penas · ·v1 / ·v2 = versión del filtro. <a href="#probado">Detalle →</a></div>
+<div class="box mut" style="font-size:14px"><b>Recordatorio de nombres:</b> base = híbrido, top-k 10 + vecinos, HyDE, descomponer, prompt penal-original-v1 · A = la base sola, sin filtro · B = + filtro · G = + filtro + descomponer por delito · C = G + remisiones · D = C con tlacua-v1-penas · E = C con tlacua-secuencia-y-penas · ·v1 / ·v2 = versión del filtro. <a href="#probado">Detalle →</a></div>
 <h3>Score por set</h3>
 <div class="tabs" id="set-tabs"></div>
 <p id="set-desc" class="mut"></p>
