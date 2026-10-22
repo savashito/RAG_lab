@@ -1,4 +1,7 @@
 [
-  {"slug": "matriz-2026-10-21", "titulo": "Matriz de configuraciones · 21 oct 2026",
-   "resumen": "Filtro por estado (viejo y corregido), descomponer por delito, remisiones y prompts, en los sets 3, 12, 13 y 14, con 2 repeticiones. 72 corridas (#107–#178)."}
+  {
+    "slug": "matriz-2026-10-21",
+    "titulo": "Filtro por estado: v1, v2 y v3 · matriz del 21 oct 2026",
+    "resumen": "Qué hace cada opción, cómo funciona el filtro por estado y por qué se corrigió dos veces; 72 corridas (#107–#178) en los sets 3, 12, 13 y 14, con 2 repeticiones."
+  }
 ]

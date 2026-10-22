@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matriz de configuraciones</title>
+<title>Filtro por estado</title>
 <style>
  :root{color-scheme:light dark;
    --bg:#0f1115;--panel:#171a21;--panel2:#1d212b;--line:#2a2f3a;--txt:#e6e6e6;--mut:#9aa4b2;--acc:#3b82f6;
@@ -57,158 +57,195 @@
  .tag{font-size:12px;border-radius:4px;padding:1px 6px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
  .ok{color:var(--good)} .x{color:var(--bad)}
  details{margin:8px 0} summary{cursor:pointer;color:var(--acc)}
+ ol.flow li{margin:4px 0}
+ .ver{display:inline-block;font-weight:700;border-radius:6px;padding:0 6px;border:1px solid var(--acc);color:var(--acc);font-size:13px}
  @media (max-width:640px){ body{font-size:14px} th,td{padding:7px 8px} .barcell{min-width:110px} }
 </style>
 </head>
 <body>
 <header>
   <a href="/benchmark?vista=informes">← Benchmark · Informes</a>
-  <h1>Matriz de configuraciones · 21 de octubre de 2026</h1>
+  <h1>Filtro por estado: v1, v2 y v3 · matriz del 21 de octubre de 2026</h1>
 </header>
 <main>
 
-<p class="mut">72 corridas del benchmark (#107–#178): 9 configuraciones × 4 sets × 2 repeticiones. El modelo que responde y el juez son el mismo, Gemma-4-4B-8b. Toca cualquier fila para ver su detalle.</p>
-<nav class="toc"><a href="#probado">Qué se probó</a><a href="#opciones">Qué hace cada opción del buscador</a><a href="#lugar">Los filtros de lugar: cómo evolucionaron</a><a href="#filtro">El filtro por estado: viejo y corregido</a><a href="#resultados">Resultados por set</a><a href="#pares">Comparaciones pareadas</a><a href="#columnas">Cómo leer las columnas</a><a href="#limitaciones">Limitaciones</a></nav>
-<h2 style="margin-top:18px">En corto</h2>
+<p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones.</p>
 
-<div class="key">
-  <div class="box"><b>✅ El filtro corregido funciona</b>Quita las citas a otro estado (de 21–25 % a 0 %) y ya no empeora las preguntas generales: el set 3 vuelve a 90 %, igual que sin filtro. <a href="#filtro">Qué es el filtro y qué se corrigió →</a></div>
-  <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14 («¿cuándo pedir el estado?»). Hay que revisarlo antes de la ronda 2. <a href="#resultados">Ver resultados →</a></div>
-  <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes. Las remisiones ayudan un poco en el set 14 (+5) y restan un poco en los sets 3 y 13 (−2). <a href="#opciones">Qué hace cada opción →</a></div>
-  <div class="box"><b>📏 Ruido</b>La misma configuración cambia hasta 6 puntos entre repeticiones (sets 13 y 14). Diferencias menores a ~5 puntos no son concluyentes. <a href="#columnas">Cómo leer los números →</a></div>
-</div>
+<nav class="toc">
+  <a href="#camino">1. Cómo responde Tlacua</a><a href="#opciones">2. Cada opción</a><a href="#v1">3. Filtro v1</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a>
+  <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#limitaciones">9. Limitaciones</a>
+</nav>
 
-<h2 id="probado">Qué se probó</h2>
-<p>Todas las configuraciones tienen la misma base, la de la corrida #102 (la del estudio): buscador híbrido (vectores + BM25), los 10 primeros resultados del buscador + sus chunks vecinos, HyDE (el LLM escribe una respuesta hipotética para buscar con ella) y «descomponer» (el LLM divide la pregunta en sub-preguntas). Cada letra activa o desactiva algunas opciones. El «2» quiere decir «con el filtro corregido», no «repetición 2».</p>
-<div class="scroll"><table id="t-cfg"></table></div>
-
-<h2 id="opciones">Qué hace cada opción del buscador</h2>
-<p>Son las opciones que aparecen en «Preguntar», «Conversacional» y «Benchmark». El orden sigue el camino de una pregunta: primero se decide <b>cómo buscar</b>, luego <b>dónde buscar</b>, luego <b>qué agregar al contexto</b>. «Contexto» es lo que recibe el LLM para responder: los resultados del buscador más lo que se agrega.</p>
-<div class="scroll"><table>
-  <tr><th>Opción</th><th>Qué hace</th><th>Costo</th><th>En esta matriz</th></tr>
-  <tr><td><b>Método</b></td><td>Cómo busca. <i>orig</i>: por significado (vectores), con la pregunta tal cual. <i>reescribir</i>: el LLM pasa la pregunta a lenguaje jurídico y se busca con eso. <i>multiquery</i>: busca con las dos y mezcla. <i>bm25</i>: por palabras exactas. <i>híbrido</i>: vectores + BM25 mezclados; encuentra tanto «el sentido» como números de artículo y términos exactos.</td><td>—</td><td>híbrido en todas</td></tr>
-  <tr><td><b>Top-k</b></td><td>Cuántos resultados del buscador entran al contexto.</td><td>más k = respuesta más lenta</td><td>10 en todas</td></tr>
-  <tr><td><b>vecinos ↕</b></td><td>Por cada artículo encontrado, agrega también su familia (bis, ter…) y los 2 artículos de antes y de después. Muchas veces la pena o la definición está en el artículo de al lado.</td><td>contexto más largo</td><td>sí en todas</td></tr>
-  <tr><td><b>HyDE 🧪</b></td><td>Antes de buscar, el LLM escribe un borrador de cómo se vería el artículo que responde, y se busca con ese borrador. Ayuda cuando la persona dice «me tocaron sin permiso» y el código dice «actos sexuales sin consentimiento».</td><td>1 llamada al LLM</td><td>sí en todas</td></tr>
-  <tr><td><b>rerank 🎯</b></td><td>Un segundo modelo reordena los resultados por relevancia antes de quedarse con los 10 primeros.</td><td>necesita el servicio de rerank</td><td>no</td></tr>
-  <tr><td><b>descomponer 🧩</b></td><td>Si la pregunta compara varias cosas («CDMX, Edomex y CPF»), el LLM la divide en una sub-pregunta por cada una y se busca cada una por separado, para que ninguna se quede sin lugar en el contexto. Si no compara nada, no cambia.</td><td>1 llamada al LLM</td><td>sí en todas</td></tr>
-  <tr><td><b>Lugar</b> (menú)</td><td>Filtro <b>manual</b> de legislación: la persona elige de qué lugares puede salir el contexto. Ver abajo.</td><td>—</td><td>«Todos» (sin filtro)</td></tr>
-  <tr><td><b>routing por código 🧭</b></td><td>Si la pregunta <b>nombra</b> un código («Querétaro», «CNPP», «CPF»), además de la búsqueda normal busca dentro de ese código y le aparta resultados. No quita nada: solo asegura que el código nombrado aparezca. Ver abajo.</td><td>casi nada (sin LLM)</td><td>no</td></tr>
-  <tr><td><b>filtro por estado 🚧</b></td><td>Filtro <b>automático</b>: el LLM detecta el estado de los hechos y el buscador solo ve los códigos permitidos. Reemplaza al menú «Lugar». Ver abajo.</td><td>1 llamada corta al LLM</td><td>B, C, D, E (viejo); B2, G2, C2, D2 (corregido)</td></tr>
-  <tr><td><b>descomponer por delito ⚖️</b></td><td>Si el relato tiene varias conductas que pueden ser delito («me drogó y me robó»), el LLM escribe una búsqueda por conducta, y se buscan por separado para que lleguen los artículos de cada delito.</td><td>1 llamada al LLM</td><td>C, D, E, G2, C2, D2</td></tr>
-  <tr><td><b>chunks extra por delito</b></td><td>Cuántos resultados más entrega el buscador por cada conducta adicional (con una sola conducta no cambia nada). Tope: el doble del top-k.</td><td>contexto más largo</td><td>3</td></tr>
-  <tr><td><b>seguir remisiones ↪</b></td><td>Si un artículo del contexto dice «las penas previstas en el artículo 220», agrega también el 220 (hasta 4, primero los de pena), marcado «↪ remitido por». Usa la tabla <code>corpus_remisiones</code>: búsqueda exacta, sin LLM.</td><td>casi nada</td><td>C, D, E, C2, D2</td></tr>
-  <tr><td><b>Prompt</b></td><td>Las instrucciones del LLM que responde (tono, qué citar, cuándo preguntar). No cambia lo que encuentra el buscador, solo cómo se escribe la respuesta.</td><td>—</td><td>penal-original-v1; D y D2: tlacua-v1-penas; E: tlacua-secuencia-y-penas</td></tr>
-</table></div>
-
-<h2 id="lugar">Los filtros de lugar: cómo evolucionaron</h2>
-<p>Hay tres formas de decidir <b>de qué legislación</b> salen los artículos. Aparecieron en este orden:</p>
-<div class="scroll"><table>
-  <tr><th></th><th>1. Menú «Lugar» (el original)</th><th>2. Routing por código</th><th>3. Filtro por estado</th></tr>
-  <tr><td><b>Quién decide</b></td><td>La persona, a mano</td><td>Una regex que busca nombres de códigos en la pregunta</td><td>Un LLM que lee la pregunta</td></tr>
-  <tr><td><b>Qué hace</b></td><td>Deja <b>solo</b> los lugares marcados. Al marcar un estado se marcan solos también Federal, Nacional y Doctrina (se pueden desmarcar).</td><td>No quita nada. Agrega resultados del código nombrado para que no falte.</td><td>Deja solo los códigos permitidos y le dice al LLM qué hacer (por ejemplo, pedir el estado).</td></tr>
-  <tr><td><b>Si la pregunta no dice estado</b></td><td>Busca en todo (con «Todos») o en lo que la persona marcó</td><td>Busca en todo</td><td>No ve ningún código estatal y pide el estado</td></tr>
-  <tr><td><b>Problema</b></td><td>La persona tiene que saber qué marcar; en el estudio nadie lo usa</td><td>Si la pregunta no nombra un estado, trae artículos de varios estados (el problema de la ronda 1)</td><td>Versión vieja: quitaba el CPF y las preguntas teóricas de más (ver abajo)</td></tr>
-</table></div>
-<p class="mut">El filtro por estado nació del hallazgo de la ronda 1: con el menú en «Todos», el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba. Pedirle al LLM «no cites otros estados» en el prompt no bastó (set 14: 7 de 12 preguntas sin estado citaron uno). Por eso el filtro quita esos artículos <b>antes</b> de que lleguen al LLM. El filtro corregido es el mismo filtro, con tres reglas cambiadas.</p>
-
-<h2 id="filtro">El filtro por estado: viejo y corregido</h2>
-<div class="box">
-<p style="margin-top:0"><b>Qué es.</b> Un paso <b>antes de buscar</b>. Un LLM lee la pregunta y decide qué códigos puede ver el buscador. También le deja una instrucción al LLM que responde. Existe porque en la ronda 1 del estudio, si la persona no decía dónde ocurrieron los hechos, el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba.</p>
-<p><b>Cómo funciona:</b></p>
-<ol>
-  <li>El LLM del filtro anota los <b>lugares</b> que menciona la pregunta y su estado («Toluca» → Estado de México); si cada lugar es <b>donde ocurrieron los hechos</b> o solo donde vive o trabaja la persona; y el <b>tipo de asunto</b>: delito común, delito federal, ley general, procedimiento u otro.</li>
-  <li>El buscador ve <b>siempre</b> las leyes nacionales y la doctrina (CNPP, leyes generales, libros de doctrina); además, <b>solo</b> los códigos de los estados donde ocurrieron los hechos, y el Código Penal Federal (CPF) solo en ciertos casos.</li>
-  <li>El LLM que responde recibe una instrucción, por ejemplo: «no dijo el estado: pregúntalo y no cites códigos estatales».</li>
+<h2 id="camino">1. Cómo responde Tlacua una pregunta</h2>
+<ol class="flow">
+  <li><b>Filtro por estado</b> (opcional): un LLM lee la pregunta y decide de qué legislación puede salir la respuesta.</li>
+  <li><b>Buscar:</b> el buscador encuentra los artículos y fragmentos más parecidos a la pregunta en el corpus (códigos penales, leyes nacionales, doctrina).</li>
+  <li><b>Armar el contexto:</b> a esos resultados se les agregan otros (artículos vecinos, artículos remitidos…). «Contexto» es todo lo que recibe el LLM para responder.</li>
+  <li><b>Responder:</b> el LLM (Gemma) escribe la respuesta siguiendo las instrucciones del <b>prompt</b>.</li>
+  <li><b>Calificar</b> (solo en el benchmark): un juez (el mismo Gemma) revisa si la respuesta cumple los criterios que una persona escribió para esa pregunta.</li>
 </ol>
-<p><b>Qué cambió en la versión corregida</b> (todavía no está en prod):</p>
+
+<h2 id="opciones">2. Qué hace cada opción</h2>
+<p>Son las casillas y menús de «Preguntar», «Conversacional» y «Benchmark», en el orden del camino de arriba.</p>
+<div class="scroll"><table>
+  <tr><th>Opción</th><th>Paso</th><th>Qué hace</th><th>Costo</th></tr>
+  <tr><td><b>filtro por estado 🚧</b></td><td>1</td><td>El LLM detecta el estado de los hechos y el buscador solo ve los códigos permitidos. Se explica completo en la <a href="#v1">sección 3</a>. Reemplaza al menú «Lugar».</td><td>1 llamada corta al LLM</td></tr>
+  <tr><td><b>Lugar</b> (menú)</td><td>1</td><td>Filtro <b>manual</b> (el original): la persona marca de qué lugares puede salir el contexto. Al marcar un estado se marcan solos Federal, Nacional y Doctrina. Con «Todos» no filtra nada.</td><td>—</td></tr>
+  <tr><td><b>routing por código 🧭</b></td><td>2</td><td>Si la pregunta <b>nombra</b> un código («Querétaro», «CNPP», «CPF»), busca también dentro de ese código y le aparta resultados. No quita nada: solo asegura que el código nombrado aparezca.</td><td>casi nada (regex, sin LLM)</td></tr>
+  <tr><td><b>Método</b></td><td>2</td><td>Cómo busca. <i>orig</i>: por significado (vectores), con la pregunta tal cual. <i>reescribir</i>: el LLM pasa la pregunta a lenguaje jurídico. <i>multiquery</i>: las dos, mezcladas. <i>bm25</i>: por palabras exactas. <i>híbrido</i>: vectores + BM25; encuentra el sentido y también números de artículo y términos exactos.</td><td>—</td></tr>
+  <tr><td><b>Top-k</b></td><td>2</td><td>Cuántos resultados del buscador entran al contexto.</td><td>más = más lento</td></tr>
+  <tr><td><b>HyDE 🧪</b></td><td>2</td><td>Antes de buscar, el LLM escribe un borrador de cómo se vería el artículo que responde, y se busca con ese borrador. Ayuda cuando la persona dice «me tocaron sin permiso» y el código dice «actos sexuales sin consentimiento».</td><td>1 llamada al LLM</td></tr>
+  <tr><td><b>descomponer 🧩</b></td><td>2</td><td>Si la pregunta compara varias cosas («CDMX, Edomex y CPF»), el LLM la divide en una búsqueda por cada una, para que ninguna se quede fuera del contexto. Si no compara nada, no cambia.</td><td>1 llamada al LLM</td></tr>
+  <tr><td><b>descomponer por delito ⚖️</b></td><td>2</td><td>Si el relato tiene varias conductas que pueden ser delito («me drogó y me robó»), el LLM escribe una búsqueda por conducta, para que lleguen los artículos de cada delito. Agrega <b>chunks extra por delito</b> (3) por cada conducta adicional.</td><td>1 llamada al LLM</td></tr>
+  <tr><td><b>rerank 🎯</b></td><td>2</td><td>Un segundo modelo reordena los resultados por relevancia antes de quedarse con los primeros.</td><td>necesita el servicio de rerank</td></tr>
+  <tr><td><b>vecinos ↕</b></td><td>3</td><td>Por cada artículo encontrado, agrega su familia (bis, ter…) y los 2 artículos de antes y de después. Muchas veces la pena o la definición está en el artículo de al lado.</td><td>contexto más largo</td></tr>
+  <tr><td><b>seguir remisiones ↪</b></td><td>3</td><td>Si un artículo del contexto dice «las penas previstas en el artículo 220», agrega también el 220 (hasta 4, primero los de pena), marcado «↪ remitido por». Búsqueda exacta en la tabla <code>corpus_remisiones</code>, sin LLM.</td><td>casi nada</td></tr>
+  <tr><td><b>Prompt</b></td><td>4</td><td>Las instrucciones del LLM que responde: tono, qué citar, cuándo preguntar. No cambia lo que encuentra el buscador, solo cómo se escribe la respuesta. <i>penal-original-v1</i> es el de la ronda 1; <i>tlacua-v1-penas</i> agrega una sección que pide dar las penas; <i>tlacua-secuencia-y-penas</i> es el del 20 de octubre.</td><td>—</td></tr>
+</table></div>
+
+<h2 id="v1">3. El filtro por estado v1 (el original)</h2>
+<p>Nació del hallazgo de la ronda 1. Pedirle al LLM en el prompt «no cites otros estados» no bastó: con los artículos en el contexto, los citaba igual (set 14: 7 de 12 preguntas sin estado). Por eso el filtro quita esos artículos <b>antes</b> de que lleguen al LLM. Funciona en dos pasos.</p>
+<div class="box">
+<p style="margin-top:0"><b>Paso 1. Un LLM lee la pregunta y anota:</b></p>
 <ul>
-  <li><b>El CPF.</b> Antes solo entraba si el LLM decía «delito federal», incluso cuando la persona lo pedía por nombre. Ahora también entra si la pregunta lo nombra: «Código Penal Federal», «CPF», «ámbito federal», «fuero federal». Lo detecta una regex, sin LLM.</li>
-  <li><b>Las preguntas teóricas</b> («¿qué es la tentativa?»). Antes se trataban como un caso al que le falta el estado: el filtro quitaba los códigos estatales y pedía el estado antes de responder. Ahora el LLM del filtro marca si la pregunta es teórica. En ese caso, la respuesta explica el concepto con la doctrina, las leyes nacionales y el CPF, <b>sin citar códigos de ningún estado</b> (por el hallazgo de la ronda 1), aclara que cada estado lo regula en su propio código, y al final ofrece explicar el código del estado de la persona.
-    <br><small>Ojo: en las corridas de esta página (B2, G2, C2, D2), las preguntas teóricas sin estado sí podían ver todos los códigos estatales. La regla de arriba se ajustó el 22 de octubre y se está midiendo aparte.</small></li>
-  <li><b>«México» como país.</b> Una regla para que «¿puedo denunciar en México?» no se lea como «Ciudad de México».</li>
+  <li><b>los lugares</b> que menciona y su estado («Toluca» → Estado de México). Si el LLM falla, una regex busca nombres de estado;</li>
+  <li><b>el papel de cada lugar:</b> si ahí ocurrieron los hechos, o si es solo donde la persona vive o trabaja;</li>
+  <li><b>el tipo de asunto:</b> delito común (robo, fraude, lesiones…), delito federal (lavado de dinero, armas, narcotráfico…), ley general (secuestro, extorsión, trata…), procedimiento (detención, audiencias, derechos…) u otro.</li>
 </ul>
+<p><b>Paso 2. Decide qué puede ver el buscador:</b> siempre las leyes nacionales y la doctrina; los códigos de los estados donde ocurrieron los hechos; y el Código Penal Federal (CPF) <b>solo si el delito es federal</b>. El CPF también define delitos comunes (fraude, violencia familiar…), y en un caso común Gemma lo citaba en lugar del código del estado. Además, le deja una instrucción al LLM que responde, según el caso:</p>
 </div>
 <div class="scroll"><table>
-  <tr><th>Pregunta</th><th>Filtro viejo: qué ve el buscador</th><th>Filtro corregido</th></tr>
-  <tr><td>«Me robaron el celular en Toluca»</td><td>Edomex + nacionales</td><td>igual</td></tr>
-  <tr><td>«Me robaron el celular» (sin lugar)</td><td>solo nacionales; pide el estado</td><td>igual</td></tr>
-  <tr><td>«¿Qué pena tiene el lavado de dinero?»</td><td>CPF + nacionales</td><td>igual</td></tr>
-  <tr><td>«En el Código Penal Federal, ¿cómo se tipifica el estupro?»</td><td class="x">solo nacionales: sin el CPF, y pide el estado</td><td class="ok">CPF + nacionales; no pide estado</td></tr>
-  <tr><td>«Compara la violación en la CDMX, el Edomex y el CPF»</td><td class="x">CDMX + Edomex + nacionales: sin el CPF</td><td class="ok">CDMX + Edomex + CPF + nacionales</td></tr>
-  <tr><td>«¿Qué es la tentativa punible?»</td><td class="x">solo nacionales; pide el estado antes de responder</td><td class="ok">nacionales + CPF; explica el concepto sin citar códigos estatales y ofrece ver el de su estado</td></tr>
+  <tr><th>Caso</th><th>Ejemplo</th><th>Qué ve el buscador</th><th>Qué le dice al LLM</th></tr>
+  <tr><td>Estado de los hechos en el corpus</td><td>«Me robaron en Toluca»</td><td>Edomex + nacionales</td><td>Responde con ese código; no cites otros estados; no vuelvas a preguntar</td></tr>
+  <tr><td>Estado que no está en el corpus</td><td>«Me robaron en Pachuca»</td><td>nacionales</td><td>Di que ese código no está, no uses otro en su lugar, explica lo nacional y recomienda una persona abogada del estado</td></tr>
+  <tr><td>Solo dice dónde vive</td><td>«Vivo en Toluca y me robaron»</td><td>Edomex + nacionales</td><td>Explica Edomex <b>como suposición</b> («si ocurrió ahí…») y pregunta dónde ocurrió</td></tr>
+  <tr><td>Sin estado; depende del estado</td><td>«Me robaron el celular»</td><td>nacionales</td><td>No cites códigos estatales; explica que depende del estado y <b>pregunta en cuál ocurrió</b></td></tr>
+  <tr><td>Sin estado; no depende del estado</td><td>«¿Cuánto me pueden tener detenido?»</td><td>nacionales (+ CPF si es federal)</td><td>Responde directo, <b>sin preguntar el estado</b></td></tr>
 </table></div>
-<p class="mut">Validación del filtro corregido con el LLM real: detección de lugar 86/86 en 5 corridas; clasificación del tipo 39/44 (igual que el filtro viejo); 12/12 frases nuevas escritas para esta prueba; ninguna de las 31 preguntas del set 13 se marcó como teórica.</p>
 
-<h2 id="resultados">Resultados por set</h2>
+<h2 id="v2">4. Por qué se corrigió: del v1 al v2</h2>
+<p>Con el v1, el <b>set 3</b> (50 preguntas generales que ya dicen qué ley quieren) bajó de 90 % a 80 %. Revisando pregunta por pregunta las 15 que bajaron:</p>
+<ul>
+  <li><b>12 perdieron los artículos del CPF aunque la pregunta lo nombraba.</b> «En el Código Penal Federal, ¿cómo se tipifica el estupro?»: el estupro es delito común, así que el v1 quitaba el CPF, y además pedía el estado.</li>
+  <li><b>3 eran preguntas teóricas</b> («¿qué es la tentativa?»). El v1 las trataba como «sin estado, depende del estado»: quitaba los códigos y pedía el estado.</li>
+</ul>
+<div class="box">
+<p style="margin-top:0"><b>El v2 es el v1 con tres cambios:</b></p>
+<ol>
+  <li><b>El CPF entra si la pregunta lo nombra</b> («Código Penal Federal», «CPF», «ámbito federal», «fuero federal»). Lo detecta una regex, sin LLM. Si no hay estado, responde con el CPF sin pedir el estado.</li>
+  <li><b>Preguntas teóricas:</b> el LLM del filtro marca si la pregunta es de teoría, sin un caso concreto. En el v2, una pregunta teórica <b>veía todos los códigos estatales</b> y no se pedía el estado. <i>(Esta decisión fue un error: ver la <a href="#v3">sección 7</a>.)</i></li>
+  <li><b>«En México» como país</b> no se lee como «Ciudad de México».</li>
+</ol>
+<p class="mut" style="margin-bottom:0">Validación con el LLM real: detección de lugar 86/86 en 5 corridas; clasificación del tipo 39/44 (igual que el v1); 12/12 frases nuevas; ninguna de las 31 preguntas del set 13 se marcó como teórica.</p>
+</div>
+
+<h2 id="probado">5. Qué se probó</h2>
+<p>Todas las configuraciones parten de la misma base, la del estudio (corrida #102): método híbrido, top-k 10 + vecinos, HyDE y descomponer. La <b>letra</b> dice qué opciones se agregan; el <b>sufijo</b> dice qué versión del filtro se usó.</p>
+<div class="scroll"><table id="t-cfg"></table></div>
+<h3>Los sets</h3>
+<ul>
+  <li><b>Set 3 (50):</b> delitos sexuales, parte general y CNPP. Las preguntas dicen qué ley quieren, o son teóricas. Es la prueba de regresión: el filtro no debería bajar su score.</li>
+  <li><b>Set 13 (31):</b> preguntas en lenguaje cotidiano que dicen un solo estado. Mide si la respuesta usa solo ese código.</li>
+  <li><b>Set 14 (57):</b> «¿cuándo pedir el estado?»: sin lugar, con lugar indirecto, comparaciones, estados fuera del corpus y leyes nacionales.</li>
+  <li><b>Set 12 (3):</b> casos complejos de Karen. Con solo 3 preguntas, cada una pesa un tercio del score.</li>
+</ul>
+<p>Cada configuración se corrió <b>dos veces</b> (rep 1 y rep 2) en cada set, igual las dos veces: la diferencia entre ellas es el ruido normal entre corridas.</p>
+
+<h2 id="resultados">6. Resultados</h2>
+<div class="key">
+  <div class="box"><b>✅ El filtro quita las citas a otro estado</b>Con cualquier versión del filtro, las respuestas que citan un estado que no corresponde bajan de 21 % (set 13) y 25 % (set 14) a 0 %.</div>
+  <div class="box"><b>✅ El v2 ya no empeora el set 3</b>El v1 lo bajaba de 90 % a 80 %; con el v2 vuelve a 90 %, igual que sin filtro. Pero ver la <a href="#v3">sección 7</a>.</div>
+  <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14. Hay que revisarlo antes de la ronda 2.</div>
+  <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes.</div>
+</div>
+<h3>Score por set</h3>
 <div class="tabs" id="set-tabs"></div>
 <p id="set-desc" class="mut"></p>
 <div class="scroll"><table id="t-res"></table></div>
-<p class="mut" style="font-size:13px">La barra es la media; las marcas verticales, su intervalo de confianza de 95 %. En verde, la mejor media del set.</p>
-
-<h2 id="pares">Comparaciones pareadas</h2>
-<p>Cada pregunta se compara contra sí misma en las dos configuraciones (promedio de las dos repeticiones). Así, la diferencia no depende de qué preguntas tiene el set. Entre paréntesis está el intervalo de confianza de 95 %. <b>En color:</b> el intervalo no incluye el 0, así que la diferencia probablemente no es ruido. El set 12 tiene solo 3 preguntas: sus intervalos no son confiables.</p>
+<p class="mut" style="font-size:13px">Toca una fila para ver más métricas y abrir sus corridas. La barra es la media; las marcas, su intervalo de confianza de 95 %. En verde, la mejor media del set.</p>
+<h3>Comparaciones pareadas</h3>
+<p>Cada pregunta se compara contra sí misma en las dos configuraciones (promedio de las dos repeticiones). Entre paréntesis, el intervalo de confianza de 95 %. <b>En color:</b> el intervalo no incluye el 0, así que la diferencia probablemente no es ruido. El set 12 (3 preguntas) no da intervalos confiables.</p>
 <div class="scroll"><table id="t-pares"></table></div>
 
-<h2 id="columnas">Cómo leer las columnas</h2>
+<h2 id="v3">7. El problema del v2, y el v3</h2>
+<div class="box">
+<p style="margin-top:0"><b>El v2 se optimizó para el benchmark, no para la persona real.</b> La regla de las preguntas teóricas (dejar ver todos los códigos estatales) se decidió mirando el set 3: sus respuestas esperadas para «¿qué es la tentativa?» piden artículos de la CDMX, el CPF y el Estado de México. Con esa regla, el set 3 sube. Pero el set 3 está escrito para estudiantes o profesionales del derecho, y Tlacua es para cualquier persona. Es <b>sobreajuste al set</b>: una decisión que mejora la calificación y empeora el uso real.</p>
+<p><b>Y contradice el hallazgo de la ronda 1:</b> una persona que lee «artículo 20 del Código Penal de la Ciudad de México» puede creer que esa ley le aplica, aunque la respuesta diga que es un ejemplo. Es justo el problema que el filtro existe para evitar.</p>
+<p><b>El v3</b> (en prod desde el 22 de octubre) cambia solo esa regla. En una pregunta teórica sin estado:</p>
+<ul>
+  <li>el buscador ve la doctrina, las leyes nacionales y el CPF, <b>sin códigos estatales</b>;</li>
+  <li>la respuesta explica el concepto, aclara que cada estado lo regula en su propio código;</li>
+  <li>no pide el estado antes de responder, pero <b>al final ofrece</b> explicar el código del estado de la persona.</li>
+</ul>
+<p>El CPF sí entra porque no es «otro estado»: no se confunde con la ley local, y los conceptos generales (tentativa, dolo, legítima defensa) son casi iguales en todos los códigos. Las otras dos correcciones del v2 (CPF nombrado y «México» como país) siguen igual.</p>
+<p style="margin-bottom:0"><b>Estado: corriendo.</b> Se mide el costo del v3 con la misma configuración que B·v2 (sets 3 y 14, 2 repeticiones). Lo esperado: algunas preguntas teóricas del set 3 bajan, porque su respuesta esperada pide artículos estatales. Si es así, la solución correcta es ajustar esas respuestas esperadas (set 3 v2, con Karen), no volver al v2.</p>
+<p style="margin-bottom:0"><b>Primer resultado (parcial, 1 de 4 corridas):</b> set 3, rep 1 (#179): <b>89.9</b>, contra 90.0 y 89.0 del B·v2. Por ahora el v3 no cuesta puntos en el set 3. Faltan el set 14 y la repetición 2; también falta revisar, pregunta por pregunta, que las respuestas teóricas no citen códigos estatales y ofrezcan ver el del estado.</p>
+</div>
+
+<h2 id="columnas">8. Cómo leer los números</h2>
 <div class="box"><dl class="defs" id="defs"></dl></div>
 
-<h2 id="limitaciones">Limitaciones</h2>
+<h2 id="limitaciones">9. Limitaciones</h2>
 <ul>
-  <li>El juez es el mismo modelo que responde. Falta medir qué tanto coincide con una persona abogada; Karen puede calificar a mano una muestra de respuestas.</li>
+  <li>El juez es el mismo modelo que responde. Falta medir qué tanto coincide con una persona abogada; Karen puede calificar a mano una muestra.</li>
   <li>Solo hay 2 repeticiones por configuración: alcanzan para ver el ruido, no para estimar bien una desviación estándar.</li>
   <li>El set 12 tiene 3 preguntas; cada una pesa un tercio del score.</li>
-  <li>El set 3 se recalificó el 21 de octubre: se quitaron 11 criterios duplicados y se corrigió la pregunta sobre la prescripción en el CPF (art. 107 Bis). Todos los scores del set 3 de esta página ya usan los criterios corregidos.</li>
-  <li>La configuración E (tlacua-secuencia-y-penas) solo se corrió con el filtro viejo: compárala con D, no con D2.</li>
+  <li>El set 3 se recalificó el 21 de octubre: se quitaron 11 criterios duplicados y se corrigió la pregunta sobre la prescripción en el CPF (art. 107 Bis). Todos sus scores aquí ya usan los criterios corregidos.</li>
+  <li>E·v1 (tlacua-secuencia-y-penas) solo se corrió con el filtro v1: compárala con D·v1.</li>
 </ul>
 </main>
 
 <script>
 const DATA = __DATA__;
+// Claves de los datos (las etiquetas de las corridas) → nombre que se muestra: letra = opciones, sufijo = versión del filtro.
+const NOMBRE = {A:'A', B:'B·v1', C:'C·v1', D:'D·v1', E:'E·v1', B2:'B·v2', G2:'G·v2', C2:'C·v2', D2:'D·v2'};
 const CFG = {
   A:  {filtro:'no', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Línea base: el sistema sin los cambios de esta semana.'},
-  B:  {filtro:'viejo', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Efecto del filtro, en la versión que está hoy en prod.'},
-  C:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Todo lo nuevo junto: filtro + descomponer por delito + remisiones.'},
-  D:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como C, con el prompt tlacua-v1-penas (tlacua-v1 + una sección que pide dar las penas).'},
-  E:  {filtro:'viejo', delito:'sí', rem:'sí', prompt:'tlacua-secuencia-y-penas', para:'Como C, con el prompt tlacua-secuencia-y-penas (del 20 de octubre). Compárala con D.'},
-  B2: {filtro:'corregido', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Como B, con el filtro corregido. B → B2 mide el arreglo del filtro.'},
-  G2: {filtro:'corregido', delito:'sí', rem:'no', prompt:'penal-original-v1', para:'Como C2, pero sin remisiones. G2 → C2 mide solo el efecto de las remisiones.'},
-  C2: {filtro:'corregido', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Como C, con el filtro corregido.'},
-  D2: {filtro:'corregido', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como D, con el filtro corregido. C2 → D2 mide el prompt tlacua-v1-penas.'},
+  B:  {filtro:'v1', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Base + filtro por estado v1.'},
+  C:  {filtro:'v1', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Base + filtro v1 + descomponer por delito + remisiones.'},
+  D:  {filtro:'v1', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como C·v1, con el prompt tlacua-v1-penas.'},
+  E:  {filtro:'v1', delito:'sí', rem:'sí', prompt:'tlacua-secuencia-y-penas', para:'Como C·v1, con el prompt tlacua-secuencia-y-penas. Compárala con D·v1.'},
+  B2: {filtro:'v2', delito:'no', rem:'no', prompt:'penal-original-v1', para:'Base + filtro v2. B·v1 → B·v2 mide la corrección del filtro.'},
+  G2: {filtro:'v2', delito:'sí', rem:'no', prompt:'penal-original-v1', para:'Base + filtro v2 + descomponer por delito, sin remisiones. G·v2 → C·v2 mide solo las remisiones.'},
+  C2: {filtro:'v2', delito:'sí', rem:'sí', prompt:'penal-original-v1', para:'Base + filtro v2 + descomponer por delito + remisiones.'},
+  D2: {filtro:'v2', delito:'sí', rem:'sí', prompt:'tlacua-v1-penas', para:'Como C·v2, con el prompt tlacua-v1-penas. C·v2 → D·v2 mide el prompt.'},
 };
 const ORD = ['A','B','C','D','E','B2','G2','C2','D2'];
 const SETS = {
-  3:  {nombre:'Set 3 · general', n:50, desc:'50 preguntas de delitos sexuales, parte general (dogmática) y CNPP. Las preguntas dicen qué ley quieren, o son teóricas. Es la prueba de regresión: el filtro no debería cambiar su score.'},
-  13: {nombre:'Set 13 · un estado', n:31, desc:'31 preguntas en lenguaje cotidiano que dicen un solo estado (CDMX, Querétaro, Edomex, Morelos). Mide si la respuesta usa solo el código de ese estado.'},
-  14: {nombre:'Set 14 · ¿pedir el estado?', n:57, desc:'57 preguntas: sin lugar (hay que pedir el estado), con lugar indirecto (dónde vive la persona), comparaciones, estados fuera del corpus y leyes nacionales (no hay que pedirlo).'},
-  12: {nombre:'Set 12 · casos de Karen', n:3, desc:'3 casos complejos con control de tipicidad, escritos por Karen. Con solo 3 preguntas, cada una pesa un tercio del score.'},
+  3:  {nombre:'Set 3 · general', n:50, desc:'50 preguntas de delitos sexuales, parte general y CNPP. Las preguntas dicen qué ley quieren, o son teóricas. El filtro no debería bajar su score.'},
+  13: {nombre:'Set 13 · un estado', n:31, desc:'31 preguntas en lenguaje cotidiano que dicen un solo estado. Mide si la respuesta usa solo el código de ese estado.'},
+  14: {nombre:'Set 14 · ¿pedir el estado?', n:57, desc:'57 preguntas: sin lugar (hay que pedir el estado), con lugar indirecto, comparaciones, estados fuera del corpus y leyes nacionales (no hay que pedirlo).'},
+  12: {nombre:'Set 12 · casos de Karen', n:3, desc:'3 casos complejos con control de tipicidad. Con solo 3 preguntas, cada una pesa un tercio del score.'},
 };
 const DEFS = [
-  ['Score (rep 1 y rep 2)', 'El score de cada corrida. El juez revisa cada criterio de la pregunta (presente, parcial o ausente). El score es la suma ponderada de los criterios «must» y «should» cumplidos, menos los «must_not» violados, dividida entre el peso total de los «must» y «should». Se promedia sobre las preguntas y va de 0 a 100.'],
+  ['Rep 1 y Rep 2', 'La misma configuración corrida dos veces. La diferencia entre las dos es el ruido entre corridas (hasta ~6 puntos en los sets 13 y 14).'],
+  ['Score', 'El juez revisa cada criterio de la pregunta (presente, parcial o ausente). El score es la suma ponderada de los criterios «must» y «should» cumplidos, menos los «must_not» violados, dividida entre el peso total de los «must» y «should». Se promedia sobre las preguntas y va de 0 a 100.'],
   ['Media', 'El promedio de las dos repeticiones. Primero se promedia cada pregunta entre las dos corridas, y luego entre preguntas.'],
-  ['IC 95 %', 'El intervalo de confianza de la media, por bootstrap sobre las preguntas (2,000 remuestreos). Mide qué tanto cambiaría la media con otras preguntas del mismo tipo. No es la variación entre repeticiones: para eso, compara rep 1 contra rep 2.'],
+  ['IC 95 %', 'El intervalo de confianza de la media, por bootstrap sobre las preguntas (2,000 remuestreos). Mide qué tanto cambiaría la media con otras preguntas del mismo tipo.'],
   ['Must', 'El porcentaje de criterios «must» que el juez marcó como presentes.'],
   ['Pasa', 'El porcentaje de preguntas con todos los «must» presentes y ningún «must_not».'],
-  ['Recall', 'El porcentaje de los artículos que la pregunta necesita (los que nombran sus «must» de cita) que llegaron al contexto del LLM. Lo calcula un script, sin LLM. Mide al buscador, no la respuesta.'],
+  ['Recall', 'El porcentaje de los artículos que la pregunta necesita que llegaron al contexto. Lo calcula un script, sin LLM. Mide al buscador, no la respuesta.'],
   ['Otro estado', 'El porcentaje de respuestas que citan el código penal de un estado que no corresponde. Lo mide el verificador de citas (regex, sin LLM), solo en las preguntas donde aplica.'],
-  ['Citas sin respaldo', 'El porcentaje de los artículos citados que no están en el contexto: inventados (no existen en el corpus), citados de memoria o atribuidos a la ley equivocada.'],
+  ['Citas sin respaldo', 'El porcentaje de los artículos citados que no están en el contexto: inventados, citados de memoria o atribuidos a la ley equivocada.'],
   ['De memoria', 'La parte de las citas sin respaldo que son artículos reales, pero que el LLM citó sin tenerlos en el contexto.'],
   ['Seg/preg', 'Segundos promedio por pregunta: búsqueda, respuesta y juez.'],
 ];
 const PARES = [
-  ['A','B','Filtro viejo','¿Qué hace el filtro, en la versión de prod?'],
-  ['B','B2','Arreglo del filtro','La misma configuración con el filtro viejo y con el corregido.'],
-  ['A','B2','Filtro corregido','¿Qué hace el filtro corregido contra no tener filtro?'],
-  ['B2','G2','Descomponer por delito','Agrega «descomponer por delito» (+3 chunks por cada conducta extra).'],
-  ['G2','C2','Solo remisiones','Lo único que cambia es seguir las remisiones entre artículos.'],
+  ['A','B','Filtro v1','¿Qué hace el filtro v1 contra no tener filtro?'],
+  ['B','B2','Corrección v1 → v2','La misma configuración con el filtro v1 y con el v2.'],
+  ['A','B2','Filtro v2','¿Qué hace el filtro v2 contra no tener filtro?'],
+  ['B2','G2','Descomponer por delito','Agrega «descomponer por delito».'],
+  ['G2','C2','Solo remisiones','Lo único que cambia es seguir las remisiones.'],
   ['C2','D2','Prompt tlacua-v1-penas','Lo único que cambia es el prompt: penal-original-v1 → tlacua-v1-penas.'],
-  ['C','D','tlacua-v1-penas (filtro viejo)','Lo mismo, con el filtro viejo.'],
-  ['D','E','tlacua-secuencia-y-penas','tlacua-v1-penas → tlacua-secuencia-y-penas, con el filtro viejo.'],
+  ['C','D','tlacua-v1-penas (filtro v1)','Lo mismo, con el filtro v1.'],
+  ['D','E','tlacua-secuencia-y-penas','tlacua-v1-penas → tlacua-secuencia-y-penas, con el filtro v1.'],
 ];
 const $ = id => document.getElementById(id);
 const pc = x => x == null ? '—' : (x*100).toFixed(1);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const row = (sid, c) => DATA.tabla.find(t => t.set === +sid && t.cfg === c);
+const tagc = c => `<span class="cfg">${NOMBRE[c]}</span>`;
 
 function toggler(tr, html){
   tr.addEventListener('click', () => {
@@ -220,20 +257,18 @@ function toggler(tr, html){
   });
 }
 
-// Configuraciones
 (function(){
   const t = $('t-cfg');
   t.innerHTML = '<tr><th>Config</th><th>Filtro por estado</th><th>Descomponer por delito</th><th>Remisiones</th><th>Prompt</th></tr>';
   for(const c of ORD){
     const x = CFG[c], tr = document.createElement('tr'); tr.className = 'click';
-    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${c}</span></td><td>${x.filtro}</td><td>${x.delito}</td><td>${x.rem}</td><td>${esc(x.prompt)}</td>`;
+    tr.innerHTML = `<td><span class="chev">▸</span> ${tagc(c)}</td><td>${x.filtro}</td><td>${x.delito}</td><td>${x.rem}</td><td>${esc(x.prompt)}</td>`;
     t.appendChild(tr);
     toggler(tr, () => `${esc(x.para)}<div class="mut" style="margin-top:6px">Score medio: ` +
-      [3,13,14,12].map(s => `${SETS[s].nombre.split(' · ')[0]} <b>${pc(row(s,c).media)}</b>`).join(' · ') + '</div>');
+      [3,13,14,12].map(s => `set ${s} <b>${pc(row(s,c).media)}</b>`).join(' · ') + '</div>');
   }
 })();
 
-// Resultados por set
 let SET = 3;
 function renderSet(){
   document.querySelectorAll('#set-tabs button').forEach(b => b.classList.toggle('on', +b.dataset.s === SET));
@@ -243,7 +278,7 @@ function renderSet(){
   t.innerHTML = '<tr><th>Config</th><th class="n">Rep 1</th><th class="n">Rep 2</th><th class="n">Media</th><th class="barcell">Media e IC 95 %</th><th class="n">IC 95 %</th><th class="n">Otro estado</th></tr>';
   for(const r of rows){
     const tr = document.createElement('tr'); tr.className = 'click';
-    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${r.cfg}</span></td>
+    tr.innerHTML = `<td><span class="chev">▸</span> ${tagc(r.cfg)}</td>
       <td class="n">${pc(r.scores[0])}</td><td class="n">${pc(r.scores[1])}</td>
       <td class="n ${r.media === best ? 'best' : ''}">${pc(r.media)}</td>
       <td class="barcell"><div class="bar"><i style="left:0;width:${r.media*100}%"></i><s style="left:${r.ic[0]*100}%;width:${(r.ic[1]-r.ic[0])*100}%"></s></div></td>
@@ -273,7 +308,6 @@ function renderSet(){
   renderSet();
 })();
 
-// Comparaciones pareadas
 (function(){
   const t = $('t-pares');
   t.innerHTML = '<tr><th>Cambio</th><th>Qué mide</th>' + [3,13,14,12].map(s => `<th class="n">Set ${s}</th>`).join('') + '</tr>';
@@ -285,14 +319,13 @@ function renderSet(){
       const f = v => (v >= 0 ? '+' : '') + (v*100).toFixed(1);
       return `<td class="n"><span class="${cls}">${f(p.dif)}</span><br><small>(${f(p.ic[0])} a ${f(p.ic[1])})</small></td>`;
     }).join('');
-    tr.innerHTML = `<td><span class="chev">▸</span> <span class="cfg">${a}</span> → <span class="cfg">${b}</span></td><td>${esc(nombre)}</td>${cells}`;
+    tr.innerHTML = `<td><span class="chev">▸</span> ${tagc(a)} → ${tagc(b)}</td><td>${esc(nombre)}</td>${cells}`;
     t.appendChild(tr);
-    toggler(tr, () => `${esc(que)}<div class="mut" style="margin-top:4px"><b>${a}:</b> ${esc(CFG[a].para)}<br><b>${b}:</b> ${esc(CFG[b].para)}</div>
-      <div class="mut" style="margin-top:4px">La diferencia está en puntos de score (${b} menos ${a}): positiva = ${b} es mejor.</div>`);
+    toggler(tr, () => `${esc(que)}<div class="mut" style="margin-top:4px"><b>${NOMBRE[a]}:</b> ${esc(CFG[a].para)}<br><b>${NOMBRE[b]}:</b> ${esc(CFG[b].para)}</div>
+      <div class="mut" style="margin-top:4px">La diferencia está en puntos de score (${NOMBRE[b]} menos ${NOMBRE[a]}): positiva = ${NOMBRE[b]} es mejor.</div>`);
   }
 })();
 
-// Definiciones
 $('defs').innerHTML = DEFS.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
 </script>
 </body>
