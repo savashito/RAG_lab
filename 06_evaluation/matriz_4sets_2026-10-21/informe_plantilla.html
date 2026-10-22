@@ -153,7 +153,20 @@
 </div>
 
 <h2 id="probado">5. Qué se probó</h2>
-<p>Todas las configuraciones parten de la misma base, la del estudio (corrida #102): método híbrido, top-k 10 + vecinos, HyDE y descomponer. La <b>letra</b> dice qué opciones se agregan; el <b>sufijo</b> dice qué versión del filtro se usó.</p>
+<p>Una <b>configuración</b> es una combinación de opciones. Todas parten de la misma base, la del estudio (corrida #102): método híbrido, top-k 10 + vecinos, HyDE y descomponer. A cada configuración le pusimos un nombre corto:</p>
+<ul>
+  <li><b>La letra dice qué opciones se agregan a la base:</b>
+    <ul>
+      <li><b>A</b> = la base sola, sin filtro por estado.</li>
+      <li><b>B</b> = base + filtro por estado.</li>
+      <li><b>G</b> = B + descomponer por delito.</li>
+      <li><b>C</b> = G + seguir remisiones (es decir: filtro + descomponer por delito + remisiones).</li>
+      <li><b>D</b> = C, pero con el prompt <i>tlacua-v1-penas</i> en lugar de <i>penal-original-v1</i>.</li>
+      <li><b>E</b> = C, pero con el prompt <i>tlacua-secuencia-y-penas</i>.</li>
+    </ul></li>
+  <li><b>El sufijo dice qué versión del filtro por estado se usó:</b> <b>·v1</b> = el original (<a href="#v1">sección 3</a>); <b>·v2</b> = el corregido (<a href="#v2">sección 4</a>). A no tiene sufijo porque no usa filtro.</li>
+</ul>
+<p>Por ejemplo, <b>C·v2</b> = base + filtro v2 + descomponer por delito + remisiones, con el prompt penal-original-v1.</p>
 <div class="scroll"><table id="t-cfg"></table></div>
 <h3>Los sets</h3>
 <ul>
@@ -171,6 +184,7 @@
   <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14. Hay que revisarlo antes de la ronda 2.</div>
   <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes.</div>
 </div>
+<div class="box mut" style="font-size:14px"><b>Recordatorio de nombres:</b> A = sin filtro · B = + filtro · G = + filtro + descomponer por delito · C = G + remisiones · D = C con tlacua-v1-penas · E = C con tlacua-secuencia-y-penas · ·v1 / ·v2 = versión del filtro. <a href="#probado">Detalle →</a></div>
 <h3>Score por set</h3>
 <div class="tabs" id="set-tabs"></div>
 <p id="set-desc" class="mut"></p>
@@ -178,6 +192,7 @@
 <p class="mut" style="font-size:13px">Toca una fila para ver más métricas y abrir sus corridas. La barra es la media; las marcas, su intervalo de confianza de 95 %. En verde, la mejor media del set.</p>
 <h3>Comparaciones pareadas</h3>
 <p>Cada pregunta se compara contra sí misma en las dos configuraciones (promedio de las dos repeticiones). Entre paréntesis, el intervalo de confianza de 95 %. <b>En color:</b> el intervalo no incluye el 0, así que la diferencia probablemente no es ruido. El set 12 (3 preguntas) no da intervalos confiables.</p>
+<p class="mut" style="font-size:14px">Cada fila dice qué cambia entre las dos configuraciones (por ejemplo, G·v2 → C·v2 agrega solo las remisiones).</p>
 <div class="scroll"><table id="t-pares"></table></div>
 
 <h2 id="v3">7. El problema del v2, y el v3</h2>
@@ -288,10 +303,10 @@ function toggler(tr, html){
 
 (function(){
   const t = $('t-cfg');
-  t.innerHTML = '<tr><th>Config</th><th>Filtro por estado</th><th>Descomponer por delito</th><th>Remisiones</th><th>Prompt</th></tr>';
+  t.innerHTML = '<tr><th>Config</th><th>Qué es</th><th>Filtro por estado</th><th>Descomponer por delito</th><th>Remisiones</th><th>Prompt</th></tr>';
   for(const c of ORD){
     const x = CFG[c], tr = document.createElement('tr'); tr.className = 'click';
-    tr.innerHTML = `<td><span class="chev">▸</span> ${tagc(c)}</td><td>${x.filtro}</td><td>${x.delito}</td><td>${x.rem}</td><td>${esc(x.prompt)}</td>`;
+    tr.innerHTML = `<td><span class="chev">▸</span> ${tagc(c)}</td><td>${esc(x.para)}</td><td>${x.filtro}</td><td>${x.delito}</td><td>${x.rem}</td><td>${esc(x.prompt)}</td>`;
     t.appendChild(tr);
     toggler(tr, () => `${esc(x.para)}<div class="mut" style="margin-top:6px">Score medio: ` +
       [3,13,14,12].map(s => `set ${s} <b>${pc(row(s,c).media)}</b>`).join(' · ') + '</div>');
