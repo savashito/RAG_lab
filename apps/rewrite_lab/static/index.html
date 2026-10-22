@@ -72,6 +72,19 @@
  .tabs button{background:transparent;color:#9aa4b2;border:0;border-bottom:2px solid transparent;
    border-radius:0;padding:11px 16px;font-weight:600}
  .tabs button.active{color:#e6e6e6;border-bottom-color:#3b82f6}
+ /* Menús del header (🔬 Investigación, ⚙️ Administrar): el panel es fixed porque .tabs tiene overflow-x en el
+    celular y recortaría un panel absolute. Se posiciona al abrir (navMenus). */
+ .navmenu{display:flex} .navmenu[hidden]{display:none}
+ .navmenu>summary{list-style:none;cursor:pointer;color:#9aa4b2;padding:11px 16px;font-weight:600;
+   border-bottom:2px solid transparent;white-space:nowrap;user-select:none}
+ .navmenu>summary::-webkit-details-marker{display:none}
+ .navmenu>summary.active{color:#e6e6e6;border-bottom-color:#3b82f6}
+ .navmenu[open]>summary{color:#e6e6e6}
+ .navmenu-items{position:fixed;z-index:50;min-width:220px;background:#171a21;border:1px solid #2a2f3a;
+   border-radius:8px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:flex;flex-direction:column}
+ .tabs .navmenu-items button{text-align:left;border:0;border-radius:6px;padding:9px 12px;color:#c7cdd6}
+ .tabs .navmenu-items button:hover{background:#232833}
+ .tabs .navmenu-items button.active{color:#e6e6e6;background:#1e293b}
  .tabpage[hidden]{display:none}
  .ans{background:#0b0d12;border:1px solid #2a2f3a;border-left:3px solid #3b82f6;border-radius:8px;
    padding:2px 16px;margin-top:12px}
@@ -263,13 +276,20 @@
 <div class="tabs">
   <button id="tabbtn-ask" class="active" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
   <button id="tabbtn-chat"  onclick="showTab('chat')">🗨️ Conversacional</button>
-  <button id="tabbtn-rewrite"  onclick="showTab('rewrite')">Rewrite Lab</button>
-  <button id="tabbtn-ingest"  onclick="showTab('ingest')" hidden>📥 Ingestar documentos</button>
-  <button id="tabbtn-bench"  onclick="showTab('bench')" hidden>🧪 Benchmark</button>
-  <button id="tabbtn-admin"  onclick="showTab('admin')" hidden>👑 Usuarios</button>
   <button onclick="location.href='/tramites'" title="Asistente que te guía para llenar un trámite (p. ej. divorcio)">📝 Trámites</button>
-  <button id="tabbtn-forms" onclick="location.href='/formularios'" hidden title="Administrar los formularios del asistente de trámites">🗂 Formularios</button>
-  <button id="tabbtn-estudios" onclick="location.href='/estudios'" hidden title="Estudio con usuarios: códigos, avance y resultados">🧪 Estudios</button>
+  <details class="navmenu" id="nav-inv"><summary>🔬 Investigación ▾</summary>
+    <div class="navmenu-items">
+      <button id="tabbtn-bench"  onclick="showTab('bench')" hidden>🧪 Benchmark</button>
+      <button id="tabbtn-informes" onclick="location.href='/benchmark?vista=informes'" hidden title="Resúmenes de varias corridas del benchmark">📑 Informes</button>
+      <button id="tabbtn-estudios" onclick="location.href='/estudios'" hidden title="Estudio con usuarios: códigos, avance y resultados">👥 Estudios</button>
+      <button id="tabbtn-rewrite"  onclick="showTab('rewrite')">✏️ Rewrite Lab</button>
+    </div></details>
+  <details class="navmenu" id="nav-admin" hidden><summary>⚙️ Administrar ▾</summary>
+    <div class="navmenu-items">
+      <button id="tabbtn-ingest"  onclick="showTab('ingest')" hidden>📥 Ingestar documentos</button>
+      <button id="tabbtn-forms" onclick="location.href='/formularios'" hidden title="Administrar los formularios del asistente de trámites">🗂 Formularios</button>
+      <button id="tabbtn-admin"  onclick="showTab('admin')" hidden>👑 Usuarios</button>
+    </div></details>
   <span style="flex:1"></span>
   <span id="me-badge" class="muted" style="align-self:center;padding-right:12px;font-size:12px"></span>
 </div>
@@ -827,7 +847,29 @@ function showTab(name, push=true){
   const path=TAB_PATH[name]||'/consulta';
   if(push && location.pathname!==path) history.pushState({tab:name}, '', path);
   if(name==='bench' && typeof benchUrlSync==='function') benchUrlSync();
+  navMenus();
 }
+// Menús del header: el título del menú se marca si una de sus opciones es el tab activo; elegir una opción lo
+// cierra; abrir uno cierra el otro y coloca su panel debajo del título.
+function navMenus(){
+  document.querySelectorAll('.navmenu').forEach(d=>{
+    d.querySelector('summary').classList.toggle('active', !!d.querySelector('.navmenu-items button.active'));
+    d.open=false;
+  });
+}
+document.querySelectorAll('.navmenu').forEach(d=>{
+  d.addEventListener('toggle', ()=>{
+    if(!d.open) return;
+    document.querySelectorAll('.navmenu').forEach(o=>{ if(o!==d) o.open=false; });
+    const r=d.querySelector('summary').getBoundingClientRect(), p=d.querySelector('.navmenu-items');
+    p.style.top=(r.bottom+4)+'px';
+    p.style.left=Math.max(8, Math.min(r.left, window.innerWidth-p.offsetWidth-8))+'px';
+  });
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.navmenu')) document.querySelectorAll('.navmenu').forEach(d=>d.open=false);
+});
+window.addEventListener('scroll', ()=>document.querySelectorAll('.navmenu').forEach(d=>d.open=false), {passive:true});
 // Botones atrás/adelante del navegador sincronizan el tab (sin apilar historial).
 window.addEventListener('popstate', ()=>showTab(tabFromPath(location.pathname), false));
 async function loadConfig(){ try{ const c=await (await fetch('/api/config')).json();
@@ -904,6 +946,8 @@ async function loadMe(){
     $('tabbtn-admin').hidden=!me.is_superadmin;
     $('tabbtn-forms').hidden=!me.can_ingest;
     $('tabbtn-estudios').hidden=!me.can_ingest;
+    $('tabbtn-informes').hidden=!me.can_ingest;
+    $('nav-admin').hidden=!(me.can_ingest || me.is_superadmin);
     $('me-badge').innerHTML=(me.email?esc(me.email):'—')+' · '+(ROLE_LABEL[me.role]||me.role)+
       ' · <a style="color:#3b82f6" href="/logout">salir</a>';
   }catch(e){ window.__me={}; }

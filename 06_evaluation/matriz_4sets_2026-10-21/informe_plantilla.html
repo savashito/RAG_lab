@@ -89,7 +89,8 @@
 <p><b>Qué cambió en la versión corregida</b> (todavía no está en prod):</p>
 <ul>
   <li><b>El CPF.</b> Antes solo entraba si el LLM decía «delito federal», incluso cuando la persona lo pedía por nombre. Ahora también entra si la pregunta lo nombra: «Código Penal Federal», «CPF», «ámbito federal», «fuero federal». Lo detecta una regex, sin LLM.</li>
-  <li><b>Las preguntas teóricas</b> («¿qué es la tentativa?»). Antes se trataban como un caso al que le falta el estado: el filtro quitaba los códigos estatales y pedía el estado. Ahora el LLM del filtro marca si la pregunta es teórica, y en ese caso el buscador ve todos los códigos y no se pide el estado.</li>
+  <li><b>Las preguntas teóricas</b> («¿qué es la tentativa?»). Antes se trataban como un caso al que le falta el estado: el filtro quitaba los códigos estatales y pedía el estado antes de responder. Ahora el LLM del filtro marca si la pregunta es teórica. En ese caso, la respuesta explica el concepto con la doctrina, las leyes nacionales y el CPF, <b>sin citar códigos de ningún estado</b> (por el hallazgo de la ronda 1), aclara que cada estado lo regula en su propio código, y al final ofrece explicar el código del estado de la persona.
+    <br><small>Ojo: en las corridas de esta página (B2, G2, C2, D2), las preguntas teóricas sin estado sí podían ver todos los códigos estatales. La regla de arriba se ajustó el 22 de octubre y se está midiendo aparte.</small></li>
   <li><b>«México» como país.</b> Una regla para que «¿puedo denunciar en México?» no se lea como «Ciudad de México».</li>
 </ul>
 </div>
@@ -100,7 +101,7 @@
   <tr><td>«¿Qué pena tiene el lavado de dinero?»</td><td>CPF + nacionales</td><td>igual</td></tr>
   <tr><td>«En el Código Penal Federal, ¿cómo se tipifica el estupro?»</td><td class="x">solo nacionales: sin el CPF, y pide el estado</td><td class="ok">CPF + nacionales; no pide estado</td></tr>
   <tr><td>«Compara la violación en la CDMX, el Edomex y el CPF»</td><td class="x">CDMX + Edomex + nacionales: sin el CPF</td><td class="ok">CDMX + Edomex + CPF + nacionales</td></tr>
-  <tr><td>«¿Qué es la tentativa punible?»</td><td class="x">solo nacionales; pide el estado</td><td class="ok">todos los códigos; no pide estado</td></tr>
+  <tr><td>«¿Qué es la tentativa punible?»</td><td class="x">solo nacionales; pide el estado antes de responder</td><td class="ok">nacionales + CPF; explica el concepto sin citar códigos estatales y ofrece ver el de su estado</td></tr>
 </table></div>
 <p class="mut">Validación del filtro corregido con el LLM real: detección de lugar 86/86 en 5 corridas; clasificación del tipo 39/44 (igual que el filtro viejo); 12/12 frases nuevas escritas para esta prueba; ninguna de las 31 preguntas del set 13 se marcó como teórica.</p>
 

@@ -151,12 +151,15 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
     jur = [j for j in no_estatales if j != federal or con_federal] + [disponibles[e] for e in en_base]
     menciona = lambda e: ', '.join(f'«{x["texto"]}»' for x in ex['lugares'] if x['estado'] == e)  # noqa: E731
     if not estados and ex['teorica']:
-        # Pregunta de teoría sin caso concreto: no hay hechos que ubicar. Los códigos sirven como ejemplos (set 3:
-        # «¿qué es la tentativa punible?» espera los artículos de la CDMX, el CPF y el Estado de México).
-        jur = list(dict.fromkeys(no_estatales + list(disponibles.values())))
-        nota = ('LUGAR: es una pregunta teórica, sin un caso concreto: no preguntes el estado. Responde con los conceptos '
-                'del derecho penal. Si citas artículos como ejemplo, di de qué código es cada uno y aclara que cada estado '
-                'lo regula en su propio código penal.')
+        # Pregunta de teoría sin caso concreto («¿qué es la tentativa?»): no hay hechos que ubicar, así que no se frena
+        # la respuesta pidiendo el estado. Pero tampoco se citan códigos de estados que la persona no pidió: en la
+        # ronda 1 del estudio, un artículo de otro estado se leía como «la ley que me aplica» aunque fuera un ejemplo.
+        # Se responde con la doctrina, las leyes nacionales y el CPF (que no se confunde con un código estatal), y se
+        # OFRECE ver el código de su estado.
+        nota = ('LUGAR: es una pregunta teórica, sin un caso concreto: no preguntes el estado antes de responder. Explica '
+                'el concepto con la doctrina, las leyes nacionales y el Código Penal Federal si está en el CONTEXTO. No '
+                'cites códigos penales de ningún estado. Aclara que cada estado lo regula en su propio código penal y, al '
+                'final, ofrece explicar qué dice el código de su estado si la persona te dice cuál es.')
     elif not estados and ex.get('pide_federal'):
         nota = ('LUGAR: la persona pregunta por el Código Penal Federal (ámbito federal). Responde con él y con las leyes '
                 'nacionales que apliquen, sin preguntar el estado. No cites códigos penales de ningún estado.')

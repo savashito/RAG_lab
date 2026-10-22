@@ -141,11 +141,12 @@ def test_federal_sin_nombrar_el_codigo_no_cuenta():
     assert jg.pide_federal('¿y en el fuero federal?') and jg.pide_federal('según el CPF')
 
 
-def test_doctrina_no_pide_estado_y_ve_todos_los_codigos():
+def test_teorica_no_pide_estado_ni_ve_codigos_estatales():
     llm = FakeLLM({'lugares': [], 'tipo': 'otro', 'teorica': True})
     g = jg.decidir('¿Qué es la tentativa punible?', llm, DISP, NO_EST)
-    assert set(g['jurisdictions']) == set(NO_EST) | set(DISP.values()) and not g['depende_del_estado']
-    assert 'no preguntes el estado' in g['nota']
+    # Doctrina + nacionales + CPF, sin códigos estatales (hallazgo de la ronda 1); se ofrece ver su estado.
+    assert g['jurisdictions'] == NO_EST and not g['depende_del_estado']
+    assert 'no preguntes el estado antes de responder' in g['nota'] and 'ofrece' in g['nota']
 
 
 def test_doctrina_con_estado_nombrado_no_agrega_el_cpf():
