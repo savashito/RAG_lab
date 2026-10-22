@@ -31,7 +31,11 @@ for (sid, cfg), xs in sorted(res.items()):
     boots = sorted(st.mean(random.choice(medias) for _ in medias) for _ in range(2000))
     def avg(k):
         v = [z[k] for z in xs if z[k] is not None]; return round(st.mean(v), 4) if v else None
+    # Ruido de una misma pregunta entre las 2 repeticiones: DE combinada sqrt(media((a-b)^2 / 2)).
+    de_rep = (st.mean((xs[0]['q'][q] - xs[1]['q'][q]) ** 2 / 2 for q in qs)) ** 0.5 if len(xs) == 2 else None
     tabla.append({'set': sid, 'cfg': cfg, 'runs': [z['id'] for z in xs], 'scores': [z['score'] for z in xs],
+                  'de_preguntas': round(st.stdev(medias), 4) if len(medias) > 1 else None,
+                  'de_rep': round(de_rep, 4) if de_rep is not None else None,
                   'media': round(st.mean(medias), 4), 'ic': [round(boots[50], 4), round(boots[1949], 4)], 'n': len(qs),
                   'recall': avg('recall'), 'otro': avg('otro'), 'must': avg('must'), 'pass': avg('pass'),
                   'seg': avg('seg'), 'unsup': avg('unsup'), 'memoria': avg('memoria')})

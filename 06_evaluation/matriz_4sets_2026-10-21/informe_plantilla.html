@@ -34,6 +34,7 @@
  tr.open td{background:var(--panel2)}
  tr.det td{background:var(--bg);padding:12px 14px}
  .cfg{display:inline-block;min-width:30px;text-align:center;font-weight:700;border-radius:6px;padding:1px 6px;background:var(--panel2);border:1px solid var(--line)}
+ #t-res td:first-child,#t-cfg td:first-child,#t-pares td:first-child{white-space:nowrap}
  .chev{color:var(--mut);display:inline-block;width:14px;transition:transform .15s}
  tr.open .chev{transform:rotate(90deg)}
  .barcell{min-width:150px}
@@ -87,23 +88,32 @@
 </ol>
 
 <h2 id="opciones">2. Qué hace cada opción</h2>
-<p>Son las casillas y menús de «Preguntar», «Conversacional» y «Benchmark», en el orden del camino de arriba. <b>Tiempo medido</b>: el promedio por pregunta en las corridas de esta matriz (sets 3, 13 y 14; en el set 12, cuyas preguntas son relatos largos, va entre paréntesis). Cada corrida guarda cuánto tardó cada etapa. Las opciones que no tienen su propia etapa no se midieron por separado.</p>
+<p>Son las casillas y menús de «Preguntar», «Conversacional» y «Benchmark», en el orden del camino de arriba. <b>Tiempo medido</b>: media ± desviación estándar por pregunta en las corridas de esta matriz (sets 3, 13 y 14; el set 12, de relatos largos, va aparte cuando cambia). <b>p90</b>: el 90 % de las preguntas tardó eso o menos; es lo que espera la persona en las preguntas más lentas. Cada corrida guarda cuánto tardó cada etapa. Las opciones que no tienen su propia etapa no se midieron por separado.</p>
 <div class="scroll"><table>
   <tr><th>Opción</th><th>Paso</th><th>Qué hace</th><th>Llamadas extra al LLM</th><th>Tiempo medido</th></tr>
-  <tr><td><b>filtro por estado 🚧</b></td><td>1</td><td>El LLM detecta el estado de los hechos y el buscador solo ve los códigos permitidos. Se explica completo en la <a href="#v1">sección 3</a>. Reemplaza al menú «Lugar».</td><td>1</td><td>0.66–0.73 s (set 12: 1.1 s)</td></tr>
+  <tr><td><b>filtro por estado 🚧</b></td><td>1</td><td>El LLM detecta el estado de los hechos y el buscador solo ve los códigos permitidos. Se explica completo en la <a href="#v1">sección 3</a>. Reemplaza al menú «Lugar».</td><td>1</td><td>0.71 ± 0.20 s (p90 0.90 s; set 12: 1.15 ± 0.23 s)</td></tr>
   <tr><td><b>Lugar</b> (menú)</td><td>1</td><td>Filtro <b>manual</b> (el original): la persona marca de qué lugares puede salir el contexto. Al marcar un estado se marcan solos Federal, Nacional y Doctrina. Con «Todos» no filtra nada.</td><td>0</td><td>no medido (es un filtro de la base de datos)</td></tr>
   <tr><td><b>routing por código 🧭</b></td><td>2</td><td>Si la pregunta <b>nombra</b> un código («Querétaro», «CNPP», «CPF»), busca también dentro de ese código y le aparta resultados. No quita nada: solo asegura que el código nombrado aparezca.</td><td>0</td><td>no medido por separado (no se usó en la matriz)</td></tr>
-  <tr><td><b>Método</b></td><td>2</td><td>Cómo busca. <i>orig</i>: por significado (vectores), con la pregunta tal cual. <i>reescribir</i>: el LLM pasa la pregunta a lenguaje jurídico. <i>multiquery</i>: las dos, mezcladas. <i>bm25</i>: por palabras exactas. <i>híbrido</i>: vectores + BM25; encuentra el sentido y también números de artículo y términos exactos.</td><td>0 (1 con <i>reescribir</i> o <i>multiquery</i>)</td><td>la búsqueda completa (con HyDE y descomponer): 2.7–3.3 s (set 12: 4.3 s)</td></tr>
+  <tr><td><b>Método</b></td><td>2</td><td>Cómo busca. <i>orig</i>: por significado (vectores), con la pregunta tal cual. <i>reescribir</i>: el LLM pasa la pregunta a lenguaje jurídico. <i>multiquery</i>: las dos, mezcladas. <i>bm25</i>: por palabras exactas. <i>híbrido</i>: vectores + BM25; encuentra el sentido y también números de artículo y términos exactos.</td><td>0 (1 con <i>reescribir</i> o <i>multiquery</i>)</td><td>búsqueda completa (con HyDE y descomponer), sin filtro: 2.93 ± 1.14 s (p90 4.1 s)</td></tr>
   <tr><td><b>Top-k</b></td><td>2</td><td>Cuántos resultados del buscador entran al contexto.</td><td>0</td><td>no medido por separado</td></tr>
   <tr><td><b>HyDE 🧪</b></td><td>2</td><td>Antes de buscar, el LLM escribe un borrador de cómo se vería el artículo que responde, y se busca con ese borrador. Ayuda cuando la persona dice «me tocaron sin permiso» y el código dice «actos sexuales sin consentimiento».</td><td>1</td><td>no medido por separado: está dentro de la búsqueda</td></tr>
-  <tr><td><b>descomponer 🧩</b></td><td>2</td><td>Si la pregunta compara varias cosas («CDMX, Edomex y CPF»), el LLM la divide en una búsqueda por cada una, para que ninguna se quede fuera del contexto. Si no compara nada, no cambia.</td><td>1</td><td>0.55–0.60 s</td></tr>
-  <tr><td><b>descomponer por delito ⚖️</b></td><td>2</td><td>Si el relato tiene varias conductas que pueden ser delito («me drogó y me robó»), el LLM escribe una búsqueda por conducta, para que lleguen los artículos de cada delito. Agrega <b>chunks extra por delito</b> (3) por cada conducta adicional.</td><td>1</td><td>0.55 s de la llamada + ~1 s más de búsqueda + ~0.5 s más de respuesta (contexto más largo). Total: +1.5 a +2 s (set 12: +4 s)</td></tr>
+  <tr><td><b>descomponer 🧩</b></td><td>2</td><td>Si la pregunta compara varias cosas («CDMX, Edomex y CPF»), el LLM la divide en una búsqueda por cada una, para que ninguna se quede fuera del contexto. Si no compara nada, no cambia.</td><td>1</td><td>0.58 ± 0.09 s (p90 0.68 s)</td></tr>
+  <tr><td><b>descomponer por delito ⚖️</b></td><td>2</td><td>Si el relato tiene varias conductas que pueden ser delito («me drogó y me robó»), el LLM escribe una búsqueda por conducta, para que lleguen los artículos de cada delito. Agrega <b>chunks extra por delito</b> (3) por cada conducta adicional.</td><td>1</td><td>llamada: 0.55 ± 0.06 s. La búsqueda pasa de 3.03 ± 1.12 s a 4.08 ± 1.62 s y la respuesta de 4.73 a 5.27 s (más contexto). Total: +2.1 s por pregunta (set 12: +5.6 s)</td></tr>
   <tr><td><b>rerank 🎯</b></td><td>2</td><td>Un segundo modelo reordena los resultados por relevancia antes de quedarse con los primeros.</td><td>0 (otro modelo)</td><td>no medido (no se usó en la matriz)</td></tr>
   <tr><td><b>vecinos ↕</b></td><td>3</td><td>Por cada artículo encontrado, agrega su familia (bis, ter…) y los 2 artículos de antes y de después. Muchas veces la pena o la definición está en el artículo de al lado.</td><td>0</td><td>no medido por separado: está dentro de la búsqueda</td></tr>
-  <tr><td><b>seguir remisiones ↪</b></td><td>3</td><td>Si un artículo del contexto dice «las penas previstas en el artículo 220», agrega también el 220 (hasta 4, primero los de pena), marcado «↪ remitido por». Búsqueda exacta en la tabla <code>corpus_remisiones</code>, sin LLM.</td><td>0</td><td>0.01–0.02 s (10–20 milisegundos)</td></tr>
-  <tr><td><b>Prompt</b></td><td>4</td><td>Las instrucciones del LLM que responde: tono, qué citar, cuándo preguntar. No cambia lo que encuentra el buscador, solo cómo se escribe la respuesta. <i>penal-original-v1</i> es el de la ronda 1; <i>tlacua-v1-penas</i> agrega una sección que pide dar las penas; <i>tlacua-secuencia-y-penas</i> es el del 20 de octubre.</td><td>0</td><td>respuesta: 4.6–5.2 s con penal-original-v1; ~0.5 s más con tlacua-v1-penas (respuestas más largas)</td></tr>
+  <tr><td><b>seguir remisiones ↪</b></td><td>3</td><td>Si un artículo del contexto dice «las penas previstas en el artículo 220», agrega también el 220 (hasta 4, primero los de pena), marcado «↪ remitido por». Búsqueda exacta en la tabla <code>corpus_remisiones</code>, sin LLM.</td><td>0</td><td>0.01 ± 0.01 s (10 milisegundos; p90 30 ms)</td></tr>
+  <tr><td><b>Prompt</b></td><td>4</td><td>Las instrucciones del LLM que responde: tono, qué citar, cuándo preguntar. No cambia lo que encuentra el buscador, solo cómo se escribe la respuesta. <i>penal-original-v1</i> es el de la ronda 1; <i>tlacua-v1-penas</i> agrega una sección que pide dar las penas; <i>tlacua-secuencia-y-penas</i> es el del 20 de octubre.</td><td>0</td><td>respuesta: 5.47 ± 1.11 s con penal-original-v1 y 5.78 ± 1.02 s con tlacua-v1-penas, con todo lo demás igual (C·v2 y D·v2)</td></tr>
 </table></div>
-<p class="mut">Tiempo total para responder una pregunta, sin contar al juez (sets 3, 13 y 14): sin filtro (A) 7.8–8.2 s; con filtro (B·v2) 8.2–8.6 s; con filtro + descomponer por delito + remisiones (C·v2) 10.1–10.5 s. El juez agrega 1.6–2.3 s, solo en el benchmark.</p>
+<h3>Tiempo total por pregunta</h3>
+<div class="scroll"><table>
+  <tr><th>Configuración</th><th class="n">Sin juez: media ± DE</th><th class="n">p50</th><th class="n">p90</th></tr>
+  <tr><td>A · sin filtro</td><td class="n">8.53 ± 1.70 s</td><td class="n">8.72 s</td><td class="n">10.54 s</td></tr>
+  <tr><td>B·v2 · + filtro</td><td class="n">9.05 ± 1.70 s</td><td class="n">9.16 s</td><td class="n">11.22 s</td></tr>
+  <tr><td>G·v2 · + descomponer por delito</td><td class="n">11.16 ± 2.42 s</td><td class="n">11.22 s</td><td class="n">14.25 s</td></tr>
+  <tr><td>C·v2 · + remisiones</td><td class="n">11.38 ± 2.47 s</td><td class="n">11.44 s</td><td class="n">14.31 s</td></tr>
+  <tr><td>D·v2 · con tlacua-v1-penas</td><td class="n">11.68 ± 2.48 s</td><td class="n">11.82 s</td><td class="n">14.75 s</td></tr>
+</table></div>
+<p class="mut">Sets 3, 13 y 14: 276 preguntas por configuración (2 repeticiones). En el benchmark, el juez agrega 1.90 ± 0.36 s. «Descomponer por delito» es lo que más tiempo agrega: +2.1 s de media y +3 s en el p90.</p>
 
 
 <h2 id="v1">3. El filtro por estado v1 (el original)</h2>
@@ -239,13 +249,16 @@ const DEFS = [
   ['Score', 'El juez revisa cada criterio de la pregunta (presente, parcial o ausente). El score es la suma ponderada de los criterios «must» y «should» cumplidos, menos los «must_not» violados, dividida entre el peso total de los «must» y «should». Se promedia sobre las preguntas y va de 0 a 100.'],
   ['Media', 'El promedio de las dos repeticiones. Primero se promedia cada pregunta entre las dos corridas, y luego entre preguntas.'],
   ['IC 95 %', 'El intervalo de confianza de la media, por bootstrap sobre las preguntas (2,000 remuestreos). Mide qué tanto cambiaría la media con otras preguntas del mismo tipo.'],
+  ['DE preguntas', 'Desviación estándar del score entre las preguntas de la configuración (cada pregunta, promediada entre las dos repeticiones). Alta = la configuración responde muy bien unas preguntas y muy mal otras.'],
+  ['DE repetición', 'Cuánto cambia el score de la MISMA pregunta entre las dos repeticiones: raíz de la media de (rep 1 − rep 2)² / 2 sobre todas las preguntas. Es el ruido de una sola pregunta. En los sets 13 y 14 es de 15 a 30 puntos: una pregunta suelta puede cambiar mucho de una corrida a otra.'],
+  ['Ruido de la media', 'DE repetición dividida entre √n (n = preguntas del set): cuánto se espera que cambie el score medio de una corrida a otra solo por ruido. Una diferencia entre configuraciones menor a unas dos veces este número no es concluyente.'],
   ['Must', 'El porcentaje de criterios «must» que el juez marcó como presentes.'],
   ['Pasa', 'El porcentaje de preguntas con todos los «must» presentes y ningún «must_not».'],
   ['Recall', 'El porcentaje de los artículos que la pregunta necesita que llegaron al contexto. Lo calcula un script, sin LLM. Mide al buscador, no la respuesta.'],
   ['Otro estado', 'El porcentaje de respuestas que citan el código penal de un estado que no corresponde. Lo mide el verificador de citas (regex, sin LLM), solo en las preguntas donde aplica.'],
   ['Citas sin respaldo', 'El porcentaje de los artículos citados que no están en el contexto: inventados, citados de memoria o atribuidos a la ley equivocada.'],
   ['De memoria', 'La parte de las citas sin respaldo que son artículos reales, pero que el LLM citó sin tenerlos en el contexto.'],
-  ['Seg/preg', 'Segundos promedio por pregunta: búsqueda, respuesta y juez.'],
+  ['Seg/preg', 'Segundos promedio por pregunta: búsqueda, respuesta y juez. Los tiempos por etapa, con desviación estándar y p90, están en la sección 2.'],
 ];
 const PARES = [
   ['A','B','Filtro v1','¿Qué hace el filtro v1 contra no tener filtro?'],
@@ -291,14 +304,15 @@ function renderSet(){
   $('set-desc').textContent = SETS[SET].desc;
   const rows = ORD.map(c => row(SET, c)), best = Math.max(...rows.map(r => r.media));
   const t = $('t-res');
-  t.innerHTML = '<tr><th>Config</th><th class="n">Rep 1</th><th class="n">Rep 2</th><th class="n">Media</th><th class="barcell">Media e IC 95 %</th><th class="n">IC 95 %</th><th class="n">Otro estado</th></tr>';
+  t.innerHTML = '<tr><th>Config</th><th class="n">Rep 1</th><th class="n">Rep 2</th><th class="n">Media</th><th class="barcell">Media e IC 95 %</th><th class="n">IC 95 %</th><th class="n" title="Desviación estándar del score entre preguntas">DE preguntas</th><th class="n" title="Cuánto cambia la misma pregunta entre las dos repeticiones">DE repetición</th><th class="n" title="DE repetición / √n: cuánto se espera que cambie la media de una corrida a otra">Ruido de la media</th><th class="n">Otro estado</th></tr>';
   for(const r of rows){
     const tr = document.createElement('tr'); tr.className = 'click';
     tr.innerHTML = `<td><span class="chev">▸</span> ${tagc(r.cfg)}</td>
       <td class="n">${pc(r.scores[0])}</td><td class="n">${pc(r.scores[1])}</td>
       <td class="n ${r.media === best ? 'best' : ''}">${pc(r.media)}</td>
       <td class="barcell"><div class="bar"><i style="left:0;width:${r.media*100}%"></i><s style="left:${r.ic[0]*100}%;width:${(r.ic[1]-r.ic[0])*100}%"></s></div></td>
-      <td class="n mut">${pc(r.ic[0])}–${pc(r.ic[1])}</td><td class="n">${pc(r.otro)}</td>`;
+      <td class="n mut">${pc(r.ic[0])}–${pc(r.ic[1])}</td><td class="n">${pc(r.de_preguntas)}</td><td class="n">${pc(r.de_rep)}</td>
+      <td class="n">±${pc(r.de_rep / Math.sqrt(r.n))}</td><td class="n">${pc(r.otro)}</td>`;
     t.appendChild(tr);
     toggler(tr, () => {
       const x = CFG[r.cfg], [a, b] = r.runs;
