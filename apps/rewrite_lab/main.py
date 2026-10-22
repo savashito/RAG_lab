@@ -1316,6 +1316,18 @@ bench = Bench(connect=connect, ask=ask, judge=judge_llm, store=store, system_for
 app.include_router(bench.router)
 print(f'Benchmark: artefactos en {store.describe()} · juez en {judge_llm.url}')
 
+# Pruebas por componente (🧪 Benchmark → 🧩 Componentes): cada llamada al LLM contra su propio objetivo. Ver componentes.py.
+from componentes import Componentes  # noqa: E402
+from shared.llm_client import DECOMPOSE_SYSTEM  # noqa: E402
+_TEMA_PENAL = 'derecho_penal_mexicano'
+componentes = Componentes(
+    connect=connect, current_email=current_email, can_run=can_ingest,
+    runners={'filtro': lambda t: jgate.extraer_lugares(t, llm), 'descomponer': llm.decompose,
+             'por_delito': decompose_conducts, 'hyde': lambda t: llm.hyde_passage(t, system=hyde_for(_TEMA_PENAL))},
+    prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
+             'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL)})
+app.include_router(componentes.router)
+
 # Asistente de trámites (/tramites) y administración de formularios (/formularios): ver forms/.
 # Los formularios viven en la tabla `formularios` (no en el corpus); su fuente y versiones
 # publicadas, en el object store. La máquina de estados está en forms/asistente.py.

@@ -152,6 +152,11 @@
  .bsub button.active{color:#e6e6e6;border-bottom-color:#3b82f6}
  .pill{display:inline-block;min-width:18px;padding:0 6px;border-radius:9px;background:#232833;color:#c7cdd6;font-size:11px;text-align:center}
  .bsubpage[hidden]{display:none}
+ .comp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:8px 0}
+ .comp-card{cursor:pointer} .comp-card.on{border-color:#3b82f6}
+ .comp-tasa{font-size:22px;font-weight:700} .comp-ok{color:#4ade80} .comp-mal{color:#f87171}
+ .comp-tab{width:100%;border-collapse:collapse;font-size:13px} .comp-tab td,.comp-tab th{vertical-align:top}
+ .comp-tab pre{white-space:pre-wrap;margin:0;font:12px/1.4 ui-monospace,monospace;max-height:180px;overflow:auto}
  .bcard{background:#171a21;border:1px solid #2a2f3a;border-radius:10px;padding:12px 14px}
  /* mismas medidas que un <button> (fuente, padding) y sin el margin-top de `details summary`: alineado con los botones vecinos */
  .ghostbtn{display:block;list-style:none;cursor:pointer;background:#232833;color:#fff;border-radius:8px;padding:9px 16px;margin:0;
@@ -522,6 +527,7 @@
      <button data-sub="questions">📝 Preguntas <span id="bench-qcount" class="pill"></span></button>
      <button data-sub="prompts" title="Nombre de cada system prompt usado en las corridas">🗂️ Prompts</button>
      <button data-sub="informes" title="Resúmenes de varias corridas, con tablas y explicación">📑 Informes</button>
+     <button data-sub="componentes" title="Cada llamada al LLM probada contra su propio objetivo">🧩 Componentes</button>
      <button data-sub="compare" hidden>📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
    </div>
  </div>
@@ -636,6 +642,16 @@
    <p class="muted" style="font-size:13px;margin-top:0">Resúmenes de varias corridas a la vez, con tablas, la explicación de cada
      configuración y enlaces a cada corrida. No dependen del set elegido arriba.</p>
    <div id="bench-informes"></div>
+ </div>
+
+ <!-- 🧩 Componentes -->
+ <div id="bsub-componentes" class="bsubpage" hidden>
+   <p class="muted" style="font-size:13px;margin-top:0">El benchmark mide el sistema completo: si el score baja, no se sabe qué pieza
+     falló. Aquí se prueba <b>una sola llamada al LLM</b> contra su propio objetivo, con casos «entrada → salida esperada» y sin juez.
+     Cada corrida guarda la huella (md5) del prompt que probó, para ver si un cambio de prompt mejora o empeora su prueba.
+     No dependen del set elegido arriba.</p>
+   <div id="comp-cards" class="comp-grid"></div>
+   <div id="comp-detalle"></div>
  </div>
 
  <div id="bsub-compare" class="bsubpage" hidden>

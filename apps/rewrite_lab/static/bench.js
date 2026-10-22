@@ -101,13 +101,14 @@ function diffStats(results){
 // ── Navegación ──────────────────────────────────────────────────────────────────
 // La URL refleja lo que se ve, para recargar o compartir el enlace:
 //   /benchmark?set=3&vista=preguntas · ?set=3&corrida=12 · ?set=3&vista=comparar&comparar=11,12
-const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', informes: 'informes', compare: 'comparar'};
+const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', informes: 'informes', componentes: 'componentes', compare: 'comparar'};
 function benchSub(name){
   BENCH.sub = name;
   document.querySelectorAll('.bsub button').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
-  for(const s of ['run','questions','prompts','informes','compare']) $('bsub-'+s).hidden = (s!==name);
+  for(const s of ['run','questions','prompts','informes','componentes','compare']) $('bsub-'+s).hidden = (s!==name);
   if(name==='prompts') loadPrompts();
   if(name==='informes') loadInformes();
+  if(name==='componentes') loadComponentes(); else clearTimeout(COMP.poll);
   benchUrlSync();
 }
 function benchUrlSync(){
@@ -1030,6 +1031,96 @@ function ptagChip(r){
   return r.prompt_md5 ? `<span class="ptag none" title="Este system prompt aún no tiene nombre: ponlo en 🗂️ Prompts">sin etiqueta · ${esc(short(r.prompt_md5))}</span>` : '';
 }
 const checkedPrompts = () => [...document.querySelectorAll('.bp-cmp:checked')].map(c=>c.value);
+// 🧩 Componentes: cada llamada al LLM contra su propio objetivo (componentes.py, /api/componentes).
+const COMP = {sel: null, corrida: null, poll: null, lista: []};
+const cpct = x => x == null ? '—' : (x * 100).toFixed(0) + ' %';
+async function loadComponentes(){
+  clearTimeout(COMP.poll);
+  try{ COMP.lista = await bjson('/api/componentes'); }catch(e){ $('comp-cards').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
+  $('comp-cards').innerHTML = COMP.lista.map(c => {
+    const m = (c.ultima || {}).metricas || {};
+    const grupos = Object.entries(m.por_grupo || {}).map(([g, v]) => `${esc(g)} ${v.aciertos}/${v.n}`).join(' · ');
+    const estado = c.corriendo ? '<span class="muted">⏳ corriendo…</span>'
+      : c.ultima ? `<span class="comp-tasa ${m.tasa >= 0.9 ? 'comp-ok' : m.tasa < 0.7 ? 'comp-mal' : ''}">${cpct(m.tasa)}</span>
+          <span class="muted" style="font-size:12px"> ${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)} casos · prompt ${esc(c.ultima.prompt_md5.slice(0, 8))}${c.ultima.prompt_md5 !== c.prompt_md5 ? ' (el prompt cambió desde entonces)' : ''}</span>`
+      : '<span class="muted">sin corridas todavía</span>';
+    return `<div class="bcard comp-card ${COMP.sel === c.id ? 'on' : ''}" data-c="${c.id}">
+      <div style="font-weight:700">${c.icono} ${esc(c.nombre)}</div>
+      <div class="muted" style="font-size:12px;margin:4px 0 8px">${esc(c.objetivo)}</div>
+      <div>${estado}</div>${grupos ? `<div class="muted" style="font-size:12px">${grupos}</div>` : ''}
+      <div class="muted" style="font-size:12px;margin-top:6px">${c.casos} casos (${c.revisados} revisados)</div></div>`;
+  }).join('');
+  document.querySelectorAll('.comp-card').forEach(el => el.addEventListener('click', () => compAbrir(el.dataset.c)));
+  if(COMP.sel) compDetalle();
+  if(COMP.lista.some(c => c.corriendo)) COMP.poll = setTimeout(loadComponentes, 4000);
+}
+function compAbrir(id){ COMP.sel = id; COMP.corrida = null; loadComponentes(); }
+async function compDetalle(){
+  const c = COMP.lista.find(x => x.id === COMP.sel); if(!c) return;
+  const corridas = await bjson(`/api/componentes/${c.id}/corridas`);
+  if(COMP.corrida == null && corridas.length) COMP.corrida = corridas[0].id;
+  const filas = corridas.map(r => {
+    const m = r.metricas || {}, g = Object.entries(m.por_grupo || {}).map(([k, v]) => `${esc(k)} ${v.aciertos}/${v.n}`).join(' · ');
+    return `<tr class="${r.id === COMP.corrida ? 'sel' : ''}" style="cursor:pointer" data-r="${r.id}"><td>#${r.id}</td><td>${esc((r.fecha || '').slice(0, 16))}</td>
+      <td><code>${esc(r.prompt_md5.slice(0, 8))}</code>${r.prompt_md5 === c.prompt_md5 ? ' <span class="pill">actual</span>' : ''}</td>
+      <td>${r.status === 'running' ? `⏳ ${r.done}/${r.n}` : `<b>${cpct(m.tasa)}</b> (${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)})`}</td>
+      <td class="muted">${g}${m.errores ? ` · ${m.errores} con error` : ''}</td><td class="muted">${m.segundos_media ?? '—'} s</td></tr>`;
+  }).join('');
+  $('comp-detalle').innerHTML = `<div class="bcard" style="margin-top:10px">
+    <div class="row" style="margin:0"><b>${c.icono} ${esc(c.nombre)}</b><span style="flex:1"></span>
+      <button class="ghost" id="comp-casos-btn">📝 Casos (JSON)</button>
+      <button id="comp-correr" ${c.corriendo ? 'disabled' : ''}>▶ Correr prueba</button></div>
+    <details style="margin-top:8px"><summary class="muted">Prompt actual · <code>${esc(c.prompt_md5.slice(0, 8))}</code></summary><pre class="comp-pre" style="white-space:pre-wrap;font:12px/1.4 ui-monospace,monospace">${esc(c.prompt)}</pre></details>
+    <div id="comp-casos-edit"></div>
+    <h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Corridas</h3>
+    ${corridas.length ? `<table class="comp-tab"><tr><th>#</th><th>Fecha</th><th>Prompt</th><th>Aciertos</th><th>Por grupo</th><th>s/caso</th></tr>${filas}</table>` : '<p class="muted">Todavía no hay corridas: ▶ Correr prueba.</p>'}
+    <div id="comp-res"></div></div>`;
+  $('comp-correr').onclick = compCorrer;
+  $('comp-casos-btn').onclick = compCasos;
+  document.querySelectorAll('#comp-detalle tr[data-r]').forEach(tr => tr.onclick = () => { COMP.corrida = +tr.dataset.r; compDetalle(); });
+  if(COMP.corrida) compResultados(COMP.corrida);
+}
+// Cómo mostrar la salida de cada componente, en corto.
+function compSalida(comp, s){
+  if(s == null) return '—';
+  if(comp === 'filtro') return (s.lugares || []).map(l => `${l.texto} → ${l.estado || '¿?'} (${l.rol})`).join('<br>') +
+    `<div class="muted">tipo: ${esc(s.tipo || '—')}${s.teorica ? ' · teórica' : ''}${s.depende_del_estado ? ' · depende del estado' : ''}</div>`;
+  if(Array.isArray(s)) return s.map((x, i) => `${i + 1}. ${esc(x)}`).join('<br>');
+  return `<pre>${esc(String(s))}</pre>`;
+}
+async function compResultados(rid){
+  const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;
+  const mal = res.filter(r => r.ok !== true).length;
+  $('comp-res').innerHTML = `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Corrida #${rid}: ${res.length} casos · ${mal} fallos (primero)</h3>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th></th><th>Entrada</th><th>Esperado</th><th>Salió</th><th>Por qué</th></tr>
+    ${res.map(r => {
+      const d = r.detalle || {}, por = r.error ? esc(r.error) : esc([].concat(d.falla || [], d.fallas || []).join(' · '))
+        + (d.aviso ? `<div style="color:#fbbf24">⚠ ${esc(d.aviso)}</div>` : '');
+      return `<tr><td>${r.ok === true ? '✅' : r.ok === false ? '❌' : '⚠️'}</td><td>${esc(r.entrada)}</td>
+        <td><pre>${esc(JSON.stringify(r.esperado))}</pre></td><td>${compSalida(comp, r.salida)}</td><td class="muted">${por}</td></tr>`;
+    }).join('')}</table></div>`;
+}
+async function compCorrer(){
+  try{ const r = await bpost(`/api/componentes/${COMP.sel}/correr`); COMP.corrida = r.corrida; bmsg(`Corrida #${r.corrida} en marcha`, true); loadComponentes(); }
+  catch(e){ bmsg(esc(e.message), false); }
+}
+async function compCasos(){
+  const box = $('comp-casos-edit');
+  if(box.innerHTML){ box.innerHTML = ''; return; }
+  const casos = await bjson(`/api/componentes/${COMP.sel}/casos`);
+  const limpio = casos.map(({id, ...k}) => k);
+  box.innerHTML = `<p class="muted" style="font-size:12px;margin:8px 0 4px">Cada caso: <code>entrada</code>, <code>esperado</code> (objeto), y opcionales
+    <code>fuente</code>, <code>nota</code>, <code>revisado</code>. Guardar reemplaza todos los casos; las corridas anteriores conservan su copia.</p>
+    <textarea id="comp-json" style="min-height:260px">${esc(JSON.stringify(limpio, null, 1))}</textarea>
+    <div class="row"><button id="comp-guardar">💾 Guardar casos</button></div>`;
+  $('comp-guardar').onclick = async () => {
+    let datos; try{ datos = JSON.parse($('comp-json').value); }catch(e){ bmsg('JSON inválido: ' + esc(e.message), false); return; }
+    try{ const r = await bjson(`/api/componentes/${COMP.sel}/casos`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(datos)});
+      bmsg(`${r.casos} casos guardados`, true); box.innerHTML = ''; loadComponentes(); }
+    catch(e){ bmsg(esc(e.message), false); }
+  };
+}
+
 // 📑 Informes: páginas fijas en static/informes/ (lista en index.json), una por informe.
 async function loadInformes(){
   const box = $('bench-informes');

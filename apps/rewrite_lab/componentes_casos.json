@@ -1,0 +1,3882 @@
+{
+ "filtro": [
+  {
+   "entrada": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q357",
+   "revisado": true
+  },
+  {
+   "entrada": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q358",
+   "revisado": true
+  },
+  {
+   "entrada": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q359",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi pareja me insulta y me empuja seguido en la casa. ¿Qué dice la ley penal?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q360",
+   "revisado": true
+  },
+  {
+   "entrada": "La persona que me supervisa en el trabajo me manda mensajes con insinuaciones sexuales. ¿Es delito?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q361",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi expareja subió a redes sociales fotos íntimas mías sin mi permiso. ¿Qué puedo hacer?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q362",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien se metió a mi casa sin permiso mientras no estaba, aunque no se llevó nada. ¿Es delito?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q363",
+   "revisado": true
+  },
+  {
+   "entrada": "Una persona se metió a vivir a mi terreno y no se quiere salir. ¿Qué delito comete?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q364",
+   "revisado": true
+  },
+  {
+   "entrada": "Me quitaron la bicicleta afuera de una tienda. ¿Qué pena tiene el que se la llevó?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q365",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi hermano me grita, me amenaza y me ha empujado varias veces en la casa donde vivimos. ¿Lo puedo denunciar?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q366",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien con quien salí me amenaza con publicar unas fotos íntimas que yo le mandé. ¿Eso es delito?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q367",
+   "revisado": true
+  },
+  {
+   "entrada": "Di un anticipo para rentar un departamento y resultó que el que me lo rentó no era el dueño. ¿Qué puedo hacer?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q368",
+   "revisado": true
+  },
+  {
+   "entrada": "En la Ciudad de México me vendieron un celular por internet y nunca me llegó. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ]
+   },
+   "fuente": "set 14 · q369",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en la Ciudad de México y mi exroomie entró a mi departamento sin permiso. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ]
+   },
+   "fuente": "set 14 · q370",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro me robaron la mochila en el transporte público. ¿Qué pena tiene?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q371",
+   "revisado": true
+  },
+  {
+   "entrada": "Tengo una casa en Querétaro y unas personas se metieron a vivir sin mi permiso. ¿Qué delito cometen?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q372",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México mi papá me pega y me insulta. ¿Qué dice la ley penal?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "set 14 · q373",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México alguien está pasando por WhatsApp un video íntimo mío. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "set 14 · q374",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos un cobrador me dijo que me va a lastimar si no le pago. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q375",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Morelos y mi jefa me presiona para salir con ella a cambio de un aumento. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q376",
+   "revisado": true
+  },
+  {
+   "entrada": "En Coyoacán me robaron la cartera en el mercado. ¿Qué pena tiene eso?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ]
+   },
+   "fuente": "set 14 · q377",
+   "revisado": true
+  },
+  {
+   "entrada": "En Iztapalapa un vecino me amenazó con lastimarme. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ]
+   },
+   "fuente": "set 14 · q378",
+   "revisado": true
+  },
+  {
+   "entrada": "En Ecatepec me vendieron un coche con papeles falsos. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "set 14 · q379",
+   "revisado": true
+  },
+  {
+   "entrada": "En Toluca mi casero entró a mi casa sin avisar. ¿Eso es delito?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "set 14 · q380",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cuernavaca alguien ocupó un terreno de mi familia y dice que ahora es suyo. ¿Qué delito comete?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q381",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cuautla alguien publicó fotos íntimas mías en Facebook. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q382",
+   "revisado": true
+  },
+  {
+   "entrada": "En San Juan del Río mi pareja me golpea y me controla el dinero. ¿Qué dice la ley penal?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q383",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Corregidora y mi supervisor me dijo que me sube de puesto si salgo con él. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q384",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo se castiga el robo en la Ciudad de México y en Querétaro?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q385",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencias hay entre el delito de fraude en la Ciudad de México y en el Estado de México?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Estado de México"
+    ]
+   },
+   "fuente": "set 14 · q386",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara cómo regulan la violencia familiar Querétaro y Morelos.",
+   "esperado": {
+    "estados": [
+     "Morelos",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q387",
+   "revisado": true
+  },
+  {
+   "entrada": "¿El hostigamiento sexual en el trabajo se castiga igual en el Estado de México que en Morelos?",
+   "esperado": {
+    "estados": [
+     "Estado de México",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q388",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué dice la ley de la Ciudad de México y la de Morelos sobre publicar fotos íntimas de alguien sin su permiso?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q389",
+   "revisado": true
+  },
+  {
+   "entrada": "Si alguien invade un terreno, ¿qué delito comete en Querétaro y cuál en el Estado de México?",
+   "esperado": {
+    "estados": [
+     "Estado de México",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q390",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Meterse a una casa sin permiso es delito en la Ciudad de México y en Querétaro? ¿Con qué pena?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q391",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara la pena del robo simple en la Ciudad de México, el Estado de México y Morelos.",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Estado de México",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q392",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi primo justo en el momento en que estaba robando. ¿Eso es flagrancia? ¿Qué dice la ley?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q393",
+   "revisado": true
+  },
+  {
+   "entrada": "Si detienen a alguien en flagrancia por un delito que se persigue por querella y la víctima no ha presentado la querella, ¿cuánto tiempo lo pueden tener detenido?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q394",
+   "revisado": true
+  },
+  {
+   "entrada": "¿En qué delitos se puede llegar a un acuerdo con la víctima para terminar el proceso penal?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q395",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es un criterio de oportunidad y en qué casos no se puede aplicar?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q396",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien me exige dinero por teléfono amenazando con hacerle daño a mi familia. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q397",
+   "revisado": true
+  },
+  {
+   "entrada": "En Puebla me robaron el celular en la calle. ¿Qué pena tiene ese delito?",
+   "esperado": {
+    "estados": [
+     "Puebla"
+    ]
+   },
+   "fuente": "set 14 · q398",
+   "revisado": true
+  },
+  {
+   "entrada": "En Guadalajara le pagué a alguien un servicio que nunca hizo y desapareció con el dinero. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Jalisco"
+    ]
+   },
+   "fuente": "set 14 · q399",
+   "revisado": true
+  },
+  {
+   "entrada": "En Monterrey mi pareja me golpea seguido. ¿Qué dice la ley penal de Nuevo León?",
+   "esperado": {
+    "estados": [
+     "Nuevo León"
+    ]
+   },
+   "fuente": "set 14 · q400",
+   "revisado": true
+  },
+  {
+   "entrada": "En Oaxaca un vecino me amenazó con quemar mi casa. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Oaxaca"
+    ]
+   },
+   "fuente": "set 14 · q401",
+   "revisado": true
+  },
+  {
+   "entrada": "En Mérida alguien se metió a mi casa sin permiso. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Yucatán"
+    ]
+   },
+   "fuente": "set 14 · q402",
+   "revisado": true
+  },
+  {
+   "entrada": "En Veracruz invadieron un terreno de mi familia. ¿Qué delito cometen?",
+   "esperado": {
+    "estados": [
+     "Veracruz"
+    ]
+   },
+   "fuente": "set 14 · q403",
+   "revisado": true
+  },
+  {
+   "entrada": "Si me detiene la policía, ¿qué derechos tengo?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q407",
+   "revisado": true
+  },
+  {
+   "entrada": "Soy víctima de un delito y ya puse la denuncia. ¿Qué derechos tengo durante el proceso?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q408",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué medidas cautelares le puede poner el juez a la persona que me agredió mientras dura el juicio?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q409",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Para qué delitos procede la prisión preventiva oficiosa?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q410",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la suspensión condicional del proceso?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q411",
+   "revisado": true
+  },
+  {
+   "entrada": "Le ofrecieron a mi hermano un procedimiento abreviado. ¿Qué requisitos tiene?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q412",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi papá y ya tuvo su primera audiencia. ¿En cuánto tiempo el juez decide si lo vinculan a proceso?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q413",
+   "revisado": true
+  },
+  {
+   "entrada": "Se llevaron a mi hermano y nos piden dinero para soltarlo. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q414",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuándo se considera que un grupo de personas es delincuencia organizada?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q415",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es el lavado de dinero y qué pena tiene?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "set 14 · q416",
+   "revisado": true
+  },
+  {
+   "entrada": "Me asaltaron saliendo del metro Pantitlán, ¿qué hago?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Estoy en Neza y un vecino me rompió la ventana a pedradas.",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Xochimilco me cobraron de más en una trajinera y me amenazaron.",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Polanco me clonaron la tarjeta en un restaurante.",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en Tlalnepantla y mi expareja publicó fotos mías sin permiso.",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Valle de Chalco me robaron la moto.",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Tepoztlán un guía de turistas me estafó.",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Jiutepec me golpearon afuera de un bar.",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Tequisquiapan me vendieron un terreno que no era del vendedor.",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron la cartera en Pachuca.",
+   "esperado": {
+    "estados": [
+     "Hidalgo"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cancún me cobraron un tour que nunca existió.",
+   "esperado": {
+    "estados": [
+     "Quintana Roo"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me extorsionaron por teléfono desde Monterrey.",
+   "esperado": {
+    "estados": [
+     "Nuevo León"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Mérida me chocaron y el otro conductor huyó.",
+   "esperado": {
+    "estados": [
+     "Yucatán"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron en Los Cabos, en el hotel.",
+   "esperado": {
+    "estados": [
+     "Baja California Sur"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en Texas, ¿puedo denunciar en México?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Aquí en mi colonia hay un señor que amenaza a todos.",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En la central de abastos me vendieron mercancía robada.",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué pena tiene el homicidio culposo según el Código Penal Federal?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Es igual de grave el robo en Iztacalco que en Ecatepec?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Estado de México"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.",
+   "esperado": {
+    "estados": [
+     "Guanajuato",
+     "Querétaro"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en GDL, ¿qué pena tiene?",
+   "esperado": {
+    "estados": [
+     "Jalisco"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en GLD, ¿qué pena tiene?",
+   "esperado": {
+    "estados": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me asaltaron en Mty",
+   "esperado": {
+    "estados": [
+     "Nuevo León"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron en Cuerna",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ]
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.",
+   "esperado": {
+    "hechos": [
+     "Guanajuato"
+    ],
+    "otros": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en Puebla pero me asaltaron en Cuernavaca.",
+   "esperado": {
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": [
+     "Puebla"
+    ]
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en el Estado de México. En un hospital privado le negaron la atención a mi abuela si no pagábamos antes.",
+   "esperado": {
+    "hechos": [],
+    "otros": [
+     "Estado de México"
+    ]
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Soy de Oaxaca y estudio en la CDMX; un compañero de clase me amenazó en la escuela.",
+   "esperado": {
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "otros": [
+     "Oaxaca"
+    ]
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en Toluca y un vecino entró a mi casa sin permiso.",
+   "esperado": {
+    "hechos": [
+     "Estado de México"
+    ],
+    "otros": []
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Morelos y mi jefa me presiona para salir con ella a cambio de un aumento. ¿Es delito?",
+   "esperado": {
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": []
+   },
+   "fuente": "set 14 · q376",
+   "nota": "El acoso ocurre en el trabajo: Morelos es el lugar de los hechos (falla vista el 22-oct).",
+   "revisado": true
+  },
+  {
+   "entrada": "Me vendieron un coche por Facebook y nunca me lo entregaron, ¿qué hago?",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi exsocio se quedó con el dinero del negocio que le confié.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me clonaron la tarjeta y sacaron dinero de mi cuenta.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un compañero de la escuela me pegó y me rompió la nariz.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi vecino envenenó a mi perro.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi ex se llevó a mis hijos y no me deja verlos.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un señor me tocó sin mi permiso en el camión.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me grafitearon la fachada de la casa.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi jefe me manda mensajes sexuales y me presiona.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Atropellaron a mi hermano y el conductor huyó.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuánto tiempo puede estar detenida una persona antes de que la vea un juez?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Puedo pedirle al Ministerio Público copia de la carpeta de investigación?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es una audiencia de vinculación a proceso?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "Si me acusan de un delito, ¿tengo derecho a un abogado gratis?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la reparación del daño para la víctima?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me agarraron con una pistola de uso exclusivo del Ejército, ¿qué pena es?",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi tío metió mercancía de contrabando por la aduana.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un funcionario del SAT me pidió dinero para no multarme.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Creo que en un negocio de mi colonia están lavando dinero.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me ofrecieron dinero por mi voto en las elecciones federales.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi primo con varios kilos de cocaína en la frontera.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me hablan diciendo que tienen a mi hijo y piden un depósito para soltarlo.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Unos tipos le cobran cuota a mi negocio cada semana.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Desaparecieron a mi hermano y la policía no hace nada.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Torturaron a mi hijo en la delegación para que confesara.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi cuñado me pidió prestado el coche y lo vendió sin decirme.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi expareja publicó en Facebook que soy ladrona y es mentira.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "El perro de mi vecino mordió a mi hijo.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me quitaron la bicicleta a punta de cuchillo.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi hija de 15 años anda con un hombre de 25.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un trabajador se cayó en la obra y murió porque no le dieron equipo de seguridad.",
+   "esperado": {
+    "depende": true,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Me pueden detener sin una orden de un juez?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué significa que a alguien lo vinculen a proceso?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuánto tarda normalmente un juicio oral?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Puedo grabar mi declaración ante el Ministerio Público?",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Una señora me dio un billete falso en el mercado.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi vecino tiene un taller clandestino de cohetes y pólvora.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Están talando árboles dentro de una reserva natural protegida.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un elemento de la Guardia Nacional me golpeó en un retén.",
+   "esperado": {
+    "depende": false,
+    "federal": true
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Encontraron a mi prima trabajando contra su voluntad, la tenían encerrada.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Unos hombres armados se llevaron a mi papá y no sabemos nada de él.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me llamaron diciendo que eran de un cártel y que si no pago lastiman a mi familia.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Golpearon a mi hijo en la patrulla para que firmara una declaración.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me quieren obligar a vender droga en mi colonia o me matan.",
+   "esperado": {
+    "depende": false,
+    "federal": false
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencia hay entre dolo directo y dolo eventual?",
+   "esperado": {
+    "teorica": true
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la legítima defensa y cuándo excluye el delito?",
+   "esperado": {
+    "teorica": true
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué significa que un delito sea de resultado material?",
+   "esperado": {
+    "teorica": true
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuál es la diferencia entre autor mediato y coautor?",
+   "esperado": {
+    "teorica": true
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es el error de prohibición?",
+   "esperado": {
+    "teorica": true
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencia hay entre robo y abuso de confianza?",
+   "esperado": {
+    "teorica": true
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi primo se defendió de un asaltante y lo hirió, ¿lo pueden meter a la cárcel?",
+   "esperado": {
+    "teorica": false
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Le prestamos dinero a un amigo y ya no lo quiere devolver, ¿es delito?",
+   "esperado": {
+    "teorica": false
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Me empujaron en el metro y me fracturé la muñeca.",
+   "esperado": {
+    "teorica": false
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi hermano intentó robar una tienda pero lo detuvieron antes, ¿qué le pasa?",
+   "esperado": {
+    "teorica": false
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Un vecino dice que me va a matar si no me voy de la colonia.",
+   "esperado": {
+    "teorica": false
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Un compañero de trabajo me sacó fotos en el baño.",
+   "esperado": {
+    "teorica": false
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  }
+ ],
+ "descomponer": [
+  {
+   "entrada": "Por favor verifica la legislación de las entidades Ciudad de México, Estado de México y Querétaro y dime las particularidades de cada entidad en cuanto al delito de estupro y sus elementos del delito conforme a la dogmática penal.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 3 · q4",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cómo define la ley el concepto de cópula en el Código Penal de la Ciudad de México, en el del Estado de México y en el Código Penal Federal? Señala las diferencias.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q5",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuáles son los elementos del delito de estupro en la Ciudad de México y cómo se persigue?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q6",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué establece el Código Penal del Estado de México sobre el delito de estupro y quién puede presentar la querella?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q7",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En el Código Penal Federal, ¿cómo se tipifica el estupro, cómo se persigue y prescribe su sanción?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q8",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Desde la dogmática penal, ¿cuál es la diferencia entre estupro y violación?",
+   "esperado": {
+    "compara": true
+   },
+   "fuente": "set 3 · q9",
+   "nota": "automático: compara conceptos (revisar)",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cómo se sanciona la violación en la Ciudad de México y qué ocurre si entre el activo y el pasivo existe matrimonio o concubinato?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q10",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué particularidades tiene el tipo de violación en el Código Penal del Estado de México, incluida la regla sobre adolescentes de entre trece y quince años?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q11",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cómo tipifica y sanciona la violación el Código Penal Federal y qué pasa si la víctima es la esposa o concubina?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q12",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Compara el tratamiento de la violación entre cónyuges o parejas en la Ciudad de México, el Estado de México y el Código Penal Federal.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q13",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué conductas se equiparan a la violación en el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q14",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Según el Código Penal Federal, ¿qué es la violación equiparada y cuál es su pena?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q15",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Constituye violación introducir un objeto o una parte del cuerpo distinta al pene? Explica cómo lo regulan la Ciudad de México, el Estado de México y la Federación.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q16",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuáles son las agravantes de la violación y el abuso sexual en el Código Penal de la Ciudad de México y en cuánto aumenta la pena?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q17",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué circunstancias modifican la pena de violación en el Estado de México cuando participan varias personas, se causa la muerte o la víctima es menor de quince o mayor de sesenta años?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q18",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué distingue al abuso sexual de la violación? Compara la Ciudad de México, el Estado de México y el Código Penal Federal.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q19",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿El abuso sexual se persigue de oficio o por querella en la Ciudad de México, en el Estado de México y en el ámbito federal?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q20",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuál es la diferencia entre hostigamiento sexual y acoso sexual en el Estado de México y cómo se regula el hostigamiento en el Código Penal Federal?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q21",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cómo se regula el acoso sexual en la Ciudad de México y cuándo se agrava?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q22",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cómo se sanciona el incesto en la Ciudad de México, el Estado de México y el Código Penal Federal?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q23",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué es la pederastia y cómo la sancionan el Estado de México y la Ciudad de México?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q24",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué delito comete en la Ciudad de México quien, por redes sociales o internet, contacta a un menor de dieciocho años para pedirle imágenes sexuales o un encuentro sexual?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q25",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué conductas constituyen el delito contra la intimidad sexual en la Ciudad de México y cuál es su pena?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q26",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Si de un delito sexual resultan hijos, ¿qué comprende la reparación del daño? ¿Y qué medida de seguridad prevé la Ciudad de México para los sentenciados por delitos sexuales?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q27",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Compara el delito de estupro en el Código Penal de Morelos con el de la Ciudad de México.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 3 · q28",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué establece el Código Penal del Estado de Querétaro sobre el delito de violación y sus agravantes?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q29",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Un sujeto es detenido en flagrancia por un delito de estupro. Como el estupro se persigue por querella, ¿qué debe ocurrir con la querella y cuánto tiempo puede permanecer detenido?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q30",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿El delito de violación amerita prisión preventiva oficiosa conforme al CNPP?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q31",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Proceden los acuerdos reparatorios en el estupro? ¿Y un criterio de oportunidad en un delito sexual cometido con violencia?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q32",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Conforme al Código Penal Federal, ¿prescribe la acción penal por abuso sexual de menores, estupro y violación equiparada?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q33",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuáles son los elementos del delito según la dogmática penal y cómo lo define el Código Penal del Estado de México?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q34",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuándo se actúa con dolo y cuándo con culpa según el Código Penal de la Ciudad de México y el Código Penal Federal?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q35",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué es la tentativa punible y qué ocurre si el sujeto desiste voluntariamente?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q36",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué es la comisión por omisión (omisión impropia) y quién es garante según el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q37",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué diferencia hay entre delito instantáneo, permanente y continuado?",
+   "esperado": {
+    "compara": true
+   },
+   "fuente": "set 3 · q38",
+   "nota": "automático: compara conceptos (revisar)",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuáles son las formas de autoría y participación en el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q39",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuáles son los requisitos de la legítima defensa y en qué caso se presume?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q40",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuándo excluye el delito el consentimiento del titular del bien jurídico? Compara la Ciudad de México y el Estado de México.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q41",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué es el error de tipo y qué efectos tiene si es vencible o invencible según el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q42",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Quién es inimputable según el Código Penal del Estado de México?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q43",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuáles son los supuestos de flagrancia según el Código Nacional de Procedimientos Penales?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q44",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué requisitos debe cumplir el Ministerio Público para ordenar una detención por caso urgente?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q45",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuánto tiempo puede durar como máximo la prisión preventiva?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q46",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuál es la finalidad de las medidas cautelares y cuáles prevé el CNPP?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q47",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué actos se realizan en la audiencia inicial del procedimiento penal acusatorio?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q48",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué requisitos exige el CNPP para dictar el auto de vinculación a proceso y en qué plazo debe resolverse?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q49",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuál es el plazo máximo de la investigación complementaria?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q50",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuándo procede la suspensión condicional del proceso y por cuánto tiempo?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q51",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué requisitos exige el procedimiento abreviado y qué reducción de pena puede solicitar el Ministerio Público?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 3 · q52",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuál es la diferencia entre dato de prueba, medio de prueba y prueba, y qué estándar se exige para condenar?",
+   "esperado": {
+    "compara": true
+   },
+   "fuente": "set 3 · q53",
+   "nota": "automático: compara conceptos (revisar)",
+   "revisado": false
+  },
+  {
+   "entrada": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q357",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q358",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?",
+   "esperado": {
+    "compara": true
+   },
+   "fuente": "set 14 · q359",
+   "nota": "automático: compara conceptos (revisar)",
+   "revisado": false
+  },
+  {
+   "entrada": "Mi pareja me insulta y me empuja seguido en la casa. ¿Qué dice la ley penal?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q360",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "La persona que me supervisa en el trabajo me manda mensajes con insinuaciones sexuales. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q361",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Mi expareja subió a redes sociales fotos íntimas mías sin mi permiso. ¿Qué puedo hacer?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q362",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Alguien se metió a mi casa sin permiso mientras no estaba, aunque no se llevó nada. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q363",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Una persona se metió a vivir a mi terreno y no se quiere salir. ¿Qué delito comete?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q364",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Me quitaron la bicicleta afuera de una tienda. ¿Qué pena tiene el que se la llevó?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q365",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Mi hermano me grita, me amenaza y me ha empujado varias veces en la casa donde vivimos. ¿Lo puedo denunciar?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q366",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Alguien con quien salí me amenaza con publicar unas fotos íntimas que yo le mandé. ¿Eso es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q367",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Di un anticipo para rentar un departamento y resultó que el que me lo rentó no era el dueño. ¿Qué puedo hacer?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q368",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En la Ciudad de México me vendieron un celular por internet y nunca me llegó. ¿Qué delito es?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q369",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Vivo en la Ciudad de México y mi exroomie entró a mi departamento sin permiso. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q370",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Querétaro me robaron la mochila en el transporte público. ¿Qué pena tiene?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q371",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Tengo una casa en Querétaro y unas personas se metieron a vivir sin mi permiso. ¿Qué delito cometen?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q372",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En el Estado de México mi papá me pega y me insulta. ¿Qué dice la ley penal?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q373",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En el Estado de México alguien está pasando por WhatsApp un video íntimo mío. ¿Qué delito es?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q374",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Morelos un cobrador me dijo que me va a lastimar si no le pago. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q375",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Trabajo en Morelos y mi jefa me presiona para salir con ella a cambio de un aumento. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q376",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Coyoacán me robaron la cartera en el mercado. ¿Qué pena tiene eso?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q377",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Iztapalapa un vecino me amenazó con lastimarme. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q378",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Ecatepec me vendieron un coche con papeles falsos. ¿Qué delito es?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q379",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Toluca mi casero entró a mi casa sin avisar. ¿Eso es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q380",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Cuernavaca alguien ocupó un terreno de mi familia y dice que ahora es suyo. ¿Qué delito comete?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q381",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Cuautla alguien publicó fotos íntimas mías en Facebook. ¿Qué delito es?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q382",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En San Juan del Río mi pareja me golpea y me controla el dinero. ¿Qué dice la ley penal?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q383",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Trabajo en Corregidora y mi supervisor me dijo que me sube de puesto si salgo con él. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q384",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cómo se castiga el robo en la Ciudad de México y en Querétaro?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q385",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué diferencias hay entre el delito de fraude en la Ciudad de México y en el Estado de México?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 14 · q386",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "Compara cómo regulan la violencia familiar Querétaro y Morelos.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "Morelos",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q387",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿El hostigamiento sexual en el trabajo se castiga igual en el Estado de México que en Morelos?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CPEM",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q388",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué dice la ley de la Ciudad de México y la de Morelos sobre publicar fotos íntimas de alguien sin su permiso?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q389",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "Si alguien invade un terreno, ¿qué delito comete en Querétaro y cuál en el Estado de México?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CPEM",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q390",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Meterse a una casa sin permiso es delito en la Ciudad de México y en Querétaro? ¿Con qué pena?",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q391",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "Compara la pena del robo simple en la Ciudad de México, el Estado de México y Morelos.",
+   "esperado": {
+    "compara": true,
+    "entidades": [
+     "CDMX",
+     "CPEM",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q392",
+   "nota": "automático: nombra 2+ códigos o estados",
+   "revisado": false
+  },
+  {
+   "entrada": "Detuvieron a mi primo justo en el momento en que estaba robando. ¿Eso es flagrancia? ¿Qué dice la ley?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q393",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Si detienen a alguien en flagrancia por un delito que se persigue por querella y la víctima no ha presentado la querella, ¿cuánto tiempo lo pueden tener detenido?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q394",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿En qué delitos se puede llegar a un acuerdo con la víctima para terminar el proceso penal?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q395",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué es un criterio de oportunidad y en qué casos no se puede aplicar?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q396",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Alguien me exige dinero por teléfono amenazando con hacerle daño a mi familia. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q397",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Puebla me robaron el celular en la calle. ¿Qué pena tiene ese delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q398",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Guadalajara le pagué a alguien un servicio que nunca hizo y desapareció con el dinero. ¿Qué delito es?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q399",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Monterrey mi pareja me golpea seguido. ¿Qué dice la ley penal de Nuevo León?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q400",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Oaxaca un vecino me amenazó con quemar mi casa. ¿Es delito?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q401",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Mérida alguien se metió a mi casa sin permiso. ¿Qué delito es?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q402",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "En Veracruz invadieron un terreno de mi familia. ¿Qué delito cometen?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q403",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Si me detiene la policía, ¿qué derechos tengo?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q407",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Soy víctima de un delito y ya puse la denuncia. ¿Qué derechos tengo durante el proceso?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q408",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué medidas cautelares le puede poner el juez a la persona que me agredió mientras dura el juicio?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q409",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Para qué delitos procede la prisión preventiva oficiosa?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q410",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué es la suspensión condicional del proceso?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q411",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Le ofrecieron a mi hermano un procedimiento abreviado. ¿Qué requisitos tiene?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q412",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Detuvieron a mi papá y ya tuvo su primera audiencia. ¿En cuánto tiempo el juez decide si lo vinculan a proceso?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q413",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "Se llevaron a mi hermano y nos piden dinero para soltarlo. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q414",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Cuándo se considera que un grupo de personas es delincuencia organizada?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q415",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  },
+  {
+   "entrada": "¿Qué es el lavado de dinero y qué pena tiene?",
+   "esperado": {
+    "compara": false
+   },
+   "fuente": "set 14 · q416",
+   "nota": "automático: no nombra 2+ códigos ni compara conceptos",
+   "revisado": false
+  }
+ ],
+ "por_delito": [
+  {
+   "entrada": "Me drogaron en un bar y me robaron la cartera.",
+   "esperado": {
+    "conductas": [
+     [
+      "sustancia",
+      "droga",
+      "narcot",
+      "administr"
+     ],
+     [
+      "rob",
+      "apoder"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Mi expareja me amenazó por WhatsApp y publicó fotos íntimas mías.",
+   "esperado": {
+    "conductas": [
+     [
+      "amenaz"
+     ],
+     [
+      "intim",
+      "sexual",
+      "imagen",
+      "difusi"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Un policía me detuvo sin razón y me pidió dinero para soltarme.",
+   "esperado": {
+    "conductas": [
+     [
+      "detenc",
+      "privaci",
+      "arbitrari"
+     ],
+     [
+      "dinero",
+      "cohecho",
+      "extorsi",
+      "soborno"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Mi jefe me acosa y me amenazó con despedirme si no salgo con él.",
+   "esperado": {
+    "conductas": [
+     [
+      "acoso",
+      "hostig"
+     ],
+     [
+      "amenaz"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Un conductor ebrio chocó mi coche, lesionó a mi hijo y huyó.",
+   "esperado": {
+    "conductas": [
+     [
+      "dano",
+      "propiedad",
+      "choque"
+     ],
+     [
+      "lesion"
+     ],
+     [
+      "abandon",
+      "huy",
+      "fuga",
+      "omisi",
+      "auxilio"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Entraron a mi casa rompiendo la puerta y se llevaron la televisión.",
+   "esperado": {
+    "conductas": [
+     [
+      "allan",
+      "domicilio",
+      "morada"
+     ],
+     [
+      "rob",
+      "apoder"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Me vendieron un terreno que no era suyo y falsificaron la escritura.",
+   "esperado": {
+    "conductas": [
+     [
+      "fraude",
+      "engan"
+     ],
+     [
+      "falsific"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Un hombre me tocó sin permiso en el camión y me grabó con su celular.",
+   "esperado": {
+    "conductas": [
+     [
+      "abuso",
+      "sexual",
+      "toc"
+     ],
+     [
+      "grab",
+      "video",
+      "intimid",
+      "imagen"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Me robaron el celular en el metro.",
+   "esperado": {
+    "conductas": [
+     [
+      "rob",
+      "apoder"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Me llamaron diciendo que tenían a mi hijo y me pidieron un depósito.",
+   "esperado": {
+    "conductas": [
+     [
+      "extorsi",
+      "secuestro"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  },
+  {
+   "entrada": "Mi tío golpea a mi tía en su casa desde hace años.",
+   "esperado": {
+    "conductas": [
+     [
+      "violencia familiar",
+      "golpe",
+      "lesion"
+     ]
+    ]
+   },
+   "fuente": "borrador",
+   "nota": "Borrador de Claude: Karen debe revisar las conductas y sus raíces.",
+   "revisado": false
+  }
+ ],
+ "hyde": [
+  {
+   "entrada": "Por favor verifica la legislación de las entidades Ciudad de México, Estado de México y Querétaro y dime las particularidades de cada entidad en cuanto al delito de estupro y sus elementos del delito conforme a la dogmática penal.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 3 · q4",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo define la ley el concepto de cópula en el Código Penal de la Ciudad de México, en el del Estado de México y en el Código Penal Federal? Señala las diferencias.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q5",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuáles son los elementos del delito de estupro en la Ciudad de México y cómo se persigue?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q6",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué establece el Código Penal del Estado de México sobre el delito de estupro y quién puede presentar la querella?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q7",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Código Penal Federal, ¿cómo se tipifica el estupro, cómo se persigue y prescribe su sanción?",
+   "esperado": {
+    "permitidos": [
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q8",
+   "revisado": true
+  },
+  {
+   "entrada": "Desde la dogmática penal, ¿cuál es la diferencia entre estupro y violación?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q9",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo se sanciona la violación en la Ciudad de México y qué ocurre si entre el activo y el pasivo existe matrimonio o concubinato?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q10",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué particularidades tiene el tipo de violación en el Código Penal del Estado de México, incluida la regla sobre adolescentes de entre trece y quince años?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q11",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo tipifica y sanciona la violación el Código Penal Federal y qué pasa si la víctima es la esposa o concubina?",
+   "esperado": {
+    "permitidos": [
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q12",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara el tratamiento de la violación entre cónyuges o parejas en la Ciudad de México, el Estado de México y el Código Penal Federal.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q13",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué conductas se equiparan a la violación en el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q14",
+   "revisado": true
+  },
+  {
+   "entrada": "Según el Código Penal Federal, ¿qué es la violación equiparada y cuál es su pena?",
+   "esperado": {
+    "permitidos": [
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q15",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Constituye violación introducir un objeto o una parte del cuerpo distinta al pene? Explica cómo lo regulan la Ciudad de México, el Estado de México y la Federación.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q16",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuáles son las agravantes de la violación y el abuso sexual en el Código Penal de la Ciudad de México y en cuánto aumenta la pena?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q17",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué circunstancias modifican la pena de violación en el Estado de México cuando participan varias personas, se causa la muerte o la víctima es menor de quince o mayor de sesenta años?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q18",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué distingue al abuso sexual de la violación? Compara la Ciudad de México, el Estado de México y el Código Penal Federal.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q19",
+   "revisado": true
+  },
+  {
+   "entrada": "¿El abuso sexual se persigue de oficio o por querella en la Ciudad de México, en el Estado de México y en el ámbito federal?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q20",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuál es la diferencia entre hostigamiento sexual y acoso sexual en el Estado de México y cómo se regula el hostigamiento en el Código Penal Federal?",
+   "esperado": {
+    "permitidos": [
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q21",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo se regula el acoso sexual en la Ciudad de México y cuándo se agrava?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q22",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo se sanciona el incesto en la Ciudad de México, el Estado de México y el Código Penal Federal?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q23",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la pederastia y cómo la sancionan el Estado de México y la Ciudad de México?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q24",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué delito comete en la Ciudad de México quien, por redes sociales o internet, contacta a un menor de dieciocho años para pedirle imágenes sexuales o un encuentro sexual?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q25",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué conductas constituyen el delito contra la intimidad sexual en la Ciudad de México y cuál es su pena?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q26",
+   "revisado": true
+  },
+  {
+   "entrada": "Si de un delito sexual resultan hijos, ¿qué comprende la reparación del daño? ¿Y qué medida de seguridad prevé la Ciudad de México para los sentenciados por delitos sexuales?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q27",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara el delito de estupro en el Código Penal de Morelos con el de la Ciudad de México.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 3 · q28",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué establece el Código Penal del Estado de Querétaro sobre el delito de violación y sus agravantes?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 3 · q29",
+   "revisado": true
+  },
+  {
+   "entrada": "Un sujeto es detenido en flagrancia por un delito de estupro. Como el estupro se persigue por querella, ¿qué debe ocurrir con la querella y cuánto tiempo puede permanecer detenido?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q30",
+   "revisado": true
+  },
+  {
+   "entrada": "¿El delito de violación amerita prisión preventiva oficiosa conforme al CNPP?",
+   "esperado": {
+    "permitidos": [
+     "CNPP"
+    ]
+   },
+   "fuente": "set 3 · q31",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Proceden los acuerdos reparatorios en el estupro? ¿Y un criterio de oportunidad en un delito sexual cometido con violencia?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q32",
+   "revisado": true
+  },
+  {
+   "entrada": "Conforme al Código Penal Federal, ¿prescribe la acción penal por abuso sexual de menores, estupro y violación equiparada?",
+   "esperado": {
+    "permitidos": [
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q33",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuáles son los elementos del delito según la dogmática penal y cómo lo define el Código Penal del Estado de México?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q34",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuándo se actúa con dolo y cuándo con culpa según el Código Penal de la Ciudad de México y el Código Penal Federal?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPF"
+    ]
+   },
+   "fuente": "set 3 · q35",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la tentativa punible y qué ocurre si el sujeto desiste voluntariamente?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q36",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la comisión por omisión (omisión impropia) y quién es garante según el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q37",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencia hay entre delito instantáneo, permanente y continuado?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q38",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuáles son las formas de autoría y participación en el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q39",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuáles son los requisitos de la legítima defensa y en qué caso se presume?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q40",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuándo excluye el delito el consentimiento del titular del bien jurídico? Compara la Ciudad de México y el Estado de México.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q41",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es el error de tipo y qué efectos tiene si es vencible o invencible según el Código Penal de la Ciudad de México?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 3 · q42",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Quién es inimputable según el Código Penal del Estado de México?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 3 · q43",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuáles son los supuestos de flagrancia según el Código Nacional de Procedimientos Penales?",
+   "esperado": {
+    "permitidos": [
+     "CNPP"
+    ]
+   },
+   "fuente": "set 3 · q44",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué requisitos debe cumplir el Ministerio Público para ordenar una detención por caso urgente?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q45",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuánto tiempo puede durar como máximo la prisión preventiva?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q46",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuál es la finalidad de las medidas cautelares y cuáles prevé el CNPP?",
+   "esperado": {
+    "permitidos": [
+     "CNPP"
+    ]
+   },
+   "fuente": "set 3 · q47",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué actos se realizan en la audiencia inicial del procedimiento penal acusatorio?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q48",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué requisitos exige el CNPP para dictar el auto de vinculación a proceso y en qué plazo debe resolverse?",
+   "esperado": {
+    "permitidos": [
+     "CNPP"
+    ]
+   },
+   "fuente": "set 3 · q49",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuál es el plazo máximo de la investigación complementaria?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q50",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuándo procede la suspensión condicional del proceso y por cuánto tiempo?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q51",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué requisitos exige el procedimiento abreviado y qué reducción de pena puede solicitar el Ministerio Público?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q52",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuál es la diferencia entre dato de prueba, medio de prueba y prueba, y qué estándar se exige para condenar?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 3 · q53",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en la calle en la Ciudad de México, sin golpes ni armas. Valía como 8 mil pesos. ¿Es delito y cuánta cárcel le pueden dar?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q326",
+   "revisado": true
+  },
+  {
+   "entrada": "En la Ciudad de México le pagué a alguien por internet una computadora que nunca me entregó y ya no me contesta. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q327",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en la Ciudad de México y un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q328",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi pareja y yo vivimos en la Ciudad de México; me insulta y me empuja seguido. ¿Qué dice la ley penal?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q329",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en la Ciudad de México y quien me supervisa me manda mensajes con insinuaciones sexuales. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q330",
+   "revisado": true
+  },
+  {
+   "entrada": "En la Ciudad de México mi expareja subió a redes sociales fotos íntimas mías sin mi permiso. ¿Qué puedo hacer?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q331",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien se metió a mi casa en la Ciudad de México sin permiso mientras no estaba, aunque no se llevó nada. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q332",
+   "revisado": true
+  },
+  {
+   "entrada": "En la Ciudad de México una persona se metió a vivir a mi terreno y no se quiere salir. ¿Qué delito comete?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 13 · q333",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro me sacaron la cartera en el camión sin que me diera cuenta; traía 3 mil pesos. ¿Qué pena tiene eso?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q334",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en Querétaro y le di un anticipo a alguien para rentarme un departamento que resultó no ser suyo. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q335",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro mi hermano me grita, me amenaza y me ha empujado varias veces en la casa donde vivimos. ¿Qué dice la ley penal?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q336",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro un compañero de la escuela me pide insistentemente favores sexuales aunque le digo que no. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q337",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Querétaro y quien me supervisa me dijo que me ayudaría a subir de puesto si salgo con esa persona. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q338",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro alguien con quien salí me amenaza con publicar unas fotos íntimas que yo le mandé. ¿Eso es delito?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q339",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro un conocido entró a mi casa sin mi permiso cuando yo no estaba. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q340",
+   "revisado": true
+  },
+  {
+   "entrada": "Tengo un terreno en Querétaro y unas personas lo ocuparon y pusieron una cerca. ¿Qué delito cometen?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 13 · q341",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México me quitaron la bicicleta afuera de la tienda. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 13 · q342",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en el Estado de México y me vendieron un coche con papeles falsos. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 13 · q343",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México mi pareja me controla el dinero, me insulta y a veces me pega. ¿Qué dice la ley penal?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 13 · q344",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en el Estado de México y mi jefe me presiona para tener una relación sexual a cambio de no despedirme. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 13 · q345",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México alguien compartió en un grupo de WhatsApp un video íntimo mío sin mi consentimiento. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 13 · q346",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México mi casero entró a mi departamento sin avisar ni pedir permiso. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 13 · q347",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México un familiar cambió la chapa de mi casa y ya no me deja entrar. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 13 · q348",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos me robaron una bocina de mi coche estacionado. ¿Qué pena tiene ese delito?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q349",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos pagué un curso que nunca se dio y la persona desapareció con el dinero. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q350",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos una persona me dijo por mensaje que me va a hacer daño si no le pago lo que dice que le debo. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q351",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos mi padrastro me insulta y me golpea seguido en la casa. ¿Qué dice la ley penal?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q352",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Morelos y la persona que me supervisa me hace comentarios sexuales y me presiona para salir. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q353",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos alguien publicó en Facebook fotos íntimas mías sin mi permiso. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q354",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos un vecino se metió a mi patio y a mi casa sin permiso. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q355",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos alguien ocupó un terreno de mi familia y dice que ahora es suyo. ¿Qué delito comete?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 13 · q356",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q357",
+   "revisado": true
+  },
+  {
+   "entrada": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q358",
+   "revisado": true
+  },
+  {
+   "entrada": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q359",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi pareja me insulta y me empuja seguido en la casa. ¿Qué dice la ley penal?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q360",
+   "revisado": true
+  },
+  {
+   "entrada": "La persona que me supervisa en el trabajo me manda mensajes con insinuaciones sexuales. ¿Es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q361",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi expareja subió a redes sociales fotos íntimas mías sin mi permiso. ¿Qué puedo hacer?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q362",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien se metió a mi casa sin permiso mientras no estaba, aunque no se llevó nada. ¿Es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q363",
+   "revisado": true
+  },
+  {
+   "entrada": "Una persona se metió a vivir a mi terreno y no se quiere salir. ¿Qué delito comete?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q364",
+   "revisado": true
+  },
+  {
+   "entrada": "Me quitaron la bicicleta afuera de una tienda. ¿Qué pena tiene el que se la llevó?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q365",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi hermano me grita, me amenaza y me ha empujado varias veces en la casa donde vivimos. ¿Lo puedo denunciar?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q366",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien con quien salí me amenaza con publicar unas fotos íntimas que yo le mandé. ¿Eso es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q367",
+   "revisado": true
+  },
+  {
+   "entrada": "Di un anticipo para rentar un departamento y resultó que el que me lo rentó no era el dueño. ¿Qué puedo hacer?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q368",
+   "revisado": true
+  },
+  {
+   "entrada": "En la Ciudad de México me vendieron un celular por internet y nunca me llegó. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 14 · q369",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en la Ciudad de México y mi exroomie entró a mi departamento sin permiso. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "CDMX"
+    ]
+   },
+   "fuente": "set 14 · q370",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro me robaron la mochila en el transporte público. ¿Qué pena tiene?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q371",
+   "revisado": true
+  },
+  {
+   "entrada": "Tengo una casa en Querétaro y unas personas se metieron a vivir sin mi permiso. ¿Qué delito cometen?",
+   "esperado": {
+    "permitidos": [
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q372",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México mi papá me pega y me insulta. ¿Qué dice la ley penal?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 14 · q373",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México alguien está pasando por WhatsApp un video íntimo mío. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": [
+     "CPEM"
+    ]
+   },
+   "fuente": "set 14 · q374",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos un cobrador me dijo que me va a lastimar si no le pago. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q375",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Morelos y mi jefa me presiona para salir con ella a cambio de un aumento. ¿Es delito?",
+   "esperado": {
+    "permitidos": [
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q376",
+   "revisado": true
+  },
+  {
+   "entrada": "En Coyoacán me robaron la cartera en el mercado. ¿Qué pena tiene eso?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q377",
+   "revisado": true
+  },
+  {
+   "entrada": "En Iztapalapa un vecino me amenazó con lastimarme. ¿Es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q378",
+   "revisado": true
+  },
+  {
+   "entrada": "En Ecatepec me vendieron un coche con papeles falsos. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q379",
+   "revisado": true
+  },
+  {
+   "entrada": "En Toluca mi casero entró a mi casa sin avisar. ¿Eso es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q380",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cuernavaca alguien ocupó un terreno de mi familia y dice que ahora es suyo. ¿Qué delito comete?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q381",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cuautla alguien publicó fotos íntimas mías en Facebook. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q382",
+   "revisado": true
+  },
+  {
+   "entrada": "En San Juan del Río mi pareja me golpea y me controla el dinero. ¿Qué dice la ley penal?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q383",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Corregidora y mi supervisor me dijo que me sube de puesto si salgo con él. ¿Es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q384",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo se castiga el robo en la Ciudad de México y en Querétaro?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q385",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencias hay entre el delito de fraude en la Ciudad de México y en el Estado de México?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM"
+    ]
+   },
+   "fuente": "set 14 · q386",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara cómo regulan la violencia familiar Querétaro y Morelos.",
+   "esperado": {
+    "permitidos": [
+     "Morelos",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q387",
+   "revisado": true
+  },
+  {
+   "entrada": "¿El hostigamiento sexual en el trabajo se castiga igual en el Estado de México que en Morelos?",
+   "esperado": {
+    "permitidos": [
+     "CPEM",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q388",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué dice la ley de la Ciudad de México y la de Morelos sobre publicar fotos íntimas de alguien sin su permiso?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q389",
+   "revisado": true
+  },
+  {
+   "entrada": "Si alguien invade un terreno, ¿qué delito comete en Querétaro y cuál en el Estado de México?",
+   "esperado": {
+    "permitidos": [
+     "CPEM",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q390",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Meterse a una casa sin permiso es delito en la Ciudad de México y en Querétaro? ¿Con qué pena?",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "Querétaro"
+    ]
+   },
+   "fuente": "set 14 · q391",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara la pena del robo simple en la Ciudad de México, el Estado de México y Morelos.",
+   "esperado": {
+    "permitidos": [
+     "CDMX",
+     "CPEM",
+     "Morelos"
+    ]
+   },
+   "fuente": "set 14 · q392",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi primo justo en el momento en que estaba robando. ¿Eso es flagrancia? ¿Qué dice la ley?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q393",
+   "revisado": true
+  },
+  {
+   "entrada": "Si detienen a alguien en flagrancia por un delito que se persigue por querella y la víctima no ha presentado la querella, ¿cuánto tiempo lo pueden tener detenido?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q394",
+   "revisado": true
+  },
+  {
+   "entrada": "¿En qué delitos se puede llegar a un acuerdo con la víctima para terminar el proceso penal?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q395",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es un criterio de oportunidad y en qué casos no se puede aplicar?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q396",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien me exige dinero por teléfono amenazando con hacerle daño a mi familia. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q397",
+   "revisado": true
+  },
+  {
+   "entrada": "En Puebla me robaron el celular en la calle. ¿Qué pena tiene ese delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q398",
+   "revisado": true
+  },
+  {
+   "entrada": "En Guadalajara le pagué a alguien un servicio que nunca hizo y desapareció con el dinero. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q399",
+   "revisado": true
+  },
+  {
+   "entrada": "En Monterrey mi pareja me golpea seguido. ¿Qué dice la ley penal de Nuevo León?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q400",
+   "revisado": true
+  },
+  {
+   "entrada": "En Oaxaca un vecino me amenazó con quemar mi casa. ¿Es delito?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q401",
+   "revisado": true
+  },
+  {
+   "entrada": "En Mérida alguien se metió a mi casa sin permiso. ¿Qué delito es?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q402",
+   "revisado": true
+  },
+  {
+   "entrada": "En Veracruz invadieron un terreno de mi familia. ¿Qué delito cometen?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q403",
+   "revisado": true
+  },
+  {
+   "entrada": "Si me detiene la policía, ¿qué derechos tengo?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q407",
+   "revisado": true
+  },
+  {
+   "entrada": "Soy víctima de un delito y ya puse la denuncia. ¿Qué derechos tengo durante el proceso?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q408",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué medidas cautelares le puede poner el juez a la persona que me agredió mientras dura el juicio?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q409",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Para qué delitos procede la prisión preventiva oficiosa?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q410",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la suspensión condicional del proceso?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q411",
+   "revisado": true
+  },
+  {
+   "entrada": "Le ofrecieron a mi hermano un procedimiento abreviado. ¿Qué requisitos tiene?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q412",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi papá y ya tuvo su primera audiencia. ¿En cuánto tiempo el juez decide si lo vinculan a proceso?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q413",
+   "revisado": true
+  },
+  {
+   "entrada": "Se llevaron a mi hermano y nos piden dinero para soltarlo. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q414",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuándo se considera que un grupo de personas es delincuencia organizada?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q415",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es el lavado de dinero y qué pena tiene?",
+   "esperado": {
+    "permitidos": []
+   },
+   "fuente": "set 14 · q416",
+   "revisado": true
+  }
+ ]
+}
