@@ -51,6 +51,9 @@
  .met span{font-size:12px;color:var(--mut)}
  .links a{display:inline-block;margin:6px 10px 0 0;font-size:14px}
  dl.defs dt{font-weight:700;margin-top:10px} dl.defs dd{margin:2px 0 0 0;color:var(--txt)}
+ .toc{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+ .toc a{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none;font-size:14px}
+ h2{scroll-margin-top:12px}
  .tag{font-size:12px;border-radius:4px;padding:1px 6px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
  .ok{color:var(--good)} .x{color:var(--bad)}
  details{margin:8px 0} summary{cursor:pointer;color:var(--acc)}
@@ -65,19 +68,21 @@
 <main>
 
 <p class="mut">72 corridas del benchmark (#107–#178): 9 configuraciones × 4 sets × 2 repeticiones. El modelo que responde y el juez son el mismo, Gemma-4-4B-8b. Toca cualquier fila para ver su detalle.</p>
+<nav class="toc"><a href="#probado">Qué se probó</a><a href="#opciones">Qué hace cada opción del buscador</a><a href="#lugar">Los filtros de lugar: cómo evolucionaron</a><a href="#filtro">El filtro por estado: viejo y corregido</a><a href="#resultados">Resultados por set</a><a href="#pares">Comparaciones pareadas</a><a href="#columnas">Cómo leer las columnas</a><a href="#limitaciones">Limitaciones</a></nav>
+<h2 style="margin-top:18px">En corto</h2>
 
 <div class="key">
-  <div class="box"><b>✅ El filtro corregido funciona</b>Quita las citas a otro estado (de 21–25 % a 0 %) y ya no empeora las preguntas generales: el set 3 vuelve a 90 %, igual que sin filtro.</div>
-  <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14 («¿cuándo pedir el estado?»). Hay que revisarlo antes de la ronda 2.</div>
-  <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes. Las remisiones ayudan un poco en el set 14 (+5) y restan un poco en los sets 3 y 13 (−2).</div>
-  <div class="box"><b>📏 Ruido</b>La misma configuración cambia hasta 6 puntos entre repeticiones (sets 13 y 14). Diferencias menores a ~5 puntos no son concluyentes.</div>
+  <div class="box"><b>✅ El filtro corregido funciona</b>Quita las citas a otro estado (de 21–25 % a 0 %) y ya no empeora las preguntas generales: el set 3 vuelve a 90 %, igual que sin filtro. <a href="#filtro">Qué es el filtro y qué se corrigió →</a></div>
+  <div class="box"><b>⚠️ tlacua-v1-penas: mejor en penas, peor al pedir el estado</b>Sube mucho los casos de Karen (set 12), pero baja 16 puntos en el set 14 («¿cuándo pedir el estado?»). Hay que revisarlo antes de la ronda 2. <a href="#resultados">Ver resultados →</a></div>
+  <div class="box"><b>➖ Remisiones y descomponer por delito: sin efecto claro</b>Ninguna diferencia significativa en los sets grandes. Las remisiones ayudan un poco en el set 14 (+5) y restan un poco en los sets 3 y 13 (−2). <a href="#opciones">Qué hace cada opción →</a></div>
+  <div class="box"><b>📏 Ruido</b>La misma configuración cambia hasta 6 puntos entre repeticiones (sets 13 y 14). Diferencias menores a ~5 puntos no son concluyentes. <a href="#columnas">Cómo leer los números →</a></div>
 </div>
 
-<h2>Qué se probó</h2>
+<h2 id="probado">Qué se probó</h2>
 <p>Todas las configuraciones tienen la misma base, la de la corrida #102 (la del estudio): buscador híbrido (vectores + BM25), los 10 primeros resultados del buscador + sus chunks vecinos, HyDE (el LLM escribe una respuesta hipotética para buscar con ella) y «descomponer» (el LLM divide la pregunta en sub-preguntas). Cada letra activa o desactiva algunas opciones. El «2» quiere decir «con el filtro corregido», no «repetición 2».</p>
 <div class="scroll"><table id="t-cfg"></table></div>
 
-<h2>Qué hace cada opción del buscador</h2>
+<h2 id="opciones">Qué hace cada opción del buscador</h2>
 <p>Son las opciones que aparecen en «Preguntar», «Conversacional» y «Benchmark». El orden sigue el camino de una pregunta: primero se decide <b>cómo buscar</b>, luego <b>dónde buscar</b>, luego <b>qué agregar al contexto</b>. «Contexto» es lo que recibe el LLM para responder: los resultados del buscador más lo que se agrega.</p>
 <div class="scroll"><table>
   <tr><th>Opción</th><th>Qué hace</th><th>Costo</th><th>En esta matriz</th></tr>
@@ -96,7 +101,7 @@
   <tr><td><b>Prompt</b></td><td>Las instrucciones del LLM que responde (tono, qué citar, cuándo preguntar). No cambia lo que encuentra el buscador, solo cómo se escribe la respuesta.</td><td>—</td><td>penal-original-v1; D y D2: tlacua-v1-penas; E: tlacua-secuencia-y-penas</td></tr>
 </table></div>
 
-<h2>Los filtros de lugar: cómo evolucionaron</h2>
+<h2 id="lugar">Los filtros de lugar: cómo evolucionaron</h2>
 <p>Hay tres formas de decidir <b>de qué legislación</b> salen los artículos. Aparecieron en este orden:</p>
 <div class="scroll"><table>
   <tr><th></th><th>1. Menú «Lugar» (el original)</th><th>2. Routing por código</th><th>3. Filtro por estado</th></tr>
@@ -107,7 +112,7 @@
 </table></div>
 <p class="mut">El filtro por estado nació del hallazgo de la ronda 1: con el menú en «Todos», el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba. Pedirle al LLM «no cites otros estados» en el prompt no bastó (set 14: 7 de 12 preguntas sin estado citaron uno). Por eso el filtro quita esos artículos <b>antes</b> de que lleguen al LLM. El filtro corregido es el mismo filtro, con tres reglas cambiadas.</p>
 
-<h2>El filtro por estado: viejo y corregido</h2>
+<h2 id="filtro">El filtro por estado: viejo y corregido</h2>
 <div class="box">
 <p style="margin-top:0"><b>Qué es.</b> Un paso <b>antes de buscar</b>. Un LLM lee la pregunta y decide qué códigos puede ver el buscador. También le deja una instrucción al LLM que responde. Existe porque en la ronda 1 del estudio, si la persona no decía dónde ocurrieron los hechos, el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba.</p>
 <p><b>Cómo funciona:</b></p>
@@ -135,20 +140,20 @@
 </table></div>
 <p class="mut">Validación del filtro corregido con el LLM real: detección de lugar 86/86 en 5 corridas; clasificación del tipo 39/44 (igual que el filtro viejo); 12/12 frases nuevas escritas para esta prueba; ninguna de las 31 preguntas del set 13 se marcó como teórica.</p>
 
-<h2>Resultados por set</h2>
+<h2 id="resultados">Resultados por set</h2>
 <div class="tabs" id="set-tabs"></div>
 <p id="set-desc" class="mut"></p>
 <div class="scroll"><table id="t-res"></table></div>
 <p class="mut" style="font-size:13px">La barra es la media; las marcas verticales, su intervalo de confianza de 95 %. En verde, la mejor media del set.</p>
 
-<h2>Comparaciones pareadas</h2>
+<h2 id="pares">Comparaciones pareadas</h2>
 <p>Cada pregunta se compara contra sí misma en las dos configuraciones (promedio de las dos repeticiones). Así, la diferencia no depende de qué preguntas tiene el set. Entre paréntesis está el intervalo de confianza de 95 %. <b>En color:</b> el intervalo no incluye el 0, así que la diferencia probablemente no es ruido. El set 12 tiene solo 3 preguntas: sus intervalos no son confiables.</p>
 <div class="scroll"><table id="t-pares"></table></div>
 
-<h2>Cómo leer las columnas</h2>
+<h2 id="columnas">Cómo leer las columnas</h2>
 <div class="box"><dl class="defs" id="defs"></dl></div>
 
-<h2>Limitaciones</h2>
+<h2 id="limitaciones">Limitaciones</h2>
 <ul>
   <li>El juez es el mismo modelo que responde. Falta medir qué tanto coincide con una persona abogada; Karen puede calificar a mano una muestra de respuestas.</li>
   <li>Solo hay 2 repeticiones por configuración: alcanzan para ver el ruido, no para estimar bien una desviación estándar.</li>
