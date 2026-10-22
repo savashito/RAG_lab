@@ -77,7 +77,37 @@
 <p>Todas las configuraciones tienen la misma base, la de la corrida #102 (la del estudio): buscador híbrido (vectores + BM25), los 10 primeros resultados del buscador + sus chunks vecinos, HyDE (el LLM escribe una respuesta hipotética para buscar con ella) y «descomponer» (el LLM divide la pregunta en sub-preguntas). Cada letra activa o desactiva algunas opciones. El «2» quiere decir «con el filtro corregido», no «repetición 2».</p>
 <div class="scroll"><table id="t-cfg"></table></div>
 
-<h2>El filtro por estado: qué hace y qué cambió</h2>
+<h2>Qué hace cada opción del buscador</h2>
+<p>Son las opciones que aparecen en «Preguntar», «Conversacional» y «Benchmark». El orden sigue el camino de una pregunta: primero se decide <b>cómo buscar</b>, luego <b>dónde buscar</b>, luego <b>qué agregar al contexto</b>. «Contexto» es lo que recibe el LLM para responder: los resultados del buscador más lo que se agrega.</p>
+<div class="scroll"><table>
+  <tr><th>Opción</th><th>Qué hace</th><th>Costo</th><th>En esta matriz</th></tr>
+  <tr><td><b>Método</b></td><td>Cómo busca. <i>orig</i>: por significado (vectores), con la pregunta tal cual. <i>reescribir</i>: el LLM pasa la pregunta a lenguaje jurídico y se busca con eso. <i>multiquery</i>: busca con las dos y mezcla. <i>bm25</i>: por palabras exactas. <i>híbrido</i>: vectores + BM25 mezclados; encuentra tanto «el sentido» como números de artículo y términos exactos.</td><td>—</td><td>híbrido en todas</td></tr>
+  <tr><td><b>Top-k</b></td><td>Cuántos resultados del buscador entran al contexto.</td><td>más k = respuesta más lenta</td><td>10 en todas</td></tr>
+  <tr><td><b>vecinos ↕</b></td><td>Por cada artículo encontrado, agrega también su familia (bis, ter…) y los 2 artículos de antes y de después. Muchas veces la pena o la definición está en el artículo de al lado.</td><td>contexto más largo</td><td>sí en todas</td></tr>
+  <tr><td><b>HyDE 🧪</b></td><td>Antes de buscar, el LLM escribe un borrador de cómo se vería el artículo que responde, y se busca con ese borrador. Ayuda cuando la persona dice «me tocaron sin permiso» y el código dice «actos sexuales sin consentimiento».</td><td>1 llamada al LLM</td><td>sí en todas</td></tr>
+  <tr><td><b>rerank 🎯</b></td><td>Un segundo modelo reordena los resultados por relevancia antes de quedarse con los 10 primeros.</td><td>necesita el servicio de rerank</td><td>no</td></tr>
+  <tr><td><b>descomponer 🧩</b></td><td>Si la pregunta compara varias cosas («CDMX, Edomex y CPF»), el LLM la divide en una sub-pregunta por cada una y se busca cada una por separado, para que ninguna se quede sin lugar en el contexto. Si no compara nada, no cambia.</td><td>1 llamada al LLM</td><td>sí en todas</td></tr>
+  <tr><td><b>Lugar</b> (menú)</td><td>Filtro <b>manual</b> de legislación: la persona elige de qué lugares puede salir el contexto. Ver abajo.</td><td>—</td><td>«Todos» (sin filtro)</td></tr>
+  <tr><td><b>routing por código 🧭</b></td><td>Si la pregunta <b>nombra</b> un código («Querétaro», «CNPP», «CPF»), además de la búsqueda normal busca dentro de ese código y le aparta resultados. No quita nada: solo asegura que el código nombrado aparezca. Ver abajo.</td><td>casi nada (sin LLM)</td><td>no</td></tr>
+  <tr><td><b>filtro por estado 🚧</b></td><td>Filtro <b>automático</b>: el LLM detecta el estado de los hechos y el buscador solo ve los códigos permitidos. Reemplaza al menú «Lugar». Ver abajo.</td><td>1 llamada corta al LLM</td><td>B, C, D, E (viejo); B2, G2, C2, D2 (corregido)</td></tr>
+  <tr><td><b>descomponer por delito ⚖️</b></td><td>Si el relato tiene varias conductas que pueden ser delito («me drogó y me robó»), el LLM escribe una búsqueda por conducta, y se buscan por separado para que lleguen los artículos de cada delito.</td><td>1 llamada al LLM</td><td>C, D, E, G2, C2, D2</td></tr>
+  <tr><td><b>chunks extra por delito</b></td><td>Cuántos resultados más entrega el buscador por cada conducta adicional (con una sola conducta no cambia nada). Tope: el doble del top-k.</td><td>contexto más largo</td><td>3</td></tr>
+  <tr><td><b>seguir remisiones ↪</b></td><td>Si un artículo del contexto dice «las penas previstas en el artículo 220», agrega también el 220 (hasta 4, primero los de pena), marcado «↪ remitido por». Usa la tabla <code>corpus_remisiones</code>: búsqueda exacta, sin LLM.</td><td>casi nada</td><td>C, D, E, C2, D2</td></tr>
+  <tr><td><b>Prompt</b></td><td>Las instrucciones del LLM que responde (tono, qué citar, cuándo preguntar). No cambia lo que encuentra el buscador, solo cómo se escribe la respuesta.</td><td>—</td><td>penal-original-v1; D y D2: tlacua-v1-penas; E: tlacua-secuencia-y-penas</td></tr>
+</table></div>
+
+<h2>Los filtros de lugar: cómo evolucionaron</h2>
+<p>Hay tres formas de decidir <b>de qué legislación</b> salen los artículos. Aparecieron en este orden:</p>
+<div class="scroll"><table>
+  <tr><th></th><th>1. Menú «Lugar» (el original)</th><th>2. Routing por código</th><th>3. Filtro por estado</th></tr>
+  <tr><td><b>Quién decide</b></td><td>La persona, a mano</td><td>Una regex que busca nombres de códigos en la pregunta</td><td>Un LLM que lee la pregunta</td></tr>
+  <tr><td><b>Qué hace</b></td><td>Deja <b>solo</b> los lugares marcados. Al marcar un estado se marcan solos también Federal, Nacional y Doctrina (se pueden desmarcar).</td><td>No quita nada. Agrega resultados del código nombrado para que no falte.</td><td>Deja solo los códigos permitidos y le dice al LLM qué hacer (por ejemplo, pedir el estado).</td></tr>
+  <tr><td><b>Si la pregunta no dice estado</b></td><td>Busca en todo (con «Todos») o en lo que la persona marcó</td><td>Busca en todo</td><td>No ve ningún código estatal y pide el estado</td></tr>
+  <tr><td><b>Problema</b></td><td>La persona tiene que saber qué marcar; en el estudio nadie lo usa</td><td>Si la pregunta no nombra un estado, trae artículos de varios estados (el problema de la ronda 1)</td><td>Versión vieja: quitaba el CPF y las preguntas teóricas de más (ver abajo)</td></tr>
+</table></div>
+<p class="mut">El filtro por estado nació del hallazgo de la ronda 1: con el menú en «Todos», el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba. Pedirle al LLM «no cites otros estados» en el prompt no bastó (set 14: 7 de 12 preguntas sin estado citaron uno). Por eso el filtro quita esos artículos <b>antes</b> de que lleguen al LLM. El filtro corregido es el mismo filtro, con tres reglas cambiadas.</p>
+
+<h2>El filtro por estado: viejo y corregido</h2>
 <div class="box">
 <p style="margin-top:0"><b>Qué es.</b> Un paso <b>antes de buscar</b>. Un LLM lee la pregunta y decide qué códigos puede ver el buscador. También le deja una instrucción al LLM que responde. Existe porque en la ronda 1 del estudio, si la persona no decía dónde ocurrieron los hechos, el buscador traía artículos de varios estados, el LLM los citaba, y la persona creía que esa ley le aplicaba.</p>
 <p><b>Cómo funciona:</b></p>
