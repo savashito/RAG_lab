@@ -78,7 +78,7 @@
 
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#componentes">Pruebas por componente</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#componentes">Pruebas por componente</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -257,6 +257,28 @@
 <p>Cada pregunta se compara contra sí misma en las dos configuraciones (promedio de las dos repeticiones). Entre paréntesis, el intervalo de confianza de 95 %. <b>En color:</b> el intervalo no incluye el 0, así que la diferencia probablemente no es ruido. El set 12 (3 preguntas) no da intervalos confiables.</p>
 <p class="mut" style="font-size:14px">Cada fila dice qué cambia entre las dos configuraciones (por ejemplo, G·v2 → C·v2 agrega solo las remisiones).</p>
 <div class="scroll"><table id="t-pares"></table></div>
+
+<h3 id="filtros">Las tres versiones del filtro, lado a lado</h3>
+<p>Misma configuración en todo lo demás (la base, penal-original-v1, sin descomponer por delito ni remisiones), 2 repeticiones. Sin filtro = A; v1 = B·v1; v2 = B·v2; v3 = B·v3 (#179–#182 y #200–#203).</p>
+<div class="scroll"><table>
+  <tr><th>Set</th><th class="n">Sin filtro</th><th class="n">v1</th><th class="n">v2</th><th class="n">v3</th><th>Citan otro estado (sin filtro → con cualquier filtro)</th></tr>
+  <tr><td>3 · general</td><td class="n">90.6</td><td class="n x">80.6</td><td class="n">89.5</td><td class="n">90.4</td><td>1.7 % → 0 %</td></tr>
+  <tr><td>13 · un estado</td><td class="n">67.7</td><td class="n">75.0</td><td class="n">79.0</td><td class="n">79.0</td><td>21 % → 0 %</td></tr>
+  <tr><td>14 · ¿pedir el estado?</td><td class="n">39.2</td><td class="n">80.8</td><td class="n">83.0</td><td class="n">81.1</td><td>25 % → 0 %</td></tr>
+  <tr><td>12 · casos de Karen</td><td class="n">27.0</td><td class="n">33.6</td><td class="n">30.5</td><td class="n">30.9</td><td>50 % → 0 %</td></tr>
+</table></div>
+<p>Diferencias pareadas (IC 95 %): <b>sin filtro → v3</b>: set 3 −0.1 (−2.9 a +3.0), set 13 +11.3 (0 a +23.4), set 14 <b>+42.0</b> (+30.7 a +53.1). <b>v2 → v3</b>: set 3 +0.9, set 13 0.0, set 14 −1.9 (−5.7 a +0.9); ninguna significativa.</p>
+<p><b>Set 14 por tipo de pregunta</b> (score medio · respuestas que piden el estado, de 2 repeticiones):</p>
+<div class="scroll"><table>
+  <tr><th>Tipo</th><th class="n">Preguntas</th><th class="n">Sin filtro</th><th class="n">v1</th><th class="n">v2</th><th class="n">v3</th></tr>
+  <tr><td><b>Sin lugar</b> (hay que pedir el estado)</td><td class="n">12</td><td class="n x">5.2 · 3/24</td><td class="n ok">93.8 · 24/24</td><td class="n ok">91.7 · 24/24</td><td class="n ok">91.7 · 24/24</td></tr>
+  <tr><td>Un estado</td><td class="n">8</td><td class="n">43.8 · 3/16</td><td class="n">75.0 · 0/16</td><td class="n">87.5 · 0/16</td><td class="n">81.2 · 0/16</td></tr>
+  <tr><td>Lugar indirecto</td><td class="n">8</td><td class="n">26.6 · 0/16</td><td class="n">65.6 · 0/16</td><td class="n">65.6 · 1/16</td><td class="n">62.5 · 0/16</td></tr>
+  <tr><td>Comparación</td><td class="n">8</td><td class="n">63.5 · 1/16</td><td class="n">76.0 · 0/16</td><td class="n">76.0 · 0/16</td><td class="n">78.1 · 1/16</td></tr>
+  <tr><td>Estado fuera del corpus</td><td class="n">6</td><td class="n x">8.3 · 2/12</td><td class="n">91.7 · 1/12</td><td class="n">100 · 0/12</td><td class="n">91.7 · 2/12</td></tr>
+  <tr><td>Ley nacional (no hay que pedirlo)</td><td class="n">15</td><td class="n">70.0 · 0/30</td><td class="n">80.0 · 0/30</td><td class="n">80.0 · 0/30</td><td class="n">80.0 · 0/30</td></tr>
+</table></div>
+<p><b>Lectura:</b> el filtro resuelve el problema de la ronda 1. Sin filtro, ante una pregunta sin lugar el sistema pide el estado en 3 de 24 respuestas y cita otros estados; con cualquier versión del filtro lo pide en 24 de 24 y no cita ninguno. El v1 tenía el costo del set 3 (−10); el v2 lo quitó; el v3 queda igual que el v2 en score y además no cita códigos estatales en las preguntas teóricas (sección 7). El punto más débil sigue siendo «lugar indirecto» (62–66): ahí falta revisar pregunta por pregunta.</p>
 
 <h3 id="pordelito">¿Funciona descomponer por delito?</h3>
 <p>Para saberlo se comparan B·v2 y G·v2, que son iguales salvo esa opción. En el total de cada set la diferencia no es significativa (tabla de comparaciones pareadas, fila B·v2 → G·v2). Pero la opción solo debería notarse en las preguntas donde el LLM encontró <b>más de una conducta</b>, así que se separaron:</p>
