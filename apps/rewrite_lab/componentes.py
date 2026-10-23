@@ -83,6 +83,8 @@ CREATE INDEX IF NOT EXISTS comp_resultados_c ON comp_resultados (corrida_id, id)
 _STALE_SQL = "UPDATE comp_corridas SET status = 'interrumpida', finished_at = now() WHERE status = 'running'"
 
 CASOS_INICIALES = Path(__file__).resolve().parent / 'componentes_casos.json'
+# Costo y efecto de cada opción en los benchmarks (comparaciones pareadas ya hechas, con su fuente). Se actualiza a mano.
+EFECTOS = Path(__file__).resolve().parent / 'componentes_efectos.json'
 
 # Estados del corpus como los nombra code_routes (codes_in → 'label'); los demás labels son leyes (CPF, CNPP…).
 ESTATALES = {'CDMX', 'CPEM', 'Morelos', 'Querétaro'}
@@ -454,6 +456,12 @@ class Componentes:
             if not self.can_run(self.current_email(request)):
                 return deny('Solo los administradores pueden ver las pruebas por componente.')
             return self.resumen()
+
+        @r.get('/efectos')
+        def efectos(request: Request):
+            if not self.can_run(self.current_email(request)):
+                return deny()
+            return json.loads(EFECTOS.read_text()) if EFECTOS.exists() else {'opciones': []}
 
         @r.get('/{comp}/casos')
         def casos(comp: str, request: Request):

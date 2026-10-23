@@ -1045,8 +1045,23 @@ const DESC_OBED = [['descomponer', 'actual', 'Su prompt dice «solo por lugar» 
   ['desc_libre_corto', 'libre (prompt mínimo)', 'Como «libre», con un prompt de una línea'],
   ['desc_libre_max2', 'libre, máximo 2', 'Como «libre», pero con máximo 2 búsquedas']];
 const cpct = x => x == null ? '—' : (x * 100).toFixed(0) + ' %';
+// Tabla «Costo y efecto de cada opción» (componentes_efectos.json): cuánto cuesta y cuánto cambia los benchmarks.
+async function compEfectos(){
+  let d; try{ d = await bjson('/api/componentes/efectos'); }catch(e){ return; }
+  const sig = x => x.ic && (x.ic[0] > 0 || x.ic[1] < 0);
+  const f = v => (v > 0 ? '+' : '') + v.toFixed(1);
+  const score = o => o.score.length ? o.score.map(x => `<span title="IC 95 %: ${x.ic[0]} a ${x.ic[1]}" style="white-space:nowrap;${sig(x) ? `color:${x.dif > 0 ? '#4ade80' : '#f87171'};font-weight:700` : ''}">set ${esc(x.set)}: ${f(x.dif)}${sig(x) ? '✱' : ''}</span>`).join('<br>') : '<span class="muted">no medido</span>';
+  const recall = o => o.recall.length ? o.recall.map(x => `<span style="white-space:nowrap">set ${esc(x.set)}: ${x.de} → <b>${x.a}</b> %</span>`).join('<br>') : '<span class="muted">—</span>';
+  $('comp-efectos').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Costo y efecto de cada opción</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 6px">${esc(d.nota || '')} Actualizado: ${esc(d.actualizado || '')}.</p>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Opción</th><th>Qué se compara</th><th>Costo</th><th>Recall</th><th>Score (puntos)</th><th>Veredicto</th></tr>
+    ${d.opciones.map(o => `<tr><td><b>${esc(o.opcion)}</b></td><td class="muted">${esc(o.compara)}<div style="font-size:11px">${esc(o.fuente)}</div></td>
+      <td>${esc(o.costo)}</td><td>${recall(o)}</td><td>${score(o)}${o.otro ? `<div class="muted" style="font-size:11px;margin-top:4px">${esc(o.otro)}</div>` : ''}</td>
+      <td>${esc(o.veredicto)}</td></tr>`).join('')}</table></div></div>`;
+}
 async function loadComponentes(){
   clearTimeout(COMP.poll);
+  if(!$('comp-efectos').innerHTML) compEfectos();
   try{ COMP.lista = await bjson('/api/componentes'); }catch(e){ $('comp-cards').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
   const tarjetas = COMP.lista.filter(c => !DESC_IDS.includes(c.id)).map(c => {
     const m = (c.ultima || {}).metricas || {};
@@ -1062,6 +1077,7 @@ async function loadComponentes(){
       <div style="font-weight:700">${c.icono} ${esc(c.nombre)}</div>
       <div class="muted" style="font-size:12px;margin:4px 0 8px">${esc(c.objetivo)}</div>
       <div>${estado}</div>${grupos ? `<div class="muted" style="font-size:12px">${grupos}</div>` : ''}
+      ${m.segundos_media != null ? `<div class="muted" style="font-size:12px;margin-top:6px">Tiempo de la llamada al LLM: <b>${m.segundos_media.toFixed(2)} s</b></div>` : ''}
       <div class="muted" style="font-size:12px;margin-top:6px">${c.casos} casos (${c.revisados} revisados)</div></div>`;
   });
   // Tarjeta de descomponer: el mejor recall y la obediencia del prompt actual.
