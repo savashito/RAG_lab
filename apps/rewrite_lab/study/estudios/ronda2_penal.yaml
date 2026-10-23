@@ -1,0 +1,727 @@
+# Ronda 2 del estudio con usuarios (BORRADOR, 2026-10-23). Parte de piloto_penal_v7_final.yaml (ronda 1) con estos cambios:
+# - id ronda2_penal, estado borrador.
+# - asistente: + filtro_estado (filtro por estado v3). El resto igual que la ronda 1 (híbrido, k 10, HyDE, routing, descomponer).
+# - condiciones: original = penal-original-v1 (md5 f68239bf, puente con la ronda 1) y nuevo = ultimo-promt de
+#   Karen (md5 08cee8aa). Reparto mitad y mitad (decidido 2026-10-23, en vez del 1:2 del 19-oct: la
+#   comparación nuevo vs original y el puente con la ronda 1 son más precisos con grupos iguales). PENDIENTE: benchmark de ultimo-promt.
+# - perfil: sin «¿estudiante de la UNAM?» ni semestre; una pregunta de nivel de estudios; área «estudias o estudiaste» +
+#   «no aplica»; carrera opcional; edad en rangos del INEGI.
+# - situaciones, preguntas, tutorial y cierre: SIN cambios (comparabilidad con la ronda 1).
+# El consentimiento largo cambia en la sección 8 (preguntas del cuestionario): ver consentimiento_ronda2.md.
+id: ronda2_penal
+titulo: Estudio sobre un asistente de información legal
+estado: borrador
+asistente:
+  tema: derecho_penal_mexicano
+  setting: híbrido
+  hyde: true
+  route: true
+  descomponer: true
+  k: 10
+  max_turnos: 6
+  historial: 10
+  filtro_estado: true
+escenarios_por_persona: 3
+duracion: unos 15 minutos
+fase: principal
+condiciones:
+- id: original
+  sistema: 'Actúa como un asistente jurídico especializado en el sistema penal acusatorio mexicano.
+
+
+    Tu tarea consiste en analizar y responder las preguntas que se formulen ÚNICA Y EXCLUSIVAMENTE con base en los fragmentos
+    incluidos en el apartado CONTEXTO. Dichos fragmentos podrán provenir de la Constitución Política de los Estados Unidos
+    Mexicanos (CPEUM), el Código Nacional de Procedimientos Penales (CNPP), el Código Penal Federal (CPF) y fuentes doctrinales.
+
+
+    REGLAS OBLIGATORIAS
+
+
+    1. Uso exclusivo del contexto
+
+
+    Utiliza únicamente la información contenida en los fragmentos proporcionados en el CONTEXTO.
+
+
+    No utilices conocimientos jurídicos externos, información obtenida de Internet, jurisprudencia, legislación, doctrina
+    o criterios que no hayan sido expresamente incluidos en el CONTEXTO, aunque conozcas la respuesta.
+
+
+    No completes vacíos mediante suposiciones, inferencias no sustentadas o información proveniente de tu conocimiento general.
+
+
+    2. Información insuficiente
+
+
+    Si el CONTEXTO no contiene elementos suficientes para responder total o parcialmente la pregunta, indícalo expresamente.
+
+
+    Utiliza una fórmula como:
+
+
+    «“Los fragmentos proporcionados en el CONTEXTO no contienen información suficiente para responder este punto de manera
+    fundada.”»
+
+
+    Después, explica brevemente qué información falta. No inventes artículos, disposiciones, conceptos, autores, referencias
+    ni conclusiones.
+
+
+    3. Fundamentación jurídica exacta
+
+
+    Toda afirmación jurídica relevante deberá estar vinculada con el fundamento que efectivamente aparezca en el CONTEXTO.
+
+
+    Identifica siempre:
+
+
+    - número de artículo;
+
+    - fracción, inciso o párrafo, cuando resulte aplicable; y
+
+    - nombre completo del ordenamiento jurídico.
+
+
+    Ejemplo:
+
+
+    “Con fundamento en el artículo 20, apartado A, fracción I, de la Constitución Política de los Estados Unidos Mexicanos…”
+
+
+    No atribuyas a un artículo contenido que no aparezca en los fragmentos proporcionados.
+
+
+    4. Análisis jurídico
+
+
+    No te limites a copiar o parafrasear las disposiciones. Analiza su contenido y explica, cuando el CONTEXTO lo permita:
+
+
+    a) cuál es la regla jurídica aplicable;
+
+    b) qué significa jurídicamente;
+
+    c) cómo se relaciona con la pregunta formulada; y
+
+    d) cuál es la conclusión que puede sostenerse a partir de dicha información.
+
+
+    Distingue claramente entre lo que establece expresamente una norma y las conclusiones que razonablemente pueden derivarse
+    de ella.
+
+
+    5. Doctrina
+
+
+    Cuando el CONTEXTO contenga fuentes doctrinales pertinentes, intégralas al análisis para explicar, complementar o contrastar
+    el contenido normativo.
+
+
+    Al final de la respuesta incluye un apartado denominado “Fuentes doctrinales”, en el que deberás citar exclusivamente
+    las obras doctrinales efectivamente utilizadas.
+
+
+    Las referencias deberán elaborarse conforme a los lineamientos editoriales proporcionados en el CONTEXTO.
+
+
+    Si dichos lineamientos o los datos bibliográficos necesarios no fueron proporcionados, indícalo expresamente y no inventes
+    información bibliográfica.
+
+
+    6. Conflictos o contradicciones
+
+
+    Si dos fragmentos del CONTEXTO parecen contener criterios diferentes o contradictorios, no elijas arbitrariamente uno
+    de ellos. Identifica la posible contradicción, explica ambos contenidos y determina únicamente aquello que pueda sostenerse
+    con la información disponible.
+
+
+    7. Estilo de respuesta
+
+
+    Redacta en español jurídico claro, preciso y profesional, con vocabulario suficiente y adecuado para estudiantes y profesionales
+    del Derecho.
+
+
+    Prioriza párrafos continuos, cohesionados y argumentativos. Evita el uso excesivo de viñetas, numeraciones, esquemas y
+    fragmentos aislados.
+
+
+    No repitas innecesariamente la pregunta ni reproduzcas extensamente el CONTEXTO.
+
+
+    La extensión deberá ser proporcional a la complejidad de la pregunta: desarrolla suficientemente la respuesta, pero evita
+    información redundante.
+
+
+    ESTRUCTURA DE LA RESPUESTA
+
+
+    Utiliza preferentemente la siguiente estructura:
+
+
+    Respuesta
+
+
+    Desarrolla el razonamiento jurídico en párrafos continuos. Explica la norma aplicable, su significado y su relación con
+    la pregunta.
+
+
+    Fundamento jurídico
+
+
+    Identifica de manera precisa los artículos, párrafos, apartados, fracciones o incisos utilizados y el nombre del ordenamiento
+    correspondiente.
+
+
+    Conclusión
+
+
+    Responde de manera directa y jurídicamente sustentada la pregunta formulada.
+
+
+    Fuentes doctrinales
+
+
+    Incluye únicamente las fuentes doctrinales utilizadas, citadas conforme a los lineamientos editoriales proporcionados.
+
+
+    CONTROL FINAL
+
+
+    Antes de entregar la respuesta, verifica internamente que:
+
+
+    1. Toda la información utilizada provenga del CONTEXTO.
+
+    2. Cada artículo citado aparezca efectivamente en el CONTEXTO.
+
+    3. El contenido atribuido a cada artículo corresponda con el fragmento proporcionado.
+
+    4. No hayas incorporado legislación, jurisprudencia, doctrina o conocimientos externos.
+
+    5. Las conclusiones estén sustentadas por los fragmentos disponibles.
+
+    6. No hayas inventado referencias bibliográficas.
+
+    7. Si falta información, lo hayas indicado expresamente.
+
+    8. La respuesta sea clara, suficientemente desarrollada y predominantemente redactada en párrafos.'
+- id: nuevo
+  sistema: "Eres Tlacua, asistente jurídico especializado en derecho penal y procesal penal mexicano, particularmente en el\
+    \ sistema acusatorio regulado por el Código Nacional de Procedimientos Penales (CNPP). Brinda orientación clara, cercana,\
+    \ empática y jurídicamente precisa, sin prejuzgar ni atribuir culpabilidad. Ayuda a las personas a comprender su situación\
+    \ jurídica, conocer sus derechos, identificar actuaciones procesales y preparar escritos cuando corresponda.\n1. Contexto\
+    \ y entrevista jurídica.\nIdentifica quién hizo qué, cómo, cuándo y dónde; la calidad procesal de la persona (víctima,\
+    \ imputada, testigo u otra), la autoridad involucrada, la etapa del procedimiento y el objetivo de la consulta.\nUtiliza\
+    \ la jurisdicción determinada por el sistema, sin confundir el domicilio de la persona con el lugar de los hechos. Si\
+    \ falta información indispensable, formula preguntas breves, neutrales y progresivas. No repitas información proporcionada,\
+    \ sugieras respuestas ni supongas que existe una investigación iniciada. Cuando existan elementos suficientes, orienta\
+    \ directamente.\n2. Fundamentación y control de tipicidad.\nUtiliza exclusivamente legislación vigente y fuentes pertinentes\
+    \ recuperadas en el CONTEXTO. Para cada hipótesis delictiva relevante, analiza internamente la conducta, los elementos\
+    \ objetivos, normativos y subjetivos, el resultado, nexo causal, grado de ejecución y posibles causas de atipicidad, cuando\
+    \ correspondan.\nContrasta cada elemento con los hechos narrados, distinguiendo los afirmados, negados y desconocidos.\
+    \ Clasifica las hipótesis como compatibles, incompatibles o pendientes de esclarecimiento. No presentes como acreditado\
+    \ un delito cuyos elementos indispensables permanezcan sin verificar.\nIncluye un apartado breve de Fundamento jurídico\
+    \ cuando proporciones conclusiones legales específicas. Cita ordenamiento, artículo y fracción aplicables, explicando\
+    \ su relación con los hechos. Verifica las remisiones normativas y no atribuyas contenido a artículos que no figuren en\
+    \ el CONTEXTO. Si las fuentes son insuficientes, reconócelo y evita conclusiones infundadas.\n3. Penas y consecuencias\
+    \ jurídicas.\nCuando resulte pertinente, informa las penas de prisión, multa y otras consecuencias previstas en las disposiciones\
+    \ recuperadas, indicando sus rangos y fundamentos.\nExplica calificativas, agravantes, disminuciones o aumentos únicamente\
+    \ cuando existan elementos jurídicos y fácticos para considerarlos. Distingue la pena base de sus posibles modificaciones,\
+    \ sin acumular sanciones automáticamente ni presentar una hipótesis como condena definitiva.\n4. Orientación procesal.\n\
+    Identifica la etapa del procedimiento y explica las actuaciones legalmente disponibles conforme al CNPP:\n•\tInvestigación\
+    \ inicial: denuncia, querella, defensa o asesoría jurídica, acceso a registros, aportación de datos, solicitudes de actos\
+    \ de investigación, medidas de protección e impugnación de determinaciones ministeriales.\n•\tInvestigación complementaria:\
+    \ formulación de imputación, vinculación a proceso, medidas cautelares, actos de investigación, plazos, sobreseimiento,\
+    \ soluciones alternas y formas de terminación anticipada cuando procedan.\n•\tEtapa intermedia: acusación del Ministerio\
+    \ Público, coadyuvancia de la víctima, ofrecimiento y exclusión de medios de prueba, reparación del daño y audiencia intermedia.\n\
+    •\tJuicio: derechos de las partes, intervenciones procesales, desahogo de pruebas, fallo y sentencia.\n•\tImpugnaciones\
+    \ y etapas posteriores: revocación, apelación, amparo y ejecución penal conforme a sus respectivas disposiciones.\nDistingue\
+    \ las facultades de la víctima, imputado, defensor, asesor jurídico, Ministerio Público y órgano jurisdiccional. No atribuyas\
+    \ a una persona actuaciones reservadas a otros intervinientes.\n5. Procedibilidad y viabilidad de las actuaciones.\nAntes\
+    \ de recomendar una actuación o elaborar un escrito, verifica la legitimación de la persona, etapa procesal, autoridad\
+    \ competente, fundamento jurídico, requisitos, plazos, forma de presentación y efectos legales.\nPara determinar si un\
+    \ delito se persigue de oficio o por querella, consulta la disposición correspondiente y sus excepciones. Si faltan hechos\
+    \ indispensables, pregunta lo necesario y presenta la conclusión como provisional.\nNo supongas que todas las resoluciones\
+    \ pueden impugnarse. Identifica las fechas de notificación y los plazos cuando sean relevantes. Ante detenciones, amenazas,\
+    \ riesgos inmediatos o vencimientos próximos, prioriza la protección de los derechos.\n6. Elaboración de documentos jurídicos.\n\
+    Ofrece proactivamente ayudar a preparar denuncias, querellas, solicitudes de actos de investigación, medidas de protección,\
+    \ coadyuvancias, promociones, recursos y demás escritos legalmente procedentes.\nAntes de redactar, identifica la finalidad\
+    \ del documento, verifica su procedencia y solicita únicamente los datos faltantes necesarios. Elabora escritos con lenguaje\
+    \ jurídico formal, estructura apropiada, hechos proporcionados, fundamentos verificables y peticiones concretas.\nUtiliza\
+    \ campos editables para información pendiente. No inventes hechos, pruebas, antecedentes, resoluciones, fechas, autoridades\
+    \ ni firmas. Distingue entre un borrador informativo y un documento preparado para revisión profesional.\nExplica posteriormente,\
+    \ con palabras sencillas, para qué sirve el escrito, ante quién se presenta y qué requisitos deben verificarse.\n7. Comunicación,\
+    \ seguridad y límites.\nResponde primero a la preocupación principal de la persona, utilizando lenguaje cotidiano, empatía\
+    \ genuina, oraciones breves y pasos prácticos. Evita tecnicismos innecesarios, expresiones burocráticas, respuestas excesivamente\
+    \ largas e interrogatorios repetitivos. Explica los conceptos jurídicos cuando sea necesario y adapta la profundidad a\
+    \ la consulta.\nProtege los datos personales, evita la revictimización y respeta la presunción de inocencia. No inventes\
+    \ información, garantices resultados, sugieras actos ilegales ni afirmes haber consultado documentos o realizado actuaciones\
+    \ que no estén verificadas.\nReconoce cuándo se requiere la intervención de un defensor o asesor jurídico profesional.\
+    \ No muestres el análisis interno de tipicidad.\nPrincipio rector: Orienta con claridad, fundamenta con precisión, pregunta\
+    \ únicamente lo necesario y ofrece soluciones prácticas. La calidad jurídica de Tlacua depende de aplicar correctamente\
+    \ las normas a los hechos, reconocer la información faltante y respetar los límites de cada actuación procesal."
+ultima_situacion:
+- id: estado_citado
+  texto: ¿De qué estado era la ley que te citó el asistente en esta situación?
+  opciones:
+    qro: De Querétaro
+    cdmx: De la Ciudad de México
+    otro: De otro estado
+    nacional: Era una ley federal o general (aplica en todo el país)
+    varios: Citó leyes de varios estados
+    no_me_fije: No me fijé
+consentimiento: '### 1. Invitación a participar
+
+
+  Se le invita a participar en un estudio de investigación que evalúa un asistente de inteligencia artificial diseñado para
+  responder preguntas sobre el derecho penal mexicano.
+
+
+  Antes de decidir si desea participar, lea cuidadosamente la siguiente información. Puede hacer preguntas al equipo de investigación
+  si necesita aclaraciones.
+
+
+  ### 2. Propósito del estudio
+
+
+  El propósito de esta investigación es evaluar la precisión jurídica, la identificación de la jurisdicción aplicable y la
+  utilidad de un asistente de inteligencia artificial que proporciona información sobre cuestiones relacionadas con el derecho
+  penal mexicano.
+
+
+  El estudio busca comprender cómo las personas interactúan con este tipo de sistemas, cómo interpretan sus respuestas y qué
+  tan capaces son de identificar posibles errores o problemas en la información proporcionada.
+
+
+  **El asistente no sustituye a un abogado ni proporciona asesoramiento jurídico profesional.**
+
+
+  ### 3. Requisitos para participar
+
+
+  Para participar, debe:
+
+
+  - Tener al menos 18 años.
+
+  - Leer y comprender la información de este consentimiento.
+
+  - Aceptar voluntariamente participar en el estudio.
+
+
+  Todos los participantes de este estudio serán mayores de edad.
+
+
+  ### 4. ¿Qué ocurrirá si decide participar?
+
+
+  Su participación durará aproximadamente 20–30 minutos.
+
+
+  Durante el estudio, se le pedirá que:
+
+
+  1. Responda algunas preguntas generales sobre su perfil.
+
+  2. Interactúe con el asistente de inteligencia artificial para explorar su funcionamiento.
+
+  3. Consulte al asistente sobre tres escenarios hipotéticos relacionados con el derecho penal mexicano.
+
+  4. Responda preguntas sobre la información recibida, su confianza en las respuestas y su percepción de posibles errores.
+
+  5. Complete preguntas finales sobre la experiencia de uso y la utilidad del sistema.
+
+
+  Los escenarios son ficticios y están diseñados con fines de investigación. No necesita compartir experiencias personales
+  ni revelar información sobre situaciones jurídicas propias.
+
+
+  Es posible que se le asigne una versión específica del asistente como parte de la evaluación.
+
+
+  ### 5. Riesgos e incomodidades
+
+
+  Los riesgos previsibles de participar son limitados, pero pueden incluir:
+
+
+  - **Incomodidad emocional:** algunos escenarios hipotéticos pueden abordar situaciones relacionadas con acoso, amenazas
+  o divulgación de imágenes íntimas.
+
+  - **Información incorrecta o confusa:** el asistente puede proporcionar respuestas incompletas, imprecisas o jurídicamente
+  incorrectas. No debe utilizar sus respuestas para tomar decisiones jurídicas reales.
+
+  - **Riesgos de confidencialidad:** para mitigar riesgos de confidencialidad, no pedimos datos personales. Solo almacenamos
+  datos estadísticos como carrera y edad, todo se hace de forma anónima para el estudio.
+
+
+  Puede dejar de participar si se siente incómodo. No tiene que responder preguntas con las que no se sienta a gusto.
+
+
+  ### 6. Beneficios
+
+
+  Los resultados podrían contribuir al desarrollo y evaluación de sistemas de inteligencia artificial más precisos, transparentes
+  y responsables para responder preguntas sobre cuestiones jurídicas.
+
+
+  ### 7. Compensación
+
+
+  No recibirá compensación económica ni otro pago por participar en este estudio.
+
+
+  ### 8. ¿Qué información se recopilará?
+
+
+  Durante el estudio podrán recopilarse los siguientes datos:
+
+
+  - Respuestas al cuestionario inicial: máximo nivel de estudios, área de estudios, carrera (opcional), formación en derecho,
+  frecuencia de uso de asistentes de IA, qué tan capaz se siente de buscar y entender información legal por su cuenta, y rango
+  de edad.
+
+  - Interacciones y mensajes intercambiados con el asistente.
+
+  - Respuestas a preguntas de comprensión y evaluación.
+
+  - Calificaciones de confianza y percepciones sobre posibles errores.
+
+  - Respuestas sobre la experiencia de uso.
+
+  - Comentarios escritos que decida proporcionar.
+
+  - Registro de su consentimiento electrónico.
+
+
+  No se pide su nombre ni su correo electrónico, y la base de datos del estudio no guarda su dirección IP ni otros metadatos
+  técnicos para identificarle.
+
+
+  **Registros técnicos del servidor.** Como ocurre con cualquier página de internet, el servidor web que aloja el estudio
+  registra de forma automática, en sus bitácoras técnicas, la dirección IP desde la que se conecta cada visitante y la página
+  que solicita. Es el funcionamiento normal de todos los servidores web y sirve para su seguridad y operación (por ejemplo,
+  para detectar ataques o errores). Estos registros están separados de las respuestas del estudio, no se analizan como parte
+  de la investigación ni se usan para identificarle.
+
+
+  ### 9. Almacenamiento y confidencialidad de los datos
+
+
+  Los datos del estudio se almacenarán en una base de datos alojada en un servidor contratado a Hostinger. El consentimiento
+  electrónico también se conservará en la base de datos del estudio.
+
+
+  El equipo de investigación utilizará códigos de participante para organizar los datos y procurará evitar la inclusión de
+  información que permita identificar directamente a los participantes en los análisis y resultados.
+
+
+  Los datos se utilizarán con fines de investigación académica y podrán presentarse en publicaciones o presentaciones científicas.
+  Los resultados se comunicarán de manera que se reduzca el riesgo de identificar a participantes individuales.
+
+
+  Aunque el equipo tomará medidas para proteger la confidencialidad, no puede garantizarse que el riesgo de acceso no autorizado
+  sea absolutamente nulo.
+
+
+  ### 10. Participación voluntaria y retirada
+
+
+  Su participación es completamente voluntaria.
+
+
+  Puede negarse a participar o interrumpir su participación en cualquier momento, sin penalización ni pérdida de beneficios
+  a los que tenga derecho.
+
+
+  Mientras participa, puede retirarse en cualquier momento con el botón **«Retirarme del estudio»**, en la parte superior
+  de la página: se borrará de inmediato todo lo que haya escrito.
+
+
+  Al terminar, la página le mostrará su **código anónimo de participante** (por ejemplo, ABCD-EF23). Anótelo. Si más adelante
+  desea que se eliminen sus datos, envíe ese código por correo electrónico a cualquiera de los investigadores de la sección
+  de contacto. Como no guardamos su nombre ni su correo, **sin ese código no hay forma de saber cuáles son sus respuestas**
+  y no podríamos eliminarlas.
+
+
+  ### 11. Contacto del equipo de investigación
+
+
+  Si tiene preguntas sobre el estudio, puede contactar con:
+
+
+  **Investigador asociado:** Rodrigo Savage Chávez\
+
+  Correo electrónico: ro.savage@northeastern.edu\
+
+  Teléfono: +52 (55) 85 61 08 89
+
+
+  **Investigador principal (PI):** Francisco Javier Marmolejo Cossío\
+
+  Correo electrónico del PI: marmolf@bc.edu\
+
+  Teléfono: +1 (857) 320-8804
+
+
+  Si tiene preguntas sobre sus derechos como participante o desea plantear una preocupación de forma independiente del equipo
+  investigador, puede contactar con la oficina que protege a los participantes en investigaciones de Boston College:
+
+
+  **Office for Research Protections (IRB), Boston College**\
+
+  Correo electrónico: irb@bc.edu\
+
+  Teléfono: +1 (617) 552-4778 (lunes a viernes, de 9:00 a 17:00, hora de Boston)
+
+
+  ### 12. Declaración de consentimiento electrónico
+
+
+  Al continuar, usted declara que:
+
+
+  - He leído y comprendido la información anterior.
+
+  - Tengo al menos 18 años.
+
+  - He tenido la oportunidad de considerar si deseo participar.
+
+  - Comprendo que mi participación es voluntaria y que puedo retirarme.
+
+  - Comprendo que el asistente de inteligencia artificial puede cometer errores y que sus respuestas no constituyen asesoramiento
+  jurídico profesional.
+
+  - Acepto que la información descrita en este documento se recopile y utilice para los fines de investigación explicados.
+
+
+  Al seleccionar «Acepto participar», su decisión de consentimiento electrónico quedará registrada en la base de datos del
+  estudio.
+
+  '
+tutorial:
+  texto: "## Antes de empezar: ¿qué es el asistente?\n\n- Es un programa de **inteligencia artificial** que busca en leyes\
+    \ mexicanas (códigos penales y leyes\n  generales) y responde citando los artículos que encontró.\n- Le escribes **como\
+    \ le escribirías a una persona**, con tus propias palabras. No necesitas saber\n  términos legales.\n- Debajo de cada\
+    \ respuesta puedes abrir **«Fuentes que consultó el asistente»** para ver los artículos\n  que usó.\n- Tarda unos segundos\
+    \ en responder.\n- **Puede equivocarse.** En este estudio queremos saber justamente cómo lo usan las personas.\n\nHaz\
+    \ una pregunta de práctica para ver cómo funciona. Esta práctica no cuenta para el estudio.\n"
+  ejemplo: Si me encuentro una cartera tirada en la calle y me quedo con el dinero, ¿eso es delito?
+  max_preguntas: 3
+perfil:
+- id: estudios
+  pregunta: ¿Cuál es tu máximo nivel de estudios?
+  opciones:
+    secundaria: Secundaria o menos
+    prepa: Preparatoria o bachillerato
+    lic_curso: Licenciatura en curso
+    lic_terminada: Licenciatura terminada
+    maestria: Maestría
+    doctorado: Doctorado
+- id: area
+  pregunta: ¿En qué área estudias o estudiaste?
+  opciones:
+    derecho: Derecho
+    fisico_mat: Ciencias Físico-Matemáticas e Ingenierías
+    biologicas: Ciencias Biológicas, Químicas y de la Salud
+    sociales: Ciencias Sociales (sin contar Derecho)
+    humanidades: Humanidades y Artes
+    otra: Otra
+    no_aplica: No aplica (no tengo estudios universitarios)
+- id: carrera
+  tipo: texto
+  pregunta: ¿Qué carrera estudias o estudiaste? (opcional)
+  obligatorio: false
+- id: formacion_juridica
+  pregunta: ¿Qué formación en derecho tienes?
+  ayuda: Elige la que más se acerque, aunque estudies otra carrera.
+  opciones:
+    ninguna: Ninguna
+    materias: He tomado una o dos materias de derecho
+    carrera: Estudio o estudié Derecho
+    trabajo: Trabajo o he trabajado en algo jurídico
+- id: uso_ia
+  pregunta: ¿Con qué frecuencia usas asistentes de IA (ChatGPT, Gemini, Copilot, etc.)?
+  opciones:
+    nunca: Nunca
+    mes: Algunas veces al mes
+    semana: Cada semana
+    diario: Diario
+- id: confianza_basal
+  tipo: escala
+  pregunta: ¿Qué tan capaz te sientes de buscar y entender información legal por tu cuenta?
+  ayuda: 1 = nada capaz · 5 = muy capaz
+- id: edad
+  pregunta: Rango de edad
+  opciones:
+    '18_24': 18–24
+    '25_34': 25–34
+    '35_44': 35–44
+    '45_59': 45–59
+    '60': 60 o más
+escenarios:
+- id: mensajes_trabajo
+  titulo: Mensajes en el trabajo
+  texto: (cada variante pone el suyo)
+  referencia: (cada variante pone la suya)
+  preguntas:
+  - id: ley
+    texto: Según lo que averiguaste, ¿qué delito y qué ley se aplican al caso de Alex?
+    opciones:
+      qro_167ter: Hostigamiento sexual — Código Penal del Estado de Querétaro, art. 167 Ter
+      cdmx_179: Acoso sexual — Código Penal de la Ciudad de México, art. 179
+      morelos_158: Hostigamiento y acoso sexual — Código Penal para el Estado de Morelos, art. 158
+      cpf_259bis: Hostigamiento sexual — Código Penal Federal, art. 259 Bis
+      laboral: Ningún delito, es un asunto laboral
+      otra: No está en las opciones la respuesta que busco
+      no_se: No sé
+    correcta: qro_167ter
+  - id: superior
+    texto: ¿Cambia algo que esa persona sea quien supervisa el trabajo de Alex?
+    opciones:
+      igual: No, da igual quién sea
+      grave: Sí, es más grave
+      contacto: Solo importaría si hubiera contacto físico
+      no_se: No sé
+    correcta: grave
+  variantes:
+  - id: qro
+    texto: 'Alex trabaja en una empresa en **Querétaro**. Desde hace semanas, la persona que supervisa
+
+      directamente su trabajo le manda mensajes con insinuaciones sexuales, y le dijo que podía
+
+      ayudarle a conseguir un ascenso si aceptaba tener una cita. Nunca ha habido contacto físico.
+
+      Alex quiere saber si esto es un delito y qué puede hacer.
+
+      '
+    gold:
+    - Cita el artículo 167 Ter del Código Penal del Estado de Querétaro
+    referencia: 'Puede ser **hostigamiento sexual** (art. 167 Ter del Código Penal de
+
+      Querétaro): asediar o solicitar favores sexuales valiéndose de la posición jerárquica o laboral;
+
+      4 a 8 años de prisión y 200 a 800 días multa. No requiere contacto físico. Sin relación de
+
+      subordinación sería acoso sexual (art. 167 Bis segundo párrafo, 3 a 5 años). Puede denunciar ante la Fiscalía de
+
+      Querétaro.
+
+      '
+  - id: cdmx
+    texto: 'Alex trabaja en una empresa en la **Ciudad de México**. Desde hace semanas, la persona que
+
+      supervisa directamente su trabajo le manda mensajes con insinuaciones sexuales, y le dijo que
+
+      podía ayudarle a conseguir un ascenso si aceptaba tener una cita. Nunca ha habido contacto
+
+      físico. Alex quiere saber si esto es un delito y qué puede hacer.
+
+      '
+    gold:
+    - Cita el artículo 179 del Código Penal de la Ciudad de México
+    correctas:
+      ley: cdmx_179
+    referencia: 'Puede ser **acoso sexual** (art. 179 del Código Penal de la Ciudad de México):
+
+      solicitar favores sexuales o una conducta sexual indeseable que cause daño o sufrimiento
+
+      psicoemocional; 1 a 3 años de prisión. Como hay relación jerárquica laboral, la pena aumenta en
+
+      una tercera parte. Se persigue por querella. No requiere contacto físico.
+
+      '
+- id: fotos
+  titulo: Las fotos
+  texto: 'Cris tiene 24 años y vive en Querétaro. Hace unos meses le mandó fotos íntimas a una persona que
+
+    conoció en una aplicación. Ahora esa persona le escribe por WhatsApp: si no le deposita 5,000 pesos,
+
+    va a publicar las fotos y se las va a mandar a su familia. Cris no sabe si puede hacer algo, porque
+
+    fue quien mandó las fotos.
+
+    '
+  gold:
+  - Cita el artículo 15 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
+  - Cita el artículo 17 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión
+  referencia: 'Puede ser **extorsión** (Ley General en materia de Extorsión, art. 15: 15 a 25
+
+    años), agravada por usar imágenes privadas para coaccionar (art. 17 fr. IV) y por medios
+
+    electrónicos (fr. V). Haber enviado las fotos no lo excluye; el art. 167 Quinquies del Código Penal
+
+    de Querétaro también castiga amenazar con difundir imágenes íntimas obtenidas con o sin
+
+    consentimiento. No debe pagar; puede denunciar y conservar las conversaciones.
+
+    '
+  preguntas:
+  - id: consentimiento
+    texto: ¿Puede ser delito aunque Cris haya mandado las fotos voluntariamente?
+    opciones:
+      si: Sí
+      'no': No, porque Cris las mandó
+      publico: Solo si ya se publicaron
+      no_se: No sé
+    correcta: si
+  - id: ley
+    texto: Según lo que averiguaste, ¿qué delito y qué ley se aplican al caso de Cris?
+    opciones:
+      lg_15: Extorsión — Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión, art. 15
+      cpf_390: Extorsión — Código Penal Federal, art. 390
+      qro_167quinquies: Amenaza de difundir imágenes íntimas — Código Penal del Estado de Querétaro, art. 167 Quinquies
+      ninguno: Ningún delito, es un problema entre particulares
+      otra: No está en las opciones la respuesta que busco
+      no_se: No sé
+    correcta: lg_15
+- id: citatorio
+  titulo: El citatorio
+  texto: 'Ariel vive y trabaja en la Ciudad de México. Un fin de semana fue a Querétaro y, en un bar, tuvo una
+
+    pelea con otra persona y le pegó. Ya regresó a la Ciudad de México y le llegó un citatorio de la
+
+    Fiscalía de Querétaro. Ariel cree que, como vive en la Ciudad de México, le aplican las leyes de la
+
+    Ciudad de México y su caso lo deben llevar allá.
+
+    '
+  gold:
+  - Cita el artículo 1 del Código Penal del Estado de Querétaro
+  - Cita el artículo 20 del Código Nacional de Procedimientos Penales
+  referencia: 'Se aplica el **Código Penal de Querétaro**, porque el hecho ocurrió allá (art. 1:
+
+    se aplica a los hechos realizados en el Estado de Querétaro); el de la Ciudad de México solo rige
+
+    los delitos cometidos en su territorio (art. 7). Son competentes las autoridades de Querétaro (CNPP
+
+    art. 20 fr. I). Vivir en la CDMX no cambia eso. Debe atender el citatorio y buscar defensa
+
+    (particular o pública).
+
+    '
+  preguntas:
+  - id: codigo
+    texto: ¿Qué código penal se aplica al caso de Ariel?
+    opciones:
+      qro: El de Querétaro, donde ocurrió la pelea
+      cdmx: El de la Ciudad de México, donde vive
+      federal: El Código Penal Federal, porque hay dos estados involucrados
+      no_se: No sé
+    correcta: qro
+  - id: lugar
+    texto: ¿Puede Ariel pedir que su caso lo lleven en la Ciudad de México porque ahí vive?
+    opciones:
+      'no': No; en general lo lleva Querétaro, donde ocurrió
+      si: Sí, los casos siempre se llevan donde vive la persona
+      abogado: Sí, si contrata defensa en la Ciudad de México
+      no_se: No sé
+    correcta: 'no'
+cierre:
+  sus: true
+  preguntas_abiertas:
+  - ¿Hubo algo que no entendiste o que te pareció confuso de las respuestas?
+  - ¿Confiarías en este asistente para un problema real? ¿Por qué?
