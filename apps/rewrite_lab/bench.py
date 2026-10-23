@@ -45,6 +45,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from shared.code_routes import codes_in, short_label
+from shared.llm_client import DECOMPOSE_VARIANTES
 
 import citations as cit
 
@@ -1258,7 +1259,10 @@ class Bench:
             try:
                 cfg = {'setting': b.get('setting') or 'híbrido', 'k': int(b.get('k') or 10),
                        'neighbors': bool(b.get('neighbors', True)), 'hyde': bool(b.get('hyde', False)),
-                       'rerank': bool(b.get('rerank', False)), 'decompose': bool(b.get('decompose', False)),
+                       'rerank': bool(b.get('rerank', False)),
+                       # descomponer: True (prompt actual) o una versión del prompt ('solo_lugar', 'libre'…)
+                       'decompose': (b['decompose'] if b.get('decompose') in DECOMPOSE_VARIANTES
+                                     else bool(b.get('decompose', False))),
                        'route': bool(b.get('route', False)), 'gate': bool(b.get('gate', False)),
                        'crimes': bool(b.get('crimes', False)), 'remisiones': bool(b.get('remisiones', False)),
                        'crime_extra_k': (int(b['crime_extra_k']) if b.get('crime_extra_k') not in (None, '') else None),

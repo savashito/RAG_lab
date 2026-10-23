@@ -20,11 +20,14 @@ from shared.db import connect
 from shared.code_routes import codes_in
 import probar_deteccion as det, probar_clasificacion as cla
 import jurisdiction_gate as jgate
+from componentes import contar_preguntas
 NUEVAS_TEORICAS = [l for l in (RAIZ / '06_evaluation' / 'matriz_4sets_2026-10-21' / 'probar_doctrina.py').read_text().split('NUEVAS = [')[1].split(']\n')[0].splitlines() if l.strip().startswith('(')]
 
 with connect() as c, c.cursor() as cur:
     cur.execute("SELECT set_id, id, question, notes FROM bench_questions WHERE set_id IN (3, 13, 14) ORDER BY set_id, id")
     preguntas = cur.fetchall()
+    cur.execute("SELECT DISTINCT question_id FROM bench_components WHERE kind = 'must' AND text ~* '^\\s*cita'")
+    con_cita = {r[0] for r in cur.fetchall()}
 
 filtro = []
 for sid, qid, q, notas in preguntas:
@@ -60,7 +63,8 @@ for sid, qid, q, _ in preguntas:
         esp, nota = {'compara': True}, 'automático: compara conceptos (revisar)'
     else:
         esp, nota = {'compara': False}, 'automático: no nombra 2+ códigos ni compara conceptos'
-    descomponer.append({'entrada': q, 'esperado': esp, 'fuente': f'set {sid} · q{qid}', 'nota': nota, 'revisado': False})
+    descomponer.append({'entrada': q, 'esperado': {**esp, 'preguntas': contar_preguntas(q), 'nombrados': ents},
+                        'fuente': f'set {sid} · q{qid}', 'nota': nota + ' · preguntas: conteo automático', 'revisado': False})
 
 BORRADOR = 'Borrador de Claude: Karen debe revisar las conductas y sus raíces.'
 por_delito = [{'entrada': r, 'esperado': {'conductas': cs}, 'fuente': 'borrador', 'nota': BORRADOR, 'revisado': False} for r, cs in [
@@ -82,5 +86,10 @@ for sid, qid, q, _ in preguntas:
     permitidos = sorted({h['label'] for h in codes_in(q)})
     hyde.append({'entrada': q, 'esperado': {'permitidos': permitidos}, 'fuente': f'set {sid} · q{qid}', 'revisado': True})
 
-print(json.dumps({'filtro': filtro, 'descomponer': descomponer, 'por_delito': por_delito, 'hyde': hyde},
-                 ensure_ascii=False, indent=1))
+# Las versiones del prompt de descomponer se prueban con las mismas preguntas; cada evaluador aplica su regla.
+versiones = {f'desc_{v}': descomponer for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre')}
+# Prueba de recall: preguntas de los sets 3 y 14 con artículos esperados (algún «Cita el art.» en sus criterios).
+recall = [{'entrada': q, 'esperado': {}, 'fuente': f'set {sid} · q{qid}', 'revisado': True}
+          for sid, qid, q, _ in preguntas if sid in (3, 14) and qid in con_cita]
+print(json.dumps({'filtro': filtro, 'descomponer': descomponer, 'por_delito': por_delito, 'hyde': hyde, **versiones,
+                  'division_recall': recall}, ensure_ascii=False, indent=1))

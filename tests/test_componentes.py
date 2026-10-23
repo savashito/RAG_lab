@@ -92,3 +92,33 @@ def test_casos_iniciales_bien_formados():
         assert casos, comp
         for k in casos:
             assert k['entrada'].strip() and isinstance(k['esperado'], dict), (comp, k)
+
+
+def test_contar_preguntas_y_tipos():
+    assert cp.contar_preguntas('Me robaron el celular. ¿Es delito y cuánta cárcel le dan?') == 2
+    assert cp.contar_preguntas('¿Qué es el fraude?') == 1
+    assert cp.contar_preguntas('¿Qué es la tentativa? ¿Y el desistimiento?') == 2
+    assert cp.tipos_pregunta('¿Robo en la CDMX y en Querétaro?') == ['comparativa']
+    assert cp.tipos_pregunta('Me drogó y me robó', conductas=2) == ['varias conductas']
+
+
+def test_division_cada_version_con_su_regla():
+    varias = {'compara': False, 'preguntas': 2, 'nombrados': []}
+    dos = ['¿Qué delito es robar un celular?', '¿Qué pena tiene el robo de un celular?']
+    assert not cp.eval_division('solo_lugar')(varias, dos)[0]        # no compara: debía quedar entera
+    assert cp.eval_division('solo_pregunta')(varias, dos)[0]
+    assert cp.eval_division('lugar_y_pregunta')(varias, dos)[0]
+    comp = {'compara': True, 'entidades': ['CDMX', 'Querétaro'], 'preguntas': 1, 'nombrados': ['CDMX', 'Querétaro']}
+    por_estado = ['robo en la CDMX', 'robo en Querétaro']
+    assert cp.eval_division('solo_lugar')(comp, por_estado)[0]
+    assert not cp.eval_division('solo_pregunta')(comp, por_estado)[0]   # una sola pregunta: debía quedar entera
+    assert cp.eval_division('libre')(comp, por_estado)[0]
+    assert not cp.eval_division('libre')(comp, ['robo en la CDMX', 'robo en Morelos'])[0]   # nombra un estado ajeno
+
+
+def test_metricas_recall_por_version_y_tipo():
+    filas = [{'salida': {'gold': 2, 'aciertos': {'sin dividir': 1, 'solo por lugar': 2}, 'tipos': ['comparativa']}},
+             {'salida': {'gold': 1, 'aciertos': {'sin dividir': 1, 'solo por lugar': 1}, 'tipos': []}}]
+    m = cp.metricas('division_recall', filas)['por_version']
+    assert m['sin dividir']['todas'] == {'aciertos': 2, 'gold': 3, 'preguntas': 2, 'recall': 0.6667}
+    assert m['solo por lugar']['comparativa']['recall'] == 1.0 and m['sin dividir']['otra']['gold'] == 1

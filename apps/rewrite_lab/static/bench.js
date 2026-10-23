@@ -1040,7 +1040,10 @@ async function loadComponentes(){
   $('comp-cards').innerHTML = COMP.lista.map(c => {
     const m = (c.ultima || {}).metricas || {};
     const grupos = Object.entries(m.por_grupo || {}).map(([g, v]) => `${esc(g)} ${v.aciertos}/${v.n}`).join(' · ');
+    const pv = m.por_version;
     const estado = c.corriendo ? '<span class="muted">⏳ corriendo…</span>'
+      : (c.ultima && pv) ? `<div style="font-size:12px">${Object.entries(pv).map(([v, t]) =>
+          `${esc(v)}: <b>${cpct((t.todas || {}).recall)}</b>`).join('<br>')}</div>`
       : c.ultima ? `<span class="comp-tasa ${m.tasa >= 0.9 ? 'comp-ok' : m.tasa < 0.7 ? 'comp-mal' : ''}">${cpct(m.tasa)}</span>
           <span class="muted" style="font-size:12px"> ${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)} casos · prompt ${esc(c.ultima.prompt_md5.slice(0, 8))}${c.ultima.prompt_md5 !== c.prompt_md5 ? ' (el prompt cambió desde entonces)' : ''}</span>`
       : '<span class="muted">sin corridas todavía</span>';
@@ -1063,7 +1066,7 @@ async function compDetalle(){
     const m = r.metricas || {}, g = Object.entries(m.por_grupo || {}).map(([k, v]) => `${esc(k)} ${v.aciertos}/${v.n}`).join(' · ');
     return `<tr class="${r.id === COMP.corrida ? 'sel' : ''}" style="cursor:pointer" data-r="${r.id}"><td>#${r.id}</td><td>${esc((r.fecha || '').slice(0, 16))}</td>
       <td><code>${esc(r.prompt_md5.slice(0, 8))}</code>${r.prompt_md5 === c.prompt_md5 ? ' <span class="pill">actual</span>' : ''}</td>
-      <td>${r.status === 'running' ? `⏳ ${r.done}/${r.n}` : `<b>${cpct(m.tasa)}</b> (${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)})`}</td>
+      <td>${r.status === 'running' ? `⏳ ${r.done}/${r.n}` : m.por_version ? 'recall por versión ↓' : `<b>${cpct(m.tasa)}</b> (${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)})`}</td>
       <td class="muted">${g}${m.errores ? ` · ${m.errores} con error` : ''}</td><td class="muted">${m.segundos_media ?? '—'} s</td></tr>`;
   }).join('');
   $('comp-detalle').innerHTML = `<div class="bcard" style="margin-top:10px">
@@ -1088,8 +1091,27 @@ function compSalida(comp, s){
   if(Array.isArray(s)) return s.map((x, i) => `${i + 1}. ${esc(x)}`).join('<br>');
   return `<pre>${esc(String(s))}</pre>`;
 }
+function compTablaRecall(m){
+  const pv = m.por_version || {}, tipos = ['todas', 'comparativa', 'varias preguntas', 'varias conductas', 'otra'];
+  const n = t => { const x = Object.values(pv)[0]; return x && x[t] ? `${x[t].preguntas} preg.` : ''; };
+  const mejor = t => Math.max(...Object.values(pv).map(v => (v[t] || {}).recall ?? -1));
+  return `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall: artículos esperados entre los 10 primeros resultados del buscador</h3>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${tipos.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${n(t)}</div></th>`).join('')}</tr>
+    ${Object.entries(pv).map(([v, ts]) => `<tr><td><b>${esc(v)}</b></td>${tipos.map(t => { const c = ts[t];
+      return c ? `<td${c.recall === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(c.recall)} <span class="muted">${c.aciertos}/${c.gold}</span></td>` : '<td class="muted">—</td>'; }).join('')}</tr>`).join('')}
+    </table></div><p class="muted" style="font-size:12px">En verde, la mejor versión de cada columna. Una pregunta puede ser de varios tipos.</p>`;
+}
 async function compResultados(rid){
   const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;
+  if(comp === 'division_recall'){
+    const run = (await bjson(`/api/componentes/${comp}/corridas`)).find(r => r.id === rid) || {};
+    $('comp-res').innerHTML = compTablaRecall(run.metricas || {}) + `<details><summary class="muted">Pregunta por pregunta (${res.length})</summary>
+      <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Pregunta</th><th>Tipos</th><th>Artículos esperados</th><th>Aciertos por versión</th></tr>
+      ${res.map(r => { const s = r.salida || {}; return `<tr><td>${esc(r.entrada)}</td><td class="muted">${esc((s.tipos || []).join(', ') || 'otra')}</td><td>${s.gold ?? '—'}</td>
+        <td>${r.error ? esc(r.error) : Object.entries(s.aciertos || {}).map(([v, h]) => `${esc(v)}: ${h}`).join('<br>')}</td></tr>`; }).join('')}
+      </table></div></details>`;
+    return;
+  }
   const mal = res.filter(r => r.ok !== true).length;
   $('comp-res').innerHTML = `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Corrida #${rid}: ${res.length} casos · ${mal} fallos (primero)</h3>
     <div style="overflow-x:auto"><table class="comp-tab"><tr><th></th><th>Entrada</th><th>Esperado</th><th>Salió</th><th>Por qué</th></tr>

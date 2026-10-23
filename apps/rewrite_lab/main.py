@@ -45,7 +45,7 @@ from shared.legal_chunking import find_article_ref
 from shared.code_routes import codes_in
 from shared.diag_reviews import DOC as REVIEW_DOC, review_state, signature_for
 from shared.lexical import BM25, interleave_scored, rank_indices_by_score, rrf, tokenize
-from shared.llm_client import HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient, parse_subquestions
+from shared.llm_client import DECOMPOSE_VARIANTES, HYDE_SYSTEM, REWRITE_SYSTEM, LlamaClient, parse_subquestions
 from shared.rerank_client import RerankClient
 from shared.tei_client import TEIClient
 
@@ -1078,7 +1078,9 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
     búsqueda normal (otros códigos, leyes generales, doctrina) sigue en la mezcla. Sin LLM: la
     detección es por nombre (tolera acentos y erratas). Devuelve (scored, score_kind, rewrite)."""
     t = time.time()
-    subqs = llm.decompose(question) if decompose else [question]
+    # `decompose` = True (prompt actual) o el nombre de una versión del prompt (DECOMPOSE_VARIANTES: 'solo_lugar'…).
+    subqs = (llm.decompose(question, DECOMPOSE_VARIANTES.get(decompose) if isinstance(decompose, str) else None)
+             if decompose else [question])
     if debug is not None and decompose:
         debug['t_descomponer'] = round(time.time() - t, 2)
     if crimes:   # descomponer por delito: se suma a la descomposición por entidades
@@ -1317,15 +1319,50 @@ app.include_router(bench.router)
 print(f'Benchmark: artefactos en {store.describe()} · juez en {judge_llm.url}')
 
 # Pruebas por componente (🧪 Benchmark → 🧩 Componentes): cada llamada al LLM contra su propio objetivo. Ver componentes.py.
-from componentes import Componentes  # noqa: E402
+from componentes import Componentes, VERSIONES_DIVISION, tipos_pregunta  # noqa: E402
+from bench import effective_components, gold_refs, resolve_gold, retrieval_check  # noqa: E402
 from shared.llm_client import DECOMPOSE_SYSTEM  # noqa: E402
 _TEMA_PENAL = 'derecho_penal_mexicano'
+
+
+def division_recall(pregunta: str) -> dict:
+    """Prueba de recall de las formas de dividir: para una pregunta de los sets 3 y 14, cuántos de sus artículos
+    esperados (los «Cita el art.» de sus criterios) salen entre los 10 primeros resultados del buscador con cada
+    versión de VERSIONES_DIVISION. Búsqueda de la base (híbrido, vecinos, HyDE), sin filtro, sin respuesta ni juez."""
+    with connect() as c, c.cursor() as cur:
+        cur.execute("SELECT q.id, q.expected_answer, s.topic FROM bench_questions q JOIN bench_sets s ON s.id = q.set_id "
+                    "WHERE q.set_id IN (3, 14) AND q.question = %s ORDER BY q.id LIMIT 1", (pregunta,))
+        fila = cur.fetchone()
+        if not fila:
+            raise ValueError('la pregunta no está en los sets 3 ni 14')
+        qid, esperada, tema = fila
+        cur.execute("SELECT text, kind, weight FROM bench_components WHERE question_id = %s ORDER BY position", (qid,))
+        comps = [{'text': t, 'kind': k, 'weight': w} for t, k, w in cur.fetchall()]
+        gold = [g for g in resolve_gold(cur, TABLE, gold_refs(pregunta, effective_components(
+            {'question': pregunta, 'expected_answer': esperada, 'components': comps}))) if any(x.get('ids') for x in g)]
+        aciertos, busquedas = {}, {}
+        for nombre, (desc, delito) in VERSIONES_DIVISION.items():
+            dbg = {}
+            scored, _, _ = retrieve_ranked(cur, pregunta, 'híbrido', tema, None, True, True, False, desc,
+                                           debug=dbg, crimes=delito)
+            chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
+            aciertos[nombre] = sum(1 for g in chk['groups'] if g['rank'] and g['rank'] <= 10)
+            busquedas[nombre] = dbg.get('subqueries')
+    conductas = len(busquedas.get('solo por delito') or [])
+    return {'gold': len(gold), 'aciertos': aciertos, 'busquedas': busquedas,
+            'tipos': tipos_pregunta(pregunta, conductas)}
 componentes = Componentes(
     connect=connect, current_email=current_email, can_run=can_ingest,
     runners={'filtro': lambda t: jgate.extraer_lugares(t, llm), 'descomponer': llm.decompose,
-             'por_delito': decompose_conducts, 'hyde': lambda t: llm.hyde_passage(t, system=hyde_for(_TEMA_PENAL))},
+             'por_delito': decompose_conducts, 'hyde': lambda t: llm.hyde_passage(t, system=hyde_for(_TEMA_PENAL)),
+             **{f'desc_{v}': (lambda t, v=v: llm.decompose(t, DECOMPOSE_VARIANTES[v]))
+                for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre')},
+             'division_recall': division_recall},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
-             'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL)})
+             'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
+             **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v]) for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre')},
+             # el md5 de la prueba de recall cubre todas las versiones que compara
+             'division_recall': lambda: '\n\n'.join(DECOMPOSE_VARIANTES.values()) + '\n\n' + CONDUCTAS_SYSTEM})
 app.include_router(componentes.router)
 
 # Asistente de trámites (/tramites) y administración de formularios (/formularios): ver forms/.

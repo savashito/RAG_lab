@@ -65,6 +65,41 @@ DECOMPOSE_SYSTEM = (
 )
 
 
+# Versiones del prompt de descomponer, para compararlas (🧩 en el benchmark y opción `decompose` de la búsqueda).
+# Tipos de división: POR LUGAR (la pregunta compara estados, códigos o conceptos), POR PREGUNTA (el mensaje hace varias
+# preguntas: «¿es delito y cuánta cárcel le dan?») y POR DELITO (varias conductas: main.CONDUCTAS_SYSTEM, aparte).
+# 'actual' es DECOMPOSE_SYSTEM: dice «solo por lugar», pero en la práctica divide por pregunta la mitad de las veces.
+_JSON_SUB = 'Máximo 4 sub-preguntas. No respondas la pregunta. Devuelve SOLO un JSON: {"subpreguntas": ["…", "…"]}'
+DECOMPOSE_VARIANTES = {
+    'actual': DECOMPOSE_SYSTEM,
+    'solo_lugar': (
+        "Decide si la PREGUNTA compara o relaciona DOS O MÁS ENTIDADES distintas: estados, leyes o códigos, autores, "
+        "teorías o conceptos contrapuestos («estupro en Morelos y en la CDMX», «diferencia entre estupro y violación»). "
+        "Si es así, escribe una sub-pregunta de búsqueda por entidad: autónoma, con el tema completo y nombrando solo UNA "
+        "entidad. Si la pregunta hace varias preguntas sobre UNA sola entidad («¿es delito y cuánta cárcel le dan?», "
+        "«¿cuáles son sus elementos y cómo se persigue?»), NO la dividas: eso es una sola entidad. Si no compara "
+        "entidades, devuelve la pregunta EXACTA, sin reescribirla. " + _JSON_SUB),
+    'solo_pregunta': (
+        "Decide si el mensaje hace DOS O MÁS PREGUNTAS distintas sobre el mismo asunto (por ejemplo: qué delito es, qué "
+        "pena tiene, cómo se persigue, ante quién se denuncia, si prescribe, qué derechos tiene la víctima). Si es así, "
+        "escribe una sub-pregunta de búsqueda por cada pregunta: autónoma, con el tema completo («¿Es delito y cuánta "
+        "cárcel le dan?» → «¿Qué delito es robar un celular?» y «¿Qué pena tiene el robo de un celular?»). NO dividas por "
+        "estados ni códigos: si la pregunta menciona varios, mantenlos juntos en cada sub-pregunta. Si hay una sola "
+        "pregunta, devuelve la pregunta EXACTA, sin reescribirla. " + _JSON_SUB),
+    'lugar_y_pregunta': (
+        "Divide la PREGUNTA en sub-preguntas de búsqueda en dos casos: (1) POR LUGAR: si compara dos o más entidades "
+        "(estados, códigos, conceptos), una sub-pregunta por entidad; (2) POR PREGUNTA: si hace dos o más preguntas "
+        "distintas sobre el mismo asunto (qué delito es, qué pena tiene, cómo se persigue…), una sub-pregunta por "
+        "pregunta. Si ocurren los dos, combínalos (por ejemplo, la pena en cada estado). Cada sub-pregunta es autónoma, "
+        "con el tema completo. Si no ocurre ninguno, devuelve la pregunta EXACTA, sin reescribirla. " + _JSON_SUB),
+    'libre': (
+        "Divide la consulta en las sub-preguntas de búsqueda que mejor encuentren los artículos de ley y pasajes de "
+        "doctrina que la responden. Tú decides cómo dividirla. Cada sub-pregunta es autónoma, con el tema completo. "
+        "Si una sola búsqueda basta, devuelve la pregunta EXACTA, sin reescribirla. No agregues estados, leyes ni "
+        "números de artículo que la consulta no menciona. " + _JSON_SUB),
+}
+
+
 def parse_subquestions(raw: str, question: str, max_n: int = 4) -> list[str]:
     """Salida del LLM → lista de sub-preguntas (sin vacías ni repetidas). Ante cualquier
     problema devuelve [question]: la descomposición nunca debe romper la búsqueda."""
@@ -168,11 +203,11 @@ class LlamaClient:
         """Pregunta coloquial → enunciado jurídico breve (para query rewriting)."""
         return self.chat(REWRITE_SYSTEM, question)
 
-    def decompose(self, question: str) -> list[str]:
+    def decompose(self, question: str, system: str | None = None) -> list[str]:
         """Pregunta comparativa → sub-preguntas autónomas (una por entidad). [question] si no
-        es comparativa o si el LLM falla."""
+        es comparativa o si el LLM falla. `system`: otra versión del prompt (DECOMPOSE_VARIANTES)."""
         try:
-            raw = self.chat(DECOMPOSE_SYSTEM, question, temperature=0.0, max_tokens=400, timeout=60,
+            raw = self.chat(system or DECOMPOSE_SYSTEM, question, temperature=0.0, max_tokens=400, timeout=60,
                             extra={'response_format': {'type': 'json_object'}})
         except Exception:   # noqa: BLE001
             return [question]

@@ -37,6 +37,23 @@ COMPONENTES = {
     'por_delito': {'nombre': 'Descomponer por delito', 'icono': '⚖️',
                    'objetivo': 'Escribir una búsqueda por cada conducta del relato que pueda ser delito, sin inventar '
                                'conductas y sin nombrar estados ni códigos.'},
+    'desc_solo_lugar': {'nombre': 'Descomponer · solo por lugar', 'icono': '🧩',
+                        'objetivo': 'Versión del prompt que divide SOLO las preguntas que comparan estados, códigos o '
+                                    'conceptos; las que hacen varias preguntas sobre lo mismo quedan enteras.'},
+    'desc_solo_pregunta': {'nombre': 'Descomponer · solo por pregunta', 'icono': '🧩',
+                           'objetivo': 'Versión del prompt que divide SOLO los mensajes con varias preguntas («¿es '
+                                       'delito y cuánta cárcel le dan?»), una búsqueda por pregunta; no divide por estado.'},
+    'desc_lugar_y_pregunta': {'nombre': 'Descomponer · por lugar y por pregunta', 'icono': '🧩',
+                              'objetivo': 'Versión del prompt que divide las comparaciones (por lugar) y los mensajes '
+                                          'con varias preguntas (por pregunta).'},
+    'desc_libre': {'nombre': 'Descomponer · libre', 'icono': '🧩',
+                   'objetivo': 'Versión del prompt en la que el LLM decide cómo dividir. Solo se revisan sus reglas: '
+                               'máximo 4 búsquedas y sin nombrar estados que la pregunta no nombra.'},
+    'division_recall': {'nombre': 'División: recall', 'icono': '🎯',
+                        'objetivo': 'Para cada pregunta con artículos esperados (sets 3 y 14): cuántos salen entre los '
+                                    '10 primeros resultados del buscador con cada forma de dividir (sin dividir, solo '
+                                    'por lugar, solo por pregunta, solo por delito, combinaciones, libre). Decide qué '
+                                    'versión ayuda más al buscador.', 'efecto': True},
     'hyde': {'nombre': 'HyDE', 'icono': '🧪',
              'objetivo': 'Escribir un borrador del artículo que respondería, sin inventar números de artículo y sin '
                          'nombrar estados que la pregunta no nombra.'},
@@ -66,6 +83,28 @@ CASOS_INICIALES = Path(__file__).resolve().parent / 'componentes_casos.json'
 # Estados del corpus como los nombra code_routes (codes_in → 'label'); los demás labels son leyes (CPF, CNPP…).
 ESTATALES = {'CDMX', 'CPEM', 'Morelos', 'Querétaro'}
 ART_RE = re.compile(r'(?i)\bart[íi]culos?\s+\d+|\bart\.\s*\d+')
+
+
+CONCEPTOS_RE = re.compile(r'(?i)diferencias?\s+(hay\s+)?entre|distingue|\bvs\.?\b|frente\s+a')
+_OTRA_PREGUNTA = re.compile(r'(?i)[,;]?\s+(?:y|o)\s+(?:qu[eé]|cu[aá]nt\w*|c[oó]mo|d[oó]nde|qui[eé]n\w*|cu[aá]l\w*|ante\s+qui[eé]n|si\s)')
+
+
+def contar_preguntas(texto: str) -> int:
+    """Cuántas preguntas hace el mensaje: cada «¿…?» cuenta una, más cada «… y qué/cuánto/cómo…» dentro de ella
+    («¿Es delito y cuánta cárcel le dan?» = 2). Aproximado: las etiquetas generadas así quedan como no revisadas."""
+    partes = re.findall(r'¿[^?]*\?', texto or '') or [texto or '']
+    return sum(1 + len(_OTRA_PREGUNTA.findall(p)) for p in partes)
+
+
+def compara(texto: str) -> bool:
+    """¿La pregunta compara? Nombra 2+ códigos o estados (la regex del routing) o dice «diferencia entre / vs»."""
+    return len({h['label'] for h in codes_in(texto or '')}) >= 2 or bool(CONCEPTOS_RE.search(texto or ''))
+
+
+def tipos_pregunta(texto: str, conductas: int = 0) -> list[str]:
+    """Tipos para separar los resultados de la prueba de recall (una pregunta puede tener varios)."""
+    t = (['comparativa'] if compara(texto) else []) + (['varias preguntas'] if contar_preguntas(texto) >= 2 else [])
+    return t + (['varias conductas'] if conductas >= 2 else [])
 
 
 def md5(texto: str | None) -> str:
@@ -120,6 +159,40 @@ def eval_descomponer(esp: dict, sal: list[str]) -> tuple[bool, dict]:
     return True, {'busquedas': n, 'aviso': aviso}
 
 
+def _division_esperada(regla: str, esp: dict) -> bool:
+    """¿Debe dividirse según la regla de la versión? esp: compara (por lugar) y preguntas (cuántas hace el mensaje)."""
+    lugar, pregunta = bool(esp.get('compara')), (esp.get('preguntas') or 1) >= 2
+    return {'solo_lugar': lugar, 'solo_pregunta': pregunta, 'lugar_y_pregunta': lugar or pregunta}[regla]
+
+
+def eval_division(regla: str):
+    """Evaluador de obediencia de una versión del prompt de descomponer: divide solo cuando su regla lo pide; si
+    divide por lugar, nombra cada entidad esperada; máximo 4 búsquedas. 'libre' no tiene salida esperada: solo se
+    revisan sus reglas (máximo 4, sin estados que la pregunta no nombra)."""
+    def evaluar(esp: dict, sal: list[str]) -> tuple[bool, dict]:
+        n = len(sal)
+        if n > 4:
+            return False, {'busquedas': n, 'falla': 'más de 4 búsquedas'}
+        if regla == 'libre':
+            ajenos = sorted({h['label'] for s in sal for h in codes_in(s)} - set(esp.get('nombrados') or []))
+            return not ajenos, {'busquedas': n, 'falla': ('nombra ' + ', '.join(ajenos)) if ajenos else None}
+        if not _division_esperada(regla, esp):
+            return n == 1, {'busquedas': n, 'falla': None if n == 1 else 'dividió algo que su regla no pide dividir'}
+        if n < 2:
+            return False, {'busquedas': n, 'falla': 'no dividió algo que su regla pide dividir'}
+        if regla != 'solo_pregunta' and esp.get('compara'):
+            faltan = [e for e in esp.get('entidades') or [] if not any(_menciona(e, s) for s in sal)]
+            if faltan:
+                return False, {'busquedas': n, 'faltan': faltan, 'falla': f'ninguna búsqueda nombra {", ".join(faltan)}'}
+        return True, {'busquedas': n}
+    return evaluar
+
+
+def eval_recall(esp: dict, sal: dict) -> tuple[bool, dict]:
+    """La prueba de recall no tiene «aprobado»: lo que importa son los conteos por versión (ver metricas)."""
+    return True, {'gold': sal.get('gold'), 'aciertos': sal.get('aciertos')}
+
+
 def eval_por_delito(esp: dict, sal: list[str]) -> tuple[bool, dict]:
     """esp = {'conductas': [[raíces alternativas], …]}: cada conducta debe aparecer en alguna búsqueda (por cualquiera
     de sus raíces), máximo 4 búsquedas, y ninguna nombra un estado o código. Si el número de búsquedas no coincide con
@@ -147,12 +220,25 @@ def eval_hyde(esp: dict, sal: str) -> tuple[bool, dict]:
     return not fallas, {'fallas': fallas, 'palabras': len((sal or '').split())}
 
 
-EVALUADORES = {'filtro': eval_filtro, 'descomponer': eval_descomponer, 'por_delito': eval_por_delito, 'hyde': eval_hyde}
+EVALUADORES = {'filtro': eval_filtro, 'descomponer': eval_descomponer, 'por_delito': eval_por_delito, 'hyde': eval_hyde,
+               'desc_solo_lugar': eval_division('solo_lugar'), 'desc_solo_pregunta': eval_division('solo_pregunta'),
+               'desc_lugar_y_pregunta': eval_division('lugar_y_pregunta'), 'desc_libre': eval_division('libre'),
+               'division_recall': eval_recall}
+
+# Formas de dividir que compara la prueba de recall: (descomponer, descomponer por delito). descomponer = False, True
+# (prompt actual) o el nombre de una versión del prompt (shared/llm_client.DECOMPOSE_VARIANTES).
+VERSIONES_DIVISION = {
+    'sin dividir': (False, False), 'solo por lugar': ('solo_lugar', False), 'solo por pregunta': ('solo_pregunta', False),
+    'solo por delito': (False, True), 'por lugar y por pregunta': ('lugar_y_pregunta', False),
+    'por lugar y por delito (actual)': (True, True), 'libre': ('libre', False),
+}
 
 
 def metricas(componente: str, filas: list[dict]) -> dict:
     """Aciertos totales y, donde aplica, por tipo de caso (para descomponer: comparativas vs no comparativas)."""
     ok = [f for f in filas if not f.get('error')]
+    if componente == 'division_recall':
+        return metricas_recall(filas)
     out = {'n': len(filas), 'errores': len(filas) - len(ok), 'aciertos': sum(f['ok'] for f in ok),
            'tasa': round(sum(f['ok'] for f in ok) / len(ok), 4) if ok else None}
     grupos: dict[str, list[bool]] = {}
@@ -168,9 +254,30 @@ def metricas(componente: str, filas: list[dict]) -> dict:
     return out
 
 
+def metricas_recall(filas: list[dict]) -> dict:
+    """Por versión: artículos esperados entre los 10 primeros resultados ÷ artículos esperados en el corpus, en total y
+    por tipo de pregunta (una pregunta puede ser de varios tipos)."""
+    ok = [f for f in filas if not f.get('error') and f.get('salida')]
+    tot: dict[str, dict] = {}
+    for f in ok:
+        sal = f['salida']
+        tipos = ['todas'] + (sal.get('tipos') or ['otra'])
+        for v, h in (sal.get('aciertos') or {}).items():
+            for t in tipos:
+                c = tot.setdefault(v, {}).setdefault(t, {'aciertos': 0, 'gold': 0, 'preguntas': 0})
+                c['aciertos'] += h; c['gold'] += sal.get('gold') or 0; c['preguntas'] += 1
+    por_version = {v: {t: {**c, 'recall': round(c['aciertos'] / c['gold'], 4) if c['gold'] else None}
+                       for t, c in ts.items()} for v, ts in tot.items()}
+    segs = [f['segundos'] for f in ok if f.get('segundos') is not None]
+    return {'n': len(filas), 'errores': len(filas) - len(ok), 'por_version': por_version,
+            'segundos_media': round(sum(segs) / len(segs), 2) if segs else None}
+
+
 def grupo(componente: str, esp: dict) -> str | None:
     if componente == 'descomponer':
         return 'comparativas' if esp.get('compara') else 'no comparativas'
+    if componente.startswith('desc_') and componente != 'desc_libre':
+        return 'debe dividir' if _division_esperada(componente[5:], esp) else 'no debe dividir'
     if componente == 'filtro':
         return ('papel del lugar' if 'hechos' in esp or 'otros' in esp else 'estados' if 'estados' in esp
                 else 'teórica' if 'teorica' in esp else 'tipo de asunto')
