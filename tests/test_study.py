@@ -6,6 +6,7 @@ tablas estudio_* al empezar, así que nunca apuntes esa variable a la BD de prod
 """
 from __future__ import annotations
 
+import json as _json
 import os
 import random
 import sys
@@ -188,12 +189,6 @@ def cliente(tmp_path):
     store = StudyStore(connect, tmp_path)
     llamadas = []
 
-    def chat(messages, cfg):
-        CFGS.append(cfg)
-        llamadas.append(messages)
-        return {'answer': f'respuesta {len(messages)}', 'chunks': [{'id': 7, 'rank': 1, 'source': 's', 'text': 'Art. 179'}],
-                'ranking': [7, 8, 9], 'seconds': 0.1}
-
     def chat_stream(messages, cfg):
         CFGS.append(cfg)
         llamadas.append(messages)
@@ -207,10 +202,19 @@ def cliente(tmp_path):
     gold_refs = lambda t: [[{'source': 's', 'article': '179', 'label': 'CDMX 179'}]] if '179' in t else []  # noqa: E731
     resolver = lambda grupos: [[dict(x, ids=[7]) for x in g] for g in grupos]  # noqa: E731
     app = FastAPI()
-    app.include_router(make_router(store=store, chat=chat, chat_stream=chat_stream, gold_refs=gold_refs, resolver_gold=resolver,
+    app.include_router(make_router(store=store, chat_stream=chat_stream, gold_refs=gold_refs, resolver_gold=resolver,
                                    sistema_de=lambda cfg: cfg.get('sistema') or 'PROMPT DEL TEMA',
                                    static_dir=tmp_path, current_email=lambda r: 'admin@x', es_admin=lambda e: True))
     return TestClient(app), store, llamadas
+
+
+def _eventos(r):
+    """Los eventos SSE de una respuesta en streaming."""
+    return [_json.loads(l[6:]) for l in r.text.split('\n\n') if l.startswith('data: ')]
+
+
+def _texto(r):
+    return ''.join(e['text'] for e in _eventos(r) if e['stage'] == 'token')
 
 
 @db
@@ -232,9 +236,9 @@ def test_flujo_completo(cliente):
     # Práctica: responde el asistente pero no se guarda; máximo 2; después de «listo» ya no.
     assert est['tutorial_hecho'] is False and est['tutorial']['ejemplo']
     n0 = len(llamadas)
-    assert c.post('/api/estudio/p/practica', headers=H, json={'mensaje': 'prueba'}).json()['respuesta']
-    c.post('/api/estudio/p/practica', headers=H, json={'mensaje': 'otra'})
-    assert c.post('/api/estudio/p/practica', headers=H, json={'mensaje': 'tercera'}).status_code == 400
+    assert 'Sí, es delito.' == _texto(c.post('/api/estudio/p/practica_stream', headers=H, json={'mensaje': 'prueba'}))
+    c.post('/api/estudio/p/practica_stream', headers=H, json={'mensaje': 'otra'})
+    assert c.post('/api/estudio/p/practica_stream', headers=H, json={'mensaje': 'tercera'}).status_code == 400
     assert len(llamadas) == n0 + 2 and store.participante(p1)['practicas'] == 2
     assert c.post('/api/estudio/p/tutorial_listo', headers=H).json()['tutorial_hecho'] is True
     llamadas.clear()
@@ -242,14 +246,13 @@ def test_flujo_completo(cliente):
     s1 = est['escenarios'][0]['id']
     it = c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': s1}).json()['intento']
     assert c.post('/api/estudio/p/iniciar', headers=H, json={'escenario': 'zzz'}).status_code == 403
-    r = c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'hola'}).json()
-    assert r['respuesta'] == 'respuesta 1' and r['fuentes'][0]['texto'] == 'Art. 179'
-    c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'y luego'})
+    evs = _eventos(c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'hola'}))
+    assert evs[-1]['stage'] == 'done' and evs[-1]['fuentes'][0]['texto'] == 'Art. 179'
+    c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'y luego'})
     assert len(llamadas[-1]) == 3                                        # historial: u, a, u
     t1 = store.export('prueba')['turnos'][0]
-    assert t1['config']['tema'] == 't' and t1['ranking'] == [7, 8, 9]  # config y ranking por turno, para reanalizar
-    assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400  # max_turnos 2
-    assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400
+    assert t1['config']['tema'] == 't' and t1['ranking'] == [7, 8]  # config y ranking por turno, para reanalizar
+    assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'otra'}).status_code == 400  # max_turnos 2
     # Pasar a las preguntas: ya no se puede preguntar (ve la conversación solo para leer).
     c.post('/api/estudio/p/a_preguntas', headers=H, json={'intento': it['id']})
     assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
@@ -257,7 +260,7 @@ def test_flujo_completo(cliente):
     assert c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}}).status_code == 400
     c.post('/api/estudio/p/terminar', headers=H, json={'intento': it['id'], 'respuestas': {'p1': 'si'}, 'confianza': 5, 'actuaria': 'si', 'detecto': 'no',
                                                      'comentario': 'todo claro'})
-    assert c.post('/api/estudio/p/preguntar', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
+    assert c.post('/api/estudio/p/preguntar_stream', headers=H, json={'intento': it['id'], 'mensaje': 'x'}).status_code == 403
 
     # Calificación: cada turno lo califican 2 estudiantes; un desacuerdo va a la experta.
     G = lambda k: {'X-Codigo': k}  # noqa: E731
@@ -326,7 +329,6 @@ def test_flujo_completo(cliente):
 
 @db
 def test_streaming_guarda_el_turno_completo(cliente):
-    import json as _json
     c, store, llamadas = cliente
     c.post('/api/estudios/prueba/estado', json={'estado': 'abierto'})
     [p] = c.post('/api/estudios/prueba/codigos', json={'tipo': 'participante', 'grupo': 'general', 'n': 1}).json()['codigos']

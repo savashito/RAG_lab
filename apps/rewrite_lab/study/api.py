@@ -38,10 +38,11 @@ def _fuentes(chunks: list[dict]) -> list[dict]:
              'vecino': bool(ch.get('neighbor'))} for ch in chunks or []]
 
 
-def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_email, es_admin,
-                chat_stream=None, sistema_de=None) -> APIRouter:
-    """`chat(messages, cfg)` = chat_answer del app con la configuración del estudio; `chat_stream(messages, cfg)`,
-    lo mismo como eventos (retrieving → context → token* → done | error) para mostrar la respuesta mientras se escribe.
+def make_router(*, store, chat_stream, gold_refs, resolver_gold, static_dir, current_email, es_admin,
+                sistema_de=None) -> APIRouter:
+    """`chat_stream(messages, cfg)` = el chat del app con la configuración del estudio, como eventos
+    (retrieving → context → token* → done | error) para mostrar la respuesta mientras se escribe. Solo hay rutas con
+    streaming: la página siempre las usa (las de respuesta completa se borraron el 2026-10-23; no aplicaban el filtro).
     `gold_refs(texto)` → grupos de artículos (sin BD); `resolver_gold(grupos)` les pone sus ids."""
     r = APIRouter()
 
@@ -118,36 +119,6 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         it = store.iniciar(a['codigo'], str(b.get('escenario') or ''))
         return {'intento': it, 'turnos': [{'pregunta': t['pregunta'], 'respuesta': t['respuesta'],
                                            'fuentes': t['contexto'], 'error': t['error']} for t in store.turnos(it['id'])]}
-
-    @r.post('/api/estudio/p/preguntar')
-    @guard
-    async def p_preguntar(request: Request):
-        a, b = acceso(request, 'participante'), await request.json()
-        it = store.intento_abierto(a['codigo'], int(b.get('intento') or 0), para_preguntar=True)
-        mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
-        if not mensaje:
-            return _err('Escribe tu pregunta.')
-        cfg = cfg_de(a)
-        previos = store.turnos(it['id'])
-        if len(previos) >= int(cfg.get('max_turnos', 12)):
-            return _err('Llegaste al máximo de preguntas para este escenario. Pasa a las preguntas finales.')
-        messages = []
-        for t in previos:
-            if t['respuesta']:
-                messages += [{'role': 'user', 'content': t['pregunta']}, {'role': 'assistant', 'content': t['respuesta']}]
-        messages.append({'role': 'user', 'content': mensaje})
-        t0, out, error = time.time(), None, None
-        try:
-            out = await run_in_threadpool(chat, messages, cfg)
-            out['contexto'] = _fuentes(out.get('chunks'))
-        except Exception as e:  # noqa: BLE001 — se registra el fallo; la persona puede reintentar
-            error = f'{type(e).__name__}: {e}'
-        store.guardar_turno(it['id'], len(previos) + 1, mensaje, out, error, **para_guardar(cfg))
-        print(f'estudio: turno {len(previos) + 1} · {round(time.time() - t0, 1)}s'
-              + (' · error' if error else ''), flush=True)
-        if error:
-            return _err('El asistente no pudo responder. Intenta de nuevo en un momento.', 502)
-        return {'respuesta': out['answer'], 'fuentes': out['contexto']}
 
     # ── Streaming: la respuesta aparece mientras se escribe ───────────────────────
     def _sse(obj):
@@ -232,25 +203,6 @@ def make_router(*, store, chat, gold_refs, resolver_gold, static_dir, current_em
         if not store.contar_practica(a['codigo'], maximo):
             return _err('Ya hiciste las preguntas de práctica. Da clic en «Entendido, empezar».')
         return _respuesta_sse(_stream([{'role': 'user', 'content': mensaje}], cfg_de(a), lambda out, error: None))
-
-    @r.post('/api/estudio/p/practica')
-    @guard
-    async def p_practica(request: Request):
-        """Pregunta de práctica del tutorial: responde el asistente real, pero no se guarda."""
-        a, b = acceso(request, 'participante'), await request.json()
-        if not store.participante(a['codigo']):
-            return _err('Primero acepta el consentimiento.')
-        mensaje = str(b.get('mensaje') or '').strip()[:MAX_MENSAJE]
-        if not mensaje:
-            return _err('Escribe una pregunta.')
-        maximo = int((a['spec'].get('tutorial') or {}).get('max_preguntas', 2))
-        if not store.contar_practica(a['codigo'], maximo):
-            return _err('Ya hiciste las preguntas de práctica. Da clic en «Entendido, empezar».')
-        try:
-            out = await run_in_threadpool(chat, [{'role': 'user', 'content': mensaje}], cfg_de(a))
-        except Exception:  # noqa: BLE001
-            return _err('El asistente no pudo responder. Intenta de nuevo en un momento.', 502)
-        return {'respuesta': out['answer'], 'fuentes': _fuentes(out.get('chunks'))}
 
     @r.post('/api/estudio/p/tutorial_listo')
     @guard

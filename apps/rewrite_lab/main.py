@@ -1471,20 +1471,13 @@ def _study_chat_stream(messages, cfg):
                             remisiones=bool(cfg.get('seguir_remisiones', False)))
 
 
-def _study_chat(messages, cfg):
-    return chat_answer(messages, cfg.get('setting', 'híbrido'), int(cfg.get('k', 5)), cfg.get('sistema'),
-                       cfg.get('tema'), cfg.get('jurisdicciones'), bool(cfg.get('vecinos', True)),
-                       bool(cfg.get('hyde', False)), False, bool(cfg.get('descomponer', False)),
-                       bool(cfg.get('route', False)))
-
-
 def _study_sistema(cfg):
     """El system prompt exacto con el que responde el asistente del estudio para esta configuración."""
     return (cfg.get('sistema') or '').strip() or system_for(cfg.get('tema'))
 
 
 study_store = StudyStore(connect, Path(__file__).resolve().parent / 'study' / 'estudios', gold_refs=_study_gold_refs)
-app.include_router(study_router(store=study_store, chat=_study_chat, chat_stream=_study_chat_stream,
+app.include_router(study_router(store=study_store, chat_stream=_study_chat_stream,
                                 sistema_de=_study_sistema, gold_refs=_study_gold_refs,
                                 resolver_gold=_study_resolver, static_dir=STATIC, current_email=current_email,
                                 es_admin=can_ingest))
