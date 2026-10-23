@@ -1092,7 +1092,7 @@ async function compDescomponer(){
     const debe = g['debe dividir'] || g['comparativas'], nodebe = g['no debe dividir'] || g['no comparativas'];
     const f = x => x ? `${x.aciertos}/${x.n}` : '—';
     return `<tr><td><b>${esc(nombre)}</b><div class="muted" style="font-size:12px">${esc(regla)}</div></td>
-      <td>${c.corriendo ? '⏳' : `<b>${cpct(mm.tasa)}</b>`}</td><td>${f(debe)}</td><td>${f(nodebe)}</td>
+      <td>${c.corriendo ? '⏳' : `<b>${cpct(mm.tasa)}</b>`}</td><td>${f(debe)}</td><td>${f(nodebe)}</td><td>${mm.segundos_media != null ? mm.segundos_media.toFixed(2) + ' s' : '—'}</td>
       <td style="white-space:nowrap"><button class="ghost" data-run="${id}" ${c.corriendo ? 'disabled' : ''}>▶</button>
         <button class="ghost" data-ver="${id}">Ver casos</button></td></tr>`;
   }).join('');
@@ -1108,7 +1108,7 @@ async function compDescomponer(){
     <h3 style="margin:18px 0 2px;font-size:14px">2 · Obediencia: ¿cada versión del prompt hace lo que dice su regla?</h3>
     <p class="muted" style="font-size:13px;margin:0">Solo se llama a «descomponer» con cada pregunta (sin búsqueda ni juez) y se revisa si dividió cuando su
       regla lo pide y si dejó entera la pregunta cuando no. Las etiquetas de «compara» y «varias preguntas» son automáticas (no revisadas).</p>
-    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión del prompt</th><th>Obedece</th><th>Divide cuando debe</th><th>Deja entera cuando debe</th><th></th></tr>${obed}</table></div>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión del prompt</th><th>Obedece</th><th>Divide cuando debe</th><th>Deja entera cuando debe</th><th>Segundos por llamada</th><th></th></tr>${obed}</table></div>
     <div id="comp-sub"></div></div>`;
   document.querySelectorAll('#comp-detalle [data-run]').forEach(b => b.onclick = async () => {
     try{ const r = await bpost(`/api/componentes/${b.dataset.run}/correr`); bmsg(`Corrida #${r.corrida} en marcha`, true); loadComponentes(); }
@@ -1152,13 +1152,15 @@ function compSalida(comp, s){
 }
 function compTablaRecall(m){
   const pv = m.por_version || {}, tipos = ['todas', 'comparativa', 'varias preguntas', 'varias conductas', 'otra'];
+  const seg = ts => ts.segundos ? `${ts.segundos.media.toFixed(1)} ± ${ts.segundos.de.toFixed(1)} s` : '<span class="muted">—</span>';
   const n = t => { const x = Object.values(pv)[0]; return x && x[t] ? `${x[t].preguntas} preg.` : ''; };
   const mejor = t => Math.max(...Object.values(pv).map(v => (v[t] || {}).recall ?? -1));
   return `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall: artículos esperados entre los 10 primeros resultados del buscador</h3>
-    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${tipos.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${n(t)}</div></th>`).join('')}</tr>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${tipos.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${n(t)}</div></th>`).join('')}<th>Tiempo por pregunta<div class="muted" style="font-weight:normal">búsqueda completa</div></th></tr>
     ${Object.entries(pv).sort((a, b) => ((b[1].todas || {}).recall ?? -1) - ((a[1].todas || {}).recall ?? -1)).map(([v, ts]) => `<tr><td><b>${esc(v)}</b></td>${tipos.map(t => { const c = ts[t];
-      return c ? `<td${c.recall === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(c.recall)} <span class="muted">${c.aciertos}/${c.gold}</span></td>` : '<td class="muted">—</td>'; }).join('')}</tr>`).join('')}
-    </table></div><p class="muted" style="font-size:12px">En verde, la mejor versión de cada columna. Una pregunta puede ser de varios tipos.</p>`;
+      return c ? `<td${c.recall === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(c.recall)} <span class="muted">${c.aciertos}/${c.gold}</span></td>` : '<td class="muted">—</td>'; }).join('')}<td>${seg(ts)}</td></tr>`).join('')}
+    </table></div><p class="muted" style="font-size:12px">En verde, la mejor versión de cada columna. Una pregunta puede ser de varios tipos.
+    «Tiempo por pregunta» = HyDE + la división + todas las búsquedas, sin respuesta ni juez (medido desde la corrida del 23 de octubre en adelante).</p>`;
 }
 async function compResultados(rid){
   const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;

@@ -122,3 +122,9 @@ def test_metricas_recall_por_version_y_tipo():
     m = cp.metricas('division_recall', filas)['por_version']
     assert m['sin dividir']['todas'] == {'aciertos': 2, 'gold': 3, 'preguntas': 2, 'recall': 0.6667}
     assert m['solo por lugar']['comparativa']['recall'] == 1.0 and m['sin dividir']['otra']['gold'] == 1
+
+
+def test_metricas_recall_tiempo_por_version():
+    filas = [{'salida': {'gold': 1, 'aciertos': {'libre': 1}, 'segundos': {'libre': 2.0}}},
+             {'salida': {'gold': 1, 'aciertos': {'libre': 0}, 'segundos': {'libre': 4.0}}}]
+    assert cp.metricas('division_recall', filas)['por_version']['libre']['segundos'] == {'media': 3.0, 'de': 1.0}

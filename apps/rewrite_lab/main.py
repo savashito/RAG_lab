@@ -1340,16 +1340,17 @@ def division_recall(pregunta: str) -> dict:
         comps = [{'text': t, 'kind': k, 'weight': w} for t, k, w in cur.fetchall()]
         gold = [g for g in resolve_gold(cur, TABLE, gold_refs(pregunta, effective_components(
             {'question': pregunta, 'expected_answer': esperada, 'components': comps}))) if any(x.get('ids') for x in g)]
-        aciertos, busquedas = {}, {}
+        aciertos, busquedas, segundos = {}, {}, {}
         for nombre, (desc, delito) in VERSIONES_DIVISION.items():
-            dbg = {}
+            dbg, t0 = {}, time.time()
             scored, _, _ = retrieve_ranked(cur, pregunta, 'híbrido', tema, None, True, True, False, desc,
                                            debug=dbg, crimes=delito)
+            segundos[nombre] = round(time.time() - t0, 2)   # búsqueda completa: HyDE + división + búsquedas
             chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
             aciertos[nombre] = sum(1 for g in chk['groups'] if g['rank'] and g['rank'] <= 10)
             busquedas[nombre] = dbg.get('subqueries')
     conductas = len(busquedas.get('solo por delito') or [])
-    return {'gold': len(gold), 'aciertos': aciertos, 'busquedas': busquedas,
+    return {'gold': len(gold), 'aciertos': aciertos, 'busquedas': busquedas, 'segundos': segundos,
             'tipos': tipos_pregunta(pregunta, conductas)}
 componentes = Componentes(
     connect=connect, current_email=current_email, can_run=can_ingest,

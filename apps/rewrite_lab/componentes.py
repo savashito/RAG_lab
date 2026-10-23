@@ -268,6 +268,12 @@ def metricas_recall(filas: list[dict]) -> dict:
                 c['aciertos'] += h; c['gold'] += sal.get('gold') or 0; c['preguntas'] += 1
     por_version = {v: {t: {**c, 'recall': round(c['aciertos'] / c['gold'], 4) if c['gold'] else None}
                        for t, c in ts.items()} for v, ts in tot.items()}
+    # Tiempo de la búsqueda completa de cada versión (HyDE + división + búsquedas): media y desviación estándar.
+    for v in por_version:
+        ts = [f['salida']['segundos'][v] for f in ok if v in (f['salida'].get('segundos') or {})]
+        if ts:
+            media = sum(ts) / len(ts)
+            por_version[v]['segundos'] = {'media': round(media, 2), 'de': round((sum((x - media) ** 2 for x in ts) / len(ts)) ** 0.5, 2)}
     segs = [f['segundos'] for f in ok if f.get('segundos') is not None]
     return {'n': len(filas), 'errores': len(filas) - len(ok), 'por_version': por_version,
             'segundos_media': round(sum(segs) / len(segs), 2) if segs else None}
