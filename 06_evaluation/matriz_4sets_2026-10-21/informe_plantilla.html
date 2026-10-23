@@ -74,11 +74,11 @@
 </header>
 <main>
 
-<p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones.</p>
+<p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones. <b>Actualizado el 23 de octubre</b> con tres pruebas nuevas: <a href="#rerank">el rerank</a>, <a href="#contexto">vecinos contra más resultados</a> y <a href="#dividir">cómo dividir la pregunta</a>.</p>
 
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#costo-desc">Costo de descomponer</a><a href="#componentes">Pruebas por componente</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#costo-desc">Costo de descomponer</a><a href="#rerank">¿Sirve el rerank?</a><a href="#contexto">Vecinos o más resultados</a><a href="#dividir">Cómo dividir la pregunta</a><a href="#componentes">Pruebas por componente</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -96,7 +96,8 @@
   <tr><th></th><th>Modelo</th><th>Detalle</th></tr>
   <tr><td><b>LLM</b> (responde, y en el benchmark también califica)</td><td><code>gemma-4-26B-A4B-it</code> de Google, versión QAT cuantizada a 4 bits (archivo GGUF <code>UD-Q4_K_XL</code> de Unsloth, 14.2 GB)</td><td>Es un modelo «mixture of experts»: 25.2 mil millones de parámetros en total, de los que se activan ~4 mil millones por palabra; por eso es rápido para su tamaño. Ventana de contexto: 32,768 tokens; 4 conversaciones en paralelo. Se sirve con <b>llama.cpp</b> (llama-server). En la app aparece con el alias «Gemma-4-4B-8b», pero el modelo real es el de esta fila. Para calificar se usa con temperatura 0.</td></tr>
   <tr><td><b>Embeddings</b> (convierte textos en vectores para buscar por significado)</td><td><code>Qwen/Qwen3-Embedding-0.6B</code> de Alibaba</td><td>600 millones de parámetros; vectores de 1,024 números; en float16. Acepta textos largos (hasta 16,384 tokens en nuestro servidor; un artículo entero cabe). Es multilingüe y «instruction-aware»: a la pregunta se le antepone la instrucción «Recupera el pasaje del código o la doctrina que responde la pregunta.». Se sirve con <b>TEI</b> (Text Embeddings Inference de Hugging Face, versión 1.9.3).</td></tr>
-  <tr><td><b>Hardware</b></td><td>Una GPU NVIDIA <b>RTX 5090</b> (32 GB)</td><td>Los dos modelos corren en el mismo servidor con esa GPU. La app (legis.tlacua.cloud) corre en otro servidor y se conecta a la GPU por un túnel SSH. Los vectores y los textos viven en PostgreSQL con pgvector.</td></tr>
+  <tr><td><b>Reranker</b> (reordena los resultados del buscador; opcional)</td><td><code>Qwen/Qwen3-Reranker-0.6B</code> de Alibaba</td><td>600 millones de parámetros. Lee la pregunta junto con cada candidato y le da una calificación de relevancia de 0 a 1; reordena los 30 primeros resultados. Se sirve con <b>vLLM</b> y necesita la plantilla de Qwen3 (la instrucción «Given a Mexican criminal law question, retrieve the statute or doctrine passage that answers it»): sin ella sus calificaciones no sirven (en una prueba puso el pasaje correcto al final). En prod desde el 23 de octubre, apagado por defecto.</td></tr>
+  <tr><td><b>Hardware</b></td><td>Una GPU NVIDIA <b>RTX 5090</b> (32 GB)</td><td>Los tres modelos corren en el mismo servidor con esa GPU. La app (legis.tlacua.cloud) corre en otro servidor y se conecta a la GPU por un túnel SSH. Los vectores y los textos viven en PostgreSQL con pgvector.</td></tr>
 </table></div>
 
 <h3 id="buscador">El buscador por dentro</h3>
@@ -130,7 +131,7 @@
   <tr><td><b>HyDE 🧪</b></td><td>2</td><td>Antes de buscar, el LLM escribe un borrador de cómo se vería el artículo que responde, y se busca con ese borrador. Ayuda cuando la persona dice «me tocaron sin permiso» y el código dice «actos sexuales sin consentimiento».</td><td>1</td><td>no medido por separado: está dentro de la búsqueda</td></tr>
   <tr><td><b>descomponer 🧩</b></td><td>2</td><td>Si la pregunta compara varias cosas («CDMX, Edomex y CPF»), el LLM la divide en una búsqueda por cada una, para que ninguna se quede fuera del contexto. Si no compara nada, no cambia.</td><td>1</td><td>0.58 ± 0.09 s (p90 0.68 s)</td></tr>
   <tr><td><b>descomponer por delito ⚖️</b></td><td>2</td><td>Si el relato tiene varias conductas que pueden ser delito («me drogó y me robó»), el LLM escribe una búsqueda por conducta, para que lleguen los artículos de cada delito. Agrega <b>chunks extra por delito</b> (3) por cada conducta adicional.</td><td>1</td><td>llamada: 0.55 ± 0.06 s. La búsqueda pasa de 3.03 ± 1.12 s a 4.08 ± 1.62 s y la respuesta de 4.73 a 5.27 s (más contexto). Total: +2.1 s por pregunta (set 12: +5.6 s)</td></tr>
-  <tr><td><b>rerank 🎯</b></td><td>2</td><td>Un segundo modelo reordena los resultados por relevancia antes de quedarse con los primeros.</td><td>0 (otro modelo)</td><td>no medido (no se usó en la matriz)</td></tr>
+  <tr><td><b>rerank 🎯</b></td><td>2</td><td>Un segundo modelo (el reranker) lee la pregunta junto con cada uno de los 30 primeros resultados y los reordena por relevancia antes de quedarse con los primeros. Ver <a href="#rerank">¿Sirve el rerank?</a></td><td>0 (otro modelo)</td><td>+0.4 s en la búsqueda sin descomponer (1.08 → 1.49 s); +0.8 a +1.7 s por pregunta con descomponer</td></tr>
   <tr><td><b>vecinos ↕</b></td><td>3</td><td>Por cada artículo encontrado, agrega su familia (bis, ter…) y los 2 artículos de antes y de después. Muchas veces la pena o la definición está en el artículo de al lado.</td><td>0</td><td>no medido por separado: está dentro de la búsqueda</td></tr>
   <tr><td><b>seguir remisiones ↪</b></td><td>3</td><td>Si un artículo del contexto dice «las penas previstas en el artículo 220», agrega también el 220 (hasta 4, primero los de pena), marcado «↪ remitido por». Búsqueda exacta en la tabla <code>corpus_remisiones</code>, sin LLM.</td><td>0</td><td>0.01 ± 0.01 s (10 milisegundos; p90 30 ms)</td></tr>
   <tr><td><b>Prompt</b></td><td>4</td><td>Las instrucciones del LLM que responde: tono, qué citar, cuándo preguntar. No cambia lo que encuentra el buscador, solo cómo se escribe la respuesta. <i>penal-original-v1</i> es el de la ronda 1; <i>tlacua-v1-penas</i> agrega una sección que pide dar las penas; <i>tlacua-secuencia-y-penas</i> es el del 20 de octubre.</td><td>0</td><td>respuesta: 5.47 ± 1.11 s con penal-original-v1 y 5.78 ± 1.02 s con tlacua-v1-penas, con todo lo demás igual (C·v2 y D·v2)</td></tr>
@@ -369,6 +370,67 @@
 <h4>Idea para bajar el costo (no implementada)</h4>
 <p><b>Hacer en paralelo las llamadas a HyDE de las sub-búsquedas.</b> El servidor del LLM (llama.cpp) atiende 4 peticiones a la vez y las procesa en lote: al escribir, el cuello de botella de la GPU es leer el modelo de memoria por cada token, y esa lectura sirve para todas las peticiones del lote. Evidencia (accidental, 22 de octubre): con 4 pruebas de descomponer corriendo a la vez, cada llamada tardó 1.1–1.45 s (sola: 0.47 s), pero las 4 se hicieron en ~1.2–1.45 s, contra ~1.9 s una tras otra: <b>~25–35 % menos</b>. Aplicado a descomponer: de ~2.8 s de HyDE a ~1.7–2 s, es decir <b>~1 s menos por pregunta</b>, sin cambiar los resultados. Cuidados: con varias personas usando la app a la vez los 4 lugares del servidor se comparten y la ganancia baja; y la estimación sale de una sola observación, habría que medirla. Otra opción: reutilizar el HyDE de la pregunta original en las sub-búsquedas (como ya hace el routing), que costaría casi solo la llamada de descomponer, pero podría bajar el recall.</p>
 <p><b>Decisión pendiente (después de la ronda 2, que se queda como la ronda 1):</b> quitar el routing donde el filtro por estado esté activo, y decidir descomponer por recall contra tiempo.</p>
+
+
+<h3 id="rerank">¿Sirve el rerank? (23 de octubre)</h3>
+<p><b>Qué se comparó.</b> La configuración de la ronda 2 (penal-original-v1, filtro v3, descomponer, routing, HyDE, híbrido, top-k 10 con vecinos), con y sin rerank. Lo único que cambia es el rerank. Sets 3, 13, 14 y 12, 2 repeticiones: 16 corridas (#211–#226). La diferencia de score es <b>pareada</b>: se compara cada pregunta consigo misma (promedio de sus 2 repeticiones) y el IC 95 % sale de un bootstrap de esas diferencias.</p>
+<div class="scroll"><table>
+  <tr><th>Set (preguntas)</th><th class="n">Score sin → con</th><th class="n">Diferencia (IC 95 %)</th><th class="n">Recall sin → con</th><th class="n">Segundos por pregunta</th><th class="n">Preguntas que suben / bajan</th></tr>
+  <tr><td>3 (50)</td><td class="n">90.6 → 88.6</td><td class="n">−2.0 (−5.3 a +0.9)</td><td class="n">94.4 → 93.1 %</td><td class="n">11.1 → 12.8</td><td class="n">11 / 11</td></tr>
+  <tr><td>13 (31)</td><td class="n">77.0 → 84.7</td><td class="n">+7.7 (0.0 a +15.3)</td><td class="n ok">93.5 → 100 %</td><td class="n">10.3 → 11.1</td><td class="n">13 / 6</td></tr>
+  <tr><td>14 (57)</td><td class="n">81.1 → 86.2</td><td class="n">+5.0 (−3.9 a +14.5)</td><td class="n ok">78.1 → 86.5 %</td><td class="n">10.1 → 11.0</td><td class="n">12 / 9</td></tr>
+  <tr><td>12 (3)</td><td class="n">26.4 → 31.6</td><td class="n">+5.2 (−1.9 a +18.2)</td><td class="n">46.2 → 61.5 %</td><td class="n">15.9 → 18.4</td><td class="n">1 / 2</td></tr>
+</table></div>
+<p>«Otro estado» fue 0 % en las 16 corridas: el rerank no trae leyes de otros estados porque reordena solo lo que el filtro ya dejó pasar.</p>
+<p><b>Prueba del buscador solo</b> (prueba de recall #23, sin LLM que responda, sin juez): artículos esperados entre los 10 primeros resultados, buscador híbrido con HyDE, sin vecinos.</p>
+<div class="scroll"><table>
+  <tr><th>Set</th><th class="n">Artículos</th><th class="n">Sin rerank</th><th class="n">Con rerank</th></tr>
+  <tr><td>3</td><td class="n">69</td><td class="n">84.1 %</td><td class="n">82.6 %</td></tr>
+  <tr><td>13</td><td class="n">31</td><td class="n">74.2 %</td><td class="n ok">93.5 %</td></tr>
+  <tr><td>14</td><td class="n">48</td><td class="n">64.6 %</td><td class="n ok">83.3 %</td></tr>
+  <tr><td>Todas</td><td class="n">148</td><td class="n">75.7 %</td><td class="n ok">85.1 %</td></tr>
+</table></div>
+<ul>
+  <li><b>El rerank mejora el recall</b> donde las preguntas usan lenguaje cotidiano o dependen del estado (sets 13 y 14: +19 puntos en los 10 primeros resultados). En el set 3, escrito en lenguaje jurídico, no ayuda (−1.5).</li>
+  <li><b>En el score sube en los sets 13 y 14, pero no es seguro:</b> los dos intervalos llegan a 0. En el set 3 baja 2 puntos, dentro del ruido.</li>
+  <li><b>Costo:</b> ~0.4 s por cada búsqueda; con descomponer (2 a 3 búsquedas por pregunta) son +0.8 a +1.7 s por pregunta.</li>
+</ul>
+<p><b>Conclusión:</b> el rerank ayuda al buscador en preguntas cotidianas, y probablemente a la respuesta, pero con estos sets la mejora del score no es segura. <b>Recomendación para la ronda 2: no activarlo.</b> La condición <i>original</i> de la ronda 2 es el puente con la ronda 1: si solo cambia el filtro por estado, cualquier diferencia entre las rondas se le puede atribuir al filtro. Con el rerank, cambiarían dos cosas a la vez.</p>
+
+<h3 id="contexto">¿Más vecinos o más resultados? (23 de octubre)</h3>
+<p><b>Vecinos</b> = por cada artículo encontrado, se agregan su familia (bis, ter…) y los 2 de antes y de después (sección 2). <b>Top-k</b> = cuántos resultados del buscador entran. Las dos opciones agrandan el contexto. Esta prueba (#24, sin LLM que responda, sin juez) mide qué porcentaje de los artículos esperados llega al <b>contexto final</b> que lee el LLM, y cuántas palabras tiene ese contexto. Buscador híbrido con HyDE, sets 3, 13 y 14 (148 artículos).</p>
+<div class="scroll"><table>
+  <tr><th>Contexto</th><th class="n">Recall (todas)</th><th class="n">Set 3</th><th class="n">Set 13</th><th class="n">Set 14</th><th class="n">Palabras (media ± DE)</th></tr>
+  <tr><td>top-k 6 con vecinos</td><td class="n">70.3 %</td><td class="n">73.9</td><td class="n">74.2</td><td class="n">62.5</td><td class="n">4,014 ± 1,368</td></tr>
+  <tr><td>top-k 10 sin vecinos</td><td class="n">75.0 %</td><td class="n">84.1</td><td class="n">67.7</td><td class="n">66.7</td><td class="n">3,909 ± 1,496</td></tr>
+  <tr><td><b>top-k 10 con vecinos (el actual)</b></td><td class="n"><b>79.1 %</b></td><td class="n">85.5</td><td class="n">77.4</td><td class="n">70.8</td><td class="n">5,634 ± 1,680</td></tr>
+  <tr><td>top-k 13 con vecinos</td><td class="n">83.1 %</td><td class="n">87.0</td><td class="n">87.1</td><td class="n">75.0</td><td class="n">6,813 ± 1,997</td></tr>
+  <tr><td>top-k 16 con vecinos</td><td class="n">85.8 %</td><td class="n">88.4</td><td class="n">90.3</td><td class="n">79.2</td><td class="n">8,036 ± 2,316</td></tr>
+  <tr><td>top-k 20 sin vecinos</td><td class="n ok">89.2 %</td><td class="n">89.9</td><td class="n">93.5</td><td class="n">85.4</td><td class="n">7,996 ± 2,661</td></tr>
+</table></div>
+<p><b>Conclusión:</b> con el mismo tamaño de contexto (~8,000 palabras), <b>más resultados del buscador traen más artículos que los vecinos</b>: top-k 20 sin vecinos llega a 89.2 %, contra 85.8 % de top-k 16 con vecinos. Los vecinos sí ayudan cuando el contexto es chico (top-k 10: 75.0 → 79.1 %). Falta medir el score: un contexto más grande cuesta tiempo de respuesta y puede distraer al LLM. Para la ronda 2 se queda el actual (top-k 10 con vecinos), por comparabilidad.</p>
+
+<h3 id="dividir">Cómo dividir la pregunta (23 de octubre)</h3>
+<p>«Descomponer» tiene varias versiones de su prompt, según por qué se permite dividir: <b>solo por lugar</b> (estados o códigos que se comparan), <b>solo por pregunta</b> (si la persona hace varias preguntas), <b>por lugar y por pregunta</b>, <b>solo por delito</b>, y <b>libre</b> (el LLM decide cómo dividir). «Por lugar y por delito» es el prompt actual de descomponer más «descomponer por delito», como en la matriz. La prueba (#25, sin LLM que responda, sin juez) mide los artículos esperados entre los 10 primeros resultados del buscador (híbrido con HyDE, sin filtro por estado), y el tiempo de la búsqueda completa. 148 artículos de los sets 3, 13 y 14.</p>
+<div class="scroll"><table>
+  <tr><th>Versión</th><th class="n">Todas</th><th class="n">Set 3</th><th class="n">Set 13</th><th class="n">Set 14</th><th class="n">Búsqueda (media ± DE)</th></tr>
+  <tr><td>sin dividir</td><td class="n">73.0 %</td><td class="n">82.6</td><td class="n">61.3</td><td class="n">66.7</td><td class="n">1.07 ± 0.15 s</td></tr>
+  <tr><td>por lugar y por delito (prompt actual + por delito)</td><td class="n">75.7 %</td><td class="n">85.5</td><td class="n">71.0</td><td class="n">64.6</td><td class="n">4.34 ± 1.87 s</td></tr>
+  <tr><td>solo por delito</td><td class="n">77.0 %</td><td class="n">84.1</td><td class="n">71.0</td><td class="n">70.8</td><td class="n">2.31 ± 1.44 s</td></tr>
+  <tr><td>solo por pregunta</td><td class="n">77.7 %</td><td class="n">88.4</td><td class="n">74.2</td><td class="n">64.6</td><td class="n">3.41 ± 0.94 s</td></tr>
+  <tr><td>por lugar y por pregunta</td><td class="n">77.0 %</td><td class="n">88.4</td><td class="n">74.2</td><td class="n">62.5</td><td class="n">3.76 ± 1.12 s</td></tr>
+  <tr><td>libre, máximo 2 búsquedas</td><td class="n">77.7 %</td><td class="n">87.0</td><td class="n">77.4</td><td class="n">64.6</td><td class="n">3.78 ± 0.49 s</td></tr>
+  <tr><td>solo por lugar</td><td class="n">79.1 %</td><td class="n ok">89.9</td><td class="n">74.2</td><td class="n">66.7</td><td class="n">2.97 ± 1.25 s</td></tr>
+  <tr><td>libre (prompt mínimo)</td><td class="n">80.4 %</td><td class="n">87.0</td><td class="n">74.2</td><td class="n ok">75.0</td><td class="n">5.66 ± 0.91 s</td></tr>
+  <tr><td><b>libre</b></td><td class="n ok">81.8 %</td><td class="n">88.4</td><td class="n ok">77.4</td><td class="n ok">75.0</td><td class="n">5.40 ± 1.28 s</td></tr>
+</table></div>
+<ul>
+  <li><b>Cualquier forma de dividir sube el recall</b> frente a no dividir (73.0 %), pero la búsqueda tarda de 1.2 a 4.6 s más.</li>
+  <li><b>La mejor depende del set:</b> en el set 3 gana «solo por lugar» (89.9 %); en el set 14, «libre» (75.0 %). Por eso no se juntan los sets.</li>
+  <li><b>«Libre» es la más lenta</b> porque escribe más búsquedas y cada búsqueda paga su propio HyDE (ver <a href="#costo-desc">el costo de descomponer</a>).</li>
+  <li><b>«Por lugar y por delito» no es la mejor en ningún set,</b> y es de las más lentas.</li>
+  <li><b>La ronda 2 usa el prompt actual sin «por delito»</b>, igual que la ronda 1. Esa combinación no está en esta tabla: su recall está en <a href="#desc-sirve">¿Sirven descomponer y routing?</a> (con filtro, en el contexto final). Después de la ronda 2 conviene cambiarla por «solo por lugar» o «libre», según el tiempo que se acepte.</li>
+</ul>
 
 <h3 id="componentes">Pruebas por componente</h3>
 <p>Las pruebas de arriba miden el sistema completo: si el score baja, no se sabe qué pieza falló. Estas miden <b>una sola llamada al LLM contra su propio objetivo</b>, y cuando se puede, sin el juez (22 de octubre). Pendientes: una prueba propia de «descomponer» y otra de «descomponer por delito» (necesitan preguntas etiquetadas; Karen para las conductas), y el acuerdo del juez con una persona abogada.</p>
