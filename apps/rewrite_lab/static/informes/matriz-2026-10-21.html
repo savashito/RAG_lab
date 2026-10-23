@@ -78,7 +78,7 @@
 
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#componentes">Pruebas por componente</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#costo-desc">Costo de descomponer</a><a href="#componentes">Pruebas por componente</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -333,6 +333,42 @@
 <p style="margin-bottom:0">No parece hacer daño (el recall y el score de las no comparativas no bajan), pero gasta búsquedas y muestra que Gemma no sigue esa regla. Es justo lo que mediría una prueba propia de «descomponer» (pendiente).</p>
 </div>
 <p><b>Conclusión:</b> descomponer ayuda al buscador en las preguntas comparativas; en la calificación, la ventaja no se distingue del ruido en estos sets. <b>Para la ronda 2 se mantiene igual que en la ronda 1</b> (descomponer y routing activos), por comparabilidad.</p>
+
+<h4 id="costo-desc">Contra no hacer nada, y cuánto cuesta (23 de octubre)</h4>
+<p>B·v3, 2 repeticiones. «Nada» = sin descomponer y sin routing. «Búsqueda» es la etapa completa: HyDE, la división, todas las búsquedas.</p>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">Score</th><th class="n">Recall</th><th class="n">Búsqueda (media ± DE)</th><th class="n">Score contra nada (pareado, IC 95 %)</th></tr>
+  <tr><td><b>Set 3 · nada</b></td><td class="n">90.2</td><td class="n">87.5 % (140/160)</td><td class="n">1.24 ± 0.14 s</td><td class="n">—</td></tr>
+  <tr><td>Set 3 · routing</td><td class="n">88.8</td><td class="n">86.9 % (139/160)</td><td class="n">1.65 ± 0.44 s</td><td class="n">−1.4 (−4.1 a +1.0)</td></tr>
+  <tr><td>Set 3 · descomponer</td><td class="n">90.4</td><td class="n ok">92.5 % (148/160)</td><td class="n x">3.34 ± 1.25 s</td><td class="n">+0.2 (−2.4 a +2.9)</td></tr>
+  <tr><td><b>Set 14 · nada</b></td><td class="n">82.9</td><td class="n">78.1 % (75/96)</td><td class="n">1.17 ± 0.09 s</td><td class="n">—</td></tr>
+  <tr><td>Set 14 · routing</td><td class="n">81.1</td><td class="n">76.0 % (73/96)</td><td class="n">1.33 ± 0.30 s</td><td class="n">−1.8 (−7.7 a +3.5)</td></tr>
+  <tr><td>Set 14 · descomponer</td><td class="n">81.1</td><td class="n">80.2 % (77/96)</td><td class="n x">2.89 ± 0.98 s</td><td class="n">−1.8 (−8.8 a +4.8)</td></tr>
+</table></div>
+<ul>
+  <li><b>Routing no aporta con el filtro activo:</b> trae los mismos artículos que no hacer nada y cuesta +0.2 a +0.4 s. Probablemente porque el filtro ya restringe la búsqueda a los estados nombrados, que es lo que hacía el routing; el 8 de octubre, sin filtro, sí ayudaba.</li>
+  <li><b>Descomponer trae más artículos</b> (+8 en el set 3, +2 en el set 14) pero la búsqueda tarda 2.5–2.7 veces más (+1.7 a +2.1 s por pregunta).</li>
+</ul>
+
+<h4>¿Por qué el recall extra de descomponer casi no se ve en el score?</h4>
+<p>Se revisaron los artículos que llegaron al contexto <b>solo</b> con descomponer, y qué dijo el juez de su criterio «Cita el art. …» con y sin descomponer:</p>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">Set 3</th><th class="n">Set 14</th></tr>
+  <tr><td>Artículos que llegaron solo con descomponer</td><td class="n">8</td><td class="n">6</td></tr>
+  <tr><td>Artículos que llegaron solo sin descomponer</td><td class="n">0</td><td class="n">4</td></tr>
+  <tr><td>Su «Cita el art.»: ausente sin descomponer → presente con descomponer</td><td class="n ok">7 de 8</td><td class="n ok">6 de 6</td></tr>
+</table></div>
+<p><b>El recall sí se convierte en respuestas mejores:</b> cuando el artículo llega, Gemma casi siempre lo cita y gana ese criterio. Pero pasa pocas veces: 8 criterios en 100 respuestas del set 3 equivalen a <b>~+1 punto</b> de score, y el ruido de la comparación es de ±3 a ±6. Con los sets actuales ese efecto no se puede medir en el score; el recall lo mide casi sin ruido (0–2 artículos entre corridas). Por eso, para decidir sobre descomponer, la métrica útil es <b>recall contra tiempo</b>.</p>
+
+<h4>De dónde sale el tiempo de descomponer</h4>
+<ul>
+  <li><b>Cada sub-búsqueda paga su propio HyDE.</b> El buscador corre la pregunta original y cada sub-búsqueda por separado, y en cada una el LLM escribe su borrador de HyDE, una tras otra (código: <code>retrieve_ranked</code> en main.py). Sin descomponer, la búsqueda completa tarda ~1.2 s (un HyDE ≈ 1 s + la búsqueda). Con descomponer actual: 0.59 s de su llamada + ~1.8 sub-búsquedas × ~1 s de HyDE.</li>
+  <li><b>Lo que escribe el LLM pesa más que el prompt.</b> Un LLM lee la entrada de una pasada (rápido) y escribe token por token (lento). La versión «libre» tiene el prompt más corto (469 caracteres) pero su llamada tarda 0.64 s contra 0.47 s de la actual (+36 %), porque escribe el doble: 3.3 búsquedas y 277 caracteres por pregunta, contra 1.8 y 133. Y como cada búsqueda extra paga su HyDE, el costo real de «libre» en la búsqueda completa sería ~1.5 s mayor que el de la actual (estimado; la prueba de recall con tiempo por versión lo mide).</li>
+</ul>
+
+<h4>Idea para bajar el costo (no implementada)</h4>
+<p><b>Hacer en paralelo las llamadas a HyDE de las sub-búsquedas.</b> El servidor del LLM (llama.cpp) atiende 4 peticiones a la vez y las procesa en lote: al escribir, el cuello de botella de la GPU es leer el modelo de memoria por cada token, y esa lectura sirve para todas las peticiones del lote. Evidencia (accidental, 22 de octubre): con 4 pruebas de descomponer corriendo a la vez, cada llamada tardó 1.1–1.45 s (sola: 0.47 s), pero las 4 se hicieron en ~1.2–1.45 s, contra ~1.9 s una tras otra: <b>~25–35 % menos</b>. Aplicado a descomponer: de ~2.8 s de HyDE a ~1.7–2 s, es decir <b>~1 s menos por pregunta</b>, sin cambiar los resultados. Cuidados: con varias personas usando la app a la vez los 4 lugares del servidor se comparten y la ganancia baja; y la estimación sale de una sola observación, habría que medirla. Otra opción: reutilizar el HyDE de la pregunta original en las sub-búsquedas (como ya hace el routing), que costaría casi solo la llamada de descomponer, pero podría bajar el recall.</p>
+<p><b>Decisión pendiente (después de la ronda 2, que se queda como la ronda 1):</b> quitar el routing donde el filtro por estado esté activo, y decidir descomponer por recall contra tiempo.</p>
 
 <h3 id="componentes">Pruebas por componente</h3>
 <p>Las pruebas de arriba miden el sistema completo: si el score baja, no se sabe qué pieza falló. Estas miden <b>una sola llamada al LLM contra su propio objetivo</b>, y cuando se puede, sin el juez (22 de octubre). Pendientes: una prueba propia de «descomponer» y otra de «descomponer por delito» (necesitan preguntas etiquetadas; Karen para las conductas), y el acuerdo del juez con una persona abogada.</p>
