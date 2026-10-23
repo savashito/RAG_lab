@@ -6,7 +6,7 @@
    "opcion": "Filtro por estado (v3)",
    "componente": "filtro",
    "compara": "sin filtro (A) → filtro v3 (B·v3)",
-   "costo": "+0.71 ± 0.20 s por pregunta (una llamada al LLM)",
+   "costo": "Neto +0.52 s por pregunta (+6 %): su llamada al LLM tarda 0.71 ± 0.20 s, pero la respuesta tarda 0.29 s menos. No reduce cuántos artículos llegan (siempre los 10 primeros + vecinos), solo cuáles",
    "recall": [],
    "score": [
     {
