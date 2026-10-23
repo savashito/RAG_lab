@@ -115,19 +115,24 @@
   {
    "opcion": "Descomponer «libre»",
    "componente": "division_recall",
-   "compara": "prompt actual → «libre» (prueba de recall, 83 preguntas, 3 corridas)",
+   "compara": "por lugar y por delito (actual) → «libre» (prueba de recall, 10 primeros resultados, 3 corridas)",
    "costo": "4.81 s de búsqueda contra 4.22 s del actual con por delito, 2.94 s de «solo por lugar» y 0.99 s sin dividir",
    "recall": [
     {
-     "set": "3 y 14",
-     "de": 78.0,
-     "a": 82.9
+     "set": "3",
+     "de": 87.0,
+     "a": 88.4
+    },
+    {
+     "set": "14",
+     "de": 65.3,
+     "a": 75.0
     }
    ],
    "score": [],
-   "otro": "Score: benchmark completo pendiente",
+   "otro": "Por set, la mejor forma de dividir cambia: en el set 3 gana «solo por lugar» (91.8 %), en el set 14 gana «libre» (75.0 %). Sin dividir: 84.1 % y 64.6 %. El set 13 no está en esta prueba.",
    "fuente": "corridas de componentes #11, #12, #20",
-   "veredicto": "El mejor recall (+3 artículos sobre «solo por lugar»), y el más lento"
+   "veredicto": "Mejor en el set 14 (+10 sobre sin dividir); en el set 3, «solo por lugar» es mejor. El más lento"
   },
   {
    "opcion": "Routing por código",
@@ -175,9 +180,14 @@
    "costo": "+2.1 s por pregunta (0.55 s de su llamada + búsquedas + respuesta más larga)",
    "recall": [
     {
-     "set": "3 y 14",
-     "de": 76.1,
-     "a": 76.1
+     "set": "3",
+     "de": 84.1,
+     "a": 81.2
+    },
+    {
+     "set": "14",
+     "de": 64.6,
+     "a": 68.8
     }
    ],
    "score": [
@@ -214,7 +224,7 @@
      ]
     }
    ],
-   "otro": "Recall: «solo por delito» contra sin dividir, prueba de 10 primeros resultados",
+   "otro": "Recall: sin dividir → «solo por delito», prueba de 10 primeros resultados, 3 corridas",
    "fuente": "matriz #147–#170; prueba de recall #11, #12, #20",
    "veredicto": "No aporta"
   },
