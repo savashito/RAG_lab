@@ -74,6 +74,71 @@
    "veredicto": "Se queda: es lo que más ayuda al buscador"
   },
   {
+   "opcion": "Rerank (Qwen3-Reranker-0.6B)",
+   "componente": "rerank_recall",
+   "compara": "ronda 2 sin rerank → con rerank (penal-original-v1, filtro v3, descomponer, routing; 2 repeticiones)",
+   "costo": "+0.8 a +1.7 s por pregunta (set 3: 11.1 → 12.8 s; set 14: 10.1 → 11.0 s)",
+   "recall": [
+    {
+     "set": "3",
+     "de": 94.4,
+     "a": 93.1
+    },
+    {
+     "set": "13",
+     "de": 93.5,
+     "a": 100.0
+    },
+    {
+     "set": "14",
+     "de": 78.1,
+     "a": 86.5
+    },
+    {
+     "set": "12",
+     "de": 46.2,
+     "a": 61.5
+    }
+   ],
+   "score": [
+    {
+     "set": "3",
+     "dif": -2.0,
+     "ic": [
+      -5.3,
+      0.9
+     ]
+    },
+    {
+     "set": "13",
+     "dif": 7.7,
+     "ic": [
+      0.0,
+      15.3
+     ]
+    },
+    {
+     "set": "14",
+     "dif": 5.0,
+     "ic": [
+      -3.9,
+      14.5
+     ]
+    },
+    {
+     "set": "12",
+     "dif": 5.2,
+     "ic": [
+      -1.9,
+      18.2
+     ]
+    }
+   ],
+   "otro": "Prueba de recall de Componentes (#23, 10 primeros resultados): 75.7 → 85.1 % (sets 13 y 14: +19; set 3: −1.5)",
+   "fuente": "benchmark rerank-2026-10-23, corridas #211–#226 (06_evaluation/rerank_2026-10-23/launch_rerank.py)",
+   "veredicto": "Ayuda al buscador en los sets 13, 14 y 12; en el score sube en 13 y 14 pero el IC toca el 0. Baja un poco en el set 3"
+  },
+  {
    "opcion": "Descomponer (prompt actual)",
    "componente": "descomponer",
    "compara": "sin descomponer → con descomponer (B·v3)",
