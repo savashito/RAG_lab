@@ -97,6 +97,16 @@ DECOMPOSE_VARIANTES = {
         "doctrina que la responden. Tú decides cómo dividirla. Cada sub-pregunta es autónoma, con el tema completo. "
         "Si una sola búsqueda basta, devuelve la pregunta EXACTA, sin reescribirla. No agregues estados, leyes ni "
         "números de artículo que la consulta no menciona. " + _JSON_SUB),
+    # Prueba del 23-oct: ¿un prompt mínimo cambia algo? (libre ya es el más corto; lo lento es que escribe ~3.3 búsquedas)
+    'libre_corto': ("Divide la consulta en las búsquedas que mejor encuentren los artículos que la responden. "
+                    "Máximo 4. Devuelve SOLO un JSON: {\"subpreguntas\": [\"…\"]}"),
+    # ¿Cuánto recall se pierde si se limita a 2 búsquedas (más rápido)?
+    'libre_max2': (
+        "Divide la consulta en las sub-preguntas de búsqueda que mejor encuentren los artículos de ley y pasajes de "
+        "doctrina que la responden. Tú decides cómo dividirla. Cada sub-pregunta es autónoma, con el tema completo. "
+        "Si una sola búsqueda basta, devuelve la pregunta EXACTA, sin reescribirla. No agregues estados, leyes ni "
+        "números de artículo que la consulta no menciona. Máximo 2 sub-preguntas. No respondas la pregunta. "
+        "Devuelve SOLO un JSON: {\"subpreguntas\": [\"…\", \"…\"]}"),
 }
 
 

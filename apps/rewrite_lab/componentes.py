@@ -49,6 +49,10 @@ COMPONENTES = {
     'desc_libre': {'nombre': 'Descomponer · libre', 'icono': '🧩',
                    'objetivo': 'Versión del prompt en la que el LLM decide cómo dividir. Solo se revisan sus reglas: '
                                'máximo 4 búsquedas y sin nombrar estados que la pregunta no nombra.'},
+    'desc_libre_corto': {'nombre': 'Descomponer · libre (prompt mínimo)', 'icono': '🧩',
+                         'objetivo': 'Como «libre», con un prompt de una línea. Solo se revisan sus reglas.'},
+    'desc_libre_max2': {'nombre': 'Descomponer · libre, máximo 2', 'icono': '🧩',
+                        'objetivo': 'Como «libre», pero con máximo 2 búsquedas (más rápido). Solo se revisan sus reglas.'},
     'division_recall': {'nombre': 'División: recall', 'icono': '🎯',
                         'objetivo': 'Para cada pregunta con artículos esperados (sets 3 y 14): cuántos salen entre los '
                                     '10 primeros resultados del buscador con cada forma de dividir (sin dividir, solo '
@@ -170,10 +174,10 @@ def eval_division(regla: str):
     divide por lugar, nombra cada entidad esperada; máximo 4 búsquedas. 'libre' no tiene salida esperada: solo se
     revisan sus reglas (máximo 4, sin estados que la pregunta no nombra)."""
     def evaluar(esp: dict, sal: list[str]) -> tuple[bool, dict]:
-        n = len(sal)
-        if n > 4:
-            return False, {'busquedas': n, 'falla': 'más de 4 búsquedas'}
-        if regla == 'libre':
+        n, tope = len(sal), 2 if regla == 'libre_max2' else 4
+        if n > tope:
+            return False, {'busquedas': n, 'falla': f'más de {tope} búsquedas'}
+        if regla.startswith('libre'):
             ajenos = sorted({h['label'] for s in sal for h in codes_in(s)} - set(esp.get('nombrados') or []))
             return not ajenos, {'busquedas': n, 'falla': ('nombra ' + ', '.join(ajenos)) if ajenos else None}
         if not _division_esperada(regla, esp):
@@ -223,6 +227,7 @@ def eval_hyde(esp: dict, sal: str) -> tuple[bool, dict]:
 EVALUADORES = {'filtro': eval_filtro, 'descomponer': eval_descomponer, 'por_delito': eval_por_delito, 'hyde': eval_hyde,
                'desc_solo_lugar': eval_division('solo_lugar'), 'desc_solo_pregunta': eval_division('solo_pregunta'),
                'desc_lugar_y_pregunta': eval_division('lugar_y_pregunta'), 'desc_libre': eval_division('libre'),
+               'desc_libre_corto': eval_division('libre_corto'), 'desc_libre_max2': eval_division('libre_max2'),
                'division_recall': eval_recall}
 
 # Formas de dividir que compara la prueba de recall: (descomponer, descomponer por delito). descomponer = False, True
@@ -231,6 +236,7 @@ VERSIONES_DIVISION = {
     'sin dividir': (False, False), 'solo por lugar': ('solo_lugar', False), 'solo por pregunta': ('solo_pregunta', False),
     'solo por delito': (False, True), 'por lugar y por pregunta': ('lugar_y_pregunta', False),
     'por lugar y por delito (actual)': (True, True), 'libre': ('libre', False),
+    'libre (prompt mínimo)': ('libre_corto', False), 'libre, máximo 2': ('libre_max2', False),
 }
 
 
@@ -282,7 +288,7 @@ def metricas_recall(filas: list[dict]) -> dict:
 def grupo(componente: str, esp: dict) -> str | None:
     if componente == 'descomponer':
         return 'comparativas' if esp.get('compara') else 'no comparativas'
-    if componente.startswith('desc_') and componente != 'desc_libre':
+    if componente.startswith('desc_') and not componente.startswith('desc_libre'):
         return 'debe dividir' if _division_esperada(componente[5:], esp) else 'no debe dividir'
     if componente == 'filtro':
         return ('papel del lugar' if 'hechos' in esp or 'otros' in esp else 'estados' if 'estados' in esp

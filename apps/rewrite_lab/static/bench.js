@@ -1035,12 +1035,15 @@ const checkedPrompts = () => [...document.querySelectorAll('.bp-cmp:checked')].m
 const COMP = {sel: null, vista: null, corrida: null, poll: null, lista: []};
 // Todo lo de «descomponer» va en una sola tarjeta con su propia sección: recall (¿ayuda al buscador?) y obediencia de
 // cada versión del prompt (¿hace lo que dice su regla?).
-const DESC_IDS = ['division_recall', 'descomponer', 'desc_solo_lugar', 'desc_solo_pregunta', 'desc_lugar_y_pregunta', 'desc_libre'];
+const DESC_IDS = ['division_recall', 'descomponer', 'desc_solo_lugar', 'desc_solo_pregunta', 'desc_lugar_y_pregunta', 'desc_libre',
+                  'desc_libre_corto', 'desc_libre_max2'];
 const DESC_OBED = [['descomponer', 'actual', 'Su prompt dice «solo por lugar» (el que se usa hoy)'],
   ['desc_solo_lugar', 'solo por lugar', 'Divide solo si compara estados, códigos o conceptos'],
   ['desc_solo_pregunta', 'solo por pregunta', 'Divide solo si el mensaje hace varias preguntas'],
   ['desc_lugar_y_pregunta', 'por lugar y por pregunta', 'Divide en los dos casos'],
-  ['desc_libre', 'libre', 'El LLM decide; solo se revisan sus reglas (máx. 4 búsquedas, sin estados ajenos)']];
+  ['desc_libre', 'libre', 'El LLM decide; solo se revisan sus reglas (máx. 4 búsquedas, sin estados ajenos)'],
+  ['desc_libre_corto', 'libre (prompt mínimo)', 'Como «libre», con un prompt de una línea'],
+  ['desc_libre_max2', 'libre, máximo 2', 'Como «libre», pero con máximo 2 búsquedas']];
 const cpct = x => x == null ? '—' : (x * 100).toFixed(0) + ' %';
 async function loadComponentes(){
   clearTimeout(COMP.poll);

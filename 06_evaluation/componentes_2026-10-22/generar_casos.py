@@ -87,7 +87,7 @@ for sid, qid, q, _ in preguntas:
     hyde.append({'entrada': q, 'esperado': {'permitidos': permitidos}, 'fuente': f'set {sid} · q{qid}', 'revisado': True})
 
 # Las versiones del prompt de descomponer se prueban con las mismas preguntas; cada evaluador aplica su regla.
-versiones = {f'desc_{v}': descomponer for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre')}
+versiones = {f'desc_{v}': descomponer for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')}
 # Prueba de recall: preguntas de los sets 3 y 14 con artículos esperados (algún «Cita el art.» en sus criterios).
 recall = [{'entrada': q, 'esperado': {}, 'fuente': f'set {sid} · q{qid}', 'revisado': True}
           for sid, qid, q, _ in preguntas if sid in (3, 14) and qid in con_cita]

@@ -1357,11 +1357,12 @@ componentes = Componentes(
     runners={'filtro': lambda t: jgate.extraer_lugares(t, llm), 'descomponer': llm.decompose,
              'por_delito': decompose_conducts, 'hyde': lambda t: llm.hyde_passage(t, system=hyde_for(_TEMA_PENAL)),
              **{f'desc_{v}': (lambda t, v=v: llm.decompose(t, DECOMPOSE_VARIANTES[v]))
-                for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre')},
+                for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
              'division_recall': division_recall},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
              'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
-             **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v]) for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre')},
+             **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v])
+                for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
              # el md5 de la prueba de recall cubre todas las versiones que compara
              'division_recall': lambda: '\n\n'.join(DECOMPOSE_VARIANTES.values()) + '\n\n' + CONDUCTAS_SYSTEM})
 app.include_router(componentes.router)
