@@ -88,8 +88,8 @@ for sid, qid, q, _ in preguntas:
 
 # Las versiones del prompt de descomponer se prueban con las mismas preguntas; cada evaluador aplica su regla.
 versiones = {f'desc_{v}': descomponer for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')}
-# Prueba de recall: preguntas de los sets 3 y 14 con artículos esperados (algún «Cita el art.» en sus criterios).
-recall = [{'entrada': q, 'esperado': {}, 'fuente': f'set {sid} · q{qid}', 'revisado': True}
-          for sid, qid, q, _ in preguntas if sid in (3, 14) and qid in con_cita]
+# Pruebas de recall: preguntas de los sets 3, 13 y 14 con artículos esperados (algún «Cita el art.» en sus criterios).
+recall = [{'entrada': q, 'esperado': {'set': sid}, 'fuente': f'set {sid} · q{qid}', 'revisado': True}
+          for sid, qid, q, _ in preguntas if qid in con_cita]
 print(json.dumps({'filtro': filtro, 'descomponer': descomponer, 'por_delito': por_delito, 'hyde': hyde, **versiones,
-                  'division_recall': recall}, ensure_ascii=False, indent=1))
+                  'division_recall': recall, 'hyde_recall': recall}, ensure_ascii=False, indent=1))

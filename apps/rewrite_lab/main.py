@@ -1325,46 +1325,63 @@ from shared.llm_client import DECOMPOSE_SYSTEM  # noqa: E402
 _TEMA_PENAL = 'derecho_penal_mexicano'
 
 
-def division_recall(pregunta: str) -> dict:
-    """Prueba de recall de las formas de dividir: para una pregunta de los sets 3 y 14, cuántos de sus artículos
-    esperados (los «Cita el art.» de sus criterios) salen entre los 10 primeros resultados del buscador con cada
-    versión de VERSIONES_DIVISION. Búsqueda de la base (híbrido, vecinos, HyDE), sin filtro, sin respuesta ni juez."""
+def _recall(pregunta: str, versiones: dict[str, dict]) -> dict:
+    """Pruebas de recall de la página 🧩: para una pregunta de los sets 3, 13 o 14, cuántos de sus artículos esperados
+    (los «Cita el art.» de sus criterios) salen entre los 10 primeros resultados del buscador con cada versión.
+    versiones: nombre → opciones de retrieve_ranked (hyde, decompose, crimes). Búsqueda híbrida con vecinos, sin
+    filtro, sin respuesta ni juez. También guarda el tiempo de cada versión y el set de la pregunta."""
     with connect() as c, c.cursor() as cur:
-        cur.execute("SELECT q.id, q.expected_answer, s.topic FROM bench_questions q JOIN bench_sets s ON s.id = q.set_id "
-                    "WHERE q.set_id IN (3, 14) AND q.question = %s ORDER BY q.id LIMIT 1", (pregunta,))
+        cur.execute("SELECT q.id, q.expected_answer, s.topic, q.set_id FROM bench_questions q JOIN bench_sets s ON s.id = q.set_id "
+                    "WHERE q.set_id IN (3, 13, 14) AND q.question = %s ORDER BY q.id LIMIT 1", (pregunta,))
         fila = cur.fetchone()
         if not fila:
-            raise ValueError('la pregunta no está en los sets 3 ni 14')
-        qid, esperada, tema = fila
+            raise ValueError('la pregunta no está en los sets 3, 13 ni 14')
+        qid, esperada, tema, sid = fila
         cur.execute("SELECT text, kind, weight FROM bench_components WHERE question_id = %s ORDER BY position", (qid,))
         comps = [{'text': t, 'kind': k, 'weight': w} for t, k, w in cur.fetchall()]
         gold = [g for g in resolve_gold(cur, TABLE, gold_refs(pregunta, effective_components(
             {'question': pregunta, 'expected_answer': esperada, 'components': comps}))) if any(x.get('ids') for x in g)]
         aciertos, busquedas, segundos = {}, {}, {}
-        for nombre, (desc, delito) in VERSIONES_DIVISION.items():
+        for nombre, op in versiones.items():
             dbg, t0 = {}, time.time()
-            scored, _, _ = retrieve_ranked(cur, pregunta, 'híbrido', tema, None, True, True, False, desc,
-                                           debug=dbg, crimes=delito)
+            scored, _, _ = retrieve_ranked(cur, pregunta, 'híbrido', tema, None, True, op.get('hyde', True), False,
+                                           op.get('decompose', False), debug=dbg, crimes=op.get('crimes', False))
             segundos[nombre] = round(time.time() - t0, 2)   # búsqueda completa: HyDE + división + búsquedas
             chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
             aciertos[nombre] = sum(1 for g in chk['groups'] if g['rank'] and g['rank'] <= 10)
             busquedas[nombre] = dbg.get('subqueries')
-    conductas = len(busquedas.get('solo por delito') or [])
-    return {'gold': len(gold), 'aciertos': aciertos, 'busquedas': busquedas, 'segundos': segundos,
-            'tipos': tipos_pregunta(pregunta, conductas)}
+    return {'gold': len(gold), 'aciertos': aciertos, 'busquedas': busquedas, 'segundos': segundos, 'set': sid}
+
+
+def division_recall(pregunta: str) -> dict:
+    """Recall de cada forma de dividir la pregunta (VERSIONES_DIVISION), por set y por tipo de pregunta."""
+    r = _recall(pregunta, {n: {'decompose': d, 'crimes': c} for n, (d, c) in VERSIONES_DIVISION.items()})
+    tipos = tipos_pregunta(pregunta, len(r['busquedas'].get('solo por delito') or []))
+    r['tipos'] = [f"set {r['set']}"] + (tipos or ['otra'])
+    return r
+
+
+def hyde_recall(pregunta: str) -> dict:
+    """Recall con y sin HyDE (sin dividir la pregunta), por set."""
+    r = _recall(pregunta, {'sin HyDE': {'hyde': False}, 'con HyDE': {'hyde': True}})
+    r['tipos'] = [f"set {r['set']}"]
+    return r
+
+
 componentes = Componentes(
     connect=connect, current_email=current_email, can_run=can_ingest,
     runners={'filtro': lambda t: jgate.extraer_lugares(t, llm), 'descomponer': llm.decompose,
              'por_delito': decompose_conducts, 'hyde': lambda t: llm.hyde_passage(t, system=hyde_for(_TEMA_PENAL)),
              **{f'desc_{v}': (lambda t, v=v: llm.decompose(t, DECOMPOSE_VARIANTES[v]))
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
-             'division_recall': division_recall},
+             'division_recall': division_recall, 'hyde_recall': hyde_recall},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
              'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
              **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v])
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
              # el md5 de la prueba de recall cubre todas las versiones que compara
-             'division_recall': lambda: '\n\n'.join(DECOMPOSE_VARIANTES.values()) + '\n\n' + CONDUCTAS_SYSTEM})
+             'division_recall': lambda: '\n\n'.join(DECOMPOSE_VARIANTES.values()) + '\n\n' + CONDUCTAS_SYSTEM,
+             'hyde_recall': lambda: hyde_for(_TEMA_PENAL)})
 app.include_router(componentes.router)
 
 # Asistente de trámites (/tramites) y administración de formularios (/formularios): ver forms/.

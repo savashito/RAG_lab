@@ -58,6 +58,9 @@ COMPONENTES = {
                                     '10 primeros resultados del buscador con cada forma de dividir (sin dividir, solo '
                                     'por lugar, solo por pregunta, solo por delito, combinaciones, libre). Decide qué '
                                     'versión ayuda más al buscador.', 'efecto': True},
+    'hyde_recall': {'nombre': 'HyDE: recall', 'icono': '🎯',
+                    'objetivo': 'Para cada pregunta con artículos esperados (sets 3, 13 y 14): cuántos salen entre los 10 '
+                                'primeros resultados del buscador con y sin HyDE.', 'efecto': True},
     'hyde': {'nombre': 'HyDE', 'icono': '🧪',
              'objetivo': 'Escribir un borrador del artículo que respondería, sin inventar números de artículo y sin '
                          'nombrar estados que la pregunta no nombra.'},
@@ -230,7 +233,7 @@ EVALUADORES = {'filtro': eval_filtro, 'descomponer': eval_descomponer, 'por_deli
                'desc_solo_lugar': eval_division('solo_lugar'), 'desc_solo_pregunta': eval_division('solo_pregunta'),
                'desc_lugar_y_pregunta': eval_division('lugar_y_pregunta'), 'desc_libre': eval_division('libre'),
                'desc_libre_corto': eval_division('libre_corto'), 'desc_libre_max2': eval_division('libre_max2'),
-               'division_recall': eval_recall}
+               'division_recall': eval_recall, 'hyde_recall': eval_recall}
 
 # Formas de dividir que compara la prueba de recall: (descomponer, descomponer por delito). descomponer = False, True
 # (prompt actual) o el nombre de una versión del prompt (shared/llm_client.DECOMPOSE_VARIANTES).
@@ -245,7 +248,7 @@ VERSIONES_DIVISION = {
 def metricas(componente: str, filas: list[dict]) -> dict:
     """Aciertos totales y, donde aplica, por tipo de caso (para descomponer: comparativas vs no comparativas)."""
     ok = [f for f in filas if not f.get('error')]
-    if componente == 'division_recall':
+    if componente in ('division_recall', 'hyde_recall'):
         return metricas_recall(filas)
     out = {'n': len(filas), 'errores': len(filas) - len(ok), 'aciertos': sum(f['ok'] for f in ok),
            'tasa': round(sum(f['ok'] for f in ok) / len(ok), 4) if ok else None}
@@ -263,8 +266,8 @@ def metricas(componente: str, filas: list[dict]) -> dict:
 
 
 def metricas_recall(filas: list[dict]) -> dict:
-    """Por versión: artículos esperados entre los 10 primeros resultados ÷ artículos esperados en el corpus, en total y
-    por tipo de pregunta (una pregunta puede ser de varios tipos)."""
+    """Por versión: artículos esperados entre los 10 primeros resultados ÷ artículos esperados en el corpus, en total,
+    por set («set 3») y por tipo de pregunta (una pregunta puede ser de varios tipos)."""
     ok = [f for f in filas if not f.get('error') and f.get('salida')]
     tot: dict[str, dict] = {}
     for f in ok:

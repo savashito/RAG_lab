@@ -1035,6 +1035,7 @@ const checkedPrompts = () => [...document.querySelectorAll('.bp-cmp:checked')].m
 const COMP = {sel: null, vista: null, corrida: null, poll: null, lista: []};
 // Todo lo de «descomponer» va en una sola tarjeta con su propia sección: recall (¿ayuda al buscador?) y obediencia de
 // cada versión del prompt (¿hace lo que dice su regla?).
+const HYDE_IDS = ['hyde', 'hyde_recall'];
 const DESC_IDS = ['division_recall', 'descomponer', 'desc_solo_lugar', 'desc_solo_pregunta', 'desc_lugar_y_pregunta', 'desc_libre',
                   'desc_libre_corto', 'desc_libre_max2'];
 const DESC_OBED = [['descomponer', 'actual', 'Su prompt dice «solo por lugar» (el que se usa hoy)'],
@@ -1048,6 +1049,7 @@ const cpct = x => x == null ? '—' : (x * 100).toFixed(0) + ' %';
 // Tabla «Costo y efecto de cada opción» (componentes_efectos.json): cuánto cuesta y cuánto cambia los benchmarks.
 async function compEfectos(){
   let d; try{ d = await bjson('/api/componentes/efectos'); }catch(e){ return; }
+  COMP.efectos = d;
   const sig = x => x.ic && (x.ic[0] > 0 || x.ic[1] < 0);
   const f = v => (v > 0 ? '+' : '') + v.toFixed(1);
   const score = o => o.score.length ? o.score.map(x => `<span title="IC 95 %: ${x.ic[0]} a ${x.ic[1]}" style="white-space:nowrap;${sig(x) ? `color:${x.dif > 0 ? '#4ade80' : '#f87171'};font-weight:700` : ''}">set ${esc(x.set)}: ${f(x.dif)}${sig(x) ? '✱' : ''}</span>`).join('<br>') : '<span class="muted">no medido</span>';
@@ -1064,22 +1066,23 @@ async function compEfectos(){
 }
 async function loadComponentes(){
   clearTimeout(COMP.poll);
-  if(!$('comp-efectos').innerHTML) compEfectos();
+  if(!$('comp-efectos').innerHTML) await compEfectos();
   try{ COMP.lista = await bjson('/api/componentes'); }catch(e){ $('comp-cards').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
-  const tarjetas = COMP.lista.filter(c => !DESC_IDS.includes(c.id)).map(c => {
+  const tarjetas = COMP.lista.filter(c => !DESC_IDS.includes(c.id) && !HYDE_IDS.includes(c.id)).map(c => {
     const m = (c.ultima || {}).metricas || {};
     const grupos = Object.entries(m.por_grupo || {}).map(([g, v]) => `${esc(g)} ${v.aciertos}/${v.n}`).join(' · ');
     const pv = m.por_version;
     const estado = c.corriendo ? '<span class="muted">⏳ corriendo…</span>'
       : (c.ultima && pv) ? `<div style="font-size:12px">${Object.entries(pv).map(([v, t]) =>
           `${esc(v)}: <b>${cpct((t.todas || {}).recall)}</b>`).join('<br>')}</div>`
-      : c.ultima ? `<div class="muted" style="font-size:12px">Hace lo esperado:</div><span class="comp-tasa ${m.tasa >= 0.9 ? 'comp-ok' : m.tasa < 0.7 ? 'comp-mal' : ''}">${cpct(m.tasa)}</span>
+      : c.ultima ? `<div class="muted" style="font-size:12px">Obedece (hace lo que dice su prompt):</div><span class="comp-tasa ${m.tasa >= 0.9 ? 'comp-ok' : m.tasa < 0.7 ? 'comp-mal' : ''}">${cpct(m.tasa)}</span>
           <span class="muted" style="font-size:12px"> ${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)} casos · prompt ${esc(c.ultima.prompt_md5.slice(0, 8))}${c.ultima.prompt_md5 !== c.prompt_md5 ? ' (el prompt cambió desde entonces)' : ''}</span>`
       : '<span class="muted">sin corridas todavía</span>';
     return `<div class="bcard comp-card ${COMP.sel === c.id ? 'on' : ''}" data-c="${c.id}">
       <div style="font-weight:700">${c.icono} ${esc(c.nombre)}</div>
       <div class="muted" style="font-size:12px;margin:4px 0 8px">${esc(c.objetivo)}</div>
       <div>${estado}</div>${grupos ? `<div class="muted" style="font-size:12px">${grupos}</div>` : ''}
+      ${compEfectoCorto(c.id)}
       ${m.segundos_media != null ? `<div class="muted" style="font-size:12px;margin-top:6px">Tiempo de la llamada al LLM: <b>${m.segundos_media.toFixed(2)} s</b></div>` : ''}
       <div class="muted" style="font-size:12px;margin-top:6px">${c.casos} casos (${c.revisados} revisados)</div></div>`;
   });
@@ -1096,14 +1099,59 @@ async function loadComponentes(){
     ${orden.length ? `<div class="muted" style="font-size:12px">Recall (artículos esperados en los 10 primeros resultados):</div>
       <div><b>${esc(orden[0][0])}</b> <span class="comp-tasa comp-ok">${cpct(orden[0][1])}</span> <span class="muted" style="font-size:12px">· sin dividir ${cpct(sin.recall)}</span></div>` : ''}
     ${act && act.ultima ? `<div class="muted" style="font-size:12px;margin-top:4px">Obedece su prompt (versión actual): <b>${cpct(act.ultima.metricas?.tasa)}</b></div>` : ''}</div>`);
+  // Tarjeta de HyDE: recall (con y sin HyDE) y sus reglas.
+  const hr = COMP.lista.find(c => c.id === 'hyde_recall'), hy = COMP.lista.find(c => c.id === 'hyde');
+  const hpv = ((hr || {}).ultima || {}).metricas?.por_version || {};
+  tarjetas.splice(2, 0, `<div class="bcard comp-card ${COMP.vista === 'hyde' ? 'on' : ''}" data-c="hyde-grupo">
+    <div style="font-weight:700">🧪 HyDE</div>
+    <div class="muted" style="font-size:12px;margin:4px 0 8px">El LLM escribe un borrador del artículo que respondería y se busca con él. Dos pruebas: si ayuda al buscador (recall) y si el borrador cumple sus reglas.</div>
+    ${(hr || {}).corriendo || (hy || {}).corriendo ? '<div class="muted">⏳ corriendo…</div>' : ''}
+    ${hpv['con HyDE'] ? `<div class="muted" style="font-size:12px">Recall (10 primeros resultados):</div>
+      <div>sin HyDE ${cpct((hpv['sin HyDE'].todas || {}).recall)} → <span class="comp-tasa comp-ok">${cpct((hpv['con HyDE'].todas || {}).recall)}</span></div>` : compEfectoCorto('hyde')}
+    ${hy && hy.ultima ? `<div class="muted" style="font-size:12px;margin-top:4px">Cumple sus reglas: <b>${cpct(hy.ultima.metricas?.tasa)}</b></div>` : ''}</div>`);
   $('comp-cards').innerHTML = tarjetas.join('');
   document.querySelectorAll('.comp-card').forEach(el => el.addEventListener('click', () => compAbrir(el.dataset.c)));
-  if(COMP.vista === 'descomponer') compDescomponer(); else if(COMP.sel) compDetalle();
+  if(COMP.vista === 'descomponer') compDescomponer(); else if(COMP.vista === 'hyde') compHyde(); else if(COMP.sel) compDetalle();
   if(COMP.lista.some(c => c.corriendo)) COMP.poll = setTimeout(loadComponentes, 4000);
 }
 function compAbrir(id){
-  if(id === 'descomponer-grupo'){ COMP.vista = 'descomponer'; COMP.sel = null; } else { COMP.vista = null; COMP.sel = id; }
+  if(id === 'descomponer-grupo'){ COMP.vista = 'descomponer'; COMP.sel = null; }
+  else if(id === 'hyde-grupo'){ COMP.vista = 'hyde'; COMP.sel = null; }
+  else { COMP.vista = null; COMP.sel = id; }
   COMP.corrida = null; loadComponentes();
+}
+// Efecto de una opción en una línea (de la tabla «Costo y efecto»): para que la obediencia nunca aparezca sola.
+function compEfectoCorto(id){
+  const o = ((COMP.efectos || {}).opciones || []).find(x => x.componente === id);
+  if(!o) return '';
+  const sig = x => x.ic && (x.ic[0] > 0 || x.ic[1] < 0);
+  const sc = o.score.filter(sig).map(x => `set ${x.set} ${x.dif > 0 ? '+' : ''}${x.dif}✱`).join(', ');
+  return `<div style="font-size:12px;margin-top:6px"><span class="muted">Efecto:</span> <b>${esc(o.veredicto)}</b>${sc ? ` <span class="muted">(score: ${sc})</span>` : ''}</div>`;
+}
+// Sección de HyDE: 1) recall con y sin HyDE; 2) reglas del borrador.
+async function compHyde(){
+  const L = id => COMP.lista.find(c => c.id === id) || {};
+  const rec = L('hyde_recall'), m = (rec.ultima || {}).metricas || {}, hy = L('hyde'), mh = (hy.ultima || {}).metricas || {};
+  $('comp-detalle').innerHTML = `<div class="bcard" style="margin-top:10px">
+    <h3 style="margin:0 0 4px;font-size:15px">🧪 HyDE</h3>
+    <h3 style="margin:14px 0 2px;font-size:14px">1 · Recall: ¿ayuda al buscador?</h3>
+    <p class="muted" style="font-size:13px;margin:0">Para cada pregunta de los sets 3, 13 y 14 con artículos esperados, se busca con y sin HyDE (sin dividir la
+      pregunta, sin respuesta ni juez) y se cuenta cuántos de esos artículos salen entre los 10 primeros resultados.</p>
+    ${m.por_version ? compTablaRecall(m) : '<p class="muted">Sin corridas todavía en esta página (el 22-oct se midió con un script: sin → con HyDE, set 3: 76 → 84 %, set 13: 42 → 71 %, set 14: 52 → 65 %).</p>'}
+    <div class="row" style="margin:6px 0"><button class="ghost" data-run="hyde_recall" ${rec.corriendo ? 'disabled' : ''}>▶ Correr recall (~10 min)</button>
+      <button class="ghost" data-ver="hyde_recall">Historial y pregunta por pregunta</button></div>
+    <h3 style="margin:18px 0 2px;font-size:14px">2 · Reglas: ¿el borrador cumple su prompt?</h3>
+    <p class="muted" style="font-size:13px;margin:0">Sin números de artículo y sin nombrar estados que la pregunta no nombra.
+      Cumple: <b>${cpct(mh.tasa)}</b>${mh.segundos_media != null ? ` · tiempo de la llamada: ${mh.segundos_media.toFixed(2)} s` : ''}</p>
+    <div class="row" style="margin:6px 0"><button class="ghost" data-run="hyde" ${hy.corriendo ? 'disabled' : ''}>▶ Correr reglas</button>
+      <button class="ghost" data-ver="hyde">Ver casos</button></div>
+    <div id="comp-sub"></div></div>`;
+  document.querySelectorAll('#comp-detalle [data-run]').forEach(b => b.onclick = async () => {
+    try{ const r = await bpost(`/api/componentes/${b.dataset.run}/correr`); bmsg(`Corrida #${r.corrida} en marcha`, true); loadComponentes(); }
+    catch(e){ bmsg(esc(e.message), false); }
+  });
+  document.querySelectorAll('#comp-detalle [data-ver]').forEach(b => b.onclick = () => { COMP.sel = b.dataset.ver; COMP.corrida = null; compDetalle('comp-sub'); });
+  if(COMP.sel) compDetalle('comp-sub');
 }
 // Sección de descomponer: 1) recall de las 7 formas de dividir; 2) obediencia de cada versión del prompt.
 async function compDescomponer(){
@@ -1121,7 +1169,7 @@ async function compDescomponer(){
   $('comp-detalle').innerHTML = `<div class="bcard" style="margin-top:10px">
     <h3 style="margin:0 0 4px;font-size:15px">🧩 Descomponer</h3>
     <h3 style="margin:14px 0 2px;font-size:14px">1 · Recall: ¿ayuda al buscador?</h3>
-    <p class="muted" style="font-size:13px;margin:0">Para cada pregunta de los sets 3 y 14 con artículos esperados, se busca con cada forma de dividir
+    <p class="muted" style="font-size:13px;margin:0">Para cada pregunta de los sets 3, 13 y 14 con artículos esperados, se busca con cada forma de dividir
       (sin respuesta ni juez) y se cuenta cuántos de esos artículos salen entre los 10 primeros resultados.
       ${rec.ultima ? `Última corrida: #${rec.ultima.id} (${esc((rec.ultima.fecha || '').slice(0, 16))}).` : ''}</p>
     ${m.por_version ? compTablaRecall(m) : '<p class="muted">Sin corridas todavía.</p>'}
@@ -1173,20 +1221,25 @@ function compSalida(comp, s){
   return `<pre>${esc(String(s))}</pre>`;
 }
 function compTablaRecall(m){
-  const pv = m.por_version || {}, tipos = ['todas', 'comparativa', 'varias preguntas', 'varias conductas', 'otra'];
+  const pv = m.por_version || {}, x0 = Object.values(pv)[0] || {};
+  const sets = Object.keys(x0).filter(t => t.startsWith('set ')).sort((a, b) => parseInt(a.slice(4)) - parseInt(b.slice(4)));
+  const tiposP = ['comparativa', 'varias preguntas', 'varias conductas', 'otra'].filter(t => x0[t]);
   const seg = ts => ts.segundos ? `${ts.segundos.media.toFixed(1)} ± ${ts.segundos.de.toFixed(1)} s` : '<span class="muted">—</span>';
-  const n = t => { const x = Object.values(pv)[0]; return x && x[t] ? `${x[t].preguntas} preg.` : ''; };
   const mejor = t => Math.max(...Object.values(pv).map(v => (v[t] || {}).recall ?? -1));
-  return `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall: artículos esperados entre los 10 primeros resultados del buscador</h3>
-    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${tipos.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${n(t)}</div></th>`).join('')}<th>Tiempo por pregunta<div class="muted" style="font-weight:normal">búsqueda completa</div></th></tr>
-    ${Object.entries(pv).sort((a, b) => ((b[1].todas || {}).recall ?? -1) - ((a[1].todas || {}).recall ?? -1)).map(([v, ts]) => `<tr><td><b>${esc(v)}</b></td>${tipos.map(t => { const c = ts[t];
-      return c ? `<td${c.recall === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(c.recall)} <span class="muted">${c.aciertos}/${c.gold}</span></td>` : '<td class="muted">—</td>'; }).join('')}<td>${seg(ts)}</td></tr>`).join('')}
-    </table></div><p class="muted" style="font-size:12px">En verde, la mejor versión de cada columna. Una pregunta puede ser de varios tipos.
-    «Tiempo por pregunta» = HyDE + la división + todas las búsquedas, sin respuesta ni juez (medido desde la corrida del 23 de octubre en adelante).</p>`;
+  const orden = Object.entries(pv).sort((a, b) => ((b[1].todas || {}).recall ?? -1) - ((a[1].todas || {}).recall ?? -1));
+  const tabla = (cols, conTiempo) => `<div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${cols.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${x0[t] ? x0[t].preguntas + ' preg.' : ''}</div></th>`).join('')}${conTiempo ? '<th>Tiempo por pregunta<div class="muted" style="font-weight:normal">búsqueda completa</div></th>' : ''}</tr>
+    ${orden.map(([v, ts]) => `<tr><td><b>${esc(v)}</b></td>${cols.map(t => { const c = ts[t];
+      return c ? `<td${c.recall === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(c.recall)} <span class="muted">${c.aciertos}/${c.gold}</span></td>` : '<td class="muted">—</td>'; }).join('')}${conTiempo ? `<td>${seg(ts)}</td>` : ''}</tr>`).join('')}
+    </table></div>`;
+  return `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall por set: artículos esperados entre los 10 primeros resultados del buscador</h3>
+    ${tabla(['todas', ...sets], true)}
+    ${tiposP.length ? `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall por tipo de pregunta</h3>${tabla(tiposP, false)}` : ''}
+    <p class="muted" style="font-size:12px">En verde, la mejor versión de cada columna. Una pregunta puede ser de varios tipos.
+    «Tiempo por pregunta» = HyDE + la división + todas las búsquedas, sin respuesta ni juez. Las corridas anteriores al 23 de octubre no separan por set ni guardan el tiempo.</p>`;
 }
 async function compResultados(rid){
   const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;
-  if(comp === 'division_recall'){
+  if(comp === 'division_recall' || comp === 'hyde_recall'){
     const run = (await bjson(`/api/componentes/${comp}/corridas`)).find(r => r.id === rid) || {};
     $('comp-res').innerHTML = compTablaRecall(run.metricas || {}) + `<details><summary class="muted">Pregunta por pregunta (${res.length})</summary>
       <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Pregunta</th><th>Tipos</th><th>Artículos esperados</th><th>Aciertos por versión</th></tr>
