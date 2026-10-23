@@ -465,7 +465,7 @@ async function startBenchRun(){
   if(!(await ensurePromptTag())) return;
   const body = {set_id: BENCH.set.id, label: $('bench-label').value, setting: $('bench-setting').value,
     k: +$('bench-k').value, neighbors: $('bench-neighbors').checked, hyde: $('bench-hyde').checked,
-    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').checked, route: $('bench-route').checked, gate: $('bench-gate').checked, crimes: $('bench-crimes').checked, crime_extra_k: $('bench-crimes-k').value, remisiones: $('bench-remisiones').checked,
+    rerank: $('bench-rerank').checked, decompose: $('bench-decompose').value || false, route: $('bench-route').checked, gate: $('bench-gate').checked, crimes: $('bench-crimes').checked, crime_extra_k: $('bench-crimes-k').value, remisiones: $('bench-remisiones').checked,
     system: $('bench-system').value, jurisdictions: readJur('bench-jur')};
   const sub = currentSubset();
   if(!sub.ids.length){ bmsg('No hay preguntas seleccionadas en «🎯 Qué preguntas correr».', false); return; }
@@ -505,7 +505,7 @@ function watchBenchRun(rid){
 }
 function cfgSummary(c){
   c = c||{};
-  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?'descompone':'', c.route?'🧭 routing':'', c.gate?'🚧 filtro por estado':'', c.remisiones?'↪ remisiones':'', c.crimes?'⚖️ por delito'+(c.crime_extra_k!=null?` (+${c.crime_extra_k} chunks c/u)`:''):'',
+  return [c.setting, 'k='+c.k, c.neighbors?'vecinos':'', c.hyde?'HyDE':'', c.rerank?'rerank':'', c.decompose?(c.decompose===true||c.decompose==='actual'?'descompone':'descompone ('+c.decompose+')'):'', c.route?'🧭 routing':'', c.gate?'🚧 filtro por estado':'', c.remisiones?'↪ remisiones':'', c.crimes?'⚖️ por delito'+(c.crime_extra_k!=null?` (+${c.crime_extra_k} chunks c/u)`:''):'',
           (c.jurisdictions||[]).length?'lugar='+c.jurisdictions.join('+'):'', c.judge_model?'juez '+c.judge_model:'', (c.judge_notes||'').trim()?'📋 criterios juez':'',
           (c.question_ids||[]).length ? `🎯 ${c.question_ids.length}${c.set_total?'/'+c.set_total:''} preg.${c.subset?' ('+c.subset+')':''}` : '']
     .filter(Boolean).join(' · ');
@@ -650,7 +650,7 @@ async function rerunFailed(rid){
     const c = r.config;
     if([...$('bench-setting').options].some(o=>o.value===c.setting)) $('bench-setting').value = c.setting;
     $('bench-k').value = String(c.k); $('bench-neighbors').checked = !!c.neighbors; $('bench-hyde').checked = !!c.hyde;
-    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').checked = !!c.decompose; $('bench-route').checked = !!c.route; $('bench-gate').checked = !!c.gate; $('bench-crimes').checked = !!c.crimes; $('bench-remisiones').checked = !!c.remisiones; if(c.crime_extra_k!=null) $('bench-crimes-k').value = c.crime_extra_k;
+    $('bench-rerank').checked = !!c.rerank; $('bench-decompose').value = c.decompose === true ? 'actual' : (c.decompose || ''); $('bench-route').checked = !!c.route; $('bench-gate').checked = !!c.gate; $('bench-crimes').checked = !!c.crimes; $('bench-remisiones').checked = !!c.remisiones; if(c.crime_extra_k!=null) $('bench-crimes-k').value = c.crime_extra_k;
   }
   $('bench-subset').open = true;
   $('bench-subset').scrollIntoView({behavior:'smooth', block:'center'});

@@ -1846,6 +1846,12 @@ def ingest_diagnostics(request: Request, source: str):
                        for i, r in enumerate(rows)]}
 
 
+def decompose_opt(v):
+    """Opción «dividir la pregunta» que llega de la página: False, True (prompt actual) o el nombre de una versión
+    del prompt de descomponer ('actual', 'libre'…, ver shared/llm_client.DECOMPOSE_VARIANTES)."""
+    return v if isinstance(v, str) and v in DECOMPOSE_VARIANTES else bool(v)
+
+
 @app.post('/ask')
 async def ask_route(req: Request):
     body = await req.json()
@@ -1856,7 +1862,7 @@ async def ask_route(req: Request):
                    int(body.get('k', 5)), body.get('system'), body.get('topic'),
                    body.get('jurisdictions') or body.get('jurisdiction'),
                    bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                   bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                   bool(body.get('rerank', False)), decompose_opt(body.get('decompose', False)),
                    bool(body.get('route', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
@@ -1932,7 +1938,7 @@ async def ask_stream_route(req: Request):
                       int(body.get('k', 5)), body.get('system'), body.get('topic'),
                       body.get('jurisdictions') or body.get('jurisdiction'),
                       bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                      bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                      bool(body.get('rerank', False)), decompose_opt(body.get('decompose', False)),
                    bool(body.get('route', False)), bool(body.get('gate', False)), bool(body.get('crimes', False)),
                    body.get('crime_extra_k'), bool(body.get('remisiones', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
@@ -1949,7 +1955,7 @@ async def chat_route(req: Request):
                            int(body.get('k', 5)), body.get('system'), body.get('topic'),
                            body.get('jurisdictions') or body.get('jurisdiction'),
                            bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                           bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                           bool(body.get('rerank', False)), decompose_opt(body.get('decompose', False)),
                    bool(body.get('route', False)))
     except Exception as e:
         return JSONResponse({'error': f'{type(e).__name__}: {e}'})
@@ -2044,7 +2050,7 @@ async def chat_stream_route(req: Request):
                        int(body.get('k', 5)), body.get('system'), body.get('topic'),
                        body.get('jurisdictions') or body.get('jurisdiction'),
                        bool(body.get('neighbors', True)), bool(body.get('hyde', False)),
-                       bool(body.get('rerank', False)), bool(body.get('decompose', False)),
+                       bool(body.get('rerank', False)), decompose_opt(body.get('decompose', False)),
                    bool(body.get('route', False)), bool(body.get('gate', False)), bool(body.get('crimes', False)),
                    body.get('crime_extra_k'), bool(body.get('remisiones', False)))
     return StreamingResponse(gen, media_type='text/event-stream',
