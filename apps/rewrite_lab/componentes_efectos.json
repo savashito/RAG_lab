@@ -1,6 +1,6 @@
 {
  "actualizado": "2026-10-23",
- "nota": "Diferencias pareadas pregunta por pregunta (promedio de 2 repeticiones), en puntos; entre corchetes, el intervalo de confianza de 95 % por bootstrap. ✱ = el intervalo no incluye 0. El set 12 tiene 3 preguntas: su intervalo no es confiable. Detalle y método: informe «Filtro por estado: v1, v2 y v3» (📑 Informes).",
+ "nota": "Score: cuántos puntos cambia, comparando cada pregunta contra sí misma (promedio de 2 repeticiones). ✱ = la diferencia es real, no ruido: con 95 % de confianza el efecto verdadero tiene ese signo (verde: mejora; rojo: empeora). Sin ✱ = con estos datos no se distingue del ruido (no quiere decir que no tenga efecto). Pasa el cursor sobre un número para ver su rango (intervalo de confianza de 95 %). El set 12 tiene solo 3 preguntas: sus rangos no son confiables. Detalle y método: informe «Filtro por estado: v1, v2 y v3» (📑 Informes).",
  "opciones": [
   {
    "opcion": "Filtro por estado (v3)",
