@@ -1032,19 +1032,27 @@ function ptagChip(r){
 }
 const checkedPrompts = () => [...document.querySelectorAll('.bp-cmp:checked')].map(c=>c.value);
 // 🧩 Componentes: cada llamada al LLM contra su propio objetivo (componentes.py, /api/componentes).
-const COMP = {sel: null, corrida: null, poll: null, lista: []};
+const COMP = {sel: null, vista: null, corrida: null, poll: null, lista: []};
+// Todo lo de «descomponer» va en una sola tarjeta con su propia sección: recall (¿ayuda al buscador?) y obediencia de
+// cada versión del prompt (¿hace lo que dice su regla?).
+const DESC_IDS = ['division_recall', 'descomponer', 'desc_solo_lugar', 'desc_solo_pregunta', 'desc_lugar_y_pregunta', 'desc_libre'];
+const DESC_OBED = [['descomponer', 'actual', 'Su prompt dice «solo por lugar» (el que se usa hoy)'],
+  ['desc_solo_lugar', 'solo por lugar', 'Divide solo si compara estados, códigos o conceptos'],
+  ['desc_solo_pregunta', 'solo por pregunta', 'Divide solo si el mensaje hace varias preguntas'],
+  ['desc_lugar_y_pregunta', 'por lugar y por pregunta', 'Divide en los dos casos'],
+  ['desc_libre', 'libre', 'El LLM decide; solo se revisan sus reglas (máx. 4 búsquedas, sin estados ajenos)']];
 const cpct = x => x == null ? '—' : (x * 100).toFixed(0) + ' %';
 async function loadComponentes(){
   clearTimeout(COMP.poll);
   try{ COMP.lista = await bjson('/api/componentes'); }catch(e){ $('comp-cards').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
-  $('comp-cards').innerHTML = COMP.lista.map(c => {
+  const tarjetas = COMP.lista.filter(c => !DESC_IDS.includes(c.id)).map(c => {
     const m = (c.ultima || {}).metricas || {};
     const grupos = Object.entries(m.por_grupo || {}).map(([g, v]) => `${esc(g)} ${v.aciertos}/${v.n}`).join(' · ');
     const pv = m.por_version;
     const estado = c.corriendo ? '<span class="muted">⏳ corriendo…</span>'
       : (c.ultima && pv) ? `<div style="font-size:12px">${Object.entries(pv).map(([v, t]) =>
           `${esc(v)}: <b>${cpct((t.todas || {}).recall)}</b>`).join('<br>')}</div>`
-      : c.ultima ? `<span class="comp-tasa ${m.tasa >= 0.9 ? 'comp-ok' : m.tasa < 0.7 ? 'comp-mal' : ''}">${cpct(m.tasa)}</span>
+      : c.ultima ? `<div class="muted" style="font-size:12px">Hace lo esperado:</div><span class="comp-tasa ${m.tasa >= 0.9 ? 'comp-ok' : m.tasa < 0.7 ? 'comp-mal' : ''}">${cpct(m.tasa)}</span>
           <span class="muted" style="font-size:12px"> ${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)} casos · prompt ${esc(c.ultima.prompt_md5.slice(0, 8))}${c.ultima.prompt_md5 !== c.prompt_md5 ? ' (el prompt cambió desde entonces)' : ''}</span>`
       : '<span class="muted">sin corridas todavía</span>';
     return `<div class="bcard comp-card ${COMP.sel === c.id ? 'on' : ''}" data-c="${c.id}">
@@ -1052,13 +1060,64 @@ async function loadComponentes(){
       <div class="muted" style="font-size:12px;margin:4px 0 8px">${esc(c.objetivo)}</div>
       <div>${estado}</div>${grupos ? `<div class="muted" style="font-size:12px">${grupos}</div>` : ''}
       <div class="muted" style="font-size:12px;margin-top:6px">${c.casos} casos (${c.revisados} revisados)</div></div>`;
-  }).join('');
+  });
+  // Tarjeta de descomponer: el mejor recall y la obediencia del prompt actual.
+  const rec = COMP.lista.find(c => c.id === 'division_recall'), act = COMP.lista.find(c => c.id === 'descomponer');
+  const pv = ((rec || {}).ultima || {}).metricas?.por_version || {};
+  const orden = Object.entries(pv).map(([v, t]) => [v, (t.todas || {}).recall]).sort((a, b) => (b[1] ?? -1) - (a[1] ?? -1));
+  const sin = (pv['sin dividir'] || {}).todas || {};
+  const corriendoDesc = COMP.lista.some(c => DESC_IDS.includes(c.id) && c.corriendo);
+  tarjetas.splice(1, 0, `<div class="bcard comp-card ${COMP.vista === 'descomponer' ? 'on' : ''}" data-c="descomponer-grupo">
+    <div style="font-weight:700">🧩 Descomponer</div>
+    <div class="muted" style="font-size:12px;margin:4px 0 8px">Dividir la pregunta en varias búsquedas. Dos pruebas: si ayuda al buscador (recall) y si cada versión del prompt hace lo que dice su regla (obediencia).</div>
+    ${corriendoDesc ? '<div class="muted">⏳ corriendo…</div>' : ''}
+    ${orden.length ? `<div class="muted" style="font-size:12px">Recall (artículos esperados en los 10 primeros resultados):</div>
+      <div><b>${esc(orden[0][0])}</b> <span class="comp-tasa comp-ok">${cpct(orden[0][1])}</span> <span class="muted" style="font-size:12px">· sin dividir ${cpct(sin.recall)}</span></div>` : ''}
+    ${act && act.ultima ? `<div class="muted" style="font-size:12px;margin-top:4px">Obedece su prompt (versión actual): <b>${cpct(act.ultima.metricas?.tasa)}</b></div>` : ''}</div>`);
+  $('comp-cards').innerHTML = tarjetas.join('');
   document.querySelectorAll('.comp-card').forEach(el => el.addEventListener('click', () => compAbrir(el.dataset.c)));
-  if(COMP.sel) compDetalle();
+  if(COMP.vista === 'descomponer') compDescomponer(); else if(COMP.sel) compDetalle();
   if(COMP.lista.some(c => c.corriendo)) COMP.poll = setTimeout(loadComponentes, 4000);
 }
-function compAbrir(id){ COMP.sel = id; COMP.corrida = null; loadComponentes(); }
-async function compDetalle(){
+function compAbrir(id){
+  if(id === 'descomponer-grupo'){ COMP.vista = 'descomponer'; COMP.sel = null; } else { COMP.vista = null; COMP.sel = id; }
+  COMP.corrida = null; loadComponentes();
+}
+// Sección de descomponer: 1) recall de las 7 formas de dividir; 2) obediencia de cada versión del prompt.
+async function compDescomponer(){
+  const L = id => COMP.lista.find(c => c.id === id) || {};
+  const rec = L('division_recall'), m = (rec.ultima || {}).metricas || {};
+  const obed = DESC_OBED.map(([id, nombre, regla]) => {
+    const c = L(id), mm = (c.ultima || {}).metricas || {}, g = mm.por_grupo || {};
+    const debe = g['debe dividir'] || g['comparativas'], nodebe = g['no debe dividir'] || g['no comparativas'];
+    const f = x => x ? `${x.aciertos}/${x.n}` : '—';
+    return `<tr><td><b>${esc(nombre)}</b><div class="muted" style="font-size:12px">${esc(regla)}</div></td>
+      <td>${c.corriendo ? '⏳' : `<b>${cpct(mm.tasa)}</b>`}</td><td>${f(debe)}</td><td>${f(nodebe)}</td>
+      <td style="white-space:nowrap"><button class="ghost" data-run="${id}" ${c.corriendo ? 'disabled' : ''}>▶</button>
+        <button class="ghost" data-ver="${id}">Ver casos</button></td></tr>`;
+  }).join('');
+  $('comp-detalle').innerHTML = `<div class="bcard" style="margin-top:10px">
+    <h3 style="margin:0 0 4px;font-size:15px">🧩 Descomponer</h3>
+    <h3 style="margin:14px 0 2px;font-size:14px">1 · Recall: ¿ayuda al buscador?</h3>
+    <p class="muted" style="font-size:13px;margin:0">Para cada pregunta de los sets 3 y 14 con artículos esperados, se busca con cada forma de dividir
+      (sin respuesta ni juez) y se cuenta cuántos de esos artículos salen entre los 10 primeros resultados.
+      ${rec.ultima ? `Última corrida: #${rec.ultima.id} (${esc((rec.ultima.fecha || '').slice(0, 16))}).` : ''}</p>
+    ${m.por_version ? compTablaRecall(m) : '<p class="muted">Sin corridas todavía.</p>'}
+    <div class="row" style="margin:6px 0"><button class="ghost" data-run="division_recall" ${rec.corriendo ? 'disabled' : ''}>▶ Correr recall (~35 min)</button>
+      <button class="ghost" data-ver="division_recall">Historial y pregunta por pregunta</button></div>
+    <h3 style="margin:18px 0 2px;font-size:14px">2 · Obediencia: ¿cada versión del prompt hace lo que dice su regla?</h3>
+    <p class="muted" style="font-size:13px;margin:0">Solo se llama a «descomponer» con cada pregunta (sin búsqueda ni juez) y se revisa si dividió cuando su
+      regla lo pide y si dejó entera la pregunta cuando no. Las etiquetas de «compara» y «varias preguntas» son automáticas (no revisadas).</p>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión del prompt</th><th>Obedece</th><th>Divide cuando debe</th><th>Deja entera cuando debe</th><th></th></tr>${obed}</table></div>
+    <div id="comp-sub"></div></div>`;
+  document.querySelectorAll('#comp-detalle [data-run]').forEach(b => b.onclick = async () => {
+    try{ const r = await bpost(`/api/componentes/${b.dataset.run}/correr`); bmsg(`Corrida #${r.corrida} en marcha`, true); loadComponentes(); }
+    catch(e){ bmsg(esc(e.message), false); }
+  });
+  document.querySelectorAll('#comp-detalle [data-ver]').forEach(b => b.onclick = () => { COMP.sel = b.dataset.ver; COMP.corrida = null; compDetalle('comp-sub'); });
+  if(COMP.sel) compDetalle('comp-sub');
+}
+async function compDetalle(destino = 'comp-detalle'){
   const c = COMP.lista.find(x => x.id === COMP.sel); if(!c) return;
   const corridas = await bjson(`/api/componentes/${c.id}/corridas`);
   if(COMP.corrida == null && corridas.length) COMP.corrida = corridas[0].id;
@@ -1069,7 +1128,7 @@ async function compDetalle(){
       <td>${r.status === 'running' ? `⏳ ${r.done}/${r.n}` : m.por_version ? 'recall por versión ↓' : `<b>${cpct(m.tasa)}</b> (${m.aciertos ?? 0}/${(m.n ?? 0) - (m.errores ?? 0)})`}</td>
       <td class="muted">${g}${m.errores ? ` · ${m.errores} con error` : ''}</td><td class="muted">${m.segundos_media ?? '—'} s</td></tr>`;
   }).join('');
-  $('comp-detalle').innerHTML = `<div class="bcard" style="margin-top:10px">
+  $(destino).innerHTML = `<div class="bcard" style="margin-top:10px">
     <div class="row" style="margin:0"><b>${c.icono} ${esc(c.nombre)}</b><span style="flex:1"></span>
       <button class="ghost" id="comp-casos-btn">📝 Casos (JSON)</button>
       <button id="comp-correr" ${c.corriendo ? 'disabled' : ''}>▶ Correr prueba</button></div>
@@ -1080,7 +1139,7 @@ async function compDetalle(){
     <div id="comp-res"></div></div>`;
   $('comp-correr').onclick = compCorrer;
   $('comp-casos-btn').onclick = compCasos;
-  document.querySelectorAll('#comp-detalle tr[data-r]').forEach(tr => tr.onclick = () => { COMP.corrida = +tr.dataset.r; compDetalle(); });
+  document.querySelectorAll(`#${destino} tr[data-r]`).forEach(tr => tr.onclick = () => { COMP.corrida = +tr.dataset.r; compDetalle(destino); });
   if(COMP.corrida) compResultados(COMP.corrida);
 }
 // Cómo mostrar la salida de cada componente, en corto.
@@ -1097,7 +1156,7 @@ function compTablaRecall(m){
   const mejor = t => Math.max(...Object.values(pv).map(v => (v[t] || {}).recall ?? -1));
   return `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall: artículos esperados entre los 10 primeros resultados del buscador</h3>
     <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${tipos.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${n(t)}</div></th>`).join('')}</tr>
-    ${Object.entries(pv).map(([v, ts]) => `<tr><td><b>${esc(v)}</b></td>${tipos.map(t => { const c = ts[t];
+    ${Object.entries(pv).sort((a, b) => ((b[1].todas || {}).recall ?? -1) - ((a[1].todas || {}).recall ?? -1)).map(([v, ts]) => `<tr><td><b>${esc(v)}</b></td>${tipos.map(t => { const c = ts[t];
       return c ? `<td${c.recall === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(c.recall)} <span class="muted">${c.aciertos}/${c.gold}</span></td>` : '<td class="muted">—</td>'; }).join('')}</tr>`).join('')}
     </table></div><p class="muted" style="font-size:12px">En verde, la mejor versión de cada columna. Una pregunta puede ser de varios tipos.</p>`;
 }
