@@ -1052,7 +1052,10 @@ async function compEfectos(){
   const f = v => (v > 0 ? '+' : '') + v.toFixed(1);
   const score = o => o.score.length ? o.score.map(x => `<span title="IC 95 %: ${x.ic[0]} a ${x.ic[1]}" style="white-space:nowrap;${sig(x) ? `color:${x.dif > 0 ? '#4ade80' : '#f87171'};font-weight:700` : ''}">set ${esc(x.set)}: ${f(x.dif)}${sig(x) ? '✱' : ''}</span>`).join('<br>') : '<span class="muted">no medido</span>';
   const recall = o => o.recall.length ? o.recall.map(x => `<span style="white-space:nowrap">set ${esc(x.set)}: ${x.de} → <b>${x.a}</b> %</span>`).join('<br>') : '<span class="muted">—</span>';
-  $('comp-efectos').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Costo y efecto de cada opción</h3>
+  const sets = (d.sets || []).map(x => `<tr><td style="white-space:nowrap"><b>${x.set === 'recall' ? '' : 'Set '}${esc(x.set === 'recall' ? '' : x.set)}</b> ${esc(x.nombre)}</td><td>${esc(x.prueba)}</td></tr>`).join('');
+  $('comp-efectos').innerHTML = (sets ? `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Los sets de preguntas</h3>
+    <div style="overflow-x:auto"><table class="comp-tab">${sets}</table></div></div>` : '') +
+    `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Costo y efecto de cada opción</h3>
     <p class="muted" style="font-size:12px;margin:0 0 6px">${esc(d.nota || '')} Actualizado: ${esc(d.actualizado || '')}.</p>
     <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Opción</th><th>Qué se compara</th><th>Costo</th><th>Recall</th><th>Score (puntos)</th><th>Veredicto</th></tr>
     ${d.opciones.map(o => `<tr><td><b>${esc(o.opcion)}</b></td><td class="muted">${esc(o.compara)}<div style="font-size:11px">${esc(o.fuente)}</div></td>

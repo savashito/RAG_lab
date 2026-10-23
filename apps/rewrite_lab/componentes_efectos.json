@@ -347,5 +347,32 @@
    "fuente": "#193, #195–#199",
    "veredicto": "Recupera las citas: agregarlas al prompt nuevo"
   }
+ ],
+ "sets": [
+  {
+   "set": "3",
+   "nombre": "General (50 preguntas)",
+   "prueba": "Delitos sexuales, parte general (dogmática) y procedimiento (CNPP). Las preguntas dicen qué ley quieren o son teóricas, escritas para estudiantes y profesionales del derecho. Sirve para revisar que un cambio no rompa lo que ya funcionaba."
+  },
+  {
+   "set": "13",
+   "nombre": "Un estado (31 preguntas)",
+   "prueba": "Casos en lenguaje cotidiano que dicen en qué estado pasó (CDMX, Querétaro, Edomex, Morelos). Mide si la respuesta usa el código de ese estado y no el de otro."
+  },
+  {
+   "set": "14",
+   "nombre": "¿Cuándo pedir el estado? (57 preguntas)",
+   "prueba": "Casos sin lugar (hay que pedir el estado), con lugar indirecto (dónde vive o trabaja la persona), comparaciones entre estados, estados que no están en el corpus y leyes nacionales (no hay que pedir el estado). Mide el problema de la ronda 1 del estudio."
+  },
+  {
+   "set": "12",
+   "nombre": "Casos de Karen (3 preguntas)",
+   "prueba": "Casos complejos con varias conductas, revisados con control de tipicidad: qué delitos son, sus elementos y sus penas. Con solo 3 preguntas, cada una pesa un tercio del score."
+  },
+  {
+   "set": "recall",
+   "nombre": "Prueba de recall (83 preguntas)",
+   "prueba": "Las preguntas de los sets 3 y 14 que tienen artículos esperados. No genera respuestas ni usa al juez: solo mide cuántos de esos artículos salen entre los 10 primeros resultados del buscador."
+  }
  ]
 }
