@@ -74,11 +74,11 @@
 </header>
 <main>
 
-<p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones. <b>Actualizado el 23 de octubre</b> con tres pruebas nuevas: <a href="#rerank">el rerank</a>, <a href="#contexto">vecinos contra más resultados</a> y <a href="#dividir">cómo dividir la pregunta</a>.</p>
+<p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones. <b>Actualizado el 23 de octubre</b> con cuatro pruebas nuevas: <a href="#rerank">el rerank</a>, <a href="#contexto">vecinos contra más resultados</a>, <a href="#dividir">cómo dividir la pregunta</a> y <a href="#ultimo">el prompt «ultimo-promt»</a>.</p>
 
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#costo-desc">Costo de descomponer</a><a href="#rerank">¿Sirve el rerank?</a><a href="#contexto">Vecinos o más resultados</a><a href="#dividir">Cómo dividir la pregunta</a><a href="#componentes">Pruebas por componente</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#costo-desc">Costo de descomponer</a><a href="#rerank">¿Sirve el rerank?</a><a href="#contexto">Vecinos o más resultados</a><a href="#dividir">Cómo dividir la pregunta</a><a href="#ultimo">El prompt «ultimo-promt»</a><a href="#componentes">Pruebas por componente</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -431,6 +431,31 @@
   <li><b>«Por lugar y por delito» no es la mejor en ningún set,</b> y es de las más lentas.</li>
   <li><b>La ronda 2 usa el prompt actual sin «por delito»</b>, igual que la ronda 1. Esa combinación no está en esta tabla: su recall está en <a href="#desc-sirve">¿Sirven descomponer y routing?</a> (con filtro, en el contexto final). Después de la ronda 2 conviene cambiarla por «solo por lugar» o «libre», según el tiempo que se acepte.</li>
 </ul>
+
+<h3 id="ultimo">El prompt «ultimo-promt» contra penal-original-v1 (23 de octubre)</h3>
+<p><b>Qué se comparó.</b> «ultimo-promt» es el prompt que Karen propuso el 23 de octubre para la condición <i>nuevo</i> de la ronda 2. Se corrió con la configuración de la ronda 2 (filtro v3, descomponer, routing, sin rerank) y se comparó con penal-original-v1 en la misma configuración (las corridas «sin rerank» de la sección anterior). Lo único que cambia es el prompt. 2 repeticiones cada uno; diferencia pareada pregunta por pregunta.</p>
+<div class="scroll"><table>
+  <tr><th>Set (preguntas)</th><th class="n">penal-original-v1 → ultimo-promt</th><th class="n">Diferencia (IC 95 %)</th><th class="n">Preguntas que suben / bajan</th><th class="n">Segundos por pregunta</th></tr>
+  <tr><td>3 (50)</td><td class="n">90.6 → 88.9</td><td class="n">−1.6 (−4.3 a +1.1)</td><td class="n">10 / 15</td><td class="n">11.1 → 11.3</td></tr>
+  <tr><td>13 (31)</td><td class="n">77.0 → 75.4</td><td class="n">−1.6 (−11.7 a +8.1)</td><td class="n">10 / 13</td><td class="n">10.3 → 10.7</td></tr>
+  <tr><td>14 (57)</td><td class="n">81.1 → 76.5</td><td class="n">−4.6 (−13.2 a +3.1)</td><td class="n">10 / 8</td><td class="n">10.1 → 10.4</td></tr>
+  <tr><td>12 (3)</td><td class="n">26.4 → 46.2</td><td class="n ok">+19.8 (+3.0 a +29.6)</td><td class="n">3 / 0</td><td class="n">15.9 → 17.1</td></tr>
+</table></div>
+<p>«Otro estado» fue 0 % en las 8 corridas. En los sets 3, 13 y 14 las diferencias están dentro del ruido; en el set 12 sube, pero son 3 preguntas.</p>
+<p><b>Lo que sí cambia, en el set 14</b> (respuestas guardadas, revisadas con regex; 114 por prompt):</p>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">penal-original-v1</th><th class="n">ultimo-promt</th></tr>
+  <tr><td>Respuestas con sección «Fundamento»</td><td class="n ok">97 %</td><td class="n x">48 %</td></tr>
+  <tr><td>Respuestas con algún número de artículo</td><td class="n ok">91 %</td><td class="n x">54 %</td></tr>
+  <tr><td>Cumple «Cita el art. …»</td><td class="n ok">78/96 (81 %)</td><td class="n x">61/96 (64 %)</td></tr>
+  <tr><td>De las que no lo cumplen, sin ningún artículo</td><td class="n">0 de 18</td><td class="n">20 de 35</td></tr>
+  <tr><td>Preguntas que le hace a la persona, por respuesta</td><td class="n">0.1</td><td class="n">2.8</td></tr>
+  <tr><td>Palabras por respuesta</td><td class="n">457</td><td class="n">462</td></tr>
+  <tr><td>Criterios «should» cumplidos</td><td class="n">83 %</td><td class="n ok">100 %</td></tr>
+</table></div>
+<p><b>Por qué.</b> Es el mismo mecanismo que en tlacua-v1-penas (ver <a href="#causal">la prueba causal</a>). El prompt dice «Incluye un apartado breve de Fundamento jurídico <b>cuando</b> proporciones conclusiones legales específicas» y también «Si falta información indispensable, formula preguntas». Gemma pregunta mucho (2.8 preguntas por respuesta), y cuando pregunta no da conclusiones, así que omite la sección «Fundamento» y los artículos. penal-original-v1 pide la sección siempre.</p>
+<p><b>Ojo con el benchmark.</b> El benchmark califica <b>una sola respuesta</b>; el estudio es una conversación de hasta 6 turnos, y su métrica principal se mide al final. Preguntar puede ser bueno en una conversación aunque baje el score aquí. Esta medida no lo distingue.</p>
+<p><b>Propuesta antes de la ronda 2:</b> cambiar «cuando proporciones conclusiones legales específicas» por una sección «Fundamento jurídico» <b>siempre</b>, aunque la respuesta también haga preguntas (en tlacua-v1-penas, ese cambio subió las citas de 81 % a 92 %). Correr de nuevo el set 14 con 2 repeticiones (~20 min) para confirmarlo.</p>
 
 <h3 id="componentes">Pruebas por componente</h3>
 <p>Las pruebas de arriba miden el sistema completo: si el score baja, no se sabe qué pieza falló. Estas miden <b>una sola llamada al LLM contra su propio objetivo</b>, y cuando se puede, sin el juez (22 de octubre). Pendientes: una prueba propia de «descomponer» y otra de «descomponer por delito» (necesitan preguntas etiquetadas; Karen para las conductas), y el acuerdo del juez con una persona abogada.</p>
