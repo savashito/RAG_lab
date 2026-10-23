@@ -128,3 +128,9 @@ def test_metricas_recall_tiempo_por_version():
     filas = [{'salida': {'gold': 1, 'aciertos': {'libre': 1}, 'segundos': {'libre': 2.0}}},
              {'salida': {'gold': 1, 'aciertos': {'libre': 0}, 'segundos': {'libre': 4.0}}}]
     assert cp.metricas('division_recall', filas)['por_version']['libre']['segundos'] == {'media': 3.0, 'de': 1.0}
+
+
+def test_metricas_recall_palabras_del_contexto():
+    filas = [{'salida': {'gold': 1, 'aciertos': {'k 10': 1}, 'palabras': {'k 10': 1000}}},
+             {'salida': {'gold': 1, 'aciertos': {'k 10': 1}, 'palabras': {'k 10': 3000}}}]
+    assert cp.metricas('contexto_recall', filas)['por_version']['k 10']['palabras'] == {'media': 2000.0, 'de': 1000.0}

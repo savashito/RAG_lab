@@ -92,4 +92,4 @@ versiones = {f'desc_{v}': descomponer for v in ('solo_lugar', 'solo_pregunta', '
 recall = [{'entrada': q, 'esperado': {'set': sid}, 'fuente': f'set {sid} · q{qid}', 'revisado': True}
           for sid, qid, q, _ in preguntas if qid in con_cita]
 print(json.dumps({'filtro': filtro, 'descomponer': descomponer, 'por_delito': por_delito, 'hyde': hyde, **versiones,
-                  'division_recall': recall, 'hyde_recall': recall, 'rerank_recall': recall}, ensure_ascii=False, indent=1))
+                  'division_recall': recall, 'hyde_recall': recall, 'rerank_recall': recall, 'contexto_recall': recall}, ensure_ascii=False, indent=1))

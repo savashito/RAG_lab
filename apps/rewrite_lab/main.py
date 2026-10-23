@@ -1362,6 +1362,41 @@ def division_recall(pregunta: str) -> dict:
     return r
 
 
+# Versiones del contexto que compara la prueba de vecinos y top-k: (k, con vecinos).
+VERSIONES_CONTEXTO = {'k 10 sin vecinos': (10, False), 'k 10 con vecinos (actual)': (10, True),
+                      'k 6 con vecinos': (6, True), 'k 13 con vecinos': (13, True), 'k 16 con vecinos': (16, True),
+                      'k 20 sin vecinos': (20, False)}
+
+
+def contexto_recall(pregunta: str) -> dict:
+    """Vecinos y top-k: cuántos artículos esperados llegan al CONTEXTO FINAL (lo que lee el LLM: los k primeros
+    resultados + sus vecinos) y cuántas palabras tiene ese contexto, con cada versión. Una sola búsqueda (híbrido +
+    HyDE, sin dividir); solo cambia cómo se arma el contexto."""
+    with connect() as c, c.cursor() as cur:
+        cur.execute("SELECT q.id, q.expected_answer, s.topic, q.set_id FROM bench_questions q JOIN bench_sets s ON s.id = q.set_id "
+                    "WHERE q.set_id IN (3, 13, 14) AND q.question = %s ORDER BY q.id LIMIT 1", (pregunta,))
+        fila = cur.fetchone()
+        if not fila:
+            raise ValueError('la pregunta no está en los sets 3, 13 ni 14')
+        qid, esperada, tema, sid = fila
+        cur.execute("SELECT text, kind, weight FROM bench_components WHERE question_id = %s ORDER BY position", (qid,))
+        comps = [{'text': t, 'kind': k, 'weight': w} for t, k, w in cur.fetchall()]
+        gold = [g for g in resolve_gold(cur, TABLE, gold_refs(pregunta, effective_components(
+            {'question': pregunta, 'expected_answer': esperada, 'components': comps}))) if any(x.get('ids') for x in g)]
+        t0 = time.time()
+        scored, _, _ = retrieve_ranked(cur, pregunta, 'híbrido', tema, None, True, True, False, False)
+        t_busqueda = round(time.time() - t0, 2)
+        aciertos, palabras, segundos = {}, {}, {}
+        for nombre, (k, vecinos) in VERSIONES_CONTEXTO.items():
+            ids, _ = select_context_ids(cur, scored, k, pregunta, tema, None, vecinos)
+            chk = retrieval_check(gold, ids)
+            aciertos[nombre] = sum(1 for g in chk['groups'] if g['rank'])
+            palabras[nombre] = sum(len(((DOC_BY_ID.get(cid) or {}).get('text') or '').split()) for cid in ids)
+            segundos[nombre] = t_busqueda   # la búsqueda es la misma; lo que cambia es lo que lee el LLM
+    return {'gold': len(gold), 'aciertos': aciertos, 'palabras': palabras, 'segundos': segundos, 'set': sid,
+            'tipos': [f'set {sid}']}
+
+
 def rerank_recall(pregunta: str) -> dict:
     """Recall con y sin rerank (con HyDE, sin dividir la pregunta), por set. Sin RERANK_URL, «con rerank» = «sin»."""
     if not reranker.enabled:
@@ -1384,7 +1419,8 @@ componentes = Componentes(
              'por_delito': decompose_conducts, 'hyde': lambda t: llm.hyde_passage(t, system=hyde_for(_TEMA_PENAL)),
              **{f'desc_{v}': (lambda t, v=v: llm.decompose(t, DECOMPOSE_VARIANTES[v]))
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
-             'division_recall': division_recall, 'hyde_recall': hyde_recall, 'rerank_recall': rerank_recall},
+             'division_recall': division_recall, 'hyde_recall': hyde_recall, 'rerank_recall': rerank_recall,
+             'contexto_recall': contexto_recall},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
              'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
              **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v])
@@ -1393,7 +1429,8 @@ componentes = Componentes(
              'division_recall': lambda: '\n\n'.join(DECOMPOSE_VARIANTES.values()) + '\n\n' + CONDUCTAS_SYSTEM,
              'hyde_recall': lambda: hyde_for(_TEMA_PENAL),
              # el md5 de la prueba de rerank cambia si cambia el reranker, su formato o el prompt de HyDE
-             'rerank_recall': lambda: f'{reranker.url} · {reranker.formato}\n\n{hyde_for(_TEMA_PENAL)}'})
+             'rerank_recall': lambda: f'{reranker.url} · {reranker.formato}\n\n{hyde_for(_TEMA_PENAL)}',
+             'contexto_recall': lambda: f'{VERSIONES_CONTEXTO} · tope de vecinos {NEIGHBOR_EXTRA_CAP}\n\n{hyde_for(_TEMA_PENAL)}'})
 app.include_router(componentes.router)
 
 # Asistente de trámites (/tramites) y administración de formularios (/formularios): ver forms/.
