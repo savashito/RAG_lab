@@ -1239,7 +1239,7 @@ function compTablaRecall(m){
 }
 async function compResultados(rid){
   const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;
-  if(comp === 'division_recall' || comp === 'hyde_recall'){
+  if(comp === 'division_recall' || comp === 'hyde_recall' || comp === 'rerank_recall'){
     const run = (await bjson(`/api/componentes/${comp}/corridas`)).find(r => r.id === rid) || {};
     $('comp-res').innerHTML = compTablaRecall(run.metricas || {}) + `<details><summary class="muted">Pregunta por pregunta (${res.length})</summary>
       <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Pregunta</th><th>Tipos</th><th>Artículos esperados</th><th>Aciertos por versión</th></tr>

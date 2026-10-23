@@ -8,7 +8,12 @@ el modelo una vez por candidato. Por eso se usa como SEGUNDA pasada sobre el top
 ya trajo la búsqueda densa/léxica, no sobre todo el corpus.
 
 `enabled` es False si no hay RERANK_URL configurado: el reranking queda desactivado y el
-llamador sigue con el orden base (el checkbox de la UI no tiene efecto)."""
+llamador sigue con el orden base (el checkbox de la UI no tiene efecto).
+
+Qwen3-Reranker (vLLM, puerto 8086 de la GPU) necesita su plantilla: instrucción + «<Query>:» en la consulta y
+«<Document>:» + el cierre del turno en cada pasaje. Sin ella sus puntajes no sirven (prueba del 2026-10-23: con
+«pena del robo», el pasaje del robo quedaba último con 0.08; con la plantilla, primero con 0.97). Se activa con
+RERANK_FORMATO=qwen3."""
 
 from __future__ import annotations
 
@@ -18,9 +23,22 @@ import urllib.error
 import urllib.request
 
 
+QWEN3_PREFIJO = ('<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the '
+                 'Instruct provided. Note that the answer can only be "yes" or "no".<|im_end|>\n<|im_start|>user\n')
+QWEN3_SUFIJO = '<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n'
+QWEN3_INSTRUCCION = 'Given a Mexican criminal law question, retrieve the statute or doctrine passage that answers it'
+
+
+def formato_qwen3(query: str, texts: list[str], instruccion: str = QWEN3_INSTRUCCION) -> tuple[str, list[str]]:
+    """Consulta y pasajes con la plantilla de Qwen3-Reranker."""
+    return (f'{QWEN3_PREFIJO}<Instruct>: {instruccion}\n<Query>: {query}\n',
+            [f'<Document>: {t}{QWEN3_SUFIJO}' for t in texts])
+
+
 class RerankClient:
-    def __init__(self, url: str | None = None):
+    def __init__(self, url: str | None = None, formato: str | None = None):
         self.url = (url if url is not None else os.environ.get('RERANK_URL', '')).rstrip('/')
+        self.formato = (formato if formato is not None else os.environ.get('RERANK_FORMATO', '')).strip().lower()
 
     @property
     def enabled(self) -> bool:
@@ -37,6 +55,8 @@ class RerankClient:
         Se manda `documents` (vLLM) y se parsea cualquiera de las dos formas."""
         if not self.enabled or not texts:
             return [(i, 0.0) for i in range(len(texts))]
+        if self.formato == 'qwen3':
+            query, texts = formato_qwen3(query, texts)
         body = json.dumps({'query': query, 'documents': texts}).encode()
         req = urllib.request.Request(self.url + '/rerank', data=body,
                                      headers={'Content-Type': 'application/json'})

@@ -1344,8 +1344,9 @@ def _recall(pregunta: str, versiones: dict[str, dict]) -> dict:
         aciertos, busquedas, segundos = {}, {}, {}
         for nombre, op in versiones.items():
             dbg, t0 = {}, time.time()
-            scored, _, _ = retrieve_ranked(cur, pregunta, 'híbrido', tema, None, True, op.get('hyde', True), False,
-                                           op.get('decompose', False), debug=dbg, crimes=op.get('crimes', False))
+            scored, _, _ = retrieve_ranked(cur, pregunta, 'híbrido', tema, None, True, op.get('hyde', True),
+                                           op.get('rerank', False), op.get('decompose', False), debug=dbg,
+                                           crimes=op.get('crimes', False))
             segundos[nombre] = round(time.time() - t0, 2)   # búsqueda completa: HyDE + división + búsquedas
             chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
             aciertos[nombre] = sum(1 for g in chk['groups'] if g['rank'] and g['rank'] <= 10)
@@ -1358,6 +1359,15 @@ def division_recall(pregunta: str) -> dict:
     r = _recall(pregunta, {n: {'decompose': d, 'crimes': c} for n, (d, c) in VERSIONES_DIVISION.items()})
     tipos = tipos_pregunta(pregunta, len(r['busquedas'].get('solo por delito') or []))
     r['tipos'] = [f"set {r['set']}"] + (tipos or ['otra'])
+    return r
+
+
+def rerank_recall(pregunta: str) -> dict:
+    """Recall con y sin rerank (con HyDE, sin dividir la pregunta), por set. Sin RERANK_URL, «con rerank» = «sin»."""
+    if not reranker.enabled:
+        raise RuntimeError('el reranker no está configurado (RERANK_URL)')
+    r = _recall(pregunta, {'sin rerank': {'rerank': False}, 'con rerank': {'rerank': True}})
+    r['tipos'] = [f"set {r['set']}"]
     return r
 
 
@@ -1374,14 +1384,16 @@ componentes = Componentes(
              'por_delito': decompose_conducts, 'hyde': lambda t: llm.hyde_passage(t, system=hyde_for(_TEMA_PENAL)),
              **{f'desc_{v}': (lambda t, v=v: llm.decompose(t, DECOMPOSE_VARIANTES[v]))
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
-             'division_recall': division_recall, 'hyde_recall': hyde_recall},
+             'division_recall': division_recall, 'hyde_recall': hyde_recall, 'rerank_recall': rerank_recall},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
              'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
              **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v])
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
              # el md5 de la prueba de recall cubre todas las versiones que compara
              'division_recall': lambda: '\n\n'.join(DECOMPOSE_VARIANTES.values()) + '\n\n' + CONDUCTAS_SYSTEM,
-             'hyde_recall': lambda: hyde_for(_TEMA_PENAL)})
+             'hyde_recall': lambda: hyde_for(_TEMA_PENAL),
+             # el md5 de la prueba de rerank cambia si cambia el reranker, su formato o el prompt de HyDE
+             'rerank_recall': lambda: f'{reranker.url} · {reranker.formato}\n\n{hyde_for(_TEMA_PENAL)}'})
 app.include_router(componentes.router)
 
 # Asistente de trámites (/tramites) y administración de formularios (/formularios): ver forms/.
