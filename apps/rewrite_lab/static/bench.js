@@ -324,6 +324,17 @@ async function exportSet(){
     a.click(); URL.revokeObjectURL(a.href);
   }catch(e){ bmsg(esc(e.message), false); }
 }
+async function downloadRun(rid){
+  try{
+    const [art, reviews] = await Promise.all([bjson(`/api/bench/runs/${rid}/artifact`), bjson(`/api/bench/runs/${rid}/reviews`)]);
+    const r = BENCH.detail || {};
+    const data = {...art, prompt_md5: r.prompt_md5, prompt_tag: r.prompt_tag, created_at: r.created_at, finished_at: r.finished_at, reviews};
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+    a.download = `corrida-${rid}-`+((r.set_name||'set').replace(/[^\w\-]+/g,'_'))+'.json';
+    a.click(); URL.revokeObjectURL(a.href);
+  }catch(e){ bmsg(esc(e.message), false); }
+}
 async function importSet(ev){
   const f = ev.target.files[0]; ev.target.value = ''; if(!f) return;
   try{
@@ -727,7 +738,8 @@ function renderBenchDetail(){
   $('bench-detail').innerHTML = `<h2 style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">Corrida #${r.id} ${esc(r.label||'')} ${ptagChip(r)}
       <span class="runcfg">${esc(cfgSummary(r.config))}</span>${r.status==='running'?`<span class="tag gap">en curso ${r.done}/${r.n}</span>`:''}
       <span style="flex:1"></span>${r.status!=='running' && r.results.some(x=>!x.passed)?`<button class="ghost" onclick="rerunFailed(${r.id})" title="Prepara una corrida solo con las preguntas que no pasaron aquí (no la arranca)">🎯 Re-correr las que no pasan</button>`:''}
-      ${r.results.some(x=>!x.error)?`<button onclick="openReview()" title="Califica tú las respuestas, componente por componente">✍️ Revisar respuestas</button>`:''}</h2>
+      ${r.results.some(x=>!x.error)?`<button onclick="openReview()" title="Califica tú las respuestas, componente por componente">✍️ Revisar respuestas</button>`:''}
+      ${r.artifact_key?`<button class="ghost" onclick="downloadRun(${r.id})" title="Todo en un archivo: config, métricas, y por pregunta la respuesta, el contexto, los veredictos del juez y las revisiones humanas">⬇ Descargar JSON</button>`:''}</h2>
     <div class="cards">
       ${card('score medio', pct(m.score))}
       ${card('preguntas que pasan', pct(m.pass_rate), `${nPass} de ${r.results.length}`)}
