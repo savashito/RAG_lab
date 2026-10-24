@@ -12,7 +12,7 @@ def art(rid):
 FUND = re.compile(r'(?im)^\W*fundamento')
 ART = re.compile(r'(?i)\bart(?:[íi]culo|\.)s?\s*\d')
 PREG = re.compile(r'¿[^?]*\?')
-V = {'penal-original-v1': (215, 223), 'ultimo-promt': (229, 233)}
+V = {'penal-original-v1': (215, 223), 'ultimo-promt': (229, 233), 'ultimo-promt-v2': (237, 241)}
 for nombre, rids in V.items():
     c = collections.Counter()
     for rid in rids:

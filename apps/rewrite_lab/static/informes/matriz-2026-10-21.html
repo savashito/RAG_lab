@@ -455,7 +455,23 @@
 </table></div>
 <p><b>Por qué.</b> Es el mismo mecanismo que en tlacua-v1-penas (ver <a href="#causal">la prueba causal</a>). El prompt dice «Incluye un apartado breve de Fundamento jurídico <b>cuando</b> proporciones conclusiones legales específicas» y también «Si falta información indispensable, formula preguntas». Gemma pregunta mucho (2.8 preguntas por respuesta), y cuando pregunta no da conclusiones, así que omite la sección «Fundamento» y los artículos. penal-original-v1 pide la sección siempre.</p>
 <p><b>Ojo con el benchmark.</b> El benchmark califica <b>una sola respuesta</b>; el estudio es una conversación de hasta 6 turnos, y su métrica principal se mide al final. Preguntar puede ser bueno en una conversación aunque baje el score aquí. Esta medida no lo distingue.</p>
-<p><b>Propuesta antes de la ronda 2:</b> cambiar «cuando proporciones conclusiones legales específicas» por una sección «Fundamento jurídico» <b>siempre</b>, aunque la respuesta también haga preguntas (en tlacua-v1-penas, ese cambio subió las citas de 81 % a 92 %). Correr de nuevo el set 14 con 2 repeticiones (~20 min) para confirmarlo.</p>
+<h4>ultimo-promt-v2: el arreglo (23 de octubre)</h4>
+<p>Karen aprobó dos cambios; el resto del prompt quedó igual: (1) la sección «Fundamento jurídico» va <b>siempre</b>, también cuando la respuesta hace preguntas o su conclusión es provisional; (2) primero orienta y después hace <b>como máximo dos preguntas</b>, sin volver a preguntar el estado si el sistema ya lo determinó. Misma configuración, 2 repeticiones (#235–#242).</p>
+<div class="scroll"><table>
+  <tr><th>Set 14</th><th class="n">penal-original-v1</th><th class="n">ultimo-promt</th><th class="n">ultimo-promt-v2</th></tr>
+  <tr><td>Respuestas con sección «Fundamento»</td><td class="n">97 %</td><td class="n x">48 %</td><td class="n ok">96 %</td></tr>
+  <tr><td>Respuestas con algún número de artículo</td><td class="n">91 %</td><td class="n x">54 %</td><td class="n">81 %</td></tr>
+  <tr><td>Cumple «Cita el art. …»</td><td class="n">81 %</td><td class="n x">64 %</td><td class="n ok">82 %</td></tr>
+  <tr><td>Preguntas a la persona, por respuesta</td><td class="n">0.1</td><td class="n">2.8</td><td class="n">1.9</td></tr>
+</table></div>
+<div class="scroll"><table>
+  <tr><th>Set</th><th class="n">ultimo-promt → v2 (IC 95 %)</th><th class="n">penal-original-v1 → v2 (IC 95 %)</th></tr>
+  <tr><td>3 (50)</td><td class="n ok">88.9 → 91.9: +3.0 (+0.6 a +5.6)</td><td class="n">90.6 → 91.9: +1.4 (−0.9 a +3.8)</td></tr>
+  <tr><td>13 (31)</td><td class="n">75.4 → 76.6: +1.2 (−8.5 a +11.3)</td><td class="n">77.0 → 76.6: −0.4 (−8.9 a +8.5)</td></tr>
+  <tr><td>14 (57)</td><td class="n">76.5 → 79.4: +2.9 (−3.5 a +9.9)</td><td class="n">81.1 → 79.4: −1.8 (−8.8 a +4.8)</td></tr>
+  <tr><td>12 (3)</td><td class="n">46.2 → 46.8: +0.5 (−11.2 a +9.1)</td><td class="n ok">26.4 → 46.8: +20.3 (+12.1 a +33.3)</td></tr>
+</table></div>
+<p><b>Conclusión:</b> el arreglo funciona en el mecanismo: la sección «Fundamento» vuelve (48 → 96 %) y las citas del artículo pedido igualan a penal-original-v1 (82 % contra 81 %). En el score, v2 queda empatada con penal-original-v1 en los sets 3, 13 y 14 (dentro del ruido) y arriba en el set 12 (3 preguntas). Sigue preguntando más (1.9 preguntas por respuesta), que en el benchmark de una sola respuesta no se premia, pero en la conversación del estudio puede ayudar. <b>ultimo-promt-v2 es el candidato para la condición «nuevo» de la ronda 2.</b> «Otro estado»: 0 % en las 8 corridas.</p>
 
 <h3 id="componentes">Pruebas por componente</h3>
 <p>Las pruebas de arriba miden el sistema completo: si el score baja, no se sabe qué pieza falló. Estas miden <b>una sola llamada al LLM contra su propio objetivo</b>, y cuando se puede, sin el juez (22 de octubre). Pendientes: una prueba propia de «descomponer» y otra de «descomponer por delito» (necesitan preguntas etiquetadas; Karen para las conductas), y el acuerdo del juez con una persona abogada.</p>
