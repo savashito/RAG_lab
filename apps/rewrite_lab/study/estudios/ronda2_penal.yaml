@@ -5,8 +5,8 @@
 # - condiciones: original = penal-original-v1 (md5 f68239bf, puente con la ronda 1) y nuevo = ultimo-promt-v2
 #   (md5 29af93b7; ultimo-promt de Karen + Fundamento siempre y máx. 2 preguntas; benchmark #235–#242, 23-oct). Reparto mitad y mitad (decidido 2026-10-23, en vez del 1:2 del 19-oct: la
 #   comparación nuevo vs original y el puente con la ronda 1 son más precisos con grupos iguales).
-# - perfil: sin «¿estudiante de la UNAM?» ni semestre; una pregunta de nivel de estudios; área «estudias o estudiaste» y
-#   carrera (opcional) solo si el nivel es licenciatura o más (mostrar_si); edad en rangos del INEGI.
+# - perfil: sin «¿estudiante de la UNAM?» ni semestre; una pregunta de nivel de estudios; área «estudias o estudiaste» +
+#   «no aplica»; carrera opcional; edad en rangos del INEGI.
 # - situaciones, preguntas, tutorial y cierre: SIN cambios (comparabilidad con la ronda 1).
 # El consentimiento largo cambia en la sección 8 (preguntas del cuestionario): ver consentimiento_ronda2.md.
 id: ronda2_penal
@@ -326,7 +326,7 @@ consentimiento: '### 1. Invitación a participar
   ### 4. ¿Qué ocurrirá si decide participar?
 
 
-  Su participación durará aproximadamente 20–30 minutos.
+  Su participación durará aproximadamente 10–30 minutos.
 
 
   Durante el estudio, se le pedirá que:
@@ -374,6 +374,8 @@ consentimiento: '### 1. Invitación a participar
 
   Los resultados podrían contribuir al desarrollo y evaluación de sistemas de inteligencia artificial más precisos, transparentes
   y responsables para responder preguntas sobre cuestiones jurídicas.
+  Se publicarán en la conferencia de 
+  https://facctconference.org/2027/cfp.html
 
 
   ### 7. Compensación
@@ -465,25 +467,21 @@ consentimiento: '### 1. Invitación a participar
 
   Correo electrónico: ro.savage@northeastern.edu\
 
-  Teléfono: +52 (55) 85 61 08 89
+  Teléfono: +52 (55) 85 61 08 89 
 
 
-  **Investigador principal (PI):** Francisco Javier Marmolejo Cossío\
 
-  Correo electrónico del PI: marmolf@bc.edu\
+  **Investigadora y experta en derecho:** Karen Alarcón 
 
-  Teléfono: +1 (857) 320-8804
+
+  **Investigador principal (PI):** Francisco Javier Marmolejo Cossío \
+
+  Correo electrónico del PI: marmolf@bc.edu 
 
 
   Si tiene preguntas sobre sus derechos como participante o desea plantear una preocupación de forma independiente del equipo
   investigador, puede contactar con la oficina que protege a los participantes en investigaciones de Boston College:
 
-
-  **Office for Research Protections (IRB), Boston College**\
-
-  Correo electrónico: irb@bc.edu\
-
-  Teléfono: +1 (617) 552-4778 (lunes a viernes, de 9:00 a 17:00, hora de Boston)
 
 
   ### 12. Declaración de consentimiento electrónico
@@ -510,6 +508,7 @@ consentimiento: '### 1. Invitación a participar
   estudio.
 
   '
+
 tutorial:
   texto: "## Antes de empezar: ¿qué es el asistente?\n\n- Es un programa de **inteligencia artificial** que busca en leyes\
     \ mexicanas (códigos penales y leyes\n  generales) y responde citando los artículos que encontró.\n- Le escribes **como\
@@ -539,17 +538,13 @@ perfil:
     humanidades: Humanidades y Artes
     otra: Otra
   mostrar_si:
-    estudios: &id001
-    - lic_curso
-    - lic_terminada
-    - maestria
-    - doctorado
+    estudios: [lic_curso, lic_terminada, maestria, doctorado]
 - id: carrera
   tipo: texto
   pregunta: ¿Qué carrera estudias o estudiaste? (opcional)
   obligatorio: false
   mostrar_si:
-    estudios: *id001
+    estudios: [lic_curso, lic_terminada, maestria, doctorado]
 - id: formacion_juridica
   pregunta: ¿Qué formación en derecho tienes?
   ayuda: Elige la que más se acerque, aunque estudies otra carrera.

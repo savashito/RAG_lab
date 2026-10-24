@@ -1,9 +1,10 @@
 """Prueba de punta a punta de ronda2_penal en prod, por HTTP contra la app (127.0.0.1:8060), como lo haría la página.
-Abre el estudio solo durante la prueba (no tiene enlaces ni kioscos: nadie más puede entrar), crea 2 códigos de prueba
+Si está en borrador, lo abre solo durante la prueba; si ya está abierto, lo deja así. Crea 2 códigos de prueba
 (la asignación pareja hace que caigan en condiciones distintas), y por cada uno: consentimiento y «Sobre ti», práctica
 del tutorial, una situación con una pregunta al asistente, preguntas de comprensión. Revisa en la base la condición, el
 prompt (md5) y la configuración guardada en el turno. Al final retira a los dos (borra todo lo suyo) y regresa el estudio
-a borrador, pase lo que pase."""
+al estado en que estaba, pase lo que pase. El participante 2 tiene prepa: «área» y «carrera» (mostrar_si) no se le piden
+ni se le guardan aunque lleguen."""
 import hashlib, json, re, sys, urllib.request
 sys.path[:0] = ['/home/tlacua/apps/RAG_lab/apps/rewrite_lab', '/home/tlacua/apps/RAG_lab']
 from dotenv import load_dotenv; load_dotenv('/home/tlacua/apps/RAG_lab/apps/rewrite_lab/.env')
@@ -32,15 +33,17 @@ def ok(cond, msg):
     print(('  ✔ ' if cond else '  ✘ ') + msg, flush=True)
     return cond
 
-assert store.obtener(EID)['estado'] == 'borrador', 'el estudio no está en borrador: no lo toco'
+estado_inicial = store.obtener(EID)['estado']
+assert estado_inicial in ('borrador', 'abierto'), f'el estudio está {estado_inicial}: no lo toco'
 codigos, fallas = [], 0
 try:
-    store.cambiar_estado(EID, 'abierto', 'prueba-claude')
+    if estado_inicial == 'borrador':
+        store.cambiar_estado(EID, 'abierto', 'prueba-claude')
     for i, perfil in enumerate([
             {'estudios': 'lic_terminada', 'area': 'sociales', 'carrera': 'Sociología', 'formacion_juridica': 'ninguna',
              'uso_ia': 'semana', 'confianza_basal': 3, 'edad': '25_34'},
-            {'estudios': 'prepa', 'area': 'no_aplica', 'formacion_juridica': 'ninguna', 'uso_ia': 'nunca',
-             'confianza_basal': 2, 'edad': '45_59'}], 1):
+            {'estudios': 'prepa', 'area': 'derecho', 'carrera': 'no debe guardarse', 'formacion_juridica': 'ninguna',
+             'uso_ia': 'nunca', 'confianza_basal': 2, 'edad': '45_59'}], 1):
         [cod] = store.crear_codigos(EID, 'participante', 'general', 1, 'PRUEBA punta a punta (Claude, 23-oct): se retira al final', 'prueba-claude')
         codigos.append(cod)
         print(f'Participante de prueba {i}', flush=True)
@@ -50,8 +53,13 @@ try:
                          'el consentimiento es el de la ronda 2 (sin UNAM, con «máximo nivel de estudios»)')
         fallas += not ok([p['id'] for p in e.get('perfil', [])] == ['estudios', 'area', 'carrera', 'formacion_juridica', 'uso_ia', 'confianza_basal', 'edad'],
                          '«Sobre ti» tiene las preguntas nuevas')
+        fallas += not ok({p['id']: p.get('mostrar_si') for p in e['perfil']}.get('area') == {'estudios': ['lic_curso', 'lic_terminada', 'maestria', 'doctorado']},
+                         'la página recibe la condición de «área» (solo con licenciatura o más)')
         st, r = post('consentir', cod, {'acepto': True, 'perfil': {'estudios': 'prepa'}})
         fallas += not ok(st == 400 and 'Falta contestar' in r.get('error', ''), 'sin contestar todo, no deja seguir')
+        if perfil['estudios'] == 'lic_terminada':
+            st, r = post('consentir', cod, {'acepto': True, 'perfil': {k: v for k, v in perfil.items() if k != 'area'}})
+            fallas += not ok(st == 400 and '¿En qué área' in r.get('error', ''), 'con licenciatura, «área» es obligatoria')
         st, e = post('consentir', cod, {'acepto': True, 'perfil': perfil})
         fallas += not ok(st == 200 and e['consentido'] and len(e['escenarios']) == 3, 'acepta; le tocan 3 situaciones')
         st, txt, _ = post('practica_stream', cod, {'mensaje': '¿Qué es una denuncia?'}, sse=True)
@@ -74,6 +82,10 @@ try:
         fallas += not ok(cfg.get('filtro_estado') is True and cfg.get('rerank') is False and cfg.get('route') is True
                          and cfg.get('descomponer') is True and cfg.get('hyde') is True and cfg.get('k') == 10,
                          'el turno guardó la configuración de la ronda 2 (filtro sí, rerank no, routing, descomponer, HyDE, k 10)')
+        if perfil['estudios'] == 'prepa':
+            fallas += not ok('area' not in perf and 'carrera' not in perf, 'con prepa no guardó «área» ni «carrera», aunque llegaron')
+        else:
+            fallas += not ok(perf.get('area') == 'sociales' and perf.get('carrera') == 'Sociología', 'con licenciatura guardó «área» y «carrera»')
         fallas += not ok(cmd5 == hashlib.md5(store.spec(EID)['consentimiento'].encode()).hexdigest(), 'guardó la versión del consentimiento')
         st, r = post('a_preguntas', cod, {'intento': iid})
         respuestas = {q['id']: next(iter(q['opciones'])) for q in esc.get('preguntas') or []}
@@ -83,7 +95,8 @@ try:
 finally:
     for cod in codigos:
         store.retirar(cod)
-    store.cambiar_estado(EID, 'borrador', 'prueba-claude')
+    if estado_inicial == 'borrador':
+        store.cambiar_estado(EID, 'borrador', 'prueba-claude')
     with connect() as c, c.cursor() as cur:
         cur.execute('SELECT count(*) FROM estudio_participantes WHERE codigo = ANY(%s)', (codigos,))
         quedan = cur.fetchone()[0]
