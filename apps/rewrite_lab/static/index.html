@@ -194,6 +194,7 @@
  .cnt b{color:#c7cdd6;font-weight:600}
  .tag{font-size:11px;border-radius:6px;padding:1px 7px;white-space:nowrap}
  .tag.gap{background:#3b2a06;color:#fcd34d;border:1px solid #854d0e}
+ .tag.rep{background:#1e293b;color:#c7cdd6}
  .tag.d-facil{background:#14532d;color:#bbf7d0} .tag.d-mediano{background:#713f12;color:#fde68a}
  .tag.d-dificil{background:#4c1d95;color:#ddd6fe}
  .tag.ret-ok{background:#0c4a6e;color:#bae6fd} .tag.ret-part{background:#713f12;color:#fde68a} .tag.ret-bad{background:#7f1d1d;color:#fecaca}
@@ -526,6 +527,7 @@
      <button data-sub="prompts" title="Nombre de cada system prompt usado en las corridas">🗂️ Prompts</button>
      <button data-sub="informes" title="Resúmenes de varias corridas, con tablas y explicación">📑 Informes</button>
      <button data-sub="componentes" title="Cada llamada al LLM probada contra su propio objetivo">🧩 Componentes</button>
+     <button data-sub="repeticiones" title="Las conversaciones reales de la ronda 1, repetidas con otra configuración del asistente">🔁 Ronda 1 real</button>
      <button data-sub="compare" hidden>📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
    </div>
  </div>
@@ -649,6 +651,17 @@
    <div id="comp-efectos"></div>
    <div id="comp-cards" class="comp-grid"></div>
    <div id="comp-detalle"></div>
+ </div>
+
+ <div id="bsub-repeticiones" class="bsubpage" hidden>
+   <p class="muted" style="font-size:13px;margin-top:0">Las <b>conversaciones reales</b> de la ronda 1 del estudio (lo que escribieron las
+     personas participantes), repetidas con otra configuración del asistente. Los mensajes de la persona son los reales; el asistente
+     responde de nuevo y su respuesta entra al historial. Cada respuesta se mide sin juez. «ronda1 · …» son las respuestas que se
+     guardaron en la ronda 1, por condición. Solo administradores: muestra mensajes de participantes. No depende del set elegido arriba.</p>
+   <div id="rep-resumen"></div>
+   <div id="rep-comparar"></div>
+   <div id="rep-lanzar"></div>
+   <div id="rep-conversaciones"></div>
  </div>
 
  <div id="bsub-compare" class="bsubpage" hidden>

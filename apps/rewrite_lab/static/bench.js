@@ -101,14 +101,15 @@ function diffStats(results){
 // ── Navegación ──────────────────────────────────────────────────────────────────
 // La URL refleja lo que se ve, para recargar o compartir el enlace:
 //   /benchmark?set=3&vista=preguntas · ?set=3&corrida=12 · ?set=3&vista=comparar&comparar=11,12
-const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', informes: 'informes', componentes: 'componentes', compare: 'comparar'};
+const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', informes: 'informes', componentes: 'componentes', repeticiones: 'ronda1', compare: 'comparar'};
 function benchSub(name){
   BENCH.sub = name;
   document.querySelectorAll('.bsub button').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
-  for(const s of ['run','questions','prompts','informes','componentes','compare']) $('bsub-'+s).hidden = (s!==name);
+  for(const s of ['run','questions','prompts','informes','componentes','repeticiones','compare']) $('bsub-'+s).hidden = (s!==name);
   if(name==='prompts') loadPrompts();
   if(name==='informes') loadInformes();
   if(name==='componentes') loadComponentes(); else clearTimeout(COMP.poll);
+  if(name==='repeticiones') loadRepeticiones(); else clearTimeout(REP.poll);
   benchUrlSync();
 }
 function benchUrlSync(){
@@ -1454,4 +1455,122 @@ function diffPrompts(){
   if(skipped) html += `<span class="dl gap">… ${skipped} líneas iguales …</span>`;
   $('bpt-body').innerHTML = add || del ? html : '<span class="muted">Los textos son iguales línea por línea (difieren solo en espacios).</span>';
   openModal('bench-ptext-modal');
+}
+
+
+// ── 🔁 Ronda 1 real: conversaciones reales de la ronda 1 repetidas con otra configuración (repeticiones.py) ──────
+const REP = {datos: null, poll: null, conv: null, ver: []};
+const escA = s => esc(s).replace(/"/g, '&quot;');
+const rpct = c => c && c.pct != null ? `${c.pct.toFixed(1)} %<span class="muted" style="font-size:11px"> (${c.n})</span>` : '<span class="muted">—</span>';
+function repConfig(f){
+  if(f.original) return '<span class="muted">respuestas guardadas en la ronda 1</span>';
+  const c = f.config || {};
+  return [f.prompt_tag, c.filtro_estado ? 'filtro por estado' : 'sin filtro', 'búsqueda reescrita ' + (c.condensa || 'v1'),
+          c.rerank ? 'rerank' : '', f.multiturno ? 'solo conversaciones de 2+ mensajes' : ''].filter(Boolean).map(esc).join(' · ')
+    + (f.nota ? `<div class="muted" style="font-size:11px">${esc(f.nota)}</div>` : '');
+}
+async function loadRepeticiones(){
+  clearTimeout(REP.poll);
+  let d; try{ d = await bjson('/api/repeticiones'); }catch(e){ $('rep-resumen').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
+  REP.datos = d;
+  const C = d.configuraciones;
+  $('rep-resumen').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Resultados por configuración</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 6px">Porcentaje de respuestas (entre paréntesis, cuántas respuestas). <b>Primer mensaje</b>: el primero de cada
+      situación, que no depende de respuestas anteriores (la métrica principal de la ronda 1). <b>Siguientes</b>: del segundo mensaje en adelante.
+      «Pide el estado»: una pregunta «¿…?» o una petición directa sobre el estado; <b>sin estado</b> = el filtro no lo sabía (debe pedirlo);
+      <b>ya lo sabía</b> = no debería volver a pedirlo. ${d.en_curso ? `<b style="color:#fbbf24">Repetición en curso: #${d.en_curso}</b>` : ''}</p>
+    <div style="overflow-x:auto"><table class="comp-tab">
+      <tr><th rowspan="2">Configuración</th><th rowspan="2">Rep.</th><th rowspan="2">Conv.</th><th colspan="4">Primer mensaje</th><th colspan="3">Siguientes</th><th rowspan="2">Seg. por mensaje</th></tr>
+      <tr><th>Nombra el código penal de otro estado</th><th>Cita la ley correcta</th><th>Pide el estado (sin estado)</th><th>Lo vuelve a pedir (ya lo sabía)</th>
+          <th>Nombra el código penal de otro estado</th><th>Cita la ley correcta</th><th>Lo vuelve a pedir (ya lo sabía)</th></tr>
+      ${C.map(f => `<tr><td><b>${esc(f.nombre)}</b><div style="font-size:11px">${repConfig(f)}</div></td><td>${f.original ? '—' : esc(f.reps.join(', '))}</td>
+        <td>${f.conversaciones}</td><td>${rpct(f['primer.otro_codigo'])}</td><td>${rpct(f['primer.ley_correcta'])}</td>
+        <td>${rpct(f['primer.pide_sin_estado'])}</td><td>${rpct(f['primer.repregunta'])}</td>
+        <td>${rpct(f['siguientes.otro_codigo'])}</td><td>${rpct(f['siguientes.ley_correcta'])}</td><td>${rpct(f['siguientes.repregunta'])}</td>
+        <td>${f.segundos ?? '—'}</td></tr>`).join('')}
+    </table></div></div>`;
+  const opts = C.map(f => `<option value="${escA(f.nombre)}">${esc(f.nombre)}</option>`).join('');
+  $('rep-comparar').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Comparar dos configuraciones</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 6px">Diferencia pareada por conversación (cada conversación consigo misma, promedio de sus repeticiones), en puntos
+      porcentuales, con IC 95 % (bootstrap). En verde o rojo si el intervalo no toca el 0.</p>
+    <div class="row" style="margin:0 0 6px"><label>De <select id="rep-a">${opts}</select></label><label>a <select id="rep-b">${opts}</select></label>
+    <button class="ghost" id="rep-cmp">Comparar</button></div><div id="rep-cmp-out"></div></div>`;
+  if(C.length > 1) $('rep-b').selectedIndex = Math.min(1, C.length - 1);
+  $('rep-cmp').onclick = repComparar;
+  repLanzar();
+  repConversaciones();
+  if(d.en_curso) REP.poll = setTimeout(loadRepeticiones, 30000);
+}
+async function repComparar(){
+  const a = $('rep-a').value, b = $('rep-b').value;
+  let d; try{ d = await bjson(`/api/repeticiones/comparar?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`); }catch(e){ $('rep-cmp-out').textContent = e.message; return; }
+  const M = REP.datos.metricas;
+  const celda = x => x.dif == null ? '<span class="muted">—</span>' : (() => {
+    const sig = x.ic && (x.ic[0] > 0 || x.ic[1] < 0);
+    return `<span style="${sig ? `font-weight:700;color:${x.dif > 0 ? '#4ade80' : '#f87171'}` : ''}">${x.dif > 0 ? '+' : ''}${x.dif.toFixed(1)}</span>`
+      + (x.ic ? ` <span class="muted" style="font-size:11px">[${x.ic[0]}, ${x.ic[1]}] · ${x.n} conv.</span>` : '');
+  })();
+  $('rep-cmp-out').innerHTML = `<table class="comp-tab"><tr><th>Métrica</th><th>Primer mensaje</th><th>Siguientes</th></tr>
+    ${Object.keys(M).map(k => `<tr><td>${esc(M[k])}</td><td>${celda(d.diferencias['primer.' + k])}</td><td>${celda(d.diferencias['siguientes.' + k])}</td></tr>`).join('')}</table>
+    <p class="muted" style="font-size:11px;margin:4px 0 0">Para «nombra el código de otro estado», bajar es mejorar; para «cita la ley correcta», subir es mejorar.</p>`;
+}
+async function repLanzar(){
+  let tags = []; try{ tags = (await bjson('/api/bench/prompts')).filter(p => p.tag).map(p => p.tag); }catch(e){}
+  $('rep-lanzar').innerHTML = `<details class="bcard" style="margin-bottom:10px"><summary style="font-weight:600">▶ Lanzar una repetición</summary>
+    <p class="muted" style="font-size:12px">Usa la configuración del estudio de la ronda 1 (híbrido, k 10, vecinos, HyDE, descomponer, routing, historial 10) con estos cambios.
+      Las 108 conversaciones tardan ~30 min por repetición (~10 s por mensaje). Una repetición a la vez.</p>
+    <div class="row"><label>Nombre <input id="rep-nombre" placeholder="p. ej. C_condensa_v2" maxlength="60"></label>
+      <label>Prompt <select id="rep-prompt">${tags.map(t => `<option ${t === 'ultimo-promt-v2' ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label>
+      <label class="chk"><input type="checkbox" id="rep-filtro" checked> filtro por estado</label>
+      <label>Búsqueda reescrita <select id="rep-condensa"><option>v1</option><option>v2</option></select></label>
+      <label class="chk"><input type="checkbox" id="rep-rerank"> rerank</label>
+      <label>Repeticiones <select id="rep-reps"><option>1</option><option selected>2</option><option>3</option></select></label>
+      <label class="chk" title="La búsqueda reescrita solo cambia del segundo mensaje en adelante"><input type="checkbox" id="rep-multi"> solo conversaciones de 2+ mensajes</label></div>
+    <div class="row"><label style="flex:1">Nota <input id="rep-nota" style="width:100%" maxlength="300" placeholder="qué se quiere probar"></label>
+      <button id="rep-go">Lanzar</button> <span id="rep-go-msg" class="muted"></span></div></details>`;
+  $('rep-go').onclick = async () => {
+    const body = {nombre: $('rep-nombre').value, prompt_tag: $('rep-prompt').value, filtro_estado: $('rep-filtro').checked,
+      condensa: $('rep-condensa').value, rerank: $('rep-rerank').checked, repeticiones: +$('rep-reps').value,
+      multiturno: $('rep-multi').checked, nota: $('rep-nota').value};
+    try{ const r = await bjson('/api/repeticiones/correr', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+      $('rep-go-msg').textContent = `Lanzada: #${r.corridas.join(', #')}`; setTimeout(loadRepeticiones, 2000); }
+    catch(e){ $('rep-go-msg').textContent = e.message; }
+  };
+}
+async function repConversaciones(){
+  let cs; try{ cs = await bjson('/api/repeticiones/conversaciones'); }catch(e){ return; }
+  const noms = REP.datos.configuraciones.filter(f => !f.original).map(f => f.nombre);
+  if(!REP.ver.length) REP.ver = noms.slice(0, 3);
+  $('rep-conversaciones').innerHTML = `<div class="bcard"><h3 style="margin:0 0 4px;font-size:14px">Ver una conversación</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 6px">Cada mensaje de la persona, con la respuesta que dio el asistente en la ronda 1 y en cada configuración (repetición 1).</p>
+    <div class="row" style="margin:0 0 6px"><label>Conversación <select id="rep-conv">${cs.map(c => `<option value="${c.intento_id}">#${c.intento_id} · ${esc(c.escenario)}${c.variante ? ' ' + esc(c.variante) : ''} · ${esc(c.condicion || '')} · ${c.mensajes} mensaje(s)</option>`).join('')}</select></label>
+      ${noms.map(n => `<label class="chk"><input type="checkbox" class="rep-ver" value="${escA(n)}" ${REP.ver.includes(n) ? 'checked' : ''}> ${esc(n)}</label>`).join('')}
+      <button class="ghost" id="rep-conv-go">Ver</button></div><div id="rep-conv-out"></div></div>`;
+  if(REP.conv) $('rep-conv').value = REP.conv;
+  $('rep-conv-go').onclick = repVerConversacion;
+}
+function repBadges(a, t){
+  const b = [];
+  if(a){
+    b.push(a.otro_codigo_estatal && a.otro_codigo_estatal.length ? `<span class="tag ret-bad">nombra el código de: ${esc(a.otro_codigo_estatal.join(', '))}</span>` : '<span class="tag rep">sin códigos de otro estado</span>');
+    b.push(a.cita_ley_gold ? '<span class="tag ret-ok">cita la ley correcta</span>' : '<span class="tag rep">no cita la ley correcta</span>');
+    if(a.pide_lugar_estricto) b.push('<span class="tag rep">pide el estado</span>');
+  }
+  if(t && t.filtro !== undefined) b.push(`<span class="tag rep">filtro: ${t.filtro ? esc((t.filtro.estados || []).join(', ') || 'sin estado (' + (t.filtro.tipo || '') + ')') : 'apagado'}</span>`);
+  if(t && t.busqueda) b.push(`<span class="tag rep" title="Lo que buscó el buscador (la búsqueda reescrita)">búsqueda: ${esc(t.busqueda)}</span>`);
+  return `<div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0">${b.join('')}</div>`;
+}
+async function repVerConversacion(){
+  REP.conv = +$('rep-conv').value;
+  REP.ver = [...document.querySelectorAll('.rep-ver:checked')].map(x => x.value);
+  let d; try{ d = await bjson(`/api/repeticiones/conversaciones/${REP.conv}?nombres=${encodeURIComponent(REP.ver.join('|'))}`); }
+  catch(e){ $('rep-conv-out').textContent = e.message; return; }
+  const resp = (titulo, texto, a, t) => `<details style="margin:4px 0"><summary><b>${esc(titulo)}</b></summary>${repBadges(a, t)}
+    <div style="white-space:pre-wrap;font-size:13px;background:#0f1115;border:1px solid #2a2f3a;border-radius:8px;padding:8px 10px">${esc(texto || '(sin respuesta)')}</div></details>`;
+  $('rep-conv-out').innerHTML = `<p class="muted" style="font-size:12px">Situación «${esc(d.escenario)}»${d.variante ? ' (' + esc(d.variante) + ')' : ''} · condición en la ronda 1: ${esc(d.condicion || '—')} ·
+    ley esperada: ${esc(d.gold.map(g => g.join(' o ')).join('; ') || '—')}</p>` +
+    d.original.map((t, j) => `<div class="bcard" style="margin:8px 0;background:#13161c"><div><b>Mensaje ${t.n} de la persona:</b> ${esc(t.pregunta)}</div>
+      ${resp('Ronda 1 (guardada)', t.respuesta, t.analisis, null)}
+      ${REP.ver.map(n => { const c = (d.repeticiones[n] || [])[0]; const tt = c && c.turnos[j];
+        return tt ? resp(n, tt.respuesta, tt.analisis, tt) : `<div class="muted" style="font-size:12px">${esc(n)}: esta conversación no está en esa corrida</div>`; }).join('')}</div>`).join('');
 }

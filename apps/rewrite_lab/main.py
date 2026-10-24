@@ -1505,6 +1505,13 @@ app.include_router(study_router(store=study_store, chat_stream=_study_chat_strea
                                 resolver_gold=_study_resolver, static_dir=STATIC, current_email=current_email,
                                 es_admin=can_ingest))
 
+# 🔁 Ronda 1 real (Benchmark): repite las conversaciones reales de la ronda 1 con otra configuración del asistente.
+from repeticiones import Repeticiones  # noqa: E402
+repeticiones = Repeticiones(connect=connect, chat_stream=_study_chat_stream, study_store=study_store,
+                            resolver=_study_resolver, gold_refs=_study_gold_refs, current_email=current_email,
+                            can_run=can_ingest)
+app.include_router(repeticiones.router)
+
 
 @app.get('/healthz')
 def healthz():
