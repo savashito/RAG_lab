@@ -61,3 +61,21 @@ for a, b in (('A_ronda1', 'B_filtro'), ('A_ronda1', 'C_nuevo')):
     d = [st.mean(val[b][k]) - st.mean(val[a][k]) for k in val[a] if k in val[b]]
     bs = sorted(st.mean(random.choices(d, k=len(d))) for _ in range(5000))
     print(f'  {a} → {b}: {100 * st.mean(d):+.1f} puntos [{100 * bs[125]:+.1f}, {100 * bs[4875]:+.1f}] (n={len(d)})')
+
+# «pide_lugar» de la ronda 1 también cuenta frases que explican («la ley del lugar donde ocurrieron los hechos»). Estricta:
+# una pregunta entre «¿…?», o una petición directa («indícame…», «es necesario precisar…»), sobre el estado o dónde ocurrió.
+LUGAR = r'(en\s+qu[eé]\s+(estado|entidad|ciudad|lugar|municipio)|qu[eé]\s+(estado|entidad)|d[oó]nde\s+(ocurri|pas[oó]|sucedi|fue))'
+PIDE = re.compile(r'(?i)¿[^?]*' + LUGAR + r'[^?]*\?|(ind[ií]ca(me|nos)?|ind[ií]que(me|nos)?|dime|d[ií]game|precis(a|ar|e)|'
+                  r'necesito\s+(saber|conocer)|necesario\s+(saber|conocer|precisar)|podr[ií]as?\s+(decirme|indicarme)|confirm(a|e|ar))'
+                  r'[^.?]{0,60}' + LUGAR)
+print('\nRepetición · pide el estado (pregunta «¿…?» o petición directa) · por lo que decidió el filtro:')
+for cfg in sorted(val):
+    d = defaultdict(list)
+    for f in sorted(Path('/tmp/replay_ronda1').glob(f'{cfg}_rep*.jsonl')):
+        for l in f.open():
+            x = json.loads(l)
+            for j, t in enumerate(x['turnos']):
+                fl = t.get('filtro')
+                k = 'sin filtro' if fl is None else ('estado detectado' if fl.get('estados') else 'sin estado')
+                d[(('primer mensaje' if j == 0 else 'siguientes'), k)].append(bool(PIDE.search(t['respuesta'] or '')))
+    print(f'  {cfg:9} ' + ' · '.join(f'{a}, {k}: {100 * st.mean(v):.0f} % (n={len(v)})' for (a, k), v in sorted(d.items())))

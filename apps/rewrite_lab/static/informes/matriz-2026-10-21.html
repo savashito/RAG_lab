@@ -74,11 +74,11 @@
 </header>
 <main>
 
-<p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones. <b>Actualizado el 23 de octubre</b> con cuatro pruebas nuevas: <a href="#rerank">el rerank</a>, <a href="#contexto">vecinos contra más resultados</a>, <a href="#dividir">cómo dividir la pregunta</a> y <a href="#ultimo">el prompt «ultimo-promt»</a>.</p>
+<p><b>De qué trata este informe.</b> En la ronda 1 del estudio con usuarios encontramos que, si la persona no dice dónde ocurrieron los hechos, Tlacua le cita el código penal de otro estado, y la persona cree que esa ley le aplica. Para evitarlo construimos el <b>filtro por estado</b>. Este informe explica qué hace cada opción del sistema, cómo funciona el filtro, cómo se corrigió dos veces (v1 → v2 → v3), y qué pasó en 72 corridas del benchmark que lo comparan con y sin las otras opciones. <b>Actualizado el 23 de octubre</b> con cinco pruebas nuevas: <a href="#real">el filtro con las preguntas reales de la ronda 1</a> (24 de octubre), <a href="#rerank">el rerank</a>, <a href="#contexto">vecinos contra más resultados</a>, <a href="#dividir">cómo dividir la pregunta</a> y <a href="#ultimo">el prompt «ultimo-promt»</a>.</p>
 
 <nav class="toc">
   <a href="#camino">1. Cómo responde Tlacua</a><a href="#modelos">Modelos y hardware</a><a href="#buscador">El buscador por dentro</a><a href="#opciones">2. Cada opción</a><a href="#descomponer">Descomponer vs por delito</a><a href="#prompts">Los prompts</a><a href="#v1">3. Filtro v1</a>
-  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#costo-desc">Costo de descomponer</a><a href="#rerank">¿Sirve el rerank?</a><a href="#contexto">Vecinos o más resultados</a><a href="#dividir">Cómo dividir la pregunta</a><a href="#ultimo">El prompt «ultimo-promt»</a><a href="#componentes">Pruebas por componente</a>
+  <a href="#v2">4. Por qué el v2</a><a href="#probado">5. Qué se probó</a><a href="#resultados">6. Resultados</a><a href="#filtros">Filtro v1 · v2 · v3</a><a href="#pordelito">¿Funciona por delito?</a><a href="#desc-sirve">¿Sirven descomponer y routing?</a><a href="#costo-desc">Costo de descomponer</a><a href="#rerank">¿Sirve el rerank?</a><a href="#contexto">Vecinos o más resultados</a><a href="#dividir">Cómo dividir la pregunta</a><a href="#ultimo">El prompt «ultimo-promt»</a><a href="#real">El filtro con preguntas reales</a><a href="#componentes">Pruebas por componente</a>
   <a href="#v3">7. El problema del v2 y el v3</a><a href="#columnas">8. Cómo leer los números</a><a href="#recall">El recall, en detalle</a><a href="#limitaciones">9. Limitaciones</a>
 </nav>
 
@@ -371,6 +371,48 @@
 <p><b>Hacer en paralelo las llamadas a HyDE de las sub-búsquedas.</b> El servidor del LLM (llama.cpp) atiende 4 peticiones a la vez y las procesa en lote: al escribir, el cuello de botella de la GPU es leer el modelo de memoria por cada token, y esa lectura sirve para todas las peticiones del lote. Evidencia (accidental, 22 de octubre): con 4 pruebas de descomponer corriendo a la vez, cada llamada tardó 1.1–1.45 s (sola: 0.47 s), pero las 4 se hicieron en ~1.2–1.45 s, contra ~1.9 s una tras otra: <b>~25–35 % menos</b>. Aplicado a descomponer: de ~2.8 s de HyDE a ~1.7–2 s, es decir <b>~1 s menos por pregunta</b>, sin cambiar los resultados. Cuidados: con varias personas usando la app a la vez los 4 lugares del servidor se comparten y la ganancia baja; y la estimación sale de una sola observación, habría que medirla. Otra opción: reutilizar el HyDE de la pregunta original en las sub-búsquedas (como ya hace el routing), que costaría casi solo la llamada de descomponer, pero podría bajar el recall.</p>
 <p><b>Decisión pendiente (después de la ronda 2, que se queda como la ronda 1):</b> quitar el routing donde el filtro por estado esté activo, y decidir descomponer por recall contra tiempo.</p>
 
+
+<h3 id="real">El filtro con las preguntas reales de la ronda 1 (24 de octubre)</h3>
+<p><b>Por qué.</b> Los sets 13 y 14 los escribimos nosotros. Las personas reales escriben distinto: no siempre dicen el estado, mezclan dónde viven con dónde pasó, preguntan en varios mensajes. Esta prueba usa <b>los mensajes que escribieron los 45 participantes de la ronda 1</b>: 108 conversaciones, 169 mensajes, en las 3 situaciones.</p>
+<p><b>Cómo.</b> Cada conversación se repite en orden: los mensajes de la persona son los reales y el asistente responde de nuevo (sus respuestas entran al historial). Tres configuraciones, con el código del estudio y 2 repeticiones cada una:</p>
+<div class="scroll"><table>
+  <tr><th></th><th>Filtro por estado</th><th>Prompt</th><th>Para qué</th></tr>
+  <tr><td><b>A</b></td><td>no</td><td>penal-original-v1</td><td>Como la ronda 1, con el sistema de hoy. Comprobación: debe parecerse a lo que pasó en la ronda 1.</td></tr>
+  <tr><td><b>B</b></td><td>sí (v3)</td><td>penal-original-v1</td><td>A → B = el efecto del filtro (lo único que cambia).</td></tr>
+  <tr><td><b>C</b></td><td>sí (v3)</td><td>ultimo-promt-v2</td><td>Lo que verá la condición «nuevo» de la ronda 2.</td></tr>
+</table></div>
+<p>Los mensajes de los participantes no salen del servidor; aquí solo hay resultados agregados.</p>
+
+<h4>Una métrica corregida: «nombra el código penal de otro estado»</h4>
+<p>El análisis de la ronda 1 cuenta como «cita otro estado» cualquier <b>mención de un lugar</b>. En la situación «citatorio», Ariel vive en la Ciudad de México y la pelea fue en un bar de Querétaro; lo correcto es el Código Penal del Estado de Querétaro (art. 1) y el CNPP (art. 20). Una buena respuesta dice «la competencia es de las autoridades de Querétaro y no de las de la Ciudad de México», y esa métrica la cuenta como error. Por eso aquí se usa una versión estricta: cuenta solo si la respuesta <b>nombra el código penal de un estado que no es el de los hechos</b> (por ejemplo, «Código Penal para la Ciudad de México»), no si solo menciona el lugar. El CPF no cuenta como «otro estado».</p>
+
+<h4>Resultado: primer mensaje de cada situación</h4>
+<div class="scroll"><table>
+  <tr><th></th><th class="n">Nombra el código penal de otro estado</th><th class="n">Cita la ley correcta de la situación</th><th class="n">Segundos por mensaje</th></tr>
+  <tr><td>Ronda 1 tal como pasó (condición «actual», 42 respuestas)</td><td class="n">57.1 %</td><td class="n">71.4 %</td><td class="n">—</td></tr>
+  <tr><td><b>A</b> · sin filtro</td><td class="n x">59.7 %</td><td class="n">72.7 %</td><td class="n">9.7</td></tr>
+  <tr><td><b>B</b> · con filtro</td><td class="n ok">1.4 %</td><td class="n">72.2 %</td><td class="n">10.2</td></tr>
+  <tr><td><b>C</b> · con filtro + ultimo-promt-v2</td><td class="n ok">0.9 %</td><td class="n">69.4 %</td><td class="n">10.6</td></tr>
+</table></div>
+<p>Diferencia pareada por conversación (108), IC 95 %: <b>A → B −58.3 puntos (−66.2 a −50.0)</b>; A → C −58.8 (−66.7 a −50.9). La ley correcta no cambia (A → B −0.5, de −7.4 a +6.5). Por situación, con filtro: «fotos» y «mensajes_trabajo» 0 %; «citatorio» 3–5 %.</p>
+<p><b>Comprobación:</b> A (59.7 %) se parece a lo que pasó en la ronda 1 (57.1 %), así que la repetición reproduce el problema original.</p>
+
+<h4>¿Pide el estado cuando debe?</h4>
+<p>Medido como una pregunta «¿…?» o una petición directa («indícame…», «es necesario precisar…») sobre el estado o dónde ocurrió. La regex del análisis de la ronda 1 también contaba frases que solo explican («la ley del lugar donde ocurrieron los hechos»).</p>
+<div class="scroll"><table>
+  <tr><th>Primer mensaje</th><th class="n">A</th><th class="n">B</th><th class="n">C</th></tr>
+  <tr><td>El filtro detectó el estado (74 respuestas): ¿lo vuelve a pedir?</td><td class="n">—</td><td class="n ok">0 %</td><td class="n ok">3 %</td></tr>
+  <tr><td>El filtro no detectó estado (142): ¿lo pide?</td><td class="n">0 % (sin filtro)</td><td class="n">45 %</td><td class="n">57 %</td></tr>
+</table></div>
+<p>«Sin estado» incluye preguntas donde no hace falta pedirlo (por ejemplo, las que el filtro clasificó como ley general). Cuando el estado ya está claro, casi nunca lo vuelve a pedir.</p>
+
+<h4>Qué detectó el filtro en los mensajes reales (primer mensaje, B)</h4>
+<ul>
+  <li><b>citatorio:</b> Querétaro en 44 de 66, ninguno en 16, y en 6 un estado de más o distinto (Querétaro y CDMX; Estado de México; Puebla).</li>
+  <li><b>mensajes_trabajo:</b> la mayoría de las personas <b>no escribe el estado</b> aunque la situación lo dice (CDMX detectada en 12 de 44; Querétaro en 8 de 30), así que el asistente pide el estado. Es lo que debe hacer, pero en la ronda 2 cuesta un mensaje más.</li>
+  <li><b>fotos:</b> casi siempre sin estado (ley general o delito común).</li>
+</ul>
+<p><b>Conclusión:</b> con lenguaje real, el filtro elimina casi por completo el problema de la ronda 1 (de ~60 % a ~1 % de respuestas que nombran el código penal de otro estado) sin perder la ley correcta, a un costo de ~0.5 s por mensaje. <b>Para el análisis de la ronda 2</b> conviene usar estas dos métricas corregidas, porque las de la ronda 1 cuentan menciones de lugares y explicaciones como errores. Scripts: <code>06_evaluation/replay_ronda1_2026-10-24/</code>.</p>
 
 <h3 id="rerank">¿Sirve el rerank? (23 de octubre)</h3>
 <p><b>Qué se comparó.</b> La configuración de la ronda 2 (penal-original-v1, filtro v3, descomponer, routing, HyDE, híbrido, top-k 10 con vecinos), con y sin rerank. Lo único que cambia es el rerank. Sets 3, 13, 14 y 12, 2 repeticiones: 16 corridas (#211–#226). La diferencia de score es <b>pareada</b>: se compara cada pregunta consigo misma (promedio de sus 2 repeticiones) y el IC 95 % sale de un bootstrap de esas diferencias.</p>
