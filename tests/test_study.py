@@ -439,6 +439,25 @@ def test_analizar_respuesta():
     assert A.analizar_respuesta('art. 179 del Código Penal del Distrito Federal', g2)['cita_articulo_gold']
 
 
+def test_metricas_corregidas():
+    # «citatorio»: los hechos fueron en Querétaro; Ariel vive en la Ciudad de México.
+    g = [[{'source': 'Código Penal del Estado de Querétaro.md', 'article': '1'}]]
+    bien = 'La competencia recae en las autoridades de Querétaro y no en las de la Ciudad de México, donde vives.'
+    a = A.analizar_respuesta(bien, g)
+    assert a['otros_estados'] == ['CDMX']            # la métrica original lo cuenta como error
+    assert a['otro_codigo_estatal'] == []            # la corregida no: solo menciona el lugar
+    mal = 'Conforme al artículo 141 del Código Penal para el Distrito Federal, las lesiones se sancionan…'
+    assert A.analizar_respuesta(mal, g)['otro_codigo_estatal'] == ['CDMX']
+    assert A.analizar_respuesta('Según el Código Penal Federal, artículo 288…', g)['otro_codigo_estatal'] == []   # el CPF no es otro estado
+    assert A.analizar_respuesta('El Código Penal del Estado de Querétaro, artículo 1, …', g)['otro_codigo_estatal'] == []
+    # Pedir el estado: explicar «la ley del lugar donde ocurrieron» no es pedirlo.
+    explica = 'Los delitos se juzgan conforme a las leyes del lugar donde ocurrieron los hechos.'
+    assert A.analizar_respuesta(explica, g)['pide_lugar'] and not A.analizar_respuesta(explica, g)['pide_lugar_estricto']
+    assert A.analizar_respuesta('¿En qué estado ocurrieron los hechos?', g)['pide_lugar_estricto']
+    assert A.analizar_respuesta('Es necesario precisar en qué estado de la República ocurrieron los hechos.', g)['pide_lugar_estricto']
+    assert A.analizar_respuesta('Indícame en qué entidad pasó, por favor.', g)['pide_lugar_estricto']
+
+
 def test_auth_deja_pasar_solo_rutas_del_estudio():
     import auth
     assert '/estudio' in auth.PUBLIC_STUDY and '/estudios' not in auth.PUBLIC_STUDY

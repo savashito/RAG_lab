@@ -243,9 +243,12 @@ async function resumen(id) {
   const filasC = [['participantes', 'Participantes'], ['situaciones', 'Situaciones terminadas'], ['comprension', 'Comprensión (aciertos)'],
     ['confianza_media', 'Confianza media (1–5)'], ['comprension_con_confianza_alta', 'Comprensión cuando dijeron confianza 4–5'],
     ['noto_problema', 'Notaron un problema'], ['actuaria', 'Actuarían con la respuesta'], ['eligio_no_esta_mi_respuesta', 'Eligieron «no está mi respuesta»'],
-    ['palabras_por_respuesta', 'Palabras por respuesta del asistente'], ['asistente_pide_lugar', 'Respuestas en que el asistente pregunta el lugar'],
+    ['palabras_por_respuesta', 'Palabras por respuesta del asistente'],
+    ['asistente_pide_lugar_estricto', 'Respuestas en que el asistente pide el estado (corregida)'],
+    ['asistente_pide_lugar', '  métrica original (también cuenta «la ley del lugar donde ocurrió»)'],
     ['1a_respuesta_cita_ley_correcta', '1ª respuesta cita el código correcto'], ['1a_respuesta_cita_articulo_correcto', '1ª respuesta cita el artículo correcto'],
-    ['1a_respuesta_empieza_con_otro_estado', '1ª respuesta empieza citando otro estado'],
+    ['1a_respuesta_nombra_codigo_de_otro_estado', '1ª respuesta nombra el código penal de otro estado (corregida)'],
+    ['1a_respuesta_empieza_con_otro_estado', '  métrica original: empieza mencionando otro estado (cuenta menciones de lugares)'],
     ['respuestas_correctas', 'Respuestas correctas (calificación humana)'], ['respuestas_daninas', 'Respuestas engañosas o peligrosas']];
   const tablaC = conds.length ? `<h2 style="margin-top:14px">Por condición (prompt)</h2><table><tr><th></th>${conds.map(c => `<th>${esc(c)}</th>`).join('')}</tr>
     ${filasC.map(([k, l]) => `<tr><td>${esc(l)}</td>${conds.map(c => `<td>${C[c][k] ?? '—'}</td>`).join('')}</tr>`).join('')}</table>` : '';

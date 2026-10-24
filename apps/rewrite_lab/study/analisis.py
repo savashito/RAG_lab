@@ -14,6 +14,7 @@ import random
 from collections import Counter, defaultdict
 
 import re
+import unicodedata
 
 from shared.code_routes import codes_in, fold, short_label
 from study.validar import DANOS
@@ -112,6 +113,27 @@ def sus(respuestas: list[int]) -> float | None:
     return sum((r - 1) if i % 2 == 0 else (5 - r) for i, r in enumerate(respuestas)) * 2.5
 
 
+# Métricas corregidas (24-oct-2026, tras repetir las conversaciones de la ronda 1). Las originales cuentan menciones de
+# lugares: «la competencia es de Querétaro y no de la Ciudad de México» contaba como citar la CDMX, y «la ley del lugar
+# donde ocurrieron los hechos» como pedir el estado. Se calculan sobre el texto con fold() (minúsculas, sin acentos).
+_E = r'(?:de |del |para )?(?:el |la )?'
+CODIGO_ESTATAL = {   # el código penal de cada estado, nombrado como tal (no basta con el nombre del lugar)
+    'CDMX': re.compile(rf'codigo penal {_E}(?:distrito federal|ciudad de mexico)|\bcpcdmx\b|\bcpdf\b'),
+    'CPEM': re.compile(rf'codigo penal {_E}estado de mexico|\bcpem\b'),
+    'Querétaro': re.compile(rf'codigo penal {_E}(?:estado de )?queretaro'),
+    'Morelos': re.compile(rf'codigo penal {_E}(?:estado (?:libre y soberano )?de )?morelos'),
+}
+_LUGAR = r'(?:en que (?:estado|entidad|ciudad|lugar|municipio)|que (?:estado|entidad)|donde (?:ocurri|paso|sucedi|fue))'
+_PIDE_ESTRICTO = re.compile(r'¿[^?]*' + _LUGAR + r'[^?]*\?')   # sobre el texto con acentos quitados pero con signos
+_PIDE_DIRECTO = re.compile(r'(?:indica(?:me|nos)?|indique(?:me|nos)?|dime|digame|precis(?:a|ar|e)|necesito (?:saber|conocer)|'
+                           r'necesario (?:saber|conocer|precisar)|podrias? (?:decirme|indicarme)|confirm(?:a|e|ar))[^.?]{0,60}' + _LUGAR)
+
+
+def _sin_acentos(t: str) -> str:
+    t = unicodedata.normalize('NFD', t or '')
+    return ''.join(ch for ch in t if unicodedata.category(ch) != 'Mn').lower()
+
+
 _PIDE_LUGAR = re.compile(r'en que (estado|entidad|lugar|ciudad)|que (estado|entidad)|entidad federativa donde|'
                          r'donde (ocurri|sucedi|paso|pasaron)|(indica|dime|podrias decir|necesito saber).{0,60}(estado|entidad|lugar)')
 
@@ -123,7 +145,10 @@ def analizar_respuesta(respuesta: str, gold: list[list[dict]]) -> dict:
       · otros_estados: códigos penales de OTRA entidad (o el federal) que cita y no eran los esperados;
       · primera_ley: la primera ley que nombra (lo que la persona lee primero);
       · pide_lugar: ¿pregunta en qué estado ocurrió?;
-      · palabras: longitud de la respuesta."""
+      · palabras: longitud de la respuesta.
+    Corregidas (24-oct): otro_codigo_estatal = códigos penales de otro estado que la respuesta NOMBRA como código (no
+    basta con mencionar el lugar; el CPF no cuenta); pide_lugar_estricto = una pregunta «¿…?» o una petición directa
+    («indícame…», «es necesario precisar…») sobre el estado o dónde ocurrió (no cuenta «la ley del lugar donde ocurrió»)."""
     txt = fold(respuesta or '')
     leyes = [h['label'] for h in codes_in(respuesta or '')]
     gold_leyes = {short_label(x.get('source')) for g in gold for x in g if x.get('source')}
@@ -137,11 +162,15 @@ def analizar_respuesta(respuesta: str, gold: list[list[dict]]) -> dict:
             if re.search(r'(?<![0-9])' + sufijo + (r'(?!\s*(bis|ter|quater|quinquies|quintus|sextus)\b)' if len(partes) == 1 else r'\b'), txt):
                 art_ok = True
     otros = [l for l in leyes if l in LUGARES and l not in gold_leyes]
+    sin_ac = _sin_acentos(respuesta)
+    otro_codigo = [l for l, rx in CODIGO_ESTATAL.items() if l not in gold_leyes and rx.search(txt)]
     return {'cita_ley_gold': bool(gold_leyes & set(leyes)) if gold_leyes else None,
             'cita_articulo_gold': art_ok if gold_leyes else None,
             'otros_estados': otros, 'primera_ley': leyes[0] if leyes else None,
             'primera_ley_es_otra': bool(leyes) and leyes[0] in LUGARES and leyes[0] not in gold_leyes if gold_leyes else None,
-            'pide_lugar': bool(_PIDE_LUGAR.search(txt)), 'palabras': len((respuesta or '').split())}
+            'pide_lugar': bool(_PIDE_LUGAR.search(txt)), 'palabras': len((respuesta or '').split()),
+            'otro_codigo_estatal': otro_codigo if gold_leyes else None,
+            'pide_lugar_estricto': bool(_PIDE_ESTRICTO.search(sin_ac) or _PIDE_DIRECTO.search(fold(respuesta or '')))}
 
 
 def grupo_de(p: dict) -> str:
@@ -259,10 +288,13 @@ def resumen(datos: dict, fase: str | None = None) -> dict:
         a = t.get('analisis') or {}
         cnd[k]['palabras'].append(a.get('palabras'))
         cnd[k]['pide_lugar'].append(a.get('pide_lugar'))
+        cnd[k]['pide_lugar_estricto'].append(a.get('pide_lugar_estricto'))
         if t['n'] == 1:
             cnd[k]['cita_ley_gold'].append(a.get('cita_ley_gold'))
             cnd[k]['cita_articulo_gold'].append(a.get('cita_articulo_gold'))
             cnd[k]['primera_ley_es_otra'].append(a.get('primera_ley_es_otra'))
+            if a.get('otro_codigo_estatal') is not None:
+                cnd[k]['otro_codigo'].append(bool(a['otro_codigo_estatal']))
         f = final(cal[t['id']])
         if f:
             cnd[k]['correcta'].append(f['veredicto'] == 'correcta')
@@ -291,6 +323,7 @@ def resumen(datos: dict, fase: str | None = None) -> dict:
         'palabras_por_respuesta': media(m['palabras']), 'asistente_pide_lugar': media(m['pide_lugar']),
         '1a_respuesta_cita_ley_correcta': media(m['cita_ley_gold']), '1a_respuesta_cita_articulo_correcto': media(m['cita_articulo_gold']),
         '1a_respuesta_empieza_con_otro_estado': media(m['primera_ley_es_otra']),
+        '1a_respuesta_nombra_codigo_de_otro_estado': media(m['otro_codigo']), 'asistente_pide_lugar_estricto': media(m['pide_lugar_estricto']),
         'respuestas_correctas': media(m['correcta']), 'respuestas_daninas': media(m['danina'])}
         for k, m in sorted(cnd.items())}
     out['_acuerdo'] = {'kappa_veredicto_estudiantes': kappa(pares), 'pares': len(pares),
