@@ -1478,9 +1478,12 @@ async function loadRepeticiones(){
     <p class="muted" style="font-size:12px;margin:0 0 6px">Porcentaje de respuestas (entre paréntesis, cuántas respuestas). <b>Primer mensaje</b>: el primero de cada
       situación, que no depende de respuestas anteriores (la métrica principal de la ronda 1). <b>Siguientes</b>: del segundo mensaje en adelante.
       «Pide el estado»: una pregunta «¿…?» o una petición directa sobre el estado; <b>sin estado</b> = el filtro no lo sabía (debe pedirlo);
-      <b>ya lo sabía</b> = no debería volver a pedirlo. ${d.en_curso ? `<b style="color:#fbbf24">Repetición en curso: #${d.en_curso}</b>` : ''}</p>
+      <b>ya lo sabía</b> = no debería volver a pedirlo. <b>Repeticiones</b>: cuántas veces se corrió esa configuración con las mismas
+      conversaciones (el asistente no responde igual cada vez; con dos se ve cuánto cambia por azar). <b>Conversaciones</b>: cuántas
+      conversaciones de la ronda 1 entraron (108 en total; 43 si solo se usaron las de 2 o más mensajes). <b>Segundos por mensaje</b>:
+      lo que tardó en promedio el asistente en responder cada mensaje, de principio a fin. ${d.en_curso ? `<b style="color:#fbbf24">Repetición en curso: #${d.en_curso}</b>` : ''}</p>
     <div style="overflow-x:auto"><table class="comp-tab">
-      <tr><th rowspan="2">Configuración</th><th rowspan="2">Rep.</th><th rowspan="2">Conv.</th><th colspan="4">Primer mensaje</th><th colspan="3">Siguientes</th><th rowspan="2">Seg. por mensaje</th></tr>
+      <tr><th rowspan="2">Configuración</th><th rowspan="2">Repeticiones</th><th rowspan="2">Conversaciones</th><th colspan="4">Primer mensaje</th><th colspan="3">Siguientes</th><th rowspan="2">Segundos por mensaje</th></tr>
       <tr><th>Nombra el código penal de otro estado</th><th>Cita la ley correcta</th><th>Pide el estado (sin estado)</th><th>Lo vuelve a pedir (ya lo sabía)</th>
           <th>Nombra el código penal de otro estado</th><th>Cita la ley correcta</th><th>Lo vuelve a pedir (ya lo sabía)</th></tr>
       ${C.map(f => `<tr><td><b>${esc(f.nombre)}</b><div style="font-size:11px">${repConfig(f)}</div></td><td>${f.original ? '—' : esc(f.reps.join(', '))}</td>
@@ -1510,7 +1513,7 @@ async function repComparar(){
   const celda = (x, k) => x.dif == null ? '<span class="muted">—</span>' : (() => {
     const sig = x.ic && (x.ic[0] > 0 || x.ic[1] < 0), mejora = k === 'otro_codigo' ? x.dif < 0 : x.dif > 0;
     return `<span style="${sig ? `font-weight:700;color:${mejora ? '#4ade80' : '#f87171'}` : ''}">${x.dif > 0 ? '+' : ''}${x.dif.toFixed(1)}</span>`
-      + (x.ic ? ` <span class="muted" style="font-size:11px">[${x.ic[0]}, ${x.ic[1]}] · ${x.n} conv.</span>` : '');
+      + (x.ic ? ` <span class="muted" style="font-size:11px">[${x.ic[0]}, ${x.ic[1]}] · ${x.n} conversaciones</span>` : '');
   })();
   $('rep-cmp-out').innerHTML = `<table class="comp-tab"><tr><th>Métrica</th><th>Primer mensaje</th><th>Siguientes</th></tr>
     ${Object.keys(M).map(k => `<tr><td>${esc(M[k])}</td><td>${celda(d.diferencias['primer.' + k], k)}</td><td>${celda(d.diferencias['siguientes.' + k], k)}</td></tr>`).join('')}</table>
