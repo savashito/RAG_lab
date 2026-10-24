@@ -1509,7 +1509,13 @@ app.include_router(study_router(store=study_store, chat_stream=_study_chat_strea
 from repeticiones import Repeticiones  # noqa: E402
 repeticiones = Repeticiones(connect=connect, chat_stream=_study_chat_stream, study_store=study_store,
                             resolver=_study_resolver, gold_refs=_study_gold_refs, current_email=current_email,
-                            can_run=can_ingest)
+                            can_run=can_ingest, prompts=lambda: [
+    {'nombre': 'Búsqueda reescrita v1', 'version': 'v1', 'texto': CONDENSE_SYSTEM,
+     'nota': 'La de la ronda 1 y la de hoy. Del segundo mensaje en adelante, un LLM reescribe el último mensaje de la persona como '
+             'una búsqueda que se entienda sola. De cada respuesta anterior del asistente ve solo los primeros 500 caracteres.'},
+    {'nombre': 'Búsqueda reescrita v2', 'version': 'v2', 'texto': CONDENSE_SYSTEM_V2, 'extra': CONDENSE_SYSTEM_V2[len(CONDENSE_SYSTEM):],
+     'nota': 'Propuesta del 24-oct. Igual que v1, más la regla resaltada. Además, de cada respuesta anterior ve los primeros 250 '
+             'y los últimos 250 caracteres (al final suelen ir las preguntas del asistente, como «¿en qué estado ocurrió?»).'}])
 app.include_router(repeticiones.router)
 
 

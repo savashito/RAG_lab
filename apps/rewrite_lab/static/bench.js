@@ -1497,6 +1497,7 @@ async function loadRepeticiones(){
     <button class="ghost" id="rep-cmp">Comparar</button></div><div id="rep-cmp-out"></div></div>`;
   if(C.length > 1) $('rep-b').selectedIndex = Math.min(1, C.length - 1);
   $('rep-cmp').onclick = repComparar;
+  repPrompts();
   repLanzar();
   repConversaciones();
   if(d.en_curso) REP.poll = setTimeout(loadRepeticiones, 30000);
@@ -1574,4 +1575,18 @@ async function repVerConversacion(){
       ${resp('Ronda 1 (guardada)', t.respuesta, t.analisis, null)}
       ${REP.ver.map(n => { const c = (d.repeticiones[n] || [])[0]; const tt = c && c.turnos[j];
         return tt ? resp(n, tt.respuesta, tt.analisis, tt) : `<div class="muted" style="font-size:12px">${esc(n)}: esta conversación no está en esa corrida</div>`; }).join('')}</div>`).join('');
+}
+
+// Los prompts que se pueden cambiar en esta página (hoy: la búsqueda reescrita v1 y v2), con lo que agrega v2 resaltado.
+async function repPrompts(){
+  let ps; try{ ps = await bjson('/api/repeticiones/prompts'); }catch(e){ return; }
+  if(!ps.length) return;
+  const texto = p => p.extra ? esc(p.texto.slice(0, p.texto.length - p.extra.length)) + `<mark style="background:#3b2a06;color:#fcd34d">${esc(p.extra)}</mark>` : esc(p.texto);
+  $('rep-prompts').innerHTML = `<details class="bcard" style="margin-bottom:10px"><summary style="font-weight:600">📝 Prompts de la búsqueda reescrita (v1 y v2)</summary>
+    <p class="muted" style="font-size:12px">En una conversación, del segundo mensaje en adelante el buscador no busca con el mensaje tal cual (p. ej. «Queretaro»):
+      primero un LLM lo reescribe, con la conversación, como una búsqueda que se entienda sola. El filtro por estado y la respuesta no cambian.
+      En «Ver una conversación», cada respuesta muestra la búsqueda que salió.</p>
+    <div class="comp-grid">${ps.map(p => `<div class="bcard" style="background:#13161c"><b>${esc(p.nombre)}</b>
+      <p class="muted" style="font-size:12px;margin:4px 0">${esc(p.nota || '')}</p>
+      <div style="white-space:pre-wrap;font:12.5px/1.5 ui-monospace,monospace;background:#0f1115;border:1px solid #2a2f3a;border-radius:8px;padding:8px 10px">${texto(p)}</div></div>`).join('')}</div></details>`;
 }

@@ -115,8 +115,9 @@ def por_conversacion(convs: list[dict], parte: str, metrica: str) -> dict:
 
 class Repeticiones:
     def __init__(self, *, connect: Callable, chat_stream: Callable, study_store, resolver: Callable, gold_refs: Callable,
-                 current_email: Callable, can_run: Callable):
+                 current_email: Callable, can_run: Callable, prompts: Callable | None = None):
         self.connect, self.chat_stream, self.store = connect, chat_stream, study_store
+        self.prompts = prompts or (lambda: [])   # () → [{'nombre', 'texto', 'nota'}]: los prompts que se pueden cambiar aquí
         self.resolver, self.gold_refs = resolver, gold_refs
         self.current_email, self.can_run = current_email, can_run
         self._lock = threading.Lock()
@@ -343,6 +344,10 @@ class Repeticiones:
         @r.get('')
         def resumen(request: Request):
             return self.resumen() if self.can_run(self.current_email(request)) else deny()
+
+        @r.get('/prompts')
+        def prompts(request: Request):
+            return self.prompts() if self.can_run(self.current_email(request)) else deny()
 
         @r.get('/corridas')
         def corridas(request: Request):
