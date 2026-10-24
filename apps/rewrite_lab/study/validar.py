@@ -125,6 +125,8 @@ def validar(spec_yaml: str, gold_refs=None) -> list[str]:
             errs.append(f'cada pregunta de «perfil» necesita id, pregunta y tipo ({", ".join(TIPOS_PERFIL)}).')
         elif tipo == 'opcion' and not isinstance(p.get('opciones'), dict):
             errs.append(f'perfil «{p["id"]}»: una pregunta de opción necesita «opciones» (clave: texto).')
+        else:
+            errs += _errores_mostrar_si(p, spec.get('perfil') or [])
     escenarios = spec.get('escenarios') or []
     ids = set()
     for i, e in enumerate(escenarios, 1):
@@ -190,7 +192,7 @@ def vista_publica(spec: dict, asignados: list[str], variantes: dict | None = Non
     return {
         'titulo': spec.get('titulo'),
         'consentimiento': spec.get('consentimiento'),
-        'perfil': [{k: p[k] for k in ('id', 'pregunta', 'tipo', 'opciones', 'ayuda', 'obligatorio') if k in p}
+        'perfil': [{k: p[k] for k in ('id', 'pregunta', 'tipo', 'opciones', 'ayuda', 'obligatorio', 'mostrar_si') if k in p}
                    for p in spec.get('perfil') or []],
         'sus': SUS if (spec.get('cierre') or {}).get('sus', True) else [],
         'abiertas': (spec.get('cierre') or {}).get('preguntas_abiertas') or [],
@@ -230,10 +232,36 @@ def limpiar_respuestas(spec: dict, escenario: dict, respuestas: dict, es_ultima:
     return out
 
 
+def _errores_mostrar_si(p: dict, perfil: list[dict]) -> list[str]:
+    """`mostrar_si: {id: [valores]}`: la pregunta solo aparece si una pregunta de opción ANTERIOR tiene uno de esos valores."""
+    cond = p.get('mostrar_si')
+    if cond is None:
+        return []
+    antes = {q.get('id'): q for q in perfil[:next(i for i, q in enumerate(perfil) if q is p)] if isinstance(q, dict)}
+    if not isinstance(cond, dict) or not cond:
+        return [f'perfil «{p["id"]}»: «mostrar_si» debe ser {{id_de_otra_pregunta: [valores]}}.']
+    errs = []
+    for k, vs in cond.items():
+        q = antes.get(k)
+        if not q or q.get('tipo', 'opcion') != 'opcion':
+            errs.append(f'perfil «{p["id"]}»: «mostrar_si» debe apuntar a una pregunta de opción anterior («{k}» no lo es).')
+        elif not isinstance(vs, list) or not vs or any(v not in (q.get('opciones') or {}) for v in vs):
+            errs.append(f'perfil «{p["id"]}»: «mostrar_si.{k}» debe ser una lista de opciones de «{k}».')
+    return errs
+
+
+def perfil_visible(p: dict, valores: dict) -> bool:
+    """¿Se muestra (y se pide) esta pregunta, dadas las respuestas anteriores?"""
+    return all(valores.get(k) in vs for k, vs in (p.get('mostrar_si') or {}).items())
+
+
 def limpiar_perfil(spec: dict, perfil: dict) -> tuple[dict, list[str]]:
-    """Solo los campos definidos y con valores válidos; lista de obligatorios que faltan."""
+    """Solo los campos definidos y con valores válidos; lista de obligatorios que faltan. Una pregunta con
+    `mostrar_si` que no aplica (por las respuestas anteriores) no se pide ni se guarda, aunque llegue."""
     out, faltan = {}, []
     for p in spec.get('perfil') or []:
+        if not perfil_visible(p, out):
+            continue
         v, tipo = (perfil or {}).get(p['id']), p.get('tipo', 'opcion')
         if tipo == 'opcion' and v in (p.get('opciones') or {}):
             out[p['id']] = v

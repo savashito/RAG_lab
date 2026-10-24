@@ -77,6 +77,32 @@ def test_validar_detecta_errores():
     assert any('gold' in e for e in validar(SPEC_YAML, gold_refs=lambda t: []))
 
 
+def test_ronda2_es_valido():
+    from bench import gold_refs
+    ronda2 = SEED.parent / 'ronda2_penal.yaml'
+    assert validar(ronda2.read_text(), lambda t: gold_refs('', [{'kind': 'must', 'text': t}])) == []
+
+
+def test_perfil_mostrar_si():
+    from study.validar import cargar, limpiar_perfil
+    spec, _ = cargar(SPEC_YAML)
+    spec['perfil'] = [
+        {'id': 'estudios', 'pregunta': 'Nivel', 'opciones': {'prepa': 'Prepa', 'lic': 'Licenciatura'}},
+        {'id': 'area', 'pregunta': 'Área', 'opciones': {'derecho': 'Derecho', 'otra': 'Otra'}, 'mostrar_si': {'estudios': ['lic']}},
+        {'id': 'edad', 'pregunta': 'Edad', 'opciones': {'18_24': '18–24'}}]
+    # Sin estudios universitarios: «área» no se pide, y si llega no se guarda.
+    assert limpiar_perfil(spec, {'estudios': 'prepa', 'edad': '18_24', 'area': 'derecho'}) == ({'estudios': 'prepa', 'edad': '18_24'}, [])
+    # Con licenciatura: «área» es obligatoria.
+    assert limpiar_perfil(spec, {'estudios': 'lic', 'edad': '18_24'})[1] == ['Área']
+    assert limpiar_perfil(spec, {'estudios': 'lic', 'edad': '18_24', 'area': 'otra'})[0]['area'] == 'otra'
+    assert vista_publica(spec, [])['perfil'][1]['mostrar_si'] == {'estudios': ['lic']}
+    # Errores: apuntar a una pregunta posterior o a un valor que no existe.
+    import yaml
+    for malo, texto in (({'edad': ['18_24']}, 'anterior'), ({'estudios': ['doctorado']}, 'lista de opciones')):
+        spec['perfil'][1]['mostrar_si'] = malo
+        assert any(texto in e for e in validar(yaml.safe_dump(spec, allow_unicode=True))), malo
+
+
 def test_variantes():
     import yaml
     from study.validar import escenario_efectivo, limpiar_perfil

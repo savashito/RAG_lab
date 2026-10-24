@@ -5,8 +5,8 @@
 # - condiciones: original = penal-original-v1 (md5 f68239bf, puente con la ronda 1) y nuevo = ultimo-promt-v2
 #   (md5 29af93b7; ultimo-promt de Karen + Fundamento siempre y máx. 2 preguntas; benchmark #235–#242, 23-oct). Reparto mitad y mitad (decidido 2026-10-23, en vez del 1:2 del 19-oct: la
 #   comparación nuevo vs original y el puente con la ronda 1 son más precisos con grupos iguales).
-# - perfil: sin «¿estudiante de la UNAM?» ni semestre; una pregunta de nivel de estudios; área «estudias o estudiaste» +
-#   «no aplica»; carrera opcional; edad en rangos del INEGI.
+# - perfil: sin «¿estudiante de la UNAM?» ni semestre; una pregunta de nivel de estudios; área «estudias o estudiaste» y
+#   carrera (opcional) solo si el nivel es licenciatura o más (mostrar_si); edad en rangos del INEGI.
 # - situaciones, preguntas, tutorial y cierre: SIN cambios (comparabilidad con la ronda 1).
 # El consentimiento largo cambia en la sección 8 (preguntas del cuestionario): ver consentimiento_ronda2.md.
 id: ronda2_penal
@@ -538,11 +538,18 @@ perfil:
     sociales: Ciencias Sociales (sin contar Derecho)
     humanidades: Humanidades y Artes
     otra: Otra
-    no_aplica: No aplica (no tengo estudios universitarios)
+  mostrar_si:
+    estudios: &id001
+    - lic_curso
+    - lic_terminada
+    - maestria
+    - doctorado
 - id: carrera
   tipo: texto
   pregunta: ¿Qué carrera estudias o estudiaste? (opcional)
   obligatorio: false
+  mostrar_si:
+    estudios: *id001
 - id: formacion_juridica
   pregunta: ¿Qué formación en derecho tienes?
   ayuda: Elige la que más se acerque, aunque estudies otra carrera.

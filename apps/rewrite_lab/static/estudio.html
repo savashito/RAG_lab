@@ -238,11 +238,13 @@ function pantallaConsentimiento() {
   const campoPerfil = p => {
     const tipo = p.tipo || 'opcion';
     const ayuda = p.ayuda ? `<div class="muted small">${esc(p.ayuda)}</div>` : '';
-    if (tipo === 'texto') return `<div class="q">${esc(p.pregunta)}</div>${ayuda}<input type="text" maxlength="120" data-perfil="${esc(p.id)}">`;
-    if (tipo === 'escala') return `<div class="q">${esc(p.pregunta)}</div>${ayuda}<div class="likert">${[1,2,3,4,5].map(v =>
+    let campo;
+    if (tipo === 'texto') campo = `<input type="text" maxlength="120" data-perfil="${esc(p.id)}">`;
+    else if (tipo === 'escala') campo = `<div class="likert">${[1,2,3,4,5].map(v =>
       `<label><input type="radio" name="perfil_${esc(p.id)}" value="${v}" data-escala="${esc(p.id)}">${v}</label>`).join('')}</div>`;
-    return `<div class="q">${esc(p.pregunta)}</div>${ayuda}<select data-perfil="${esc(p.id)}"><option value="">— elige —</option>
+    else campo = `<select data-perfil="${esc(p.id)}"><option value="">— elige —</option>
       ${Object.entries(p.opciones).map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('')}</select>`;
+    return `<div data-pq="${esc(p.id)}"><div class="q">${esc(p.pregunta)}</div>${ayuda}${campo}</div>`;
   };
   const perfil = (E.perfil || []).map(campoPerfil).join('');
   app.innerHTML = `<div class="card"><p class="small" style="margin:0">✅ Aceptaste participar.
@@ -250,10 +252,27 @@ function pantallaConsentimiento() {
     <div class="card"><h2>Sobre ti</h2><p class="muted small">Solo para comparar grupos. No pedimos tu nombre.</p>${perfil}
     <button class="primary" id="go" style="margin-top:14px">Empezar</button> <span id="msg" class="err"></span></div>`;
   document.getElementById('releer').onclick = e => { e.preventDefault(); ventanaConsentimiento(true); };
+  // `mostrar_si`: una pregunta solo aparece si las anteriores tienen ciertos valores (p. ej. «área» solo con estudios universitarios).
+  const valoresPerfil = () => {
+    const vals = {};
+    app.querySelectorAll('[data-pq]').forEach(d => {
+      if (d.hidden) return;
+      d.querySelectorAll('[data-perfil]').forEach(s => { if (s.value.trim()) vals[s.dataset.perfil] = s.value.trim(); });
+      d.querySelectorAll('[data-escala]:checked').forEach(r => { vals[r.dataset.escala] = parseInt(r.value); });
+    });
+    return vals;
+  };
+  const actualizarVisibles = () => {
+    for (const p of E.perfil || []) {
+      const d = app.querySelector(`[data-pq="${CSS.escape(p.id)}"]`);
+      const vals = valoresPerfil();
+      d.hidden = !Object.entries(p.mostrar_si || {}).every(([k, vs]) => vs.includes(vals[k]));
+    }
+  };
+  app.querySelectorAll('[data-pq] select').forEach(s => s.addEventListener('change', actualizarVisibles));
+  actualizarVisibles();
   document.getElementById('go').onclick = async () => {
-    const perfilVals = {};
-    app.querySelectorAll('[data-perfil]').forEach(s => { if (s.value.trim()) perfilVals[s.dataset.perfil] = s.value.trim(); });
-    app.querySelectorAll('[data-escala]:checked').forEach(r => { perfilVals[r.dataset.escala] = parseInt(r.value); });
+    const perfilVals = valoresPerfil();
     try { E = await api('consentir', {acepto: true, perfil: perfilVals}); render(); }
     catch (e) { document.getElementById('msg').textContent = e.message; }
   };
