@@ -1525,16 +1525,21 @@ async function repLanzar(){
     <p class="muted" style="font-size:12px">Usa la configuración del estudio de la ronda 1 (híbrido, k 10, vecinos, HyDE, descomponer, routing, historial 10) con estos cambios.
       Las 108 conversaciones tardan ~30 min por repetición (~10 s por mensaje). Una repetición a la vez.</p>
     <div class="row"><label>Nombre <input id="rep-nombre" placeholder="p. ej. C_condensa_v2" maxlength="60"></label>
-      <label>Prompt <select id="rep-prompt">${tags.map(t => `<option ${t === 'ultimo-promt-v2' ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label>
+      <label>Prompt <select id="rep-prompt">${tags.map(t => `<option ${t === 'ultimo-promt-v2' ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+        <option value="__propio__">✏️ Pegar otro prompt…</option></select></label>
       <label class="chk"><input type="checkbox" id="rep-filtro" checked> filtro por estado</label>
       <label>Búsqueda reescrita <select id="rep-condensa"><option>v1</option><option>v2</option></select></label>
       <label class="chk"><input type="checkbox" id="rep-rerank"> rerank</label>
       <label>Repeticiones <select id="rep-reps"><option>1</option><option selected>2</option><option>3</option></select></label>
       <label class="chk" title="La búsqueda reescrita solo cambia del segundo mensaje en adelante"><input type="checkbox" id="rep-multi"> solo conversaciones de 2+ mensajes</label></div>
+    <div class="row" id="rep-propio-row" hidden><label style="flex:1">Prompt a probar (el texto completo que recibe el LLM que responde)
+      <textarea id="rep-propio" style="width:100%;min-height:160px" placeholder="Pega aquí el prompt…"></textarea></label></div>
     <div class="row"><label style="flex:1">Nota <input id="rep-nota" style="width:100%" maxlength="300" placeholder="qué se quiere probar"></label>
       <button id="rep-go">Lanzar</button> <span id="rep-go-msg" class="muted"></span></div></details>`;
+  $('rep-prompt').onchange = () => { $('rep-propio-row').hidden = $('rep-prompt').value !== '__propio__'; };
   $('rep-go').onclick = async () => {
-    const body = {nombre: $('rep-nombre').value, prompt_tag: $('rep-prompt').value, filtro_estado: $('rep-filtro').checked,
+    const propio = $('rep-prompt').value === '__propio__';
+    const body = {nombre: $('rep-nombre').value, prompt_tag: propio ? '' : $('rep-prompt').value, prompt: propio ? $('rep-propio').value : '', filtro_estado: $('rep-filtro').checked,
       condensa: $('rep-condensa').value, rerank: $('rep-rerank').checked, repeticiones: +$('rep-reps').value,
       multiturno: $('rep-multi').checked, nota: $('rep-nota').value};
     try{ const r = await bjson('/api/repeticiones/correr', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});

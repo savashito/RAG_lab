@@ -28,6 +28,10 @@ from study.analisis import analizar_respuesta
 from study.validar import escenario_efectivo
 
 ESTUDIO = 'piloto_penal'
+# Cómo se llaman en la página las respuestas guardadas de la ronda 1, según la condición que le tocó a cada participante.
+ORIGINAL = 'Ronda 1 tal como pasó · '
+NOMBRE_CONDICION = {'actual': 'prompt jurídico (penal-original-v1, sorteado)', 'sencillo': 'prompt sencillo de Karen (sorteado)',
+                    'piloto': 'piloto (prompt jurídico, antes del sorteo)'}
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS rep_corridas (
     id serial PRIMARY KEY, nombre text NOT NULL, config jsonb NOT NULL, prompt_tag text, prompt_md5 text,
@@ -38,6 +42,7 @@ CREATE TABLE IF NOT EXISTS rep_conversaciones (
     id serial PRIMARY KEY, corrida_id int NOT NULL REFERENCES rep_corridas(id) ON DELETE CASCADE,
     intento_id int NOT NULL, escenario text, variante text, turnos jsonb NOT NULL);
 CREATE INDEX IF NOT EXISTS rep_conversaciones_corrida ON rep_conversaciones(corrida_id);
+ALTER TABLE rep_corridas ADD COLUMN IF NOT EXISTS prompt text;
 """
 _STALE_SQL = "UPDATE rep_corridas SET status = 'error', error = 'interrumpida (la app se reinició)' WHERE status = 'running'"
 # Lo que se puede elegir al lanzar (todo lo demás es la configuración del estudio de la ronda 1).
@@ -156,7 +161,8 @@ class Repeticiones:
             ts = [{'n': t['n'], 'respuesta': t['respuesta'], 'filtro': None, 'segundos': t['segundos'],
                    'analisis': analizar_respuesta(t['respuesta'] or '', g)} for t in r1['turnos'][i['id']] if t['respuesta']]
             if ts:
-                out[f'ronda1 · {r1["cond"].get(i["codigo"], "?")}'].append(
+                c = r1['cond'].get(i['codigo'], '?')
+                out[ORIGINAL + NOMBRE_CONDICION.get(c, c)].append(
                     {'intento_id': i['id'], 'escenario': i['escenario'], 'variante': i['variante'], 'turnos': ts})
         return out
 
@@ -164,14 +170,18 @@ class Repeticiones:
     def correr(self, body: dict, email: str | None) -> list[int]:
         nombre = str(body.get('nombre') or '').strip()[:60]
         tag = str(body.get('prompt_tag') or '').strip()
+        propio = str(body.get('prompt') or '').strip()   # un prompt pegado en la página (sin etiqueta todavía)
         reps = max(1, min(3, int(body.get('repeticiones') or 1)))
-        if not nombre or not tag:
+        if not nombre or not (tag or propio):
             raise ValueError('Falta el nombre de la configuración o el prompt.')
-        with self.connect() as c, c.cursor() as cur:
-            cur.execute('SELECT text FROM bench_prompt_tags WHERE tag = %s', (tag,))
-            fila = cur.fetchone()
-        if not fila:
-            raise ValueError(f'No hay ningún prompt con la etiqueta «{tag}» (🗂️ Prompts).')
+        if propio:
+            fila, tag = (propio,), None
+        else:
+            with self.connect() as c, c.cursor() as cur:
+                cur.execute('SELECT text FROM bench_prompt_tags WHERE tag = %s', (tag,))
+                fila = cur.fetchone()
+            if not fila:
+                raise ValueError(f'No hay ningún prompt con la etiqueta «{tag}» (🗂️ Prompts).')
         r1 = self._ronda1()
         cfg = dict(r1['spec']['asistente'], sistema=fila[0])
         for k in OPCIONES:
@@ -185,10 +195,10 @@ class Repeticiones:
             ids = []
             with self.connect() as c, c.cursor() as cur:
                 for rep in range(1, reps + 1):
-                    cur.execute("INSERT INTO rep_corridas (nombre, config, prompt_tag, prompt_md5, repeticion, multiturno, n, nota, creado_por) "
-                                "VALUES (%s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                    cur.execute("INSERT INTO rep_corridas (nombre, config, prompt_tag, prompt_md5, prompt, repeticion, multiturno, n, nota, "
+                                "creado_por) VALUES (%s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
                                 (nombre, json.dumps({k: v for k, v in cfg.items() if k != 'sistema'}, ensure_ascii=False), tag,
-                                 md5(fila[0]), rep, multiturno, len(intentos), str(body.get('nota') or '')[:300] or None, email))
+                                 md5(fila[0]), fila[0], rep, multiturno, len(intentos), str(body.get('nota') or '')[:300] or None, email))
                     ids.append(cur.fetchone()[0])
                 c.commit()
             self._running = ids[0]
@@ -288,11 +298,12 @@ class Repeticiones:
         for x in self.corridas():
             m = meta[x['nombre']]
             m.setdefault('reps', set()).add(x['repeticion'])
-            m.update(config=x['config'], prompt_tag=x['prompt_tag'], multiturno=x['multiturno'], nota=x['nota'] or m.get('nota'))
+            m.update(config=x['config'], prompt_tag=x['prompt_tag'] or f'prompt pegado ({(x["prompt_md5"] or "")[:8]})',
+                     multiturno=x['multiturno'], nota=x['nota'] or m.get('nota'))
         filas = []
         for nombre, cs in convs.items():
             m = meta.get(nombre, {})
-            filas.append({'nombre': nombre, 'original': nombre.startswith('ronda1 · '), 'reps': sorted(m.get('reps', [])),
+            filas.append({'nombre': nombre, 'original': nombre.startswith(ORIGINAL), 'reps': sorted(m.get('reps', [])),
                           'config': m.get('config'), 'prompt_tag': m.get('prompt_tag'), 'multiturno': m.get('multiturno'),
                           'nota': m.get('nota'), **resumir(cs)})
         filas.sort(key=lambda f: (not f['original'], f['nombre']))
@@ -301,7 +312,7 @@ class Repeticiones:
 
     def comparar(self, a: str, b: str) -> dict:
         convs = self._convs([a, b])
-        if a.startswith('ronda1 · ') or b.startswith('ronda1 · '):
+        if a.startswith(ORIGINAL) or b.startswith(ORIGINAL):
             convs.update(self._original(self._ronda1()))
         out = {}
         for parte in ('primer', 'siguientes'):
