@@ -1222,9 +1222,32 @@ CONDENSE_SYSTEM = (
 )
 
 
-def condense_question(msgs, max_turns=6, max_answer_chars=500) -> str:
+# v2 (24-oct-2026): en la ronda 2, a «mandé fotos íntimas y quiere dinero» → «¿en qué estado?» → «Queretaro», v1 escribió
+# «cómo denunciar extorsión en Querétaro»: veía solo el INICIO de la respuesta anterior (el saludo), no la pregunta del
+# estado que venía al final, y cambió la pregunta. v2 muestra el inicio y el final de cada respuesta y pide conservar la
+# pregunta original cuando el último mensaje solo agrega un dato.
+CONDENSE_SYSTEM_V2 = CONDENSE_SYSTEM + (
+    " Si el último mensaje solo agrega un dato (por ejemplo, el estado o la ciudad donde ocurrieron los hechos, o una "
+    "respuesta corta a una pregunta del asistente), devuelve la PREGUNTA ORIGINAL del usuario con ese dato incluido, "
+    "sin cambiar lo que pregunta (p. ej. 'Me robaron el celular, ¿es delito?' + 'Querétaro' → 'Me robaron el celular "
+    "en Querétaro, ¿es delito?')."
+)
+CONDENSE_VERSIONES = ('v1', 'v2')
+
+
+def _recortar(txt: str, max_chars: int, version: str) -> str:
+    """v1: el inicio de la respuesta. v2: el inicio y el final (ahí suelen ir las preguntas del asistente)."""
+    if len(txt) <= max_chars:
+        return txt
+    if version == 'v2':
+        mitad = max_chars // 2
+        return txt[:mitad] + ' … ' + txt[-mitad:]
+    return txt[:max_chars] + '…'
+
+
+def condense_question(msgs, max_turns=6, max_answer_chars=500, version='v1') -> str:
     """`msgs` (ya filtrado, último = usuario) → consulta autónoma usando el historial.
-    Primer turno o error del LLM → devuelve el último mensaje tal cual."""
+    Primer turno o error del LLM → devuelve el último mensaje tal cual. `version`: CONDENSE_VERSIONES."""
     last = msgs[-1]['content'].strip()
     prev = msgs[:-1]
     if not prev:
@@ -1233,12 +1256,12 @@ def condense_question(msgs, max_turns=6, max_answer_chars=500) -> str:
     for m in prev[-max_turns:]:
         who = 'Usuario' if m['role'] == 'user' else 'Asistente'
         txt = ' '.join((m.get('content') or '').split())
-        if m['role'] == 'assistant' and len(txt) > max_answer_chars:
-            txt = txt[:max_answer_chars] + '…'
+        if m['role'] == 'assistant':
+            txt = _recortar(txt, max_answer_chars, version)
         lines.append(f'{who}: {txt}')
     prompt = 'CONVERSACIÓN:\n' + '\n'.join(lines) + f'\n\nÚLTIMO MENSAJE: {last}\n\nConsulta autónoma:'
     try:
-        q = (llm.chat(CONDENSE_SYSTEM, prompt, max_tokens=128, timeout=60,
+        q = (llm.chat(CONDENSE_SYSTEM_V2 if version == 'v2' else CONDENSE_SYSTEM, prompt, max_tokens=128, timeout=60,
                       extra={'reasoning_effort': 'low'}) or '').strip()
         return q or last
     except Exception:  # noqa: BLE001 — si falla, buscamos con el mensaje crudo
@@ -1468,7 +1491,7 @@ def _study_chat_stream(messages, cfg):
                             bool(cfg.get('route', False)), history=int(cfg.get('historial', 0)) or None,
                             gate=bool(cfg.get('filtro_estado', False)), crimes=bool(cfg.get('por_delito', False)),
                             crime_extra_k=cfg.get('chunks_por_delito'),
-                            remisiones=bool(cfg.get('seguir_remisiones', False)))
+                            remisiones=bool(cfg.get('seguir_remisiones', False)), condensa=cfg.get('condensa', 'v1'))
 
 
 def _study_sistema(cfg):
@@ -2033,7 +2056,7 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
 
 def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False,
                      decompose=False, route=False, history=None, gate=False, crimes=False, crime_extra_k=None,
-                     remisiones=False):
+                     remisiones=False, condensa='v1'):
     """Los eventos de `_chat_events` como diccionarios (los usa también el estudio con usuarios,
     que guarda el turno completo al terminar). `history` = mensajes previos que ve el LLM
     (default CHAT_HISTORY_MESSAGES)."""
@@ -2047,7 +2070,7 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
         if setting not in ASK_SETTINGS:
             raise ValueError(f'setting desconocido: {setting!r}')
         question = msgs[-1]['content'].strip()
-        search_q = condense_question(msgs, max_turns=history)
+        search_q = condense_question(msgs, max_turns=history, version=condensa if condensa in CONDENSE_VERSIONES else 'v1')
         if find_article_ref(search_q):
             k = max(k, 8)
         t0 = time.time()
