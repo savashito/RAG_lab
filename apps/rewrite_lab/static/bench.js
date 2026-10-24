@@ -1492,7 +1492,7 @@ async function loadRepeticiones(){
   const opts = C.map(f => `<option value="${escA(f.nombre)}">${esc(f.nombre)}</option>`).join('');
   $('rep-comparar').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Comparar dos configuraciones</h3>
     <p class="muted" style="font-size:12px;margin:0 0 6px">Diferencia pareada por conversación (cada conversación consigo misma, promedio de sus repeticiones), en puntos
-      porcentuales, con IC 95 % (bootstrap). En verde o rojo si el intervalo no toca el 0.</p>
+      porcentuales, con IC 95 % (bootstrap). En verde si mejora y en rojo si empeora, solo cuando el intervalo no toca el 0.</p>
     <div class="row" style="margin:0 0 6px"><label>De <select id="rep-a">${opts}</select></label><label>a <select id="rep-b">${opts}</select></label>
     <button class="ghost" id="rep-cmp">Comparar</button></div><div id="rep-cmp-out"></div></div>`;
   if(C.length > 1) $('rep-b').selectedIndex = Math.min(1, C.length - 1);
@@ -1505,13 +1505,14 @@ async function repComparar(){
   const a = $('rep-a').value, b = $('rep-b').value;
   let d; try{ d = await bjson(`/api/repeticiones/comparar?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`); }catch(e){ $('rep-cmp-out').textContent = e.message; return; }
   const M = REP.datos.metricas;
-  const celda = x => x.dif == null ? '<span class="muted">—</span>' : (() => {
-    const sig = x.ic && (x.ic[0] > 0 || x.ic[1] < 0);
-    return `<span style="${sig ? `font-weight:700;color:${x.dif > 0 ? '#4ade80' : '#f87171'}` : ''}">${x.dif > 0 ? '+' : ''}${x.dif.toFixed(1)}</span>`
+  // Verde = mejora: en «nombra el código de otro estado» mejorar es bajar; en las demás, subir.
+  const celda = (x, k) => x.dif == null ? '<span class="muted">—</span>' : (() => {
+    const sig = x.ic && (x.ic[0] > 0 || x.ic[1] < 0), mejora = k === 'otro_codigo' ? x.dif < 0 : x.dif > 0;
+    return `<span style="${sig ? `font-weight:700;color:${mejora ? '#4ade80' : '#f87171'}` : ''}">${x.dif > 0 ? '+' : ''}${x.dif.toFixed(1)}</span>`
       + (x.ic ? ` <span class="muted" style="font-size:11px">[${x.ic[0]}, ${x.ic[1]}] · ${x.n} conv.</span>` : '');
   })();
   $('rep-cmp-out').innerHTML = `<table class="comp-tab"><tr><th>Métrica</th><th>Primer mensaje</th><th>Siguientes</th></tr>
-    ${Object.keys(M).map(k => `<tr><td>${esc(M[k])}</td><td>${celda(d.diferencias['primer.' + k])}</td><td>${celda(d.diferencias['siguientes.' + k])}</td></tr>`).join('')}</table>
+    ${Object.keys(M).map(k => `<tr><td>${esc(M[k])}</td><td>${celda(d.diferencias['primer.' + k], k)}</td><td>${celda(d.diferencias['siguientes.' + k], k)}</td></tr>`).join('')}</table>
     <p class="muted" style="font-size:11px;margin:4px 0 0">Para «nombra el código de otro estado», bajar es mejorar; para «cita la ley correcta», subir es mejorar.</p>`;
 }
 async function repLanzar(){
