@@ -1464,7 +1464,7 @@ def _study_resolver(grupos):
 def _study_chat_stream(messages, cfg):
     return chat_event_dicts(messages, cfg.get('setting', 'híbrido'), int(cfg.get('k', 5)), cfg.get('sistema'),
                             cfg.get('tema'), cfg.get('jurisdicciones'), bool(cfg.get('vecinos', True)),
-                            bool(cfg.get('hyde', False)), False, bool(cfg.get('descomponer', False)),
+                            bool(cfg.get('hyde', False)), bool(cfg.get('rerank', False)), bool(cfg.get('descomponer', False)),
                             bool(cfg.get('route', False)), history=int(cfg.get('historial', 0)) or None,
                             gate=bool(cfg.get('filtro_estado', False)), crimes=bool(cfg.get('por_delito', False)),
                             crime_extra_k=cfg.get('chunks_por_delito'),

@@ -1,6 +1,7 @@
 # Ronda 2 del estudio con usuarios (BORRADOR, 2026-10-23). Parte de piloto_penal_v7_final.yaml (ronda 1) con estos cambios:
 # - id ronda2_penal, estado borrador.
 # - asistente: + filtro_estado (filtro por estado v3). El resto igual que la ronda 1 (híbrido, k 10, HyDE, routing, descomponer).
+#   Las opciones apagadas se escriben explícitas (vecinos sí; rerank, por delito y remisiones no) aunque sean el valor por defecto.
 # - condiciones: original = penal-original-v1 (md5 f68239bf, puente con la ronda 1) y nuevo = ultimo-promt-v2
 #   (md5 29af93b7; ultimo-promt de Karen + Fundamento siempre y máx. 2 preguntas; benchmark #235–#242, 23-oct). Reparto mitad y mitad (decidido 2026-10-23, en vez del 1:2 del 19-oct: la
 #   comparación nuevo vs original y el puente con la ronda 1 son más precisos con grupos iguales).
@@ -14,13 +15,17 @@ estado: borrador
 asistente:
   tema: derecho_penal_mexicano
   setting: híbrido
-  hyde: true
-  route: true
-  descomponer: true
   k: 10
+  vecinos: true
+  hyde: true
+  descomponer: true
+  route: true
+  filtro_estado: true
+  rerank: false
+  por_delito: false
+  seguir_remisiones: false
   max_turnos: 6
   historial: 10
-  filtro_estado: true
 escenarios_por_persona: 3
 duracion: unos 15 minutos
 fase: principal
