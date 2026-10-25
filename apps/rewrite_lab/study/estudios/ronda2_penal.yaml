@@ -24,6 +24,7 @@ asistente:
   rerank: false
   por_delito: false
   seguir_remisiones: false
+  filtro_ve_pregunta: true
   max_turnos: 6
   historial: 10
 escenarios_por_persona: 3
