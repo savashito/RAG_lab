@@ -1,9 +1,13 @@
 # Ronda 2 del estudio con usuarios (BORRADOR, 2026-10-23). Parte de piloto_penal_v7_final.yaml (ronda 1) con estos cambios:
 # - id ronda2_penal, estado borrador.
 # - asistente: + filtro_estado (filtro por estado v3). El resto igual que la ronda 1 (híbrido, k 10, HyDE, routing, descomponer).
-#   Las opciones apagadas se escriben explícitas (vecinos sí; rerank, por delito y remisiones no) aunque sean el valor por defecto.
-# - condiciones: original = penal-original-v1 (md5 f68239bf, puente con la ronda 1) y nuevo = ultimo-promt-v2
-#   (md5 29af93b7; ultimo-promt de Karen + Fundamento siempre y máx. 2 preguntas; benchmark #235–#242, 23-oct). Reparto mitad y mitad (decidido 2026-10-23, en vez del 1:2 del 19-oct: la
+#   Las opciones apagadas se escriben explícitas (vecinos sí; por delito y remisiones no) aunque sean el valor por defecto.
+# - condiciones: original = penal-original-v1 (md5 f68239bf, puente con la ronda 1) y nuevo = ultimo-promt-v3
+#   (ultimo-promt de Karen + Fundamento siempre y máx. 2 preguntas; benchmark #235–#242, 23-oct; v3 del 25-oct: ofrece
+#   ayudar con escritos solo después de saber el estado, en vez de «ofrece proactivamente»; v2 era md5 29af93b7).
+# - rerank: true desde el 25-oct (versión 12): sube el recall@10 de los primeros mensajes de la ronda 1 de 25 % a 35 %,
+#   y en «fotos» de 12 % a 24–27 % (06_evaluation/replay_ronda1_2026-10-24/recall_sin_rerank.py). Antes estaba apagado
+#   como puente con la ronda 1; el puente se rehace repitiendo la ronda 1 con rerank en «🔁 Ronda 1 real». Reparto mitad y mitad (decidido 2026-10-23, en vez del 1:2 del 19-oct: la
 #   comparación nuevo vs original y el puente con la ronda 1 son más precisos con grupos iguales).
 # - perfil: sin «¿estudiante de la UNAM?» ni semestre; una pregunta de nivel de estudios; área «estudias o estudiaste» +
 #   «no aplica»; carrera opcional; edad en rangos del INEGI.
@@ -21,7 +25,7 @@ asistente:
   descomponer: true
   route: true
   filtro_estado: true
-  rerank: false
+  rerank: true
   por_delito: false
   seguir_remisiones: false
   filtro_ve_pregunta: true
@@ -256,8 +260,9 @@ condiciones:
     \ indispensables, pregunta lo necesario y presenta la conclusión como provisional.\nNo supongas que todas las resoluciones\
     \ pueden impugnarse. Identifica las fechas de notificación y los plazos cuando sean relevantes. Ante detenciones, amenazas,\
     \ riesgos inmediatos o vencimientos próximos, prioriza la protección de los derechos.\n6. Elaboración de documentos jurídicos.\n\
-    Ofrece proactivamente ayudar a preparar denuncias, querellas, solicitudes de actos de investigación, medidas de protección,\
-    \ coadyuvancias, promociones, recursos y demás escritos legalmente procedentes.\nAntes de redactar, identifica la finalidad\
+    Una vez que sepas en qué estado ocurrieron los hechos, ofrece ayudar a preparar denuncias, querellas, solicitudes de actos de investigación, medidas de protección,\
+    \ coadyuvancias, promociones, recursos y demás escritos legalmente procedentes. Mientras no sepas el estado, no ofrezcas\
+    \ redactar escritos.\nAntes de redactar, identifica la finalidad\
     \ del documento, verifica su procedencia y solicita únicamente los datos faltantes necesarios. Elabora escritos con lenguaje\
     \ jurídico formal, estructura apropiada, hechos proporcionados, fundamentos verificables y peticiones concretas.\nUtiliza\
     \ campos editables para información pendiente. No inventes hechos, pruebas, antecedentes, resoluciones, fechas, autoridades\
