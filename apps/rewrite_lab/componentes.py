@@ -69,10 +69,20 @@ COMPONENTES = {
                         'objetivo': 'Para cada pregunta con artículos esperados (sets 3, 13 y 14): cuántos llegan al '
                                     'contexto final que lee el LLM (los k primeros resultados + sus vecinos) y cuántas '
                                     'palabras tiene ese contexto, con y sin vecinos y con distintos k.', 'efecto': True},
+    'reescritura_recall': {'nombre': 'Reescritura multiturno · recall', 'icono': '💬',
+                           'objetivo': 'Del segundo mensaje en adelante, la búsqueda híbrida necesita un solo texto. Para '
+                                       'cada mensaje siguiente real de la ronda 1 (con la conversación tal como quedó '
+                                       'guardada): cuántos artículos esperados de la situación salen entre los 10 primeros '
+                                       'resultados buscando con solo el último mensaje, con los mensajes de la persona '
+                                       'pegados (sin llamar al LLM), o con lo que reescribe el LLM (v1 y v2). Con HyDE, '
+                                       'sin dividir, sin filtro.', 'efecto': True, 'casos_en_base': True},
     'hyde': {'nombre': 'HyDE', 'icono': '🧪',
              'objetivo': 'Escribir un borrador del artículo que respondería, sin inventar números de artículo y sin '
                          'nombrar estados que la pregunta no nombra.'},
 }
+
+# Pruebas cuyo runner recibe (entrada, esperado): el caso trae datos que no caben en el texto de entrada.
+CON_ESPERADO = {'reescritura_recall'}
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS comp_casos (
@@ -242,6 +252,7 @@ EVALUADORES = {'filtro': eval_filtro, 'descomponer': eval_descomponer, 'por_deli
                'desc_lugar_y_pregunta': eval_division('lugar_y_pregunta'), 'desc_libre': eval_division('libre'),
                'desc_libre_corto': eval_division('libre_corto'), 'desc_libre_max2': eval_division('libre_max2'),
                'division_recall': eval_recall, 'hyde_recall': eval_recall, 'rerank_recall': eval_recall,
+               'reescritura_recall': eval_recall,
                'contexto_recall': eval_recall}
 
 # Formas de dividir que compara la prueba de recall: (descomponer, descomponer por delito). descomponer = False, True
@@ -257,7 +268,7 @@ VERSIONES_DIVISION = {
 def metricas(componente: str, filas: list[dict]) -> dict:
     """Aciertos totales y, donde aplica, por tipo de caso (para descomponer: comparativas vs no comparativas)."""
     ok = [f for f in filas if not f.get('error')]
-    if componente in ('division_recall', 'hyde_recall', 'rerank_recall', 'contexto_recall'):
+    if componente in ('division_recall', 'hyde_recall', 'rerank_recall', 'contexto_recall', 'reescritura_recall'):
         return metricas_recall(filas)
     out = {'n': len(filas), 'errores': len(filas) - len(ok), 'aciertos': sum(f['ok'] for f in ok),
            'tasa': round(sum(f['ok'] for f in ok) / len(ok), 4) if ok else None}
@@ -335,6 +346,9 @@ class Componentes:
             return
         datos = json.loads(CASOS_INICIALES.read_text())
         for comp, casos in datos.items():
+            # Los casos con mensajes de participantes no viven en el repo: los carga un script directo en la base.
+            if COMPONENTES.get(comp, {}).get('casos_en_base'):
+                continue
             cur.execute("SELECT 1 FROM comp_casos WHERE componente = %s LIMIT 1", (comp,))
             if cur.fetchone():
                 continue
@@ -429,7 +443,9 @@ class Componentes:
                 t0, fila = time.time(), {'caso_id': k['id'], 'entrada': k['entrada'], 'esperado': k['esperado'],
                                          'salida': None, 'ok': None, 'detalle': None, 'error': None}
                 try:
-                    fila['salida'] = self.runners[comp](k['entrada'])
+                    # Las pruebas cuyo caso no cabe en el texto de entrada (p. ej. una conversación) reciben también «esperado».
+                    fila['salida'] = (self.runners[comp](k['entrada'], k['esperado']) if comp in CON_ESPERADO
+                                      else self.runners[comp](k['entrada']))
                     fila['ok'], fila['detalle'] = EVALUADORES[comp](k['esperado'], fila['salida'])
                 except Exception as e:  # noqa: BLE001 — un caso que falla no tumba la corrida
                     fila['error'] = f'{type(e).__name__}: {e}'

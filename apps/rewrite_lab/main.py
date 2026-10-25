@@ -1429,6 +1429,53 @@ def rerank_recall(pregunta: str) -> dict:
     return r
 
 
+# Reescritura multiturno: del 2.º mensaje en adelante la búsqueda híbrida necesita UN texto. Cuatro formas de armarlo.
+VERSIONES_REESCRITURA = ('solo el último mensaje', 'mensajes de la persona pegados', 'reescritura v1', 'reescritura v2')
+
+
+def reescritura_recall(mensaje: str, esperado: dict) -> dict:
+    """Un mensaje siguiente (2.º o después) de una conversación real guardada del estudio (`esperado.turno_id`), con
+    la conversación anterior tal como quedó (mensajes de la persona y respuestas del asistente). Para cada versión de
+    VERSIONES_REESCRITURA: el texto con el que buscaría, y cuántos artículos esperados de la situación salen entre los
+    10 primeros resultados (híbrido con HyDE, vecinos, sin dividir, sin filtro). El tiempo incluye la llamada al LLM que
+    reescribe (las dos primeras versiones no la hacen)."""
+    from study.validar import escenario_efectivo
+    with connect() as c, c.cursor() as cur:
+        cur.execute("SELECT t.intento_id, t.n, i.escenario, i.variante, k.estudio FROM estudio_turnos t "
+                    "JOIN estudio_intentos i ON i.id = t.intento_id JOIN estudio_codigos k ON k.codigo = i.codigo "
+                    "WHERE t.id = %s", (int(esperado['turno_id']),))
+        fila = cur.fetchone()
+        if not fila:
+            raise ValueError('ese turno ya no existe (¿la persona se retiró del estudio?)')
+        iid, n, esc, var, estudio = fila
+        cur.execute("SELECT pregunta, respuesta FROM estudio_turnos WHERE intento_id = %s AND n < %s ORDER BY n", (iid, n))
+        msgs = []
+        for p, r in cur.fetchall():
+            msgs += [{'role': 'user', 'content': p}] + ([{'role': 'assistant', 'content': r}] if r else [])
+        cur.execute("SELECT pregunta FROM estudio_turnos WHERE id = %s", (int(esperado['turno_id']),))
+        msgs.append({'role': 'user', 'content': cur.fetchone()[0]})
+        spec = study_store.spec(estudio)
+        ef = escenario_efectivo(next(e for e in spec['escenarios'] if e['id'] == esc), var)
+        gold = [g for g in _study_resolver([g for x in ef.get('gold') or [] for g in _study_gold_refs(x)]) if any(x.get('ids') for x in g)]
+        tema = spec['asistente'].get('tema') or _TEMA_PENAL
+        textos, aciertos, segundos = {}, {}, {}
+        for v in VERSIONES_REESCRITURA:
+            t0 = time.time()
+            if v == 'solo el último mensaje':
+                texto = msgs[-1]['content']
+            elif v == 'mensajes de la persona pegados':
+                texto = gate_text(msgs)   # lo mismo que lee el filtro por estado
+            else:
+                texto = condense_question(msgs, max_turns=10, version=v[-2:])
+            scored, _, _ = retrieve_ranked(cur, texto, 'híbrido', tema, None, True, True, False, False)
+            segundos[v] = round(time.time() - t0, 2)
+            textos[v] = texto
+            chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
+            aciertos[v] = sum(1 for g in chk['groups'] if g['rank'] and g['rank'] <= 10)
+    return {'gold': len(gold), 'aciertos': aciertos, 'segundos': segundos, 'textos': textos,
+            'tipos': [f"situación {esc}{' ' + var if var else ''}"]}
+
+
 def hyde_recall(pregunta: str) -> dict:
     """Recall con y sin HyDE (sin dividir la pregunta), por set."""
     r = _recall(pregunta, {'sin HyDE': {'hyde': False}, 'con HyDE': {'hyde': True}})
@@ -1443,7 +1490,7 @@ componentes = Componentes(
              **{f'desc_{v}': (lambda t, v=v: llm.decompose(t, DECOMPOSE_VARIANTES[v]))
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
              'division_recall': division_recall, 'hyde_recall': hyde_recall, 'rerank_recall': rerank_recall,
-             'contexto_recall': contexto_recall},
+             'contexto_recall': contexto_recall, 'reescritura_recall': reescritura_recall},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
              'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
              **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v])
@@ -1453,7 +1500,8 @@ componentes = Componentes(
              'hyde_recall': lambda: hyde_for(_TEMA_PENAL),
              # el md5 de la prueba de rerank cambia si cambia el reranker, su formato o el prompt de HyDE
              'rerank_recall': lambda: f'{reranker.url} · {reranker.formato}\n\n{hyde_for(_TEMA_PENAL)}',
-             'contexto_recall': lambda: f'{VERSIONES_CONTEXTO} · tope de vecinos {NEIGHBOR_EXTRA_CAP}\n\n{hyde_for(_TEMA_PENAL)}'})
+             'contexto_recall': lambda: f'{VERSIONES_CONTEXTO} · tope de vecinos {NEIGHBOR_EXTRA_CAP}\n\n{hyde_for(_TEMA_PENAL)}',
+             'reescritura_recall': lambda: f'{CONDENSE_SYSTEM}\n\n{CONDENSE_SYSTEM_V2}\n\n{hyde_for(_TEMA_PENAL)}'})
 app.include_router(componentes.router)
 
 # Asistente de trámites (/tramites) y administración de formularios (/formularios): ver forms/.

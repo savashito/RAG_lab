@@ -1235,18 +1235,19 @@ function compSalida(comp, s){
 }
 function compTablaRecall(m){
   const pv = m.por_version || {}, x0 = Object.values(pv)[0] || {};
-  const sets = Object.keys(x0).filter(t => t.startsWith('set ')).sort((a, b) => parseInt(a.slice(4)) - parseInt(b.slice(4)));
+  const sets = Object.keys(x0).filter(t => t.startsWith('set ')).sort((a, b) => parseInt(a.slice(4)) - parseInt(b.slice(4)))
+    .concat(Object.keys(x0).filter(t => t.startsWith('situación ')).sort());   // la reescritura multiturno agrupa por situación del estudio
   const tiposP = ['comparativa', 'varias preguntas', 'varias conductas', 'otra'].filter(t => x0[t]);
   const seg = ts => ts.segundos ? `${ts.segundos.media.toFixed(1)} ± ${ts.segundos.de.toFixed(1)} s` : '<span class="muted">—</span>';
   const conPalabras = Object.values(pv).some(v => v.palabras);
   const pal = ts => ts.palabras ? `${Math.round(ts.palabras.media).toLocaleString('es-MX')} ± ${Math.round(ts.palabras.de).toLocaleString('es-MX')}` : '<span class="muted">—</span>';
   const mejor = t => Math.max(...Object.values(pv).map(v => (v[t] || {}).recall ?? -1));
   const orden = Object.entries(pv).sort((a, b) => ((b[1].todas || {}).recall ?? -1) - ((a[1].todas || {}).recall ?? -1));
-  const tabla = (cols, conTiempo) => `<div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${cols.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${x0[t] ? x0[t].preguntas + ' preg.' : ''}</div></th>`).join('')}${conTiempo ? '<th>Tiempo por pregunta<div class="muted" style="font-weight:normal">búsqueda completa</div></th>' : ''}${conTiempo && conPalabras ? '<th>Palabras del contexto<div class="muted" style="font-weight:normal">lo que lee el LLM</div></th>' : ''}</tr>
+  const tabla = (cols, conTiempo) => `<div style="overflow-x:auto"><table class="comp-tab"><tr><th>Versión</th>${cols.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${x0[t] ? x0[t].preguntas + ' casos' : ''}</div></th>`).join('')}${conTiempo ? '<th>Tiempo por pregunta<div class="muted" style="font-weight:normal">búsqueda completa</div></th>' : ''}${conTiempo && conPalabras ? '<th>Palabras del contexto<div class="muted" style="font-weight:normal">lo que lee el LLM</div></th>' : ''}</tr>
     ${orden.map(([v, ts]) => `<tr><td><b>${esc(v)}</b></td>${cols.map(t => { const c = ts[t];
       return c ? `<td${c.recall === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(c.recall)} <span class="muted">${c.aciertos}/${c.gold}</span></td>` : '<td class="muted">—</td>'; }).join('')}${conTiempo ? `<td>${seg(ts)}</td>` : ''}${conTiempo && conPalabras ? `<td>${pal(ts)}</td>` : ''}</tr>`).join('')}
     </table></div>`;
-  return `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall por set: artículos esperados entre los 10 primeros resultados del buscador</h3>
+  return `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall: artículos esperados entre los 10 primeros resultados de la búsqueda híbrida, en total y por ${sets.some(t => t.startsWith('situación ')) ? 'situación' : 'set'}</h3>
     ${tabla(['todas', ...sets], true)}
     ${tiposP.length ? `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall por tipo de pregunta</h3>${tabla(tiposP, false)}` : ''}
     <p class="muted" style="font-size:12px">En verde, la mejor versión de cada columna. Una pregunta puede ser de varios tipos.
@@ -1254,12 +1255,14 @@ function compTablaRecall(m){
 }
 async function compResultados(rid){
   const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;
-  if(['division_recall', 'hyde_recall', 'rerank_recall', 'contexto_recall'].includes(comp)){
+  if(['division_recall', 'hyde_recall', 'rerank_recall', 'contexto_recall', 'reescritura_recall'].includes(comp)){
     const run = (await bjson(`/api/componentes/${comp}/corridas`)).find(r => r.id === rid) || {};
-    $('comp-res').innerHTML = compTablaRecall(run.metricas || {}) + `<details><summary class="muted">Pregunta por pregunta (${res.length})</summary>
-      <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Pregunta</th><th>Tipos</th><th>Artículos esperados</th><th>Aciertos por versión</th></tr>
+    const conTexto = comp === 'reescritura_recall';   // muestra con qué texto buscó cada versión
+    $('comp-res').innerHTML = compTablaRecall(run.metricas || {}) + `<details><summary class="muted">Caso por caso (${res.length})</summary>
+      <div style="overflow-x:auto"><table class="comp-tab"><tr><th>${conTexto ? 'Mensaje de la persona' : 'Pregunta'}</th><th>Tipos</th><th>Artículos esperados</th><th>Aciertos por versión${conTexto ? ' y texto con el que buscó' : ''}</th></tr>
       ${res.map(r => { const s = r.salida || {}; return `<tr><td>${esc(r.entrada)}</td><td class="muted">${esc((s.tipos || []).join(', ') || 'otra')}</td><td>${s.gold ?? '—'}</td>
-        <td>${r.error ? esc(r.error) : Object.entries(s.aciertos || {}).map(([v, h]) => `${esc(v)}: ${h}`).join('<br>')}</td></tr>`; }).join('')}
+        <td>${r.error ? esc(r.error) : Object.entries(s.aciertos || {}).map(([v, h]) => `<b>${esc(v)}</b>: ${h}` +
+          (conTexto && (s.textos || {})[v] ? `<div class="muted" style="font-size:11px;margin-bottom:4px">${esc(s.textos[v])}</div>` : '')).join(conTexto ? '' : '<br>')}</td></tr>`; }).join('')}
       </table></div></details>`;
     return;
   }

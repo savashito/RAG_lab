@@ -87,7 +87,9 @@ def test_metricas_por_grupo():
 
 def test_casos_iniciales_bien_formados():
     datos = json.loads(cp.CASOS_INICIALES.read_text())
-    assert set(datos) == set(cp.COMPONENTES)
+    # Los casos con mensajes de participantes (casos_en_base) no viven en el repo: los carga un script en la base.
+    en_base = {c for c, d in cp.COMPONENTES.items() if d.get('casos_en_base')}
+    assert set(datos) == set(cp.COMPONENTES) - en_base and not en_base & set(datos)
     for comp, casos in datos.items():
         assert casos, comp
         for k in casos:
