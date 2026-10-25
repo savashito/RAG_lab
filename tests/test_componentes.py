@@ -155,3 +155,17 @@ def test_filtro_ve_la_pregunta_del_asistente():
     assert persona == 'mandé fotos y me piden dinero\nQueretaro'          # el respaldo por regex no lee la pregunta
     assert jg.texto_para_filtro(msgs)[0] == persona                       # sin la opción: igual que hoy
     assert 'Ciudad de México' not in texto                                # las explicaciones del asistente no entran
+
+
+def test_pregunta_de_lugar_frases_de_gemma():
+    """Las frases que se le escapaban a la regex en 216 respuestas reales (regex_contra_gemma.py, 24-oct)."""
+    import jurisdiction_gate as jg
+    for t in ['…le ofrezco explicar qué establece el código penal de su estado si me indica cuál es.',
+              'Es necesario que proporcione la información sobre en qué estado de la República ocurrieron los hechos.',
+              'Si necesitas saber qué establece la ley, puedes decirme en qué estado te encuentras.',
+              '¿Podrías confirmarme si los hechos ocurrieron físicamente en la Ciudad de México o en otro estado?',
+              '¿Los hechos que mencionas ocurrieron dentro de la Ciudad de México?']:
+        assert jg.pregunta_de_lugar(t), t
+    for t in ['¿Sabes si el proceso se encuentra en una etapa de investigación inicial?',
+              'La pena depende del estado donde se cometa el delito.']:
+        assert jg.pregunta_de_lugar(t) is None, t

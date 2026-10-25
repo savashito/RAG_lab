@@ -73,12 +73,16 @@ EXTRAER_SYSTEM_V2 = EXTRAER_SYSTEM.replace('Devuelve SOLO JSON', (
     'los lugares que nombre esa línea NO cuentan como lugares mencionados. La línea siguiente es la respuesta de la persona: '
     'si el asistente preguntó dónde ocurrieron los hechos y la persona contesta con un lugar, ese lugar es de los «hechos».\n'
     'Devuelve SOLO JSON'), 1)
-_LUGAR_PEDIDO = r'(?:en que (?:estado|entidad|ciudad|lugar|municipio)|que (?:estado|entidad)|donde (?:ocurri|paso|sucedi|fue))'
+# Frases con las que Gemma pide el lugar (revisadas contra Gemma en 216 respuestas reales, 24-oct: regex_contra_gemma.py).
+_LUGAR_PEDIDO = (r'(?:en que (?:estado|entidad|ciudad|lugar|municipio)|que (?:estado|entidad)|donde (?:ocurri|paso|sucedi|fue)|'
+                 r'(?:su|tu) (?:estado|entidad|localidad|ubicacion)|te encuentras)')
+_VERBO_PIDE = (r'(?:indica\w*|indique\w*|dime|digame|precis\w*|necesito (?:saber|conocer)|necesario (?:saber|conocer|precisar|que)|'
+               r'podrias? (?:decirme|indicarme)|puedes? (?:decirme|indicarme)|confirm\w*|proporcion\w*|comparte\w*)')
 # En una pregunta también cuenta «¿ocurrió en Querétaro o en la Ciudad de México?».
-_PIDE_PREGUNTA = re.compile(r'¿[^?¿]*(?:' + _LUGAR_PEDIDO + r'|(?:ocurri|paso|sucedi)\w* en )[^?¿]*\?')
-_PIDE_DIRECTO = re.compile(r'(?:indica(?:me|nos)?|indique(?:me|nos)?|dime|digame|precis(?:a|ar|e)|necesito (?:saber|conocer)|'
-                           r'necesario (?:saber|conocer|precisar)|podrias? (?:decirme|indicarme)|confirm(?:a|e|ar))[^.?!]{0,60}'
-                           + _LUGAR_PEDIDO + r'[^.?!]*')
+_PIDE_PREGUNTA = re.compile(r'¿[^?¿]*(?:' + _LUGAR_PEDIDO + r'|(?:ocurri|paso|sucedi)\w*(?: \w+)? (?:en|dentro de) )[^?¿]*\?')
+# El verbo puede ir antes o después del lugar («…el código penal de su estado si me indica cuál es»).
+_PIDE_DIRECTO = re.compile(_VERBO_PIDE + r'[^.?!]{0,80}' + _LUGAR_PEDIDO + r'[^.?!]*|[^.?!]*' + _LUGAR_PEDIDO + r'[^.?!]{0,80}'
+                           + _VERBO_PIDE + r'[^.?!]*')
 
 
 def _sin_acentos(t: str) -> str:
