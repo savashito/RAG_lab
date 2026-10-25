@@ -13,8 +13,15 @@ os.chdir(APP)
 import main
 from study.validar import escenario_efectivo
 
-APAGAR = {'LEY OLIMPIA ficha técnica.md', 'Violencia Digital.md'}
-VARIANTES = {'todos los documentos': set(), 'sin «Ley Olimpia» ni «Violencia Digital»': APAGAR}
+# Lo apagado en prod (tabla fuentes_apagadas) al arrancar este proceso. El 25-oct: la Ley General de Acceso de las
+# Mujeres y «Violencia Digital» (dependen de quién es la persona, igual que los códigos penales de dónde pasó) y lo que
+# Karen quitó por no tener que ver con el estudio (derecho ambiental, ficha de la Ley Olimpia, etc.).
+# Con un segundo argumento «sin-referencia» no repite la variante con todos los documentos.
+APAGAR = set(main.APAGADAS)
+VARIANTES = {'todos los documentos': set(), f'como está prod ({len(APAGAR)} documentos apagados)': APAGAR}
+if len(sys.argv) > 2 and sys.argv[2] == 'sin-referencia':
+    del VARIANTES['todos los documentos']
+print('apagados:', sorted(APAGAR), flush=True)
 TEMA, CORRIDA = 'derecho_penal_mexicano', 30
 _gold = {}
 
