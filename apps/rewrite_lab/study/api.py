@@ -202,7 +202,14 @@ def make_router(*, store, chat_stream, gold_refs, resolver_gold, static_dir, cur
         maximo = int((a['spec'].get('tutorial') or {}).get('max_preguntas', 2))
         if not store.contar_practica(a['codigo'], maximo):
             return _err('Ya hiciste las preguntas de práctica. Da clic en «Entendido, empezar».')
-        return _respuesta_sse(_stream([{'role': 'user', 'content': mensaje}], cfg_de(a), lambda out, error: None))
+        # La práctica no se guarda: la página manda las preguntas y respuestas anteriores de esta misma práctica (como
+        # mucho las permitidas), para que el asistente responda con contexto igual que en las situaciones.
+        msgs = []
+        for t in (b.get('historial') or [])[:maximo] if isinstance(b.get('historial'), list) else []:
+            if isinstance(t, dict) and str(t.get('pregunta') or '').strip() and str(t.get('respuesta') or '').strip():
+                msgs += [{'role': 'user', 'content': str(t['pregunta']).strip()[:MAX_MENSAJE]},
+                         {'role': 'assistant', 'content': str(t['respuesta']).strip()[:12000]}]
+        return _respuesta_sse(_stream(msgs + [{'role': 'user', 'content': mensaje}], cfg_de(a), lambda out, error: None))
 
     @r.post('/api/estudio/p/tutorial_listo')
     @guard

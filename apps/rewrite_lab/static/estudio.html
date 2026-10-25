@@ -342,7 +342,9 @@ function pantallaTutorial() {
     if (!msg || send.disabled) return;
     document.getElementById('msgs').insertAdjacentHTML('beforeend', `<div class="msg user">${esc(msg)}</div><div class="msg thinking" id="pensando">Buscando en las leyes… (unos segundos)</div>`);
     send.disabled = true;
-    try { const r = await preguntarStream('practica_stream', {mensaje: msg}, document.getElementById('pensando')); practica.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes}); }
+    // La práctica no se guarda en el estudio: la conversación previa la manda la página, para que el asistente tenga contexto.
+    const historial = practica.filter(t => t.respuesta).map(t => ({pregunta: t.pregunta, respuesta: t.respuesta}));
+    try { const r = await preguntarStream('practica_stream', {mensaje: msg, historial}, document.getElementById('pensando')); practica.push({pregunta: msg, respuesta: r.respuesta, fuentes: r.fuentes}); }
     catch (e) { practica.push({pregunta: msg, error: e.message}); }
     pantallaTutorial();
   };

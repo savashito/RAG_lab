@@ -368,8 +368,9 @@ def test_streaming_guarda_el_turno_completo(cliente):
     assert evs[-1]['stage'] == 'done' and evs[-1]['fuentes'][0]['texto'] == 'Art. 179'
     [t] = store.export('prueba')['turnos']
     assert t['respuesta'] == 'Sí, es delito.' and t['ranking'] == [7, 8] and t['busqueda_debug']['hyde_passage'] == 'borrador'
-    # La práctica en streaming no se guarda como turno.
-    c.post('/api/estudio/p/practica_stream', headers=H, json={'mensaje': 'hola'})
+    # La práctica en streaming no se guarda como turno; la conversación previa de la práctica la manda la página.
+    c.post('/api/estudio/p/practica_stream', headers=H, json={'mensaje': 'hola', 'historial': [{'pregunta': '¿qué es?', 'respuesta': 'Es…'}]})
+    assert [m['role'] for m in llamadas[-1]] == ['user', 'assistant', 'user'] and llamadas[-1][-1]['content'] == 'hola'
     assert len(store.export('prueba')['turnos']) == 1 and store.participante(p)['practicas'] == 1
 
 
