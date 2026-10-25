@@ -91,6 +91,10 @@ versiones = {f'desc_{v}': descomponer for v in ('solo_lugar', 'solo_pregunta', '
 # Pruebas de recall: preguntas de los sets 3, 13 y 14 con artículos esperados (algún «Cita el art.» en sus criterios).
 recall = [{'entrada': q, 'esperado': {'set': sid}, 'fuente': f'set {sid} · q{qid}', 'revisado': True}
           for sid, qid, q, _ in preguntas if qid in con_cita]
-print(json.dumps({'filtro': filtro, 'descomponer': descomponer, 'por_delito': por_delito, 'hyde': hyde, **versiones,
+# Casos escritos a mano (no salen de la base): se conservan del archivo actual.
+_actual = json.loads((RAIZ / 'apps' / 'rewrite_lab' / 'componentes_casos.json').read_text())
+_a_mano = {k: _actual[k] for k in ('filtro_respuesta_corta',) if k in _actual}
+_a_mano['filtro_metodos'] = [{**k, 'esperado': {**k['esperado'], 'conversacion': []}} for k in filtro] + _a_mano.get('filtro_respuesta_corta', [])
+print(json.dumps({**_a_mano, 'filtro': filtro, 'descomponer': descomponer, 'por_delito': por_delito, 'hyde': hyde, **versiones,
                   'division_recall': recall, 'hyde_recall': recall, 'rerank_recall': recall, 'contexto_recall': recall,
                   'combinacion_recall': recall}, ensure_ascii=False, indent=1))

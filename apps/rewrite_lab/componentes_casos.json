@@ -17493,5 +17493,1774 @@
    "fuente": "inventado (Claude, 24-oct)",
    "revisado": false
   }
+ ],
+ "filtro_metodos": [
+  {
+   "entrada": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q357",
+   "revisado": true
+  },
+  {
+   "entrada": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q358",
+   "revisado": true
+  },
+  {
+   "entrada": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q359",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi pareja me insulta y me empuja seguido en la casa. ¿Qué dice la ley penal?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q360",
+   "revisado": true
+  },
+  {
+   "entrada": "La persona que me supervisa en el trabajo me manda mensajes con insinuaciones sexuales. ¿Es delito?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q361",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi expareja subió a redes sociales fotos íntimas mías sin mi permiso. ¿Qué puedo hacer?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q362",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien se metió a mi casa sin permiso mientras no estaba, aunque no se llevó nada. ¿Es delito?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q363",
+   "revisado": true
+  },
+  {
+   "entrada": "Una persona se metió a vivir a mi terreno y no se quiere salir. ¿Qué delito comete?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q364",
+   "revisado": true
+  },
+  {
+   "entrada": "Me quitaron la bicicleta afuera de una tienda. ¿Qué pena tiene el que se la llevó?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q365",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi hermano me grita, me amenaza y me ha empujado varias veces en la casa donde vivimos. ¿Lo puedo denunciar?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q366",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien con quien salí me amenaza con publicar unas fotos íntimas que yo le mandé. ¿Eso es delito?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q367",
+   "revisado": true
+  },
+  {
+   "entrada": "Di un anticipo para rentar un departamento y resultó que el que me lo rentó no era el dueño. ¿Qué puedo hacer?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q368",
+   "revisado": true
+  },
+  {
+   "entrada": "En la Ciudad de México me vendieron un celular por internet y nunca me llegó. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q369",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en la Ciudad de México y mi exroomie entró a mi departamento sin permiso. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q370",
+   "revisado": true
+  },
+  {
+   "entrada": "En Querétaro me robaron la mochila en el transporte público. ¿Qué pena tiene?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q371",
+   "revisado": true
+  },
+  {
+   "entrada": "Tengo una casa en Querétaro y unas personas se metieron a vivir sin mi permiso. ¿Qué delito cometen?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q372",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México mi papá me pega y me insulta. ¿Qué dice la ley penal?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q373",
+   "revisado": true
+  },
+  {
+   "entrada": "En el Estado de México alguien está pasando por WhatsApp un video íntimo mío. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q374",
+   "revisado": true
+  },
+  {
+   "entrada": "En Morelos un cobrador me dijo que me va a lastimar si no le pago. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q375",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Morelos y mi jefa me presiona para salir con ella a cambio de un aumento. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q376",
+   "revisado": true
+  },
+  {
+   "entrada": "En Coyoacán me robaron la cartera en el mercado. ¿Qué pena tiene eso?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q377",
+   "revisado": true
+  },
+  {
+   "entrada": "En Iztapalapa un vecino me amenazó con lastimarme. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q378",
+   "revisado": true
+  },
+  {
+   "entrada": "En Ecatepec me vendieron un coche con papeles falsos. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q379",
+   "revisado": true
+  },
+  {
+   "entrada": "En Toluca mi casero entró a mi casa sin avisar. ¿Eso es delito?",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q380",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cuernavaca alguien ocupó un terreno de mi familia y dice que ahora es suyo. ¿Qué delito comete?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q381",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cuautla alguien publicó fotos íntimas mías en Facebook. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q382",
+   "revisado": true
+  },
+  {
+   "entrada": "En San Juan del Río mi pareja me golpea y me controla el dinero. ¿Qué dice la ley penal?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q383",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Corregidora y mi supervisor me dijo que me sube de puesto si salgo con él. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q384",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cómo se castiga el robo en la Ciudad de México y en Querétaro?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q385",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencias hay entre el delito de fraude en la Ciudad de México y en el Estado de México?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q386",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara cómo regulan la violencia familiar Querétaro y Morelos.",
+   "esperado": {
+    "estados": [
+     "Morelos",
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q387",
+   "revisado": true
+  },
+  {
+   "entrada": "¿El hostigamiento sexual en el trabajo se castiga igual en el Estado de México que en Morelos?",
+   "esperado": {
+    "estados": [
+     "Estado de México",
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q388",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué dice la ley de la Ciudad de México y la de Morelos sobre publicar fotos íntimas de alguien sin su permiso?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q389",
+   "revisado": true
+  },
+  {
+   "entrada": "Si alguien invade un terreno, ¿qué delito comete en Querétaro y cuál en el Estado de México?",
+   "esperado": {
+    "estados": [
+     "Estado de México",
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q390",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Meterse a una casa sin permiso es delito en la Ciudad de México y en Querétaro? ¿Con qué pena?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q391",
+   "revisado": true
+  },
+  {
+   "entrada": "Compara la pena del robo simple en la Ciudad de México, el Estado de México y Morelos.",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Estado de México",
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q392",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi primo justo en el momento en que estaba robando. ¿Eso es flagrancia? ¿Qué dice la ley?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q393",
+   "revisado": true
+  },
+  {
+   "entrada": "Si detienen a alguien en flagrancia por un delito que se persigue por querella y la víctima no ha presentado la querella, ¿cuánto tiempo lo pueden tener detenido?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q394",
+   "revisado": true
+  },
+  {
+   "entrada": "¿En qué delitos se puede llegar a un acuerdo con la víctima para terminar el proceso penal?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q395",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es un criterio de oportunidad y en qué casos no se puede aplicar?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q396",
+   "revisado": true
+  },
+  {
+   "entrada": "Alguien me exige dinero por teléfono amenazando con hacerle daño a mi familia. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q397",
+   "revisado": true
+  },
+  {
+   "entrada": "En Puebla me robaron el celular en la calle. ¿Qué pena tiene ese delito?",
+   "esperado": {
+    "estados": [
+     "Puebla"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q398",
+   "revisado": true
+  },
+  {
+   "entrada": "En Guadalajara le pagué a alguien un servicio que nunca hizo y desapareció con el dinero. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Jalisco"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q399",
+   "revisado": true
+  },
+  {
+   "entrada": "En Monterrey mi pareja me golpea seguido. ¿Qué dice la ley penal de Nuevo León?",
+   "esperado": {
+    "estados": [
+     "Nuevo León"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q400",
+   "revisado": true
+  },
+  {
+   "entrada": "En Oaxaca un vecino me amenazó con quemar mi casa. ¿Es delito?",
+   "esperado": {
+    "estados": [
+     "Oaxaca"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q401",
+   "revisado": true
+  },
+  {
+   "entrada": "En Mérida alguien se metió a mi casa sin permiso. ¿Qué delito es?",
+   "esperado": {
+    "estados": [
+     "Yucatán"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q402",
+   "revisado": true
+  },
+  {
+   "entrada": "En Veracruz invadieron un terreno de mi familia. ¿Qué delito cometen?",
+   "esperado": {
+    "estados": [
+     "Veracruz"
+    ],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q403",
+   "revisado": true
+  },
+  {
+   "entrada": "Si me detiene la policía, ¿qué derechos tengo?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q407",
+   "revisado": true
+  },
+  {
+   "entrada": "Soy víctima de un delito y ya puse la denuncia. ¿Qué derechos tengo durante el proceso?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q408",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué medidas cautelares le puede poner el juez a la persona que me agredió mientras dura el juicio?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q409",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Para qué delitos procede la prisión preventiva oficiosa?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q410",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la suspensión condicional del proceso?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q411",
+   "revisado": true
+  },
+  {
+   "entrada": "Le ofrecieron a mi hermano un procedimiento abreviado. ¿Qué requisitos tiene?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q412",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi papá y ya tuvo su primera audiencia. ¿En cuánto tiempo el juez decide si lo vinculan a proceso?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q413",
+   "revisado": true
+  },
+  {
+   "entrada": "Se llevaron a mi hermano y nos piden dinero para soltarlo. ¿Qué delito es y qué pena tiene?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q414",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuándo se considera que un grupo de personas es delincuencia organizada?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q415",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es el lavado de dinero y qué pena tiene?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q416",
+   "revisado": true
+  },
+  {
+   "entrada": "Me asaltaron saliendo del metro Pantitlán, ¿qué hago?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Estoy en Neza y un vecino me rompió la ventana a pedradas.",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Xochimilco me cobraron de más en una trajinera y me amenazaron.",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Polanco me clonaron la tarjeta en un restaurante.",
+   "esperado": {
+    "estados": [
+     "Ciudad de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en Tlalnepantla y mi expareja publicó fotos mías sin permiso.",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Valle de Chalco me robaron la moto.",
+   "esperado": {
+    "estados": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Tepoztlán un guía de turistas me estafó.",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Jiutepec me golpearon afuera de un bar.",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Tequisquiapan me vendieron un terreno que no era del vendedor.",
+   "esperado": {
+    "estados": [
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron la cartera en Pachuca.",
+   "esperado": {
+    "estados": [
+     "Hidalgo"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Cancún me cobraron un tour que nunca existió.",
+   "esperado": {
+    "estados": [
+     "Quintana Roo"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me extorsionaron por teléfono desde Monterrey.",
+   "esperado": {
+    "estados": [
+     "Nuevo León"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En Mérida me chocaron y el otro conductor huyó.",
+   "esperado": {
+    "estados": [
+     "Yucatán"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron en Los Cabos, en el hotel.",
+   "esperado": {
+    "estados": [
+     "Baja California Sur"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en Texas, ¿puedo denunciar en México?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Aquí en mi colonia hay un señor que amenaza a todos.",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "En la central de abastos me vendieron mercancía robada.",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué pena tiene el homicidio culposo según el Código Penal Federal?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Es igual de grave el robo en Iztacalco que en Ecatepec?",
+   "esperado": {
+    "estados": [
+     "Ciudad de México",
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.",
+   "esperado": {
+    "estados": [
+     "Guanajuato",
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en GDL, ¿qué pena tiene?",
+   "esperado": {
+    "estados": [
+     "Jalisco"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron el celular en GLD, ¿qué pena tiene?",
+   "esperado": {
+    "estados": [],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me asaltaron en Mty",
+   "esperado": {
+    "estados": [
+     "Nuevo León"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me robaron en Cuerna",
+   "esperado": {
+    "estados": [
+     "Morelos"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (extra)",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Querétaro pero el fraude me lo hicieron en Celaya.",
+   "esperado": {
+    "hechos": [
+     "Guanajuato"
+    ],
+    "otros": [
+     "Querétaro"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en Puebla pero me asaltaron en Cuernavaca.",
+   "esperado": {
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": [
+     "Puebla"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en el Estado de México. En un hospital privado le negaron la atención a mi abuela si no pagábamos antes.",
+   "esperado": {
+    "hechos": [],
+    "otros": [
+     "Estado de México"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Soy de Oaxaca y estudio en la CDMX; un compañero de clase me amenazó en la escuela.",
+   "esperado": {
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "otros": [
+     "Oaxaca"
+    ],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Vivo en Toluca y un vecino entró a mi casa sin permiso.",
+   "esperado": {
+    "hechos": [
+     "Estado de México"
+    ],
+    "otros": [],
+    "conversacion": []
+   },
+   "fuente": "probar_deteccion (rol)",
+   "revisado": true
+  },
+  {
+   "entrada": "Trabajo en Morelos y mi jefa me presiona para salir con ella a cambio de un aumento. ¿Es delito?",
+   "esperado": {
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": [],
+    "conversacion": []
+   },
+   "fuente": "set 14 · q376",
+   "nota": "El acoso ocurre en el trabajo: Morelos es el lugar de los hechos (falla vista el 22-oct).",
+   "revisado": true
+  },
+  {
+   "entrada": "Me vendieron un coche por Facebook y nunca me lo entregaron, ¿qué hago?",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi exsocio se quedó con el dinero del negocio que le confié.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me clonaron la tarjeta y sacaron dinero de mi cuenta.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un compañero de la escuela me pegó y me rompió la nariz.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi vecino envenenó a mi perro.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi ex se llevó a mis hijos y no me deja verlos.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un señor me tocó sin mi permiso en el camión.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me grafitearon la fachada de la casa.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi jefe me manda mensajes sexuales y me presiona.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "Atropellaron a mi hermano y el conductor huyó.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuánto tiempo puede estar detenida una persona antes de que la vea un juez?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Puedo pedirle al Ministerio Público copia de la carpeta de investigación?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es una audiencia de vinculación a proceso?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "Si me acusan de un delito, ¿tengo derecho a un abogado gratis?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la reparación del daño para la víctima?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me agarraron con una pistola de uso exclusivo del Ejército, ¿qué pena es?",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi tío metió mercancía de contrabando por la aduana.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un funcionario del SAT me pidió dinero para no multarme.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Creo que en un negocio de mi colonia están lavando dinero.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me ofrecieron dinero por mi voto en las elecciones federales.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Detuvieron a mi primo con varios kilos de cocaína en la frontera.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me hablan diciendo que tienen a mi hijo y piden un depósito para soltarlo.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Unos tipos le cobran cuota a mi negocio cada semana.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Desaparecieron a mi hermano y la policía no hace nada.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Torturaron a mi hijo en la delegación para que confesara.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi cuñado me pidió prestado el coche y lo vendió sin decirme.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi expareja publicó en Facebook que soy ladrona y es mentira.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "El perro de mi vecino mordió a mi hijo.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me quitaron la bicicleta a punta de cuchillo.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi hija de 15 años anda con un hombre de 25.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un trabajador se cayó en la obra y murió porque no le dieron equipo de seguridad.",
+   "esperado": {
+    "depende": true,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (común, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Me pueden detener sin una orden de un juez?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué significa que a alguien lo vinculen a proceso?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuánto tarda normalmente un juicio oral?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Puedo grabar mi declaración ante el Ministerio Público?",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (procedimiento, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Una señora me dio un billete falso en el mercado.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi vecino tiene un taller clandestino de cohetes y pólvora.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Están talando árboles dentro de una reserva natural protegida.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Un elemento de la Guardia Nacional me golpeó en un retén.",
+   "esperado": {
+    "depende": false,
+    "federal": true,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (federal, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Encontraron a mi prima trabajando contra su voluntad, la tenían encerrada.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Unos hombres armados se llevaron a mi papá y no sabemos nada de él.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me llamaron diciendo que eran de un cártel y que si no pago lastiman a mi familia.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Golpearon a mi hijo en la patrulla para que firmara una declaración.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "Me quieren obligar a vender droga en mi colonia o me matan.",
+   "esperado": {
+    "depende": false,
+    "federal": false,
+    "conversacion": []
+   },
+   "fuente": "probar_clasificacion (ley general, nueva)",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencia hay entre dolo directo y dolo eventual?",
+   "esperado": {
+    "teorica": true,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es la legítima defensa y cuándo excluye el delito?",
+   "esperado": {
+    "teorica": true,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué significa que un delito sea de resultado material?",
+   "esperado": {
+    "teorica": true,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Cuál es la diferencia entre autor mediato y coautor?",
+   "esperado": {
+    "teorica": true,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué es el error de prohibición?",
+   "esperado": {
+    "teorica": true,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "¿Qué diferencia hay entre robo y abuso de confianza?",
+   "esperado": {
+    "teorica": true,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi primo se defendió de un asaltante y lo hirió, ¿lo pueden meter a la cárcel?",
+   "esperado": {
+    "teorica": false,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Le prestamos dinero a un amigo y ya no lo quiere devolver, ¿es delito?",
+   "esperado": {
+    "teorica": false,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Me empujaron en el metro y me fracturé la muñeca.",
+   "esperado": {
+    "teorica": false,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Mi hermano intentó robar una tienda pero lo detuvieron antes, ¿qué le pasa?",
+   "esperado": {
+    "teorica": false,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Un vecino dice que me va a matar si no me voy de la colonia.",
+   "esperado": {
+    "teorica": false,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Un compañero de trabajo me sacó fotos en el baño.",
+   "esperado": {
+    "teorica": false,
+    "conversacion": []
+   },
+   "fuente": "probar_doctrina",
+   "revisado": true
+  },
+  {
+   "entrada": "Queretaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "mande fotos intimas a alguien y ahora quiere dinero, que hago?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación. Lo que describes puede constituir extorsión y violencia digital. Según la Ley General en materia de Extorsión, a quien obligue a otro a dar dinero se le imponen de 15 a 25 años. En la Ciudad de México y en Querétaro también se sanciona la difusión de imágenes íntimas. **Para orientarte con precisión, ¿podrías decirme en qué estado de la República ocurrieron estos hechos?**"
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "La prueba del usuario en la ronda 2 (24-oct).",
+   "revisado": false
+  },
+  {
+   "entrada": "en la cdmx",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron el celular en el camión, es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "El robo se sanciona de forma distinta en cada estado: por ejemplo, en la Ciudad de México depende del valor de lo robado y en el Estado de México hay agravantes si fue en transporte público. ¿En qué estado ocurrió el robo?"
+     }
+    ],
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "Querétaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "mi jefe me manda mensajes sexuales y me ofrece un ascenso si salgo con él"
+     },
+     {
+      "role": "assistant",
+      "content": "Lo que describes podría ser hostigamiento o acoso sexual. En Querétaro el artículo 167 Ter sanciona el hostigamiento y en la Ciudad de México el artículo 179 sanciona el acoso sexual. Es necesario precisar en qué entidad federativa ocurrieron los hechos para decirte qué artículo aplica."
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "El asistente pide el lugar sin signos de pregunta.",
+   "revisado": false
+  },
+  {
+   "entrada": "Toluca",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me pelee en una fiesta y le rompi la nariz a alguien, que me puede pasar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Eso podría ser el delito de lesiones; la pena depende de la gravedad y del estado. Indícame en qué estado pasó, por favor."
+     }
+    ],
+    "hechos": [
+     "Estado de México"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "Una ciudad, no el estado.",
+   "revisado": false
+  },
+  {
+   "entrada": "en Cuernavaca",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me vendieron un coche que resultó robado, me pueden acusar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Depende de si sabías que era robado; podría ser encubrimiento por receptación. ¿Dónde ocurrieron los hechos?"
+     }
+    ],
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "Querétaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me llegó un citatorio por una pelea en un bar, qué hago?"
+     },
+     {
+      "role": "assistant",
+      "content": "Un citatorio es una cita de la Fiscalía; conviene acudir con un abogado. ¿El hecho ocurrió en Querétaro o en la Ciudad de México?"
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "La pregunta del asistente nombra dos estados como opciones: no debe entrar la Ciudad de México.",
+   "revisado": false
+  },
+  {
+   "entrada": "fue en Querétaro, pero yo vivo en la CDMX",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron la cartera en un bar"
+     },
+     {
+      "role": "assistant",
+      "content": "El robo se sanciona de forma distinta en cada estado: por ejemplo, en la Ciudad de México depende del valor de lo robado y en el Estado de México hay agravantes si fue en transporte público. ¿En qué estado ocurrió el robo?"
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "B · contesta lugar y algo más"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "vivo en la CDMX pero no sé dónde fue, fue por internet",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me estafaron con una compra en línea, qué hago?"
+     },
+     {
+      "role": "assistant",
+      "content": "Podría ser fraude. ¿En qué estado ocurrieron los hechos?"
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "B · contesta lugar y algo más"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "Dice dónde vive, no dónde pasó.",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro, pero me pasó en Morelos",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me golpearon y me robaron, qué puedo hacer?"
+     },
+     {
+      "role": "assistant",
+      "content": "Son dos delitos: lesiones y robo. ¿En qué estado ocurrió?"
+     }
+    ],
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "B · contesta lugar y algo más"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron el celular, es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "Sí, el robo es un delito. Te recomiendo denunciar ante el Ministerio Público y guardar cualquier evidencia."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "C · control: el asistente no pidió el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "Sin pregunta del asistente: «soy de» es donde vive.",
+   "revisado": false
+  },
+  {
+   "entrada": "y cuánta cárcel le dan?",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron el celular en Querétaro"
+     },
+     {
+      "role": "assistant",
+      "content": "El robo se sanciona de forma distinta en cada estado: por ejemplo, en la Ciudad de México depende del valor de lo robado y en el Estado de México hay agravantes si fue en transporte público. Te recomiendo denunciar cuanto antes."
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "tipo_caso": "C · control: el asistente no pidió el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "El lugar venía del primer mensaje.",
+   "revisado": false
+  },
+  {
+   "entrada": "ok, gracias",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "mi jefe me acosa en el trabajo en la CDMX"
+     },
+     {
+      "role": "assistant",
+      "content": "Lo que describes podría ser hostigamiento o acoso sexual. En Querétaro el artículo 167 Ter sanciona el hostigamiento y en la Ciudad de México el artículo 179 sanciona el acoso sexual. ¿Quieres saber cómo presentar una denuncia?"
+     }
+    ],
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "C · control: el asistente no pidió el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "El asistente preguntó otra cosa (no el lugar).",
+   "revisado": false
+  },
+  {
+   "entrada": "Me robaron el celular en Querétaro, es delito?",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "D · control: primer mensaje"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "Vivo en Querétaro pero me robaron en la Ciudad de México",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "D · control: primer mensaje"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  }
  ]
 }

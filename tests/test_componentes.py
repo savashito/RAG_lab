@@ -179,3 +179,21 @@ def test_pregunta_de_lugar_frases_de_gemma():
               '¿Los hechos que me narras ocurrieron dentro del Estado de México?',
               'Solo necesitaría que me contaras qué sucedió, cuándo y dónde.']:
         assert jg.pregunta_de_lugar(t), t
+
+
+def test_filtro_metodos_evalua_cada_metodo_y_agrupa():
+    v1, v2, v3 = cp.METODOS_FILTRO
+    sal = {v1: {'lugares': [lugar('Querétaro', 'otro')]}, v2: {'lugares': [lugar('Querétaro')]}, v3: {'lugares': [lugar('Querétaro')]},
+           'segundos': {v1: 0.5, v2: 0.6, v3: 0.9}}
+    esp = {'hechos': ['Querétaro'], 'otros': [], 'conversacion': [{'role': 'user', 'content': 'x'}], 'tipo_caso': 'A · contesta solo el lugar'}
+    ok, det = cp.eval_filtro_metodos(esp, sal)
+    assert ok and not det['por_version'][v1]['ok'] and det['por_version'][v3]['ok']
+    m = cp.metricas('filtro_metodos', [{'esperado': esp, 'salida': sal, 'detalle': det, 'ok': ok},
+                                       {'esperado': {'estados': ['Morelos'], 'conversacion': []}, 'ok': True, 'salida': sal,
+                                        'detalle': cp.eval_filtro_metodos({'estados': ['Morelos'], 'conversacion': []}, sal)[1]}])
+    pv = m['por_version']
+    assert m['medida'] == 'tasa' and pv[v2]['todas'] == {'aciertos': 1, 'n': 2, 'tasa': 0.5}
+    assert pv[v1]['dos mensajes · A · contesta solo el lugar']['tasa'] == 0.0 and pv[v2]['segundos']['media'] == 0.6
+    assert 'un mensaje · estados' in pv[v1]
+    assert {t['id'] for t in cp.TARJETAS} >= {'filtro', 'reescritura', 'descomponer', 'hyde'}
+    assert all(p in cp.COMPONENTES for t in cp.TARJETAS for p in t['pruebas'] + t.get('anteriores', []))

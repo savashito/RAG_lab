@@ -69,6 +69,12 @@ COMPONENTES = {
                         'objetivo': 'Para cada pregunta con artículos esperados (sets 3, 13 y 14): cuántos llegan al '
                                     'contexto final que lee el LLM (los k primeros resultados + sus vecinos) y cuántas '
                                     'palabras tiene ese contexto, con y sin vecinos y con distintos k.', 'efecto': True},
+    'filtro_metodos': {'nombre': 'Filtro por estado · métodos', 'icono': '🚧',
+                       'objetivo': 'Si el filtro acierta el lugar de los hechos (y lo distingue de donde la persona vive o '
+                                   'trabaja), el tipo de asunto y si es pregunta de teoría. Los mismos casos (un mensaje suelto y '
+                                   'mensajes que siguen a una respuesta del asistente) con cada método: v1 lee solo los mensajes '
+                                   'de la persona; v2 además la frase donde el asistente pidió el lugar (regex); v3 la '
+                                   'conversación completa.'},
     'filtro_respuesta_corta': {'nombre': 'Filtro por estado · respuesta corta', 'icono': '🚧',
                                'objetivo': 'Cuando el asistente pidió el lugar y la persona contesta solo eso («Queretaro»), '
                                            'el filtro debe marcarlo como el lugar de los hechos. Compara el filtro de hoy '
@@ -94,7 +100,37 @@ COMPONENTES = {
 }
 
 # Pruebas cuyo runner recibe (entrada, esperado): el caso trae datos que no caben en el texto de entrada.
-CON_ESPERADO = {'reescritura_recall', 'filtro_respuesta_corta'}
+CON_ESPERADO = {'reescritura_recall', 'filtro_respuesta_corta', 'filtro_metodos'}
+METODOS_FILTRO = ('v1 · solo los mensajes de la persona', 'v2 · + la frase donde el asistente pidió el lugar (regex)',
+                  'v3 · + la conversación completa')
+
+# Las tarjetas de la página: un componente del sistema = una tarjeta; sus pruebas van dentro. `principal` da el número de
+# la tarjeta; `en_estudio` es el método que usa la ronda 2 (para resaltarlo).
+TARJETAS = [
+    {'id': 'filtro', 'nombre': 'Filtro por estado', 'icono': '🚧', 'principal': 'filtro_metodos',
+     'en_estudio': 'v2 · + la frase donde el asistente pidió el lugar (regex)',
+     'que_es': 'Antes de buscar, Gemma lee los mensajes y decide de qué estado se puede citar.',
+     'pruebas': ['filtro_metodos'], 'anteriores': ['filtro', 'filtro_respuesta_corta'], 'efecto': ['A_ronda1', 'B_filtro']},
+    {'id': 'reescritura', 'nombre': 'Reescritura multiturno', 'icono': '💬', 'principal': 'reescritura_recall',
+     'en_estudio': 'reescritura v1 · solo HyDE',
+     'que_es': 'Del segundo mensaje en adelante, Gemma escribe el texto de búsqueda juntando el mensaje con la conversación.',
+     'pruebas': ['reescritura_recall']},
+    {'id': 'descomponer', 'nombre': 'Descomponer', 'icono': '🧩', 'principal': 'division_recall',
+     'en_estudio': 'el prompt actual, sin «por delito» (esa combinación no está en la prueba de recall)',
+     'que_es': 'Gemma decide si parte el texto de búsqueda en varias búsquedas.',
+     'pruebas': ['division_recall', 'descomponer', 'desc_solo_lugar', 'desc_solo_pregunta', 'desc_lugar_y_pregunta', 'desc_libre',
+                 'desc_libre_corto', 'desc_libre_max2', 'por_delito']},
+    {'id': 'hyde', 'nombre': 'HyDE', 'icono': '🧪', 'principal': 'hyde_recall', 'en_estudio': 'con HyDE',
+     'que_es': 'Gemma escribe un borrador de artículo y la búsqueda por significado lo usa.', 'pruebas': ['hyde_recall', 'hyde']},
+    {'id': 'rerank', 'nombre': 'Rerank', 'icono': '🎯', 'principal': 'rerank_recall', 'en_estudio': 'sin rerank',
+     'que_es': 'Un segundo modelo reordena los 30 primeros resultados.', 'pruebas': ['rerank_recall']},
+    {'id': 'contexto', 'nombre': 'Contexto: vecinos y top-k', 'icono': '📚', 'principal': 'contexto_recall',
+     'en_estudio': 'k 10 con vecinos (actual)', 'que_es': 'Cuántos resultados entran al contexto que lee Gemma y si se agregan los artículos vecinos.',
+     'pruebas': ['contexto_recall']},
+    {'id': 'combinacion', 'nombre': 'Mejor combinación', 'icono': '🎯', 'principal': 'combinacion_recall',
+     'en_estudio': 'filtro + descomponer + HyDE', 'que_es': 'Todos los componentes juntos y quitando partes (sets 3, 13 y 14).',
+     'pruebas': ['combinacion_recall']},
+]
 VERSIONES_FILTRO = ('sin la pregunta del asistente', 'con la pregunta del asistente')
 
 SCHEMA = """
@@ -170,6 +206,15 @@ def eval_filtro(esp: dict, sal: dict) -> tuple[bool, dict]:
             fallas.append(k)
     return not fallas, {'obtenido': {k: obtenido[k] for k in esp if k in obtenido}, 'fallas': fallas,
                         'tipo': sal.get('tipo')}
+
+
+def eval_filtro_metodos(esp: dict, sal: dict) -> tuple[bool, dict]:
+    """Cada método contra lo esperado (los campos que el caso prueba). «Pasa» = el método de la ronda 2 (v2) acierta."""
+    campos = {k: v for k, v in esp.items() if k in ('estados', 'hechos', 'otros', 'depende', 'federal', 'teorica')}
+    res = {m: eval_filtro(campos, sal.get(m) or {}) for m in METODOS_FILTRO if m in sal}
+    ok = res.get(METODOS_FILTRO[1], (False, {}))[0]
+    return ok, {'por_version': {m: {'ok': r[0], **r[1]} for m, r in res.items()}, 'pregunta_extraida': sal.get('pregunta_extraida'),
+                'fallas': [] if ok else res.get(METODOS_FILTRO[1], (False, {'fallas': []}))[1].get('fallas', [])}
 
 
 def eval_filtro_respuesta_corta(esp: dict, sal: dict) -> tuple[bool, dict]:
@@ -275,7 +320,7 @@ EVALUADORES = {'filtro': eval_filtro, 'descomponer': eval_descomponer, 'por_deli
                'desc_libre_corto': eval_division('libre_corto'), 'desc_libre_max2': eval_division('libre_max2'),
                'division_recall': eval_recall, 'hyde_recall': eval_recall, 'rerank_recall': eval_recall,
                'reescritura_recall': eval_recall, 'combinacion_recall': eval_recall,
-               'filtro_respuesta_corta': eval_filtro_respuesta_corta,
+               'filtro_respuesta_corta': eval_filtro_respuesta_corta, 'filtro_metodos': eval_filtro_metodos,
                'contexto_recall': eval_recall}
 
 # Formas de dividir que compara la prueba de recall: (descomponer, descomponer por delito). descomponer = False, True
@@ -293,6 +338,8 @@ def metricas(componente: str, filas: list[dict]) -> dict:
     ok = [f for f in filas if not f.get('error')]
     if componente in ('division_recall', 'hyde_recall', 'rerank_recall', 'contexto_recall', 'reescritura_recall', 'combinacion_recall'):
         return metricas_recall(filas)
+    if componente == 'filtro_metodos':
+        return metricas_metodos(componente, filas)
     out = {'n': len(filas), 'errores': len(filas) - len(ok), 'aciertos': sum(f['ok'] for f in ok),
            'tasa': round(sum(f['ok'] for f in ok) / len(ok), 4) if ok else None}
     grupos: dict[str, list[bool]] = {}
@@ -310,6 +357,26 @@ def metricas(componente: str, filas: list[dict]) -> dict:
     if segs:
         out['segundos_media'] = round(sum(segs) / len(segs), 2)
     return out
+
+
+def metricas_metodos(componente: str, filas: list[dict]) -> dict:
+    """Como metricas_recall pero con aciertos por caso: por método, en total y por grupo de casos, más el tiempo de cada
+    método. Mismo formato `por_version` que las pruebas de recall, con `tasa` en vez de `recall`."""
+    ok = [f for f in filas if not f.get('error') and f.get('detalle')]
+    tot: dict[str, dict] = {}
+    for f in ok:
+        g = grupo(componente, f['esperado'])
+        for m, r in (f['detalle'].get('por_version') or {}).items():
+            for t in ['todas'] + ([g] if g else []):
+                c = tot.setdefault(m, {}).setdefault(t, {'aciertos': 0, 'n': 0})
+                c['aciertos'] += bool(r.get('ok')); c['n'] += 1
+    por = {m: {t: {**c, 'tasa': round(c['aciertos'] / c['n'], 4) if c['n'] else None} for t, c in ts.items()} for m, ts in tot.items()}
+    for m in por:
+        ts = [f['salida']['segundos'][m] for f in ok if m in ((f.get('salida') or {}).get('segundos') or {})]
+        if ts:
+            media = sum(ts) / len(ts)
+            por[m]['segundos'] = {'media': round(media, 2), 'de': round((sum((x - media) ** 2 for x in ts) / len(ts)) ** 0.5, 2)}
+    return {'n': len(filas), 'errores': len(filas) - len(ok), 'por_version': por, 'medida': 'tasa'}
 
 
 def metricas_recall(filas: list[dict]) -> dict:
@@ -346,6 +413,8 @@ def grupo(componente: str, esp: dict) -> str | None:
         return 'debe dividir' if _division_esperada(componente[5:], esp) else 'no debe dividir'
     if componente == 'filtro_respuesta_corta':
         return esp.get('tipo_caso')
+    if componente == 'filtro_metodos':
+        return ('dos mensajes · ' + (esp.get('tipo_caso') or '')) if esp.get('conversacion') else ('un mensaje · ' + (grupo('filtro', esp) or ''))
     if componente == 'filtro':
         return ('papel del lugar' if 'hechos' in esp or 'otros' in esp else 'estados' if 'estados' in esp
                 else 'teórica' if 'teorica' in esp else 'tipo de asunto')
@@ -515,6 +584,12 @@ class Componentes:
             if not self.can_run(self.current_email(request)):
                 return deny('Solo los administradores pueden ver las pruebas por componente.')
             return self.resumen()
+
+        @r.get('/tarjetas')
+        def tarjetas(request: Request):
+            if not self.can_run(self.current_email(request)):
+                return deny()
+            return TARJETAS
 
         @r.get('/efectos')
         def efectos(request: Request):

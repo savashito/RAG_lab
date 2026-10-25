@@ -77,6 +77,24 @@ EXTRAER_SYSTEM_V2 = EXTRAER_SYSTEM.replace('Devuelve SOLO JSON', (
 # etiquetó 2,220 respuestas guardadas; 06_evaluation/pide_lugar_2026-10-25/comparar.py). «estado» como condición («su
 # estado de ebriedad») y «¿cómo te encuentras?» no cuentan.
 _ESTADO = r'(?:estado|entidad)(?! (?:de (?:ebriedad|salud|animo|cuenta|derecho)|emocional|civil|procesal))'
+# v3 (25-oct, para comparar con v2): el filtro lee la conversación COMPLETA, con cada respuesta del asistente entera en una
+# línea «[El asistente dijo: …]». Sin regex; el riesgo a medir: que cuente los estados que el asistente nombra al explicar.
+ASISTENTE_DIJO = '[El asistente dijo: '
+EXTRAER_SYSTEM_V3 = EXTRAER_SYSTEM.replace('Devuelve SOLO JSON', (
+    '- Una línea que empieza con «[El asistente dijo: …]» es lo que respondió el asistente, no algo que dijo la persona: los '
+    'lugares que nombre el asistente (al explicar leyes de varios estados, por ejemplo) NO cuentan como lugares mencionados. '
+    'Sirve solo para entender a qué responde la persona: si el asistente le preguntó dónde ocurrieron los hechos y la persona '
+    'contesta con un lugar, ese lugar es de los «hechos».\n'
+    'Devuelve SOLO JSON'), 1)
+
+
+def texto_conversacion(msgs: list[dict]) -> tuple[str, str]:
+    """(la conversación completa para el filtro v3, solo los mensajes de la persona). Últimos 12000 caracteres."""
+    lineas = [m['content'].strip() if m['role'] == 'user' else f"{ASISTENTE_DIJO}{' '.join(m['content'].split())}]"
+              for m in msgs if m['role'] in ('user', 'assistant')]
+    return '\n'.join(lineas)[-12000:], '\n'.join(m['content'].strip() for m in msgs if m['role'] == 'user')[-4000:]
+
+
 _LUGAR_PEDIDO = (r'(?:en que (?:estado|entidad|ciudad|lugar|municipio)|que (?:estado|entidad)|donde (?:ocurri|paso|sucedi|fue)|'
                  r'(?:su|tu|un|una|el|la) ' + _ESTADO + r'|(?:su|tu) (?:localidad|ubicacion)|'
                  r'ubicacion (?:exacta |geografica |aproximada )?(?:de|donde)|lugar (?:exacto |aproximado )?donde)')

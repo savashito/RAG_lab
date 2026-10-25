@@ -1517,6 +1517,30 @@ def combinacion_recall(pregunta: str) -> dict:
     return r
 
 
+METODOS_FILTRO = ('v1 · solo los mensajes de la persona', 'v2 · + la frase donde el asistente pidió el lugar (regex)',
+                  'v3 · + la conversación completa')
+
+
+def filtro_metodos(mensaje: str, esperado: dict) -> dict:
+    """El filtro por estado con cada método de METODOS_FILTRO, sobre el mismo caso: un mensaje suelto o un mensaje que
+    sigue a una conversación (esperado.conversacion). Solo la llamada del filtro, sin búsqueda; guarda el tiempo de cada uno."""
+    msgs = list(esperado.get('conversacion') or []) + [{'role': 'user', 'content': mensaje}]
+    out, segundos = {}, {}
+    for m in METODOS_FILTRO:
+        t0 = time.time()
+        if m.startswith('v1'):
+            out[m] = jgate.extraer_lugares(gate_text(msgs), llm)
+        elif m.startswith('v2'):
+            texto, persona = jgate.texto_para_filtro(msgs, con_pregunta=True)
+            out[m] = jgate.extraer_lugares(texto, llm, jgate.EXTRAER_SYSTEM_V2, persona)
+        else:
+            texto, persona = jgate.texto_conversacion(msgs)
+            out[m] = jgate.extraer_lugares(texto, llm, jgate.EXTRAER_SYSTEM_V3, persona)
+        segundos[m] = round(time.time() - t0, 2)
+    anterior = next((x['content'] for x in reversed(msgs[:-1]) if x['role'] == 'assistant'), '')
+    return {**out, 'segundos': segundos, 'pregunta_extraida': jgate.pregunta_de_lugar(anterior) if anterior else None}
+
+
 def filtro_respuesta_corta(mensaje: str, esperado: dict) -> dict:
     """El filtro por estado en un mensaje que sigue a una respuesta del asistente (esperado.conversacion), sin y con la
     frase con la que el asistente pidió el lugar (jgate.pregunta_de_lugar). Solo la llamada del filtro, sin búsqueda."""
@@ -1543,7 +1567,8 @@ componentes = Componentes(
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
              'division_recall': division_recall, 'hyde_recall': hyde_recall, 'rerank_recall': rerank_recall,
              'contexto_recall': contexto_recall, 'reescritura_recall': reescritura_recall,
-             'combinacion_recall': combinacion_recall, 'filtro_respuesta_corta': filtro_respuesta_corta},
+             'combinacion_recall': combinacion_recall, 'filtro_respuesta_corta': filtro_respuesta_corta,
+             'filtro_metodos': filtro_metodos},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
              'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
              **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v])
@@ -1556,6 +1581,7 @@ componentes = Componentes(
              'contexto_recall': lambda: f'{VERSIONES_CONTEXTO} · tope de vecinos {NEIGHBOR_EXTRA_CAP}\n\n{hyde_for(_TEMA_PENAL)}',
              'reescritura_recall': lambda: f'{CONDENSE_SYSTEM}\n\n{CONDENSE_SYSTEM_V2}\n\n{hyde_for(_TEMA_PENAL)}',
              'filtro_respuesta_corta': lambda: jgate.EXTRAER_SYSTEM_V2,
+             'filtro_metodos': lambda: f'{jgate.EXTRAER_SYSTEM}\n\n{jgate.EXTRAER_SYSTEM_V2}\n\n{jgate.EXTRAER_SYSTEM_V3}',
              'combinacion_recall': lambda: (f'{jgate.EXTRAER_SYSTEM}\n\n{DECOMPOSE_SYSTEM}\n\n{hyde_for(_TEMA_PENAL)}\n\n'
                                             f'{reranker.url} · {reranker.formato}')})
 app.include_router(componentes.router)
