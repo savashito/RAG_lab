@@ -1254,18 +1254,23 @@ async function loadDocuments(){
     const docs=topic ? all.filter(d=>d.topic===topic) : all;
     if(!docs.length){ $('ing-docs').innerHTML=`<p class="muted">El tema <b>${esc(tname)}</b> aún no tiene documentos.</p>`; return; }
     const total=docs.reduce((a,d)=>a+d.chunks,0);
-    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th title="¿Quedó bien partido y etiquetado? Clic para revisar">chunking</th><th></th><th></th></tr>`;
+    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th title="¿Quedó bien partido y etiquetado? Clic para revisar">chunking</th><th></th><th title="Un documento apagado sigue en la base, pero ninguna búsqueda lo ve. Se prende de nuevo aquí.">búsqueda</th><th></th></tr>`;
     for(const d of docs){ const btn=d.clean_available
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
+      const sw=d.apagado
+        ? `<button class="ghost" title="Apagado: sigue en la base, pero ninguna búsqueda lo ve. Clic para que vuelva a entrar a la búsqueda." onclick="setApagado('${esc(d.source)}',false,this)">▶ prender</button>`
+        : `<button class="ghost" title="Lo saca de la búsqueda sin borrarlo (chat, estudio, benchmarks). Se puede prender de nuevo." onclick="setApagado('${esc(d.source)}',true,this)">⏸ apagar</button>`;
       const del=`<button class="ghost" title="Elimina el documento de la base: sus chunks y su md limpio. No se volverá a recuperar." onclick="deleteDocument('${esc(d.source)}',${d.chunks},this)">🗑 eliminar</button>`;
       const c=d.conversion;
       // Dónde se procesó: línea chica bajo el nombre (una columna más desborda en móvil).
       const conv=c ? `<span style="white-space:nowrap" title="${esc([c.where==='mac_mini'?'OCR Docling + Vision':c.engine, c.reason, c.at].filter(Boolean).join(' · '))}">${c.where==='mac_mini'?'🍎 Mac mini':'🖥️ VPS'}</span>`
                    : `<span title="ingerido antes de que se registrara dónde se procesó">procesado en: —</span>`;
       const diag=`<button class="ghost cdiag" data-src="${esc(d.source)}" onclick="openDiag(this.dataset.src)" title="Revisar cómo quedó partido y etiquetado">🔍 …</button>`;
-      h+=`<tr><td>${esc(d.source)}<div class="muted" style="font-size:.85em">${conv}</div></td><td>${d.chunks}</td><td>${diag}</td><td>${btn}</td><td>${del}</td></tr>`; }
-    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td><td></td></tr></table>`;
+      const off=d.apagado?' <b style="color:#f59e0b">· apagado: no entra a la búsqueda</b>':'';
+      h+=`<tr${d.apagado?' style="opacity:.6"':''}><td>${esc(d.source)}<div class="muted" style="font-size:.85em">${conv}${off}</div></td><td>${d.chunks}</td><td>${diag}</td><td>${btn}</td><td>${sw}</td><td>${del}</td></tr>`; }
+    const nOff=docs.filter(d=>d.apagado).length;
+    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos${nOff?` (${nOff} apagados)`:''} · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td><td></td><td></td></tr></table>`;
     loadDiagSummary();
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
 }
@@ -1276,6 +1281,19 @@ function docsMsg(html, ok){
   const el=$('ing-docs-msg'); clearTimeout(docsMsgTimer);
   el.innerHTML=html?`<div class="legend" style="border-color:${ok?'#166534':'#991b1b'};margin:8px 0">${html}</div>`:'';
   if(html) docsMsgTimer=setTimeout(()=>{ el.innerHTML=''; }, 12000);
+}
+
+async function setApagado(source, apagado, btn){
+  if(apagado && !confirm(`¿Apagar «${source}»?\n\nSigue en la base, pero ninguna búsqueda lo verá (chat, estudio, benchmarks) hasta que lo prendas de nuevo aquí.`)) return;
+  if(btn){ btn.disabled=true; btn.innerHTML='⏳'; }
+  try{
+    const r=await fetch('/ingest/documents/apagado',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({source, apagado})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ docsMsg(`✗ No se pudo ${apagado?'apagar':'prender'} «${esc(source)}»: ${esc(d.error||('HTTP '+r.status))}`, false); }
+    else docsMsg(apagado?`⏸ «${esc(source)}» apagado: ya no entra a la búsqueda.`:`▶ «${esc(source)}» prendido: vuelve a entrar a la búsqueda.`, true);
+  }catch(e){ docsMsg('✗ '+esc(e), false); }
+  loadDocuments();
 }
 
 async function deleteDocument(source, chunks, btn){

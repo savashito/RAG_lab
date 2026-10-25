@@ -150,6 +150,25 @@ def _jur_match(jset, chunk_jur) -> bool:
     return not jset or chunk_jur is None or chunk_jur in jset
 
 
+# Documentos apagados desde 📥 Ingestar: siguen en la base, pero ninguna búsqueda los ve (embeddings, BM25, match
+# exacto por número de artículo, routing por código). Se prenden de nuevo desde la misma pantalla. Tabla
+# FUENTES_APAGADAS_TABLE; quién apagó o prendió qué y cuándo, en FUENTES_APAGADAS_TABLE + '_log'.
+FUENTES_APAGADAS_TABLE = 'fuentes_apagadas'
+APAGADAS: set[str] = set()
+
+
+def _apag_sql():
+    """Fragmento WHERE + params que deja fuera los documentos apagados."""
+    return ("source <> ALL(%s)", [sorted(APAGADAS)]) if APAGADAS else ('', [])
+
+
+def sin_apagadas(scored):
+    """Quita de un ranking [(id, score)] los chunks de documentos apagados."""
+    if not APAGADAS:
+        return scored
+    return [(i, x) for i, x in scored if (DOC_BY_ID.get(i) or {}).get('source') not in APAGADAS]
+
+
 # ── Usuarios y roles ─────────────────────────────────────────────────────────────
 # La lista blanca vive en la tabla `rewrite_lab_users` (antes en ALLOWED_EMAILS del
 # .env). Cada usuario tiene un rol:
@@ -193,11 +212,12 @@ def rank_in(ids, gid) -> int | None:
 def dense_ids(cur, qvec, topic=None) -> list[int]:
     """Ranking denso desde pgvector, reusando el cursor que le pasen (una conexión
     por corrida, no una por query). Si `topic`, restringe la búsqueda a ese tópico."""
-    if topic:
-        cur.execute(f"SELECT id FROM {TABLE} WHERE topic = %s ORDER BY embedding <=> %s LIMIT %s",
-                    (topic, qvec, N_DENSE))
-    else:
-        cur.execute(f"SELECT id FROM {TABLE} ORDER BY embedding <=> %s LIMIT %s", (qvec, N_DENSE))
+    clauses, params = (['topic = %s'], [topic]) if topic else ([], [])
+    frag, p = _apag_sql()
+    if frag:
+        clauses.append(frag); params += p
+    where = (' WHERE ' + ' AND '.join(clauses)) if clauses else ''
+    cur.execute(f"SELECT id FROM {TABLE}{where} ORDER BY embedding <=> %s LIMIT %s", (*params, qvec, N_DENSE))
     return [r[0] for r in cur.fetchall()]
 
 
@@ -222,6 +242,12 @@ with connect() as _c, _c.cursor() as _cur:
     for (_src,) in _cur.fetchall():
         _cur.execute(f"UPDATE {TABLE} SET jurisdiction = %s WHERE source = %s AND jurisdiction IS NULL",
                      (jurisdiction_for_source(_src), _src))
+    _cur.execute(f"CREATE TABLE IF NOT EXISTS {FUENTES_APAGADAS_TABLE} (source text PRIMARY KEY, por text, "
+                 f"apagado_at timestamptz DEFAULT now())")
+    _cur.execute(f"CREATE TABLE IF NOT EXISTS {FUENTES_APAGADAS_TABLE}_log (id serial PRIMARY KEY, source text NOT NULL, "
+                 f"apagado boolean NOT NULL, por text, at timestamptz DEFAULT now())")
+    _cur.execute(f"SELECT source FROM {FUENTES_APAGADAS_TABLE}")
+    APAGADAS.update(r[0] for r in _cur.fetchall())
     _cur.execute(f"""CREATE TABLE IF NOT EXISTS {TOPICS_TABLE} (
         topic text PRIMARY KEY, label text NOT NULL, instruct text NOT NULL,
         created_at timestamptz DEFAULT now())""")
@@ -645,9 +671,9 @@ def _scope_sql(topic, jset, source=None):
         clauses.append("topic = %s"); params.append(topic)
     if source:
         clauses.append("source = %s"); params.append(source)
-    frag, p = _jur_sql(jset)
-    if frag:
-        clauses.append(frag); params += p
+    for frag, p in (_jur_sql(jset), _apag_sql()):
+        if frag:
+            clauses.append(frag); params += p
     return (" WHERE " + " AND ".join(clauses)) if clauses else "", params
 
 
@@ -670,6 +696,8 @@ def bm25_ranked(question, topic=None, jset=None, source=None):
         if not _jur_match(jset, meta.get('jurisdiction')):
             continue
         if source and meta.get('source') != source:
+            continue
+        if meta.get('source') in APAGADAS:
             continue
         out.append((cid, float(scores[i])))
     return out
@@ -1128,7 +1156,8 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
         else:   # un borrador HyDE por sub-pregunta: se muestran todos
             debug['hyde_passage'] = '\n\n'.join(f'— {q}\n{x.get("hyde_passage", "")}' for q, x in passages)
             debug['embed_text'] = '\n\n'.join(x.get('embed_text', '') for _, x in passages)
-    return (lists[0] if len(lists) == 1 else interleave_scored(lists)), kind, rw
+    # Sin documentos apagados: también cubre el match exacto por número y el routing, que no pasan por _scope_sql.
+    return sin_apagadas(lists[0] if len(lists) == 1 else interleave_scored(lists)), kind, rw
 
 
 # ── Compuerta de jurisdicción (jurisdiction_gate.py) ─────────────────────────────────
@@ -1923,8 +1952,34 @@ def ingest_status(job_id: str):
 
 @app.get('/ingest/documents')
 def ingest_documents():
-    """Documentos ya presentes en la tabla (source + nº de chunks)."""
-    return ingest_mgr.documents()
+    """Documentos ya presentes en la tabla (source + nº de chunks + si está apagado para la búsqueda)."""
+    return [dict(d, apagado=d['source'] in APAGADAS) for d in ingest_mgr.documents()]
+
+
+@app.post('/ingest/documents/apagado')
+async def ingest_apagado(request: Request):
+    """Apaga (`apagado: true`) o prende un documento para la búsqueda, sin borrarlo. Mismo permiso que eliminarlo."""
+    email = current_email(request)
+    b = await request.json()
+    source, apagado = str(b.get('source') or ''), bool(b.get('apagado'))
+    if not can_ingest(email):
+        return JSONResponse({'error': 'No tienes permiso para apagar documentos.'}, status_code=403)
+    topic = ingest_mgr.topic_of(source)
+    if topic is None:
+        return JSONResponse({'error': f'No existe el documento {source!r}.'}, status_code=404)
+    if not can_upload_topic(email, topic):
+        return JSONResponse({'error': f'No tienes permiso sobre el tópico {topic!r}.'}, status_code=403)
+    with connect() as c, c.cursor() as cur:
+        if apagado:
+            cur.execute(f"INSERT INTO {FUENTES_APAGADAS_TABLE} (source, por) VALUES (%s, %s) ON CONFLICT (source) DO NOTHING",
+                        (source, email))
+        else:
+            cur.execute(f"DELETE FROM {FUENTES_APAGADAS_TABLE} WHERE source = %s", (source,))
+        cur.execute(f"INSERT INTO {FUENTES_APAGADAS_TABLE}_log (source, apagado, por) VALUES (%s, %s, %s)",
+                    (source, apagado, email))
+        c.commit()
+    (APAGADAS.add if apagado else APAGADAS.discard)(source)
+    return {'source': source, 'apagado': apagado}
 
 
 @app.delete('/ingest/documents')
