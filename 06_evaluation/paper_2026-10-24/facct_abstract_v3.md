@@ -24,8 +24,8 @@ with 45 participants (26 without legal training, 19 with it) who consulted it in
 situations. In 57% of first answers the assistant named the penal code of a state other than the one where
 the facts occurred, and in 120 of 121 cases that code came from retrieval, not from the model. Participants without legal training noticed a problem in 8% of situations (19% with legal training), yet more
 often said they would act on the answer (64% vs 46%). A jurisdiction gate, an LLM step that identifies where the facts occurred and restricts retrieval to that state's
-code plus national law, was replayed on all 108 real conversations: answers naming another state's code fall from 60% to 2% (−58 points, 95% CI −66 to −50), with no loss
-in citing the correct law; adding a reranker raises correct-article citations in follow-up turns (+13 points, 95% CI
+code plus national law, was replayed on all 108 real conversations: answers naming another state's code fell from 60% to 2% (−58 points, 95% CI −66 to −50), with no loss
+in citing the correct law; adding a reranker raised correct-article citations in follow-up turns (+13 points, 95% CI
 2 to 25). The repair exposed a second applicability condition: in a gender-neutral extortion scenario, answers citing
 a law that protects only women rose from 13% to 33%. Our own place-name metrics also misled us, scoring correct
 explanations as errors. A second round with the repaired system, randomly assigning each participant one of two
