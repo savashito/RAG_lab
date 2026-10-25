@@ -1213,7 +1213,8 @@ function compTablaRecall(m, enEstudio){
     const DESCRIBE = {'solo HyDE': 'Aísla el texto de búsqueda: la búsqueda híbrida con HyDE, sin filtro, sin descomponer y sin rerank. Lo único que cambia entre filas es el texto de búsqueda.',
                       'filtro + descomponer + HyDE + rerank': 'Con todo lo demás prendido (filtro por estado, descomponer, HyDE y rerank): ¿se mantiene la conclusión en un sistema parecido al real?'};
     return configs.map((cfg, i) => {
-      const sub = {...m, por_version: Object.fromEntries(claves.filter(k => k.endsWith(' · ' + cfg)).map(k => [k.slice(0, -(' · ' + cfg).length), m.por_version[k]]))};
+      // Mismo orden de filas en todas las tablas (el de la prueba), para comparar la misma versión entre configuraciones.
+      const sub = {...m, orden_fijo: true, por_version: Object.fromEntries(claves.filter(k => k.endsWith(' · ' + cfg)).map(k => [k.slice(0, -(' · ' + cfg).length), m.por_version[k]]))};
       const enCfg = enEstudio && enEstudio.endsWith(' · ' + cfg) ? enEstudio.slice(0, -(' · ' + cfg).length) : null;
       return `<h3 style="margin:${i ? 18 : 10}px 0 2px;font-size:14px">${i + 1} · Configuración: ${esc(cfg)}</h3>
         <p class="muted" style="font-size:12px;margin:0">${esc(DESCRIBE[cfg] || '')}</p>${compTablaRecall(sub, enCfg)}`;
@@ -1229,7 +1230,7 @@ function compTablaRecall(m, enEstudio){
   const conPalabras = Object.values(pv).some(x => x.palabras);
   const pal = ts => ts.palabras ? `${Math.round(ts.palabras.media).toLocaleString('es-MX')} ± ${Math.round(ts.palabras.de).toLocaleString('es-MX')}` : '<span class="muted">—</span>';
   const mejor = t => Math.max(...Object.values(pv).map(x => v(x[t]) ?? -1));
-  const orden = Object.entries(pv).sort((a, b) => (v(b[1].todas) ?? -1) - (v(a[1].todas) ?? -1));
+  const orden = m.orden_fijo ? Object.entries(pv) : Object.entries(pv).sort((a, b) => (v(b[1].todas) ?? -1) - (v(a[1].todas) ?? -1));
   // Filtro por estado: los dos errores del lugar de los hechos (falso positivo = marcó un estado que no es; falso negativo = no marcó el que sí).
   const conLugar = Object.values(pv).some(x => x.lugar_hechos);
   const lugar = ts => ts.lugar_hechos ? `<td><b>${ts.lugar_hechos.falsos_positivos}</b> <span class="muted">de ${ts.lugar_hechos.casos}</span></td><td><b>${ts.lugar_hechos.falsos_negativos}</b> <span class="muted">de ${ts.lugar_hechos.casos}</span></td>` : '<td>—</td><td>—</td>';
