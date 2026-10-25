@@ -167,5 +167,15 @@ def test_pregunta_de_lugar_frases_de_gemma():
               '¿Los hechos que mencionas ocurrieron dentro de la Ciudad de México?']:
         assert jg.pregunta_de_lugar(t), t
     for t in ['¿Sabes si el proceso se encuentra en una etapa de investigación inicial?',
-              'La pena depende del estado donde se cometa el delito.']:
+              'La pena depende del estado donde se cometa el delito.',
+              '¿Cómo te encuentras en este momento?', '¿En qué etapa te encuentras?', 'Es importante que confirmen su estado de ebriedad.']:
         assert jg.pregunta_de_lugar(t) is None, t
+    # v3 (25-oct): las que se escapaban en el set de referencia de 2,220 respuestas.
+    for t in ['Es indispensable confirmar si los hechos ocurrieron efectivamente en el Estado de Querétaro.',
+              'Por lo anterior, se requiere saber en qué estado ocurrieron los hechos.',
+              'Es necesario precisar la ubicación de los hechos.',
+              'Si necesitas saber qué establece la ley en un estado específico, por favor indícame cuál es.',
+              '¿Podrías confirmarme si los hechos ocurren en la Ciudad de México?',
+              '¿Los hechos que me narras ocurrieron dentro del Estado de México?',
+              'Solo necesitaría que me contaras qué sucedió, cuándo y dónde.']:
+        assert jg.pregunta_de_lugar(t), t

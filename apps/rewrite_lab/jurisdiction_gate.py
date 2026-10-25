@@ -73,16 +73,24 @@ EXTRAER_SYSTEM_V2 = EXTRAER_SYSTEM.replace('Devuelve SOLO JSON', (
     'los lugares que nombre esa línea NO cuentan como lugares mencionados. La línea siguiente es la respuesta de la persona: '
     'si el asistente preguntó dónde ocurrieron los hechos y la persona contesta con un lugar, ese lugar es de los «hechos».\n'
     'Devuelve SOLO JSON'), 1)
-# Frases con las que Gemma pide el lugar (revisadas contra Gemma en 216 respuestas reales, 24-oct: regex_contra_gemma.py).
+# Frases con las que Gemma pide el lugar. v3 (25-oct): revisada contra el set de referencia pide_lugar_etiquetas (Gemma
+# etiquetó 2,220 respuestas guardadas; 06_evaluation/pide_lugar_2026-10-25/comparar.py). «estado» como condición («su
+# estado de ebriedad») y «¿cómo te encuentras?» no cuentan.
+_ESTADO = r'(?:estado|entidad)(?! (?:de (?:ebriedad|salud|animo|cuenta|derecho)|emocional|civil|procesal))'
 _LUGAR_PEDIDO = (r'(?:en que (?:estado|entidad|ciudad|lugar|municipio)|que (?:estado|entidad)|donde (?:ocurri|paso|sucedi|fue)|'
-                 r'(?:su|tu) (?:estado|entidad|localidad|ubicacion)|te encuentras)')
-_VERBO_PIDE = (r'(?:indica\w*|indique\w*|dime|digame|precis\w*|necesito (?:saber|conocer)|necesario (?:saber|conocer|precisar|que)|'
-               r'podrias? (?:decirme|indicarme)|puedes? (?:decirme|indicarme)|confirm\w*|proporcion\w*|comparte\w*)')
+                 r'(?:su|tu|un|una|el|la) ' + _ESTADO + r'|(?:su|tu) (?:localidad|ubicacion)|'
+                 r'ubicacion (?:exacta |geografica |aproximada )?(?:de|donde)|lugar (?:exacto |aproximado )?donde)')
+_VERBO_PIDE = (r'(?:indica\w*|indique\w*|dime|digame|precis\w*|necesito (?:saber|conocer|confirmar)|necesitaria (?:saber|que)|'
+               r'necesario (?:saber|conocer|precisar|confirmar|que)|indispensable (?:saber|conocer|confirmar|que)|'
+               r'se requiere (?:saber|conocer|confirmar)|sigo necesitando|podrias? (?:decirme|indicarme|confirmar\w*)|'
+               r'puedes? (?:decirme|indicarme|decirmelo|indicarmelo)|confirm\w*|proporcion\w*|comparte\w*|agradeceria)')
 # En una pregunta también cuenta «¿ocurrió en Querétaro o en la Ciudad de México?».
-_PIDE_PREGUNTA = re.compile(r'¿[^?¿]*(?:' + _LUGAR_PEDIDO + r'|(?:ocurri|paso|sucedi)\w*(?: \w+)? (?:en|dentro de) )[^?¿]*\?')
+_PIDE_PREGUNTA = re.compile(r'¿[^?¿]*(?:' + _LUGAR_PEDIDO + r'|(?:ocurr|pas|suced)\w*(?: \w+)? (?:en|dentro del?) )[^?¿]*\?')
 # El verbo puede ir antes o después del lugar («…el código penal de su estado si me indica cuál es»).
 _PIDE_DIRECTO = re.compile(_VERBO_PIDE + r'[^.?!]{0,80}' + _LUGAR_PEDIDO + r'[^.?!]*|[^.?!]*' + _LUGAR_PEDIDO + r'[^.?!]{0,80}'
-                           + _VERBO_PIDE + r'[^.?!]*')
+                           + _VERBO_PIDE + r'[^.?!]*|'
+                           # «cuéntame qué sucedió, cuándo y dónde»
+                           r'(?:cuentame|contaras|cuentes|me cuentes)[^.?!]{0,80}\bdonde\b[^.?!]*')
 
 
 def _sin_acentos(t: str) -> str:
