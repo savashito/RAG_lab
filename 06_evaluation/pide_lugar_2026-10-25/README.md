@@ -26,18 +26,19 @@ cualquier versión de la regex contra ese set en segundos (`comparar.py`).
 Una versión intermedia encontraba 98 % pero tenía 8.5 % de falsos positivos (confundía «el Estado» —el gobierno— y
 «Indica que…» con peticiones); se descartó. Ojo: el set lo etiquetó Gemma, no una persona.
 
-## Prueba del filtro: «Filtro por estado · métodos» (🧩 Componentes, corrida #31)
-237 casos: 145 de un mensaje, 12 de dos mensajes inventados, y 80 de dos mensajes con la **respuesta real de Tlacua**
+## Prueba del filtro: «Filtro por estado · métodos» (🧩 Componentes, corrida #32)
+263 casos: 151 de un mensaje, 12 de dos mensajes inventados, 80 de dos mensajes con la **respuesta real de Tlacua**
 que pide el lugar (5 preguntas sin lugar del set 14 × 2 prompts de respuesta × 8 formas de contestar;
-`generar_casos_dos_mensajes.py`).
+`generar_casos_dos_mensajes.py`), y 26 hechos para provocar falsos positivos («soy de…», «mi familia es de…», «trabajo
+en… pero fue por internet», «estoy de visita en… pero pasó en…»). La corrida #31 fue la misma prueba sin esos 26.
 
 | | v1 | **v2** | v3 |
 |---|---|---|---|
-| Aciertos, total (237) | 211 (89 %) | **230 (97 %)** | 229 (97 %) |
+| Aciertos, total (263) | 237 (90 %) | **256 (97 %)** | 255 (97 %) |
 | Dos mensajes con respuesta real de Tlacua (80) | 62 | **80** | 78 |
-| **Falsos positivos** del lugar de los hechos (de 100 casos que lo prueban) | 0 | **0** | 0 |
+| **Falsos positivos** del lugar de los hechos (de 126 casos que lo prueban; en 42 no hay que marcar ninguno) | 0 | **0** | 0 |
 | **Falsos negativos** del lugar de los hechos | 21 | **2** | 3 |
-| Segundos por llamada | 0.66 | 0.58 | 0.62 |
+| Segundos por llamada | 0.65 | 0.57 | 0.61 |
 
 - **Aciertos** = el filtro dio exactamente lo esperado en los campos que prueba el caso.
 - **Falso positivo** = marcó como lugar de los hechos un estado que no lo es. Es el error grave: Tlacua citaría el
@@ -45,8 +46,8 @@ que pide el lugar (5 preguntas sin lugar del set 14 × 2 prompts de respuesta ×
 - **Falso negativo** = no marcó el lugar de los hechos que sí dijo la persona. Tlacua vuelve a pedir el estado o duda.
 
 Los 2 falsos negativos de v2 son casos de un mensaje que ya fallaban: «Vivo en Toluca y un vecino entró a mi casa» y
-«Trabajo en Morelos y mi jefa me presiona…». Solo 23 casos prueban «no marcar ninguno»: 0 falsos positivos es buena
-señal, no garantía.
+«Trabajo en Morelos y mi jefa me presiona…». Con 42 casos que prueban «no marcar ninguno» (antes 23) siguen siendo 0
+falsos positivos en los tres métodos.
 
 ## Conclusión
 La ronda 2 usa v2 (con la regex v3). v3 (conversación completa, sin regex) salió casi igual de bien y no se confundió con
