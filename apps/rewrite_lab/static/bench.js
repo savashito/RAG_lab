@@ -1205,6 +1205,8 @@ function compSalida(comp, s){
 }
 // Tabla de métodos de una prueba: una fila por método, una columna por grupo de casos, más el tiempo. Sirve para las pruebas
 // de recall (artículos esperados entre los 10 primeros) y para las de aciertos por caso (m.medida === 'tasa').
+const ORDEN_METODOS = ['solo el último mensaje', 'mensajes de la persona pegados', 'reescritura v1', 'reescritura v2',
+                       'reescritura v1 con respuestas completas', 'HyDE con historia'];
 function compTablaRecall(m, enEstudio){
   // Si cada método se corrió con varias configuraciones («texto · configuración»), una tabla por configuración.
   const claves = Object.keys(m.por_version || {});
@@ -1230,7 +1232,11 @@ function compTablaRecall(m, enEstudio){
   const conPalabras = Object.values(pv).some(x => x.palabras);
   const pal = ts => ts.palabras ? `${Math.round(ts.palabras.media).toLocaleString('es-MX')} ± ${Math.round(ts.palabras.de).toLocaleString('es-MX')}` : '<span class="muted">—</span>';
   const mejor = t => Math.max(...Object.values(pv).map(x => v(x[t]) ?? -1));
-  const orden = m.orden_fijo ? Object.entries(pv) : Object.entries(pv).sort((a, b) => (v(b[1].todas) ?? -1) - (v(a[1].todas) ?? -1));
+  // Orden fijo (tablas divididas por configuración): primero el de ORDEN_METODOS, luego alfabético. La base (JSONB) no
+  // conserva el orden de las claves, por eso se fija aquí.
+  const pos = k => { const i = ORDEN_METODOS.indexOf(k); return i < 0 ? 999 : i; };
+  const orden = m.orden_fijo ? Object.entries(pv).sort((a, b) => pos(a[0]) - pos(b[0]) || a[0].localeCompare(b[0]))
+    : Object.entries(pv).sort((a, b) => (v(b[1].todas) ?? -1) - (v(a[1].todas) ?? -1));
   // Filtro por estado: los dos errores del lugar de los hechos (falso positivo = marcó un estado que no es; falso negativo = no marcó el que sí).
   const conLugar = Object.values(pv).some(x => x.lugar_hechos);
   const lugar = ts => ts.lugar_hechos ? `<td><b>${ts.lugar_hechos.falsos_positivos}</b> <span class="muted">de ${ts.lugar_hechos.casos}</span></td><td><b>${ts.lugar_hechos.falsos_negativos}</b> <span class="muted">de ${ts.lugar_hechos.casos}</span></td>` : '<td>—</td><td>—</td>';
