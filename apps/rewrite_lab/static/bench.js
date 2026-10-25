@@ -1206,6 +1206,19 @@ function compSalida(comp, s){
 // Tabla de métodos de una prueba: una fila por método, una columna por grupo de casos, más el tiempo. Sirve para las pruebas
 // de recall (artículos esperados entre los 10 primeros) y para las de aciertos por caso (m.medida === 'tasa').
 function compTablaRecall(m, enEstudio){
+  // Si cada método se corrió con varias configuraciones («texto · configuración»), una tabla por configuración.
+  const claves = Object.keys(m.por_version || {});
+  const configs = [...new Set(claves.map(k => k.includes(' · ') ? k.split(' · ').slice(1).join(' · ') : null))];
+  if(claves.length > 1 && configs.length > 1 && !configs.includes(null)){
+    const DESCRIBE = {'solo HyDE': 'Aísla el texto de búsqueda: la búsqueda híbrida con HyDE, sin filtro, sin descomponer y sin rerank. Lo único que cambia entre filas es el texto de búsqueda.',
+                      'filtro + descomponer + HyDE + rerank': 'Con todo lo demás prendido (filtro por estado, descomponer, HyDE y rerank): ¿se mantiene la conclusión en un sistema parecido al real?'};
+    return configs.map((cfg, i) => {
+      const sub = {...m, por_version: Object.fromEntries(claves.filter(k => k.endsWith(' · ' + cfg)).map(k => [k.slice(0, -(' · ' + cfg).length), m.por_version[k]]))};
+      const enCfg = enEstudio && enEstudio.endsWith(' · ' + cfg) ? enEstudio.slice(0, -(' · ' + cfg).length) : null;
+      return `<h3 style="margin:${i ? 18 : 10}px 0 2px;font-size:14px">${i + 1} · Configuración: ${esc(cfg)}</h3>
+        <p class="muted" style="font-size:12px;margin:0">${esc(DESCRIBE[cfg] || '')}</p>${compTablaRecall(sub, enCfg)}`;
+    }).join('');
+  }
   const pv = m.por_version || {}, x0 = Object.values(pv)[0] || {}, tasa = m.medida === 'tasa';
   const v = c => c ? (tasa ? c.tasa : c.recall) : null, den = c => tasa ? c.n : c.gold;
   const grupos = tasa ? Object.keys(x0).filter(t => !['todas', 'segundos', 'palabras'].includes(t)).sort()
