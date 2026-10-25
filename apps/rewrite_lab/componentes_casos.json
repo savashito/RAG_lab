@@ -21101,6 +21101,565 @@
    "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
    "nota": "Generado 25-oct: la respuesta de Tlacua es real y pide el lugar (set de Gemma).",
    "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro, pero no sé dónde fue",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si el hecho que describe constituye un delito y la posible sanción, es necesario precisar en qué estado de la República ocurrieron los hechos, ya que la respuesta depende de la legislación penal de la entidad federativa correspondiente.\n\nEn cuanto a la naturaleza de la conducta, el robo se define, de acuerdo con el artículo 7o. del Código Penal Federal, como la acción u omisión que sancionan las leyes penales. En términos generales, el robo implica el apoderamiento de una cosa ajena sin consentimiento del titular. Si el apoderamiento se realizó con el propósito de disponer de la cosa (ánimo de dominio), se configura el delito de robo; sin embargo, si la intención fuera únicamente el uso temporal del objeto, la conducta podría encuadrar en el tipo de robo de uso (artículo 380 del Código Penal Federal).\n\nRespecto a la cuantía de la pena de prisión, la información proporcionada en los fragmentos no permite determinar un tiempo de cárcel específico para su caso, debido a que la sanción depende de la legislación local aplicable y de las circunstancias particulares del evento. No obstante, es importante señalar que, si el delito fuera de extorsión, la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión establece que las personas sentenciadas por este delito no tendrán derecho a beneficios de libertad anticipada, sustitución o conmutación de la pena.\n\nPor lo anterior, para brindarle una respuesta jurídica precisa y fundada, le solicito que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Artículo 7o. del Código Penal Federal.\n*   Artículo 380 del Código Penal Federal.\n*   Artículo 16 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 19 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 34 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n*   Artículo 35 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n\nConclusión\n\nLa conducta podría constituir el delito de robo, pero para determinar la sanción exacta de cárcel es indispensable conocer el estado donde ocurrió el hecho, ya que la respuesta depende de la legislación estatal correspondiente."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es, no dónde fue"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "mi familia es de Morelos",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si el hecho que describe constituye un delito y la posible sanción, es necesario precisar en qué estado de la República ocurrieron los hechos, ya que la respuesta depende de la legislación penal de la entidad federativa correspondiente.\n\nEn cuanto a la naturaleza de la conducta, el robo se define, de acuerdo con el artículo 7o. del Código Penal Federal, como la acción u omisión que sancionan las leyes penales. En términos generales, el robo implica el apoderamiento de una cosa ajena sin consentimiento del titular. Si el apoderamiento se realizó con el propósito de disponer de la cosa (ánimo de dominio), se configura el delito de robo; sin embargo, si la intención fuera únicamente el uso temporal del objeto, la conducta podría encuadrar en el tipo de robo de uso (artículo 380 del Código Penal Federal).\n\nRespecto a la cuantía de la pena de prisión, la información proporcionada en los fragmentos no permite determinar un tiempo de cárcel específico para su caso, debido a que la sanción depende de la legislación local aplicable y de las circunstancias particulares del evento. No obstante, es importante señalar que, si el delito fuera de extorsión, la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión establece que las personas sentenciadas por este delito no tendrán derecho a beneficios de libertad anticipada, sustitución o conmutación de la pena.\n\nPor lo anterior, para brindarle una respuesta jurídica precisa y fundada, le solicito que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Artículo 7o. del Código Penal Federal.\n*   Artículo 380 del Código Penal Federal.\n*   Artículo 16 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 19 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 34 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n*   Artículo 35 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n\nConclusión\n\nLa conducta podría constituir el delito de robo, pero para determinar la sanción exacta de cárcel es indispensable conocer el estado donde ocurrió el hecho, ya que la respuesta depende de la legislación estatal correspondiente."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Morelos"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es su familia"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "trabajo en Toluca, pero me lo hicieron por internet",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si el hecho que describe constituye un delito y la posible sanción, es necesario precisar en qué estado de la República ocurrieron los hechos, ya que la respuesta depende de la legislación penal de la entidad federativa correspondiente.\n\nEn cuanto a la naturaleza de la conducta, el robo se define, de acuerdo con el artículo 7o. del Código Penal Federal, como la acción u omisión que sancionan las leyes penales. En términos generales, el robo implica el apoderamiento de una cosa ajena sin consentimiento del titular. Si el apoderamiento se realizó con el propósito de disponer de la cosa (ánimo de dominio), se configura el delito de robo; sin embargo, si la intención fuera únicamente el uso temporal del objeto, la conducta podría encuadrar en el tipo de robo de uso (artículo 380 del Código Penal Federal).\n\nRespecto a la cuantía de la pena de prisión, la información proporcionada en los fragmentos no permite determinar un tiempo de cárcel específico para su caso, debido a que la sanción depende de la legislación local aplicable y de las circunstancias particulares del evento. No obstante, es importante señalar que, si el delito fuera de extorsión, la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión establece que las personas sentenciadas por este delito no tendrán derecho a beneficios de libertad anticipada, sustitución o conmutación de la pena.\n\nPor lo anterior, para brindarle una respuesta jurídica precisa y fundada, le solicito que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Artículo 7o. del Código Penal Federal.\n*   Artículo 380 del Código Penal Federal.\n*   Artículo 16 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 19 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 34 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n*   Artículo 35 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n\nConclusión\n\nLa conducta podría constituir el delito de robo, pero para determinar la sanción exacta de cárcel es indispensable conocer el estado donde ocurrió el hecho, ya que la respuesta depende de la legislación estatal correspondiente."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Estado de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice dónde trabaja; fue por internet"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "estoy de visita en la CDMX, pero pasó en mi casa en Puebla",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si el hecho que describe constituye un delito y la posible sanción, es necesario precisar en qué estado de la República ocurrieron los hechos, ya que la respuesta depende de la legislación penal de la entidad federativa correspondiente.\n\nEn cuanto a la naturaleza de la conducta, el robo se define, de acuerdo con el artículo 7o. del Código Penal Federal, como la acción u omisión que sancionan las leyes penales. En términos generales, el robo implica el apoderamiento de una cosa ajena sin consentimiento del titular. Si el apoderamiento se realizó con el propósito de disponer de la cosa (ánimo de dominio), se configura el delito de robo; sin embargo, si la intención fuera únicamente el uso temporal del objeto, la conducta podría encuadrar en el tipo de robo de uso (artículo 380 del Código Penal Federal).\n\nRespecto a la cuantía de la pena de prisión, la información proporcionada en los fragmentos no permite determinar un tiempo de cárcel específico para su caso, debido a que la sanción depende de la legislación local aplicable y de las circunstancias particulares del evento. No obstante, es importante señalar que, si el delito fuera de extorsión, la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión establece que las personas sentenciadas por este delito no tendrán derecho a beneficios de libertad anticipada, sustitución o conmutación de la pena.\n\nPor lo anterior, para brindarle una respuesta jurídica precisa y fundada, le solicito que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Artículo 7o. del Código Penal Federal.\n*   Artículo 380 del Código Penal Federal.\n*   Artículo 16 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 19 de la Constitución Política de los Estados Unidos Mexicanos.\n*   Artículo 34 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n*   Artículo 35 de la Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión.\n\nConclusión\n\nLa conducta podría constituir el delito de robo, pero para determinar la sanción exacta de cárcel es indispensable conocer el estado donde ocurrió el hecho, ya que la respuesta depende de la legislación estatal correspondiente."
+     }
+    ],
+    "hechos": [
+     "Puebla"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · está de visita en otro estado"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro, pero no sé dónde fue",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo que es un momento de mucha impotencia y preocupación.\n\nPara poder orientarte de manera precisa, es necesario aclarar que la respuesta sobre la pena exacta y el procedimiento depende totalmente del **estado de la República donde ocurrieron los hechos**, ya que cada entidad tiene su propio Código Penal para determinar las sanciones específicas.\n\nSin embargo, puedo darte una orientación general basada en la legislación nacional y la teoría del delito:\n\n### 1. ¿Es un delito?\nSí, lo que describes es una conducta que encuadra en el tipo penal de **robo**. El robo se define como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento de la persona que puede otorgarlo.\n\nEn tu caso, al no haber violencia física (golpes) ni amenazas (armas), se trataría de un **robo simple**. Si el robo se hubiera realizado mediante violencia, la situación jurídica y la gravedad de la sanción serían mucho mayores.\n\n### 2. ¿Cuánta cárcel le pueden dar?\nComo te mencioné, la pena exacta la determina el Código Penal del estado donde te robaron. No obstante, la ley establece que las penas varían según el valor de lo robado (el monto del celular) y las circunstancias del hecho.\n\n*   **Si el valor es bajo:** La pena suele ser menor.\n*   **Si el valor es alto:** La sanción aumenta.\n\nEs importante que sepas que, en el sistema penal mexicano, el objetivo de la sentencia no es solo la prisión, sino también la **reparación del daño**, que consiste en que se te devuelva el objeto o se te indemnice por su valor.\n\n### 3. ¿Qué puedes hacer ahora? (Orientación procesal)\nTe sugiero realizar las siguientes acciones de inmediato:\n\n1.  **Denuncia:** Debes acudir ante el Ministerio Público para presentar tu denuncia. Esto es fundamental para que se inicie la **investigación inicial**.\n2.  **Aportación de pruebas:** Si tienes el número de serie (IMEI) del celular, o si tienes mensajes o llamadas recientes que puedan ayudar a identificar al responsable, infórmalo. La ley permite que las víctimas aporten comunicaciones (como mensajes de WhatsApp o registros de llamadas) para ayudar a la investigación.\n3.  **Bloqueo:** Contacta a tu compañía telefónica para bloquear la línea y el equipo.\n\n**Para poder darte información más concreta sobre la posible sanción y los pasos a seguir en tu localidad, ¿podrías decirme en qué estado de la República ocurrieron los hechos?**\n\n***\n\n**Fundamento jurídico:**\n*   **Código Penal Federal (referencia general):** Define el robo como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento.\n*   **Constitución Política de los Estados Unidos Mexicanos (Art. 16 y 21):** Establecen la obligación de la autoridad para investigar los delitos y proteger a las víctimas.\n*   **Principio de Legalidad:** Solo una conducta previamente descrita en la ley puede ser sancionada como delito."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es, no dónde fue"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "mi familia es de Morelos",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo que es un momento de mucha impotencia y preocupación.\n\nPara poder orientarte de manera precisa, es necesario aclarar que la respuesta sobre la pena exacta y el procedimiento depende totalmente del **estado de la República donde ocurrieron los hechos**, ya que cada entidad tiene su propio Código Penal para determinar las sanciones específicas.\n\nSin embargo, puedo darte una orientación general basada en la legislación nacional y la teoría del delito:\n\n### 1. ¿Es un delito?\nSí, lo que describes es una conducta que encuadra en el tipo penal de **robo**. El robo se define como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento de la persona que puede otorgarlo.\n\nEn tu caso, al no haber violencia física (golpes) ni amenazas (armas), se trataría de un **robo simple**. Si el robo se hubiera realizado mediante violencia, la situación jurídica y la gravedad de la sanción serían mucho mayores.\n\n### 2. ¿Cuánta cárcel le pueden dar?\nComo te mencioné, la pena exacta la determina el Código Penal del estado donde te robaron. No obstante, la ley establece que las penas varían según el valor de lo robado (el monto del celular) y las circunstancias del hecho.\n\n*   **Si el valor es bajo:** La pena suele ser menor.\n*   **Si el valor es alto:** La sanción aumenta.\n\nEs importante que sepas que, en el sistema penal mexicano, el objetivo de la sentencia no es solo la prisión, sino también la **reparación del daño**, que consiste en que se te devuelva el objeto o se te indemnice por su valor.\n\n### 3. ¿Qué puedes hacer ahora? (Orientación procesal)\nTe sugiero realizar las siguientes acciones de inmediato:\n\n1.  **Denuncia:** Debes acudir ante el Ministerio Público para presentar tu denuncia. Esto es fundamental para que se inicie la **investigación inicial**.\n2.  **Aportación de pruebas:** Si tienes el número de serie (IMEI) del celular, o si tienes mensajes o llamadas recientes que puedan ayudar a identificar al responsable, infórmalo. La ley permite que las víctimas aporten comunicaciones (como mensajes de WhatsApp o registros de llamadas) para ayudar a la investigación.\n3.  **Bloqueo:** Contacta a tu compañía telefónica para bloquear la línea y el equipo.\n\n**Para poder darte información más concreta sobre la posible sanción y los pasos a seguir en tu localidad, ¿podrías decirme en qué estado de la República ocurrieron los hechos?**\n\n***\n\n**Fundamento jurídico:**\n*   **Código Penal Federal (referencia general):** Define el robo como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento.\n*   **Constitución Política de los Estados Unidos Mexicanos (Art. 16 y 21):** Establecen la obligación de la autoridad para investigar los delitos y proteger a las víctimas.\n*   **Principio de Legalidad:** Solo una conducta previamente descrita en la ley puede ser sancionada como delito."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Morelos"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es su familia"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "trabajo en Toluca, pero me lo hicieron por internet",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo que es un momento de mucha impotencia y preocupación.\n\nPara poder orientarte de manera precisa, es necesario aclarar que la respuesta sobre la pena exacta y el procedimiento depende totalmente del **estado de la República donde ocurrieron los hechos**, ya que cada entidad tiene su propio Código Penal para determinar las sanciones específicas.\n\nSin embargo, puedo darte una orientación general basada en la legislación nacional y la teoría del delito:\n\n### 1. ¿Es un delito?\nSí, lo que describes es una conducta que encuadra en el tipo penal de **robo**. El robo se define como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento de la persona que puede otorgarlo.\n\nEn tu caso, al no haber violencia física (golpes) ni amenazas (armas), se trataría de un **robo simple**. Si el robo se hubiera realizado mediante violencia, la situación jurídica y la gravedad de la sanción serían mucho mayores.\n\n### 2. ¿Cuánta cárcel le pueden dar?\nComo te mencioné, la pena exacta la determina el Código Penal del estado donde te robaron. No obstante, la ley establece que las penas varían según el valor de lo robado (el monto del celular) y las circunstancias del hecho.\n\n*   **Si el valor es bajo:** La pena suele ser menor.\n*   **Si el valor es alto:** La sanción aumenta.\n\nEs importante que sepas que, en el sistema penal mexicano, el objetivo de la sentencia no es solo la prisión, sino también la **reparación del daño**, que consiste en que se te devuelva el objeto o se te indemnice por su valor.\n\n### 3. ¿Qué puedes hacer ahora? (Orientación procesal)\nTe sugiero realizar las siguientes acciones de inmediato:\n\n1.  **Denuncia:** Debes acudir ante el Ministerio Público para presentar tu denuncia. Esto es fundamental para que se inicie la **investigación inicial**.\n2.  **Aportación de pruebas:** Si tienes el número de serie (IMEI) del celular, o si tienes mensajes o llamadas recientes que puedan ayudar a identificar al responsable, infórmalo. La ley permite que las víctimas aporten comunicaciones (como mensajes de WhatsApp o registros de llamadas) para ayudar a la investigación.\n3.  **Bloqueo:** Contacta a tu compañía telefónica para bloquear la línea y el equipo.\n\n**Para poder darte información más concreta sobre la posible sanción y los pasos a seguir en tu localidad, ¿podrías decirme en qué estado de la República ocurrieron los hechos?**\n\n***\n\n**Fundamento jurídico:**\n*   **Código Penal Federal (referencia general):** Define el robo como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento.\n*   **Constitución Política de los Estados Unidos Mexicanos (Art. 16 y 21):** Establecen la obligación de la autoridad para investigar los delitos y proteger a las víctimas.\n*   **Principio de Legalidad:** Solo una conducta previamente descrita en la ley puede ser sancionada como delito."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Estado de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice dónde trabaja; fue por internet"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "estoy de visita en la CDMX, pero pasó en mi casa en Puebla",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Me robaron el celular en la calle, sin golpes ni armas. ¿Es delito y cuánta cárcel le pueden dar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo que es un momento de mucha impotencia y preocupación.\n\nPara poder orientarte de manera precisa, es necesario aclarar que la respuesta sobre la pena exacta y el procedimiento depende totalmente del **estado de la República donde ocurrieron los hechos**, ya que cada entidad tiene su propio Código Penal para determinar las sanciones específicas.\n\nSin embargo, puedo darte una orientación general basada en la legislación nacional y la teoría del delito:\n\n### 1. ¿Es un delito?\nSí, lo que describes es una conducta que encuadra en el tipo penal de **robo**. El robo se define como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento de la persona que puede otorgarlo.\n\nEn tu caso, al no haber violencia física (golpes) ni amenazas (armas), se trataría de un **robo simple**. Si el robo se hubiera realizado mediante violencia, la situación jurídica y la gravedad de la sanción serían mucho mayores.\n\n### 2. ¿Cuánta cárcel le pueden dar?\nComo te mencioné, la pena exacta la determina el Código Penal del estado donde te robaron. No obstante, la ley establece que las penas varían según el valor de lo robado (el monto del celular) y las circunstancias del hecho.\n\n*   **Si el valor es bajo:** La pena suele ser menor.\n*   **Si el valor es alto:** La sanción aumenta.\n\nEs importante que sepas que, en el sistema penal mexicano, el objetivo de la sentencia no es solo la prisión, sino también la **reparación del daño**, que consiste en que se te devuelva el objeto o se te indemnice por su valor.\n\n### 3. ¿Qué puedes hacer ahora? (Orientación procesal)\nTe sugiero realizar las siguientes acciones de inmediato:\n\n1.  **Denuncia:** Debes acudir ante el Ministerio Público para presentar tu denuncia. Esto es fundamental para que se inicie la **investigación inicial**.\n2.  **Aportación de pruebas:** Si tienes el número de serie (IMEI) del celular, o si tienes mensajes o llamadas recientes que puedan ayudar a identificar al responsable, infórmalo. La ley permite que las víctimas aporten comunicaciones (como mensajes de WhatsApp o registros de llamadas) para ayudar a la investigación.\n3.  **Bloqueo:** Contacta a tu compañía telefónica para bloquear la línea y el equipo.\n\n**Para poder darte información más concreta sobre la posible sanción y los pasos a seguir en tu localidad, ¿podrías decirme en qué estado de la República ocurrieron los hechos?**\n\n***\n\n**Fundamento jurídico:**\n*   **Código Penal Federal (referencia general):** Define el robo como el apoderamiento de una cosa ajena mueble sin derecho y sin consentimiento.\n*   **Constitución Política de los Estados Unidos Mexicanos (Art. 16 y 21):** Establecen la obligación de la autoridad para investigar los delitos y proteger a las víctimas.\n*   **Principio de Legalidad:** Solo una conducta previamente descrita en la ley puede ser sancionada como delito."
+     }
+    ],
+    "hechos": [
+     "Puebla"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · está de visita en otro estado"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro, pero no sé dónde fue",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar con precisión la naturaleza jurídica de la conducta descrita, es indispensable conocer el lugar donde ocurrieron los hechos, ya que la tipificación de este comportamiento puede variar dependiendo de la legislación penal de la entidad federativa correspondiente.\n\nNo obstante, desde una perspectiva general y con base en la información disponible, la conducta de no entregar un bien (en este caso, una computadora) tras haber recibido un pago por internet podría analizarse bajo dos vertientes:\n\nEn primer lugar, si la conducta se encuadra en un tipo penal de carácter patrimonial, la respuesta dependerá de la legislación local. Sin embargo, es importante señalar que, en el ámbito de la legislación nacional, existen disposiciones que regulan la protección de datos y la integridad de las transacciones. Por ejemplo, la **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión** establece en su **artículo 17, fracción IV**, que se cometen agravantes cuando se utiliza información privada de la víctima (como datos personales, imágenes o textos) para coaccionarla. Si bien esto se refiere a la extorsión, subraya la importancia de la protección de la información en entornos digitales.\n\nEn segundo lugar, es necesario distinguir si la conducta constituye un delito o un incumplimiento de carácter civil. Para que una conducta sea considerada delito, debe encuadrar en la descripción de una conducta típica, antijurídica y culpable. En el sistema penal, la teoría del delito nos indica que el análisis debe partir de la tipicidad; es decir, si la acción de \"no entregar el producto\" coincide exactamente con lo que la ley describe como un delito específico.\n\nDebido a que la legislación penal en materia de fraudes o estafas es de competencia local, no es posible determinar el delito exacto sin conocer el estado de la República donde se realizó la transacción.\n\nPor lo anterior, se requiere que proporcione la información sobre en qué estado ocurrieron los hechos para realizar un análisis jurídico fundado y motivado.\n\nFundamento jurídico\n\n*   **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión**, Artículo 17, fracción IV.\n\nConclusión\n\nNo es posible determinar el delito de manera definitiva debido a que la tipificación de este hecho depende de la legislación penal del estado donde ocurrieron los hechos. Se requiere conocer dicha ubicación para identificar el tipo penal aplicable."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es, no dónde fue"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "mi familia es de Morelos",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar con precisión la naturaleza jurídica de la conducta descrita, es indispensable conocer el lugar donde ocurrieron los hechos, ya que la tipificación de este comportamiento puede variar dependiendo de la legislación penal de la entidad federativa correspondiente.\n\nNo obstante, desde una perspectiva general y con base en la información disponible, la conducta de no entregar un bien (en este caso, una computadora) tras haber recibido un pago por internet podría analizarse bajo dos vertientes:\n\nEn primer lugar, si la conducta se encuadra en un tipo penal de carácter patrimonial, la respuesta dependerá de la legislación local. Sin embargo, es importante señalar que, en el ámbito de la legislación nacional, existen disposiciones que regulan la protección de datos y la integridad de las transacciones. Por ejemplo, la **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión** establece en su **artículo 17, fracción IV**, que se cometen agravantes cuando se utiliza información privada de la víctima (como datos personales, imágenes o textos) para coaccionarla. Si bien esto se refiere a la extorsión, subraya la importancia de la protección de la información en entornos digitales.\n\nEn segundo lugar, es necesario distinguir si la conducta constituye un delito o un incumplimiento de carácter civil. Para que una conducta sea considerada delito, debe encuadrar en la descripción de una conducta típica, antijurídica y culpable. En el sistema penal, la teoría del delito nos indica que el análisis debe partir de la tipicidad; es decir, si la acción de \"no entregar el producto\" coincide exactamente con lo que la ley describe como un delito específico.\n\nDebido a que la legislación penal en materia de fraudes o estafas es de competencia local, no es posible determinar el delito exacto sin conocer el estado de la República donde se realizó la transacción.\n\nPor lo anterior, se requiere que proporcione la información sobre en qué estado ocurrieron los hechos para realizar un análisis jurídico fundado y motivado.\n\nFundamento jurídico\n\n*   **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión**, Artículo 17, fracción IV.\n\nConclusión\n\nNo es posible determinar el delito de manera definitiva debido a que la tipificación de este hecho depende de la legislación penal del estado donde ocurrieron los hechos. Se requiere conocer dicha ubicación para identificar el tipo penal aplicable."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Morelos"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es su familia"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "trabajo en Toluca, pero me lo hicieron por internet",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar con precisión la naturaleza jurídica de la conducta descrita, es indispensable conocer el lugar donde ocurrieron los hechos, ya que la tipificación de este comportamiento puede variar dependiendo de la legislación penal de la entidad federativa correspondiente.\n\nNo obstante, desde una perspectiva general y con base en la información disponible, la conducta de no entregar un bien (en este caso, una computadora) tras haber recibido un pago por internet podría analizarse bajo dos vertientes:\n\nEn primer lugar, si la conducta se encuadra en un tipo penal de carácter patrimonial, la respuesta dependerá de la legislación local. Sin embargo, es importante señalar que, en el ámbito de la legislación nacional, existen disposiciones que regulan la protección de datos y la integridad de las transacciones. Por ejemplo, la **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión** establece en su **artículo 17, fracción IV**, que se cometen agravantes cuando se utiliza información privada de la víctima (como datos personales, imágenes o textos) para coaccionarla. Si bien esto se refiere a la extorsión, subraya la importancia de la protección de la información en entornos digitales.\n\nEn segundo lugar, es necesario distinguir si la conducta constituye un delito o un incumplimiento de carácter civil. Para que una conducta sea considerada delito, debe encuadrar en la descripción de una conducta típica, antijurídica y culpable. En el sistema penal, la teoría del delito nos indica que el análisis debe partir de la tipicidad; es decir, si la acción de \"no entregar el producto\" coincide exactamente con lo que la ley describe como un delito específico.\n\nDebido a que la legislación penal en materia de fraudes o estafas es de competencia local, no es posible determinar el delito exacto sin conocer el estado de la República donde se realizó la transacción.\n\nPor lo anterior, se requiere que proporcione la información sobre en qué estado ocurrieron los hechos para realizar un análisis jurídico fundado y motivado.\n\nFundamento jurídico\n\n*   **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión**, Artículo 17, fracción IV.\n\nConclusión\n\nNo es posible determinar el delito de manera definitiva debido a que la tipificación de este hecho depende de la legislación penal del estado donde ocurrieron los hechos. Se requiere conocer dicha ubicación para identificar el tipo penal aplicable."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Estado de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice dónde trabaja; fue por internet"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "estoy de visita en la CDMX, pero pasó en mi casa en Puebla",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar con precisión la naturaleza jurídica de la conducta descrita, es indispensable conocer el lugar donde ocurrieron los hechos, ya que la tipificación de este comportamiento puede variar dependiendo de la legislación penal de la entidad federativa correspondiente.\n\nNo obstante, desde una perspectiva general y con base en la información disponible, la conducta de no entregar un bien (en este caso, una computadora) tras haber recibido un pago por internet podría analizarse bajo dos vertientes:\n\nEn primer lugar, si la conducta se encuadra en un tipo penal de carácter patrimonial, la respuesta dependerá de la legislación local. Sin embargo, es importante señalar que, en el ámbito de la legislación nacional, existen disposiciones que regulan la protección de datos y la integridad de las transacciones. Por ejemplo, la **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión** establece en su **artículo 17, fracción IV**, que se cometen agravantes cuando se utiliza información privada de la víctima (como datos personales, imágenes o textos) para coaccionarla. Si bien esto se refiere a la extorsión, subraya la importancia de la protección de la información en entornos digitales.\n\nEn segundo lugar, es necesario distinguir si la conducta constituye un delito o un incumplimiento de carácter civil. Para que una conducta sea considerada delito, debe encuadrar en la descripción de una conducta típica, antijurídica y culpable. En el sistema penal, la teoría del delito nos indica que el análisis debe partir de la tipicidad; es decir, si la acción de \"no entregar el producto\" coincide exactamente con lo que la ley describe como un delito específico.\n\nDebido a que la legislación penal en materia de fraudes o estafas es de competencia local, no es posible determinar el delito exacto sin conocer el estado de la República donde se realizó la transacción.\n\nPor lo anterior, se requiere que proporcione la información sobre en qué estado ocurrieron los hechos para realizar un análisis jurídico fundado y motivado.\n\nFundamento jurídico\n\n*   **Ley General para Prevenir, Investigar y Sancionar los Delitos en Materia de Extorsión**, Artículo 17, fracción IV.\n\nConclusión\n\nNo es posible determinar el delito de manera definitiva debido a que la tipificación de este hecho depende de la legislación penal del estado donde ocurrieron los hechos. Se requiere conocer dicha ubicación para identificar el tipo penal aplicable."
+     }
+    ],
+    "hechos": [
+     "Puebla"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · está de visita en otro estado"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro, pero no sé dónde fue",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo lo frustrante y la sensación de impotencia que genera perder dinero tras una compra que no se concretó.\n\nPara poder orientarte con precisión, es necesario distinguir primero la naturaleza de lo que ocurrió, ya que la clasificación del delito depende de cómo se haya realizado la conducta.\n\n### Análisis de tu situación\n\nDe acuerdo con los hechos que me narras, existen dos caminos principales para analizar este suceso:\n\n1.  **Fraude:** Si la persona utilizó engaños, mentiras o una identidad falsa desde el principio para convencerte de realizar el pago, con la intención de quedarse con tu dinero sin intención alguna de entregarte la computadora, estaríamos ante un fraude. El fraude implica el uso de un engaño para obtener un lucro indebido.\n2.  **Abuso de confianza:** Si la relación hubiera sido de confianza (por ejemplo, si conocieras a la persona o si el dinero se entregó para un fin específico y la persona simplemente se niega a devolverlo o lo desvió), podría analizarse bajo esta figura. Sin embargo, en compras por internet con desconocidos, lo más común es que se trate de un fraude.\n\n**Nota importante sobre la jurisdicción:**\nLa clasificación exacta y las sanciones específicas dependen de la legislación penal del estado donde tú te encuentres o donde se haya realizado la transacción. Como la respuesta varía según la entidad federativa, **¿podrías decirme en qué estado ocurrieron los hechos (donde tú te encuentras)?**\n\n### ¿Qué puedes hacer ahora?\n\nIndependientemente del estado, existen pasos prácticos que puedes seguir de inmediato:\n\n*   **Preservar evidencia:** Guarda capturas de pantalla de la conversación, el perfil de la persona, el anuncio de la computadora, el comprobante de la transferencia o depósito, y cualquier correo electrónico recibido. Esto será fundamental para la investigación.\n*   **Denuncia:** Puedes acudir al Ministerio Público de tu localidad para presentar una denuncia. En muchos estados, también existen unidades especializadas en delitos cibernéticos que pueden ayudarte a rastrear la cuenta o el perfil utilizado.\n*   **Reporte bancario:** Contacta a tu institución financiera para informar sobre la transacción fraudulenta; aunque es difícil recuperar el dinero en transferencias inmediatas, es un paso necesario para el reporte oficial.\n\n**Fundamento jurídico**\nLa determinación del delito dependerá de los elementos que se acrediten (el engaño y el perjuicio patrimonial). En el ámbito federal, el Código Penal Federal contempla el fraude, pero la aplicación práctica en estos casos suele recaer en los Códigos Penales de cada estado.\n\nSi me proporcionas el estado, podré decirte con mayor exactitud qué artículos podrían aplicar y cómo es el proceso de denuncia en tu zona. Quedo atento para seguir ayudándote."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es, no dónde fue"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "mi familia es de Morelos",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo lo frustrante y la sensación de impotencia que genera perder dinero tras una compra que no se concretó.\n\nPara poder orientarte con precisión, es necesario distinguir primero la naturaleza de lo que ocurrió, ya que la clasificación del delito depende de cómo se haya realizado la conducta.\n\n### Análisis de tu situación\n\nDe acuerdo con los hechos que me narras, existen dos caminos principales para analizar este suceso:\n\n1.  **Fraude:** Si la persona utilizó engaños, mentiras o una identidad falsa desde el principio para convencerte de realizar el pago, con la intención de quedarse con tu dinero sin intención alguna de entregarte la computadora, estaríamos ante un fraude. El fraude implica el uso de un engaño para obtener un lucro indebido.\n2.  **Abuso de confianza:** Si la relación hubiera sido de confianza (por ejemplo, si conocieras a la persona o si el dinero se entregó para un fin específico y la persona simplemente se niega a devolverlo o lo desvió), podría analizarse bajo esta figura. Sin embargo, en compras por internet con desconocidos, lo más común es que se trate de un fraude.\n\n**Nota importante sobre la jurisdicción:**\nLa clasificación exacta y las sanciones específicas dependen de la legislación penal del estado donde tú te encuentres o donde se haya realizado la transacción. Como la respuesta varía según la entidad federativa, **¿podrías decirme en qué estado ocurrieron los hechos (donde tú te encuentras)?**\n\n### ¿Qué puedes hacer ahora?\n\nIndependientemente del estado, existen pasos prácticos que puedes seguir de inmediato:\n\n*   **Preservar evidencia:** Guarda capturas de pantalla de la conversación, el perfil de la persona, el anuncio de la computadora, el comprobante de la transferencia o depósito, y cualquier correo electrónico recibido. Esto será fundamental para la investigación.\n*   **Denuncia:** Puedes acudir al Ministerio Público de tu localidad para presentar una denuncia. En muchos estados, también existen unidades especializadas en delitos cibernéticos que pueden ayudarte a rastrear la cuenta o el perfil utilizado.\n*   **Reporte bancario:** Contacta a tu institución financiera para informar sobre la transacción fraudulenta; aunque es difícil recuperar el dinero en transferencias inmediatas, es un paso necesario para el reporte oficial.\n\n**Fundamento jurídico**\nLa determinación del delito dependerá de los elementos que se acrediten (el engaño y el perjuicio patrimonial). En el ámbito federal, el Código Penal Federal contempla el fraude, pero la aplicación práctica en estos casos suele recaer en los Códigos Penales de cada estado.\n\nSi me proporcionas el estado, podré decirte con mayor exactitud qué artículos podrían aplicar y cómo es el proceso de denuncia en tu zona. Quedo atento para seguir ayudándote."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Morelos"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es su familia"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "trabajo en Toluca, pero me lo hicieron por internet",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo lo frustrante y la sensación de impotencia que genera perder dinero tras una compra que no se concretó.\n\nPara poder orientarte con precisión, es necesario distinguir primero la naturaleza de lo que ocurrió, ya que la clasificación del delito depende de cómo se haya realizado la conducta.\n\n### Análisis de tu situación\n\nDe acuerdo con los hechos que me narras, existen dos caminos principales para analizar este suceso:\n\n1.  **Fraude:** Si la persona utilizó engaños, mentiras o una identidad falsa desde el principio para convencerte de realizar el pago, con la intención de quedarse con tu dinero sin intención alguna de entregarte la computadora, estaríamos ante un fraude. El fraude implica el uso de un engaño para obtener un lucro indebido.\n2.  **Abuso de confianza:** Si la relación hubiera sido de confianza (por ejemplo, si conocieras a la persona o si el dinero se entregó para un fin específico y la persona simplemente se niega a devolverlo o lo desvió), podría analizarse bajo esta figura. Sin embargo, en compras por internet con desconocidos, lo más común es que se trate de un fraude.\n\n**Nota importante sobre la jurisdicción:**\nLa clasificación exacta y las sanciones específicas dependen de la legislación penal del estado donde tú te encuentres o donde se haya realizado la transacción. Como la respuesta varía según la entidad federativa, **¿podrías decirme en qué estado ocurrieron los hechos (donde tú te encuentras)?**\n\n### ¿Qué puedes hacer ahora?\n\nIndependientemente del estado, existen pasos prácticos que puedes seguir de inmediato:\n\n*   **Preservar evidencia:** Guarda capturas de pantalla de la conversación, el perfil de la persona, el anuncio de la computadora, el comprobante de la transferencia o depósito, y cualquier correo electrónico recibido. Esto será fundamental para la investigación.\n*   **Denuncia:** Puedes acudir al Ministerio Público de tu localidad para presentar una denuncia. En muchos estados, también existen unidades especializadas en delitos cibernéticos que pueden ayudarte a rastrear la cuenta o el perfil utilizado.\n*   **Reporte bancario:** Contacta a tu institución financiera para informar sobre la transacción fraudulenta; aunque es difícil recuperar el dinero en transferencias inmediatas, es un paso necesario para el reporte oficial.\n\n**Fundamento jurídico**\nLa determinación del delito dependerá de los elementos que se acrediten (el engaño y el perjuicio patrimonial). En el ámbito federal, el Código Penal Federal contempla el fraude, pero la aplicación práctica en estos casos suele recaer en los Códigos Penales de cada estado.\n\nSi me proporcionas el estado, podré decirte con mayor exactitud qué artículos podrían aplicar y cómo es el proceso de denuncia en tu zona. Quedo atento para seguir ayudándote."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Estado de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice dónde trabaja; fue por internet"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "estoy de visita en la CDMX, pero pasó en mi casa en Puebla",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Le pagué por internet a alguien una computadora que nunca me entregó. ¿Qué delito es?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación; entiendo lo frustrante y la sensación de impotencia que genera perder dinero tras una compra que no se concretó.\n\nPara poder orientarte con precisión, es necesario distinguir primero la naturaleza de lo que ocurrió, ya que la clasificación del delito depende de cómo se haya realizado la conducta.\n\n### Análisis de tu situación\n\nDe acuerdo con los hechos que me narras, existen dos caminos principales para analizar este suceso:\n\n1.  **Fraude:** Si la persona utilizó engaños, mentiras o una identidad falsa desde el principio para convencerte de realizar el pago, con la intención de quedarse con tu dinero sin intención alguna de entregarte la computadora, estaríamos ante un fraude. El fraude implica el uso de un engaño para obtener un lucro indebido.\n2.  **Abuso de confianza:** Si la relación hubiera sido de confianza (por ejemplo, si conocieras a la persona o si el dinero se entregó para un fin específico y la persona simplemente se niega a devolverlo o lo desvió), podría analizarse bajo esta figura. Sin embargo, en compras por internet con desconocidos, lo más común es que se trate de un fraude.\n\n**Nota importante sobre la jurisdicción:**\nLa clasificación exacta y las sanciones específicas dependen de la legislación penal del estado donde tú te encuentres o donde se haya realizado la transacción. Como la respuesta varía según la entidad federativa, **¿podrías decirme en qué estado ocurrieron los hechos (donde tú te encuentras)?**\n\n### ¿Qué puedes hacer ahora?\n\nIndependientemente del estado, existen pasos prácticos que puedes seguir de inmediato:\n\n*   **Preservar evidencia:** Guarda capturas de pantalla de la conversación, el perfil de la persona, el anuncio de la computadora, el comprobante de la transferencia o depósito, y cualquier correo electrónico recibido. Esto será fundamental para la investigación.\n*   **Denuncia:** Puedes acudir al Ministerio Público de tu localidad para presentar una denuncia. En muchos estados, también existen unidades especializadas en delitos cibernéticos que pueden ayudarte a rastrear la cuenta o el perfil utilizado.\n*   **Reporte bancario:** Contacta a tu institución financiera para informar sobre la transacción fraudulenta; aunque es difícil recuperar el dinero en transferencias inmediatas, es un paso necesario para el reporte oficial.\n\n**Fundamento jurídico**\nLa determinación del delito dependerá de los elementos que se acrediten (el engaño y el perjuicio patrimonial). En el ámbito federal, el Código Penal Federal contempla el fraude, pero la aplicación práctica en estos casos suele recaer en los Códigos Penales de cada estado.\n\nSi me proporcionas el estado, podré decirte con mayor exactitud qué artículos podrían aplicar y cómo es el proceso de denuncia en tu zona. Quedo atento para seguir ayudándote."
+     }
+    ],
+    "hechos": [
+     "Puebla"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · está de visita en otro estado"
+   },
+   "fuente": "set 14 · corrida #237 · ultimo-promt-v2",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro, pero no sé dónde fue",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si la conducta de su vecino constituye un delito, es necesario precisar que la respuesta depende del estado de la República en el que se hayan producido los hechos, ya que la tipificación de diversas conductas puede variar según la legislación local. Sin embargo, con base en la información disponible, se puede realizar un análisis jurídico preliminar sobre la naturaleza de la amenaza.\n\nDesde una perspectiva de la teoría del delito, la conducta descrita podría analizarse bajo la figura de la amenaza, la cual implica la comunicación de un mal futuro, inminente y grave. Si la amenaza es real y genera en usted un temor fundado, esto podría tener implicaciones en el ámbito de la culpabilidad de un posible agresor o incluso en su propia defensa.\n\nEn cuanto a la legislación nacional, el Código Penal Federal contempla en su artículo 225, fracción VI, delitos contra la administración de justicia, pero no establece un tipo penal general de amenazas para particulares en su ámbito de aplicación. No obstante, en el ámbito de la responsabilidad penal, la doctrina y la jurisprudencia distinguen entre el miedo grave y el temor fundado. El temor fundado se define como una pasión del ánimo que hace rehusar cosas que se consideran peligrosas, representando un estado pasivo del sujeto ante una amenaza de un peligro real, inminente y grave que lo obliga a actuar de forma tal que produce una conducta típica y antijurídica.\n\nSi usted llegara a reaccionar ante dicha amenaza, es importante considerar que la existencia de una amenaza real y manifiesta es un elemento que la jurisprudencia reconoce para la procedencia de la legítima defensa, siempre que la agresión sea actual y manifiesta.\n\nPara brindarle una asesoría jurídica precisa y determinar el tipo penal exacto que podría aplicarse, es indispensable que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Código Penal Federal, artículo 225, fracción VI (referente a delitos contra la administración de justicia).\n\nConclusión\n\nLa conducta de su vecino podría constituir un delito de amenazas, pero para determinar la tipicidad exacta y la procedencia de una denuncia, es indispensable conocer el estado de la República donde ocurrieron los hechos, debido a que la legislación penal varía entre entidades federativas."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es, no dónde fue"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "mi familia es de Morelos",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si la conducta de su vecino constituye un delito, es necesario precisar que la respuesta depende del estado de la República en el que se hayan producido los hechos, ya que la tipificación de diversas conductas puede variar según la legislación local. Sin embargo, con base en la información disponible, se puede realizar un análisis jurídico preliminar sobre la naturaleza de la amenaza.\n\nDesde una perspectiva de la teoría del delito, la conducta descrita podría analizarse bajo la figura de la amenaza, la cual implica la comunicación de un mal futuro, inminente y grave. Si la amenaza es real y genera en usted un temor fundado, esto podría tener implicaciones en el ámbito de la culpabilidad de un posible agresor o incluso en su propia defensa.\n\nEn cuanto a la legislación nacional, el Código Penal Federal contempla en su artículo 225, fracción VI, delitos contra la administración de justicia, pero no establece un tipo penal general de amenazas para particulares en su ámbito de aplicación. No obstante, en el ámbito de la responsabilidad penal, la doctrina y la jurisprudencia distinguen entre el miedo grave y el temor fundado. El temor fundado se define como una pasión del ánimo que hace rehusar cosas que se consideran peligrosas, representando un estado pasivo del sujeto ante una amenaza de un peligro real, inminente y grave que lo obliga a actuar de forma tal que produce una conducta típica y antijurídica.\n\nSi usted llegara a reaccionar ante dicha amenaza, es importante considerar que la existencia de una amenaza real y manifiesta es un elemento que la jurisprudencia reconoce para la procedencia de la legítima defensa, siempre que la agresión sea actual y manifiesta.\n\nPara brindarle una asesoría jurídica precisa y determinar el tipo penal exacto que podría aplicarse, es indispensable que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Código Penal Federal, artículo 225, fracción VI (referente a delitos contra la administración de justicia).\n\nConclusión\n\nLa conducta de su vecino podría constituir un delito de amenazas, pero para determinar la tipicidad exacta y la procedencia de una denuncia, es indispensable conocer el estado de la República donde ocurrieron los hechos, debido a que la legislación penal varía entre entidades federativas."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Morelos"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice de dónde es su familia"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "trabajo en Toluca, pero me lo hicieron por internet",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si la conducta de su vecino constituye un delito, es necesario precisar que la respuesta depende del estado de la República en el que se hayan producido los hechos, ya que la tipificación de diversas conductas puede variar según la legislación local. Sin embargo, con base en la información disponible, se puede realizar un análisis jurídico preliminar sobre la naturaleza de la amenaza.\n\nDesde una perspectiva de la teoría del delito, la conducta descrita podría analizarse bajo la figura de la amenaza, la cual implica la comunicación de un mal futuro, inminente y grave. Si la amenaza es real y genera en usted un temor fundado, esto podría tener implicaciones en el ámbito de la culpabilidad de un posible agresor o incluso en su propia defensa.\n\nEn cuanto a la legislación nacional, el Código Penal Federal contempla en su artículo 225, fracción VI, delitos contra la administración de justicia, pero no establece un tipo penal general de amenazas para particulares en su ámbito de aplicación. No obstante, en el ámbito de la responsabilidad penal, la doctrina y la jurisprudencia distinguen entre el miedo grave y el temor fundado. El temor fundado se define como una pasión del ánimo que hace rehusar cosas que se consideran peligrosas, representando un estado pasivo del sujeto ante una amenaza de un peligro real, inminente y grave que lo obliga a actuar de forma tal que produce una conducta típica y antijurídica.\n\nSi usted llegara a reaccionar ante dicha amenaza, es importante considerar que la existencia de una amenaza real y manifiesta es un elemento que la jurisprudencia reconoce para la procedencia de la legítima defensa, siempre que la agresión sea actual y manifiesta.\n\nPara brindarle una asesoría jurídica precisa y determinar el tipo penal exacto que podría aplicarse, es indispensable que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Código Penal Federal, artículo 225, fracción VI (referente a delitos contra la administración de justicia).\n\nConclusión\n\nLa conducta de su vecino podría constituir un delito de amenazas, pero para determinar la tipicidad exacta y la procedencia de una denuncia, es indispensable conocer el estado de la República donde ocurrieron los hechos, debido a que la legislación penal varía entre entidades federativas."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Estado de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · dice dónde trabaja; fue por internet"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "estoy de visita en la CDMX, pero pasó en mi casa en Puebla",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "Un vecino me dijo que me va a golpear si vuelvo a estacionarme frente a su casa. ¿Eso es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "Respuesta\n\nPara determinar si la conducta de su vecino constituye un delito, es necesario precisar que la respuesta depende del estado de la República en el que se hayan producido los hechos, ya que la tipificación de diversas conductas puede variar según la legislación local. Sin embargo, con base en la información disponible, se puede realizar un análisis jurídico preliminar sobre la naturaleza de la amenaza.\n\nDesde una perspectiva de la teoría del delito, la conducta descrita podría analizarse bajo la figura de la amenaza, la cual implica la comunicación de un mal futuro, inminente y grave. Si la amenaza es real y genera en usted un temor fundado, esto podría tener implicaciones en el ámbito de la culpabilidad de un posible agresor o incluso en su propia defensa.\n\nEn cuanto a la legislación nacional, el Código Penal Federal contempla en su artículo 225, fracción VI, delitos contra la administración de justicia, pero no establece un tipo penal general de amenazas para particulares en su ámbito de aplicación. No obstante, en el ámbito de la responsabilidad penal, la doctrina y la jurisprudencia distinguen entre el miedo grave y el temor fundado. El temor fundado se define como una pasión del ánimo que hace rehusar cosas que se consideran peligrosas, representando un estado pasivo del sujeto ante una amenaza de un peligro real, inminente y grave que lo obliga a actuar de forma tal que produce una conducta típica y antijurídica.\n\nSi usted llegara a reaccionar ante dicha amenaza, es importante considerar que la existencia de una amenaza real y manifiesta es un elemento que la jurisprudencia reconoce para la procedencia de la legítima defensa, siempre que la agresión sea actual y manifiesta.\n\nPara brindarle una asesoría jurídica precisa y determinar el tipo penal exacto que podría aplicarse, es indispensable que me indique en qué estado de la República Mexicana ocurrieron los hechos.\n\nFundamento jurídico\n\n*   Código Penal Federal, artículo 225, fracción VI (referente a delitos contra la administración de justicia).\n\nConclusión\n\nLa conducta de su vecino podría constituir un delito de amenazas, pero para determinar la tipicidad exacta y la procedencia de una denuncia, es indispensable conocer el estado de la República donde ocurrieron los hechos, debido a que la legislación penal varía entre entidades federativas."
+     }
+    ],
+    "hechos": [
+     "Puebla"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "dos mensajes (falsos positivos) · está de visita en otro estado"
+   },
+   "fuente": "set 14 · corrida #215 · penal-original-v1",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "Soy de Morelos y alguien me estafó con una venta por internet, ¿es delito?",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [],
+    "otros": [
+     "Morelos"
+    ],
+    "tipo_caso": "un mensaje (falsos positivos)"
+   },
+   "fuente": "inventado (Claude, 25-oct)",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "Vivo en Querétaro y me hackearon el Facebook para pedir dinero a mis contactos, ¿qué hago?",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "un mensaje (falsos positivos)"
+   },
+   "fuente": "inventado (Claude, 25-oct)",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "Estoy de visita en la Ciudad de México; en mi pueblo en Oaxaca me robaron la moto la semana pasada.",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [
+     "Oaxaca"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "un mensaje (falsos positivos)"
+   },
+   "fuente": "inventado (Claude, 25-oct)",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "Trabajo en Toluca, pero lo que te cuento pasó en un bar de Querétaro: me golpearon.",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [
+     "Estado de México"
+    ],
+    "tipo_caso": "un mensaje (falsos positivos)"
+   },
+   "fuente": "inventado (Claude, 25-oct)",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "Mis papás viven en Puebla. A mí me están amenazando por mensajes, ¿es delito?",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [],
+    "otros": [
+     "Puebla"
+    ],
+    "tipo_caso": "un mensaje (falsos positivos)"
+   },
+   "fuente": "inventado (Claude, 25-oct)",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
+  },
+  {
+   "entrada": "Soy de Jalisco pero ahora vivo en la CDMX. Un compañero de la escuela me acosa en línea.",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [],
+    "otros": [
+     "Jalisco",
+     "Ciudad de México"
+    ],
+    "tipo_caso": "un mensaje (falsos positivos)"
+   },
+   "fuente": "inventado (Claude, 25-oct)",
+   "nota": "Agregado 25-oct para medir falsos positivos: la persona menciona un estado que NO es (o no se sabe si es) el lugar de los hechos.",
+   "revisado": false
   }
  ]
 }
