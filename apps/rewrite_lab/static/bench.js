@@ -1088,7 +1088,9 @@ async function loadComponentes(){
   const val = x => x ? (x.recall !== undefined ? x.recall : x.tasa) : null;
   $('comp-cards').innerHTML = COMP.tarjetas.map(t => {
     const pr = L(t.principal), m = (pr.ultima || {}).metricas || {}, pv = m.por_version || {};
-    const medida = m.medida === 'tasa' ? 'de aciertos' : 'de recall';
+    // Siempre se dice qué mide el número: recall = artículos esperados entre los 10 primeros resultados; aciertos = casos
+    // donde el resultado es el esperado.
+    const medida = m.medida === 'tasa' ? 'de aciertos (casos con el resultado esperado)' : 'de recall (artículos esperados entre los 10 primeros resultados)';
     const corriendo = [...t.pruebas, ...(t.anteriores || [])].some(id => L(id).corriendo);
     const actual = pv[t.en_estudio];
     const mejor = Object.entries(pv).map(([v, x]) => [v, val(x.todas)]).sort((a, b) => (b[1] ?? -1) - (a[1] ?? -1))[0];
@@ -1097,7 +1099,7 @@ async function loadComponentes(){
       <div class="muted" style="font-size:12px;margin:4px 0 8px">${esc(t.que_es)}</div>
       ${corriendo ? '<div class="muted" style="font-size:12px">⏳ corriendo…</div>' : ''}
       ${actual ? `<div style="font-size:12px"><span class="muted">Lo de la ronda 2:</span> <b>${cpct(val(actual.todas))}</b> ${medida}</div>` : ''}
-      ${mejor && mejor[0] !== t.en_estudio ? `<div style="font-size:12px"><span class="muted">Mejor método:</span> ${esc(mejor[0])} · <b>${cpct(mejor[1])}</b></div>` : ''}
+      ${mejor && mejor[0] !== t.en_estudio ? `<div style="font-size:12px"><span class="muted">Mejor método:</span> ${esc(mejor[0])} · <b>${cpct(mejor[1])}</b> ${medida}</div>` : ''}
       ${pr.ultima ? '' : '<div class="muted" style="font-size:12px">Sin corridas todavía</div>'}</div>`;
   }).join('');
   document.querySelectorAll('#comp-cards .comp-card').forEach(el => el.onclick = () => {
