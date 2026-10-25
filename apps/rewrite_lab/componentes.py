@@ -86,14 +86,18 @@ COMPONENTES = {
                                        'HyDE + rerank) y quitando partes, para ver cuánto aporta cada una junta con las demás.',
                            'efecto': True},
     'reescritura_recall': {'nombre': 'Reescritura multiturno · recall', 'icono': '💬',
-                           'objetivo': 'Del segundo mensaje en adelante, la búsqueda híbrida necesita un solo texto. Para '
-                                       'cada mensaje siguiente real de la ronda 1 (con la conversación tal como quedó '
-                                       'guardada): cuántos artículos esperados de la situación salen entre los 10 primeros '
-                                       'resultados buscando con solo el último mensaje, con los mensajes de la persona '
-                                       'pegados (sin llamar al LLM), con lo que reescribe el LLM (v1, v2, y v1 viendo las respuestas del asistente '
-                                       'completas), o sin reescritura y con HyDE leyendo la conversación. Cada una con dos '
-                                       'configuraciones: solo HyDE (aísla el texto) y la mejor combinación (filtro por '
-                                       'estado + descomponer + HyDE + rerank).', 'efecto': True, 'casos_en_base': True},
+                           'objetivo': 'Del segundo mensaje en adelante, la búsqueda híbrida necesita un solo texto de búsqueda. '
+                                       'Casos: cada mensaje siguiente real de la ronda 1, con la conversación tal como quedó guardada. '
+                                       'Se cuenta cuántos artículos esperados de la situación salen entre los 10 primeros resultados con '
+                                       'cada forma de armar el texto de búsqueda: (1) solo el último mensaje; (2) los mensajes de la '
+                                       'persona pegados, sin llamar al LLM; (3) reescritura v1, la de hoy: Gemma reescribe viendo los '
+                                       'mensajes de la persona y SOLO LOS PRIMEROS 500 CARACTERES de cada respuesta del asistente; '
+                                       '(4) reescritura v2: ve los primeros 250 y los últimos 250 caracteres de cada respuesta, y tiene la '
+                                       'regla de conservar la pregunta original; (5) reescritura v1 con las respuestas del asistente '
+                                       'COMPLETAS; (6) HyDE con historia: sin reescritura; BM25 y descomponer buscan con los mensajes '
+                                       'pegados y HyDE escribe su borrador leyendo la conversación completa. Cada una con dos '
+                                       'configuraciones: solo HyDE (aísla el texto) y la mejor combinación (filtro por estado + '
+                                       'descomponer + HyDE + rerank).', 'efecto': True, 'casos_en_base': True},
     'hyde': {'nombre': 'HyDE', 'icono': '🧪',
              'objetivo': 'Escribir un borrador del artículo que respondería, sin inventar números de artículo y sin '
                          'nombrar estados que la pregunta no nombra.'},
