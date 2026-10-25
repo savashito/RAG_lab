@@ -197,3 +197,13 @@ def test_filtro_metodos_evalua_cada_metodo_y_agrupa():
     assert 'un mensaje · estados' in pv[v1]
     assert {t['id'] for t in cp.TARJETAS} >= {'filtro', 'reescritura', 'descomponer', 'hyde'}
     assert all(p in cp.COMPONENTES for t in cp.TARJETAS for p in t['pruebas'] + t.get('anteriores', []))
+
+
+def test_errores_del_lugar_de_los_hechos():
+    v1, v2, _ = cp.METODOS_FILTRO
+    filas = [{'esperado': {'hechos': ['Querétaro']}, 'salida': {v1: {'lugares': [lugar('Querétaro', 'otro')]}, v2: {'lugares': [lugar('Querétaro')]}}},
+             {'esperado': {'hechos': []}, 'salida': {v1: {'lugares': [lugar('Morelos')]}, v2: {'lugares': [lugar('Morelos', 'otro')]}}},
+             {'esperado': {'estados': ['CDMX']}, 'salida': {v1: {'lugares': []}}}]   # no prueba «hechos»: no cuenta
+    e = cp.errores_lugar(filas)
+    assert e[v1] == {'casos': 2, 'falsos_positivos': 1, 'falsos_negativos': 1, 'sin_lugar': 1}
+    assert e[v2] == {'casos': 2, 'falsos_positivos': 0, 'falsos_negativos': 0, 'sin_lugar': 1}

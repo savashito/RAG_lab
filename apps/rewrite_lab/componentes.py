@@ -74,7 +74,11 @@ COMPONENTES = {
                                    'trabaja), el tipo de asunto y si es pregunta de teoría. Los mismos casos (un mensaje suelto y '
                                    'mensajes que siguen a una respuesta del asistente) con cada método: v1 lee solo los mensajes '
                                    'de la persona; v2 además la frase donde el asistente pidió el lugar (regex); v3 la '
-                                   'conversación completa.'},
+                                   'conversación completa. Aciertos = el filtro dio exactamente lo esperado en los campos que '
+                                   'prueba el caso. Además, sobre el lugar de los hechos: falso positivo = marcó como lugar de los '
+                                   'hechos un estado que no lo es (el error grave: Tlacua citaría el código de un estado que '
+                                   'puede no aplicar); falso negativo = no marcó el lugar que sí dijo la persona (Tlacua vuelve a '
+                                   'pedir el estado o duda).'},
     'filtro_respuesta_corta': {'nombre': 'Filtro por estado · respuesta corta', 'icono': '🚧',
                                'objetivo': 'Cuando el asistente pidió el lugar y la persona contesta solo eso («Queretaro»), '
                                            'el filtro debe marcarlo como el lugar de los hechos. Compara el filtro de hoy '
@@ -375,12 +379,37 @@ def metricas_metodos(componente: str, filas: list[dict]) -> dict:
                 c = tot.setdefault(m, {}).setdefault(t, {'aciertos': 0, 'n': 0})
                 c['aciertos'] += bool(r.get('ok')); c['n'] += 1
     por = {m: {t: {**c, 'tasa': round(c['aciertos'] / c['n'], 4) if c['n'] else None} for t, c in ts.items()} for m, ts in tot.items()}
+    if componente == 'filtro_metodos':
+        for m, d in errores_lugar(ok).items():
+            if m in por:
+                por[m]['lugar_hechos'] = d
     for m in por:
         ts = [f['salida']['segundos'][m] for f in ok if m in ((f.get('salida') or {}).get('segundos') or {})]
         if ts:
             media = sum(ts) / len(ts)
             por[m]['segundos'] = {'media': round(media, 2), 'de': round((sum((x - media) ** 2 for x in ts) / len(ts)) ** 0.5, 2)}
     return {'n': len(filas), 'errores': len(filas) - len(ok), 'por_version': por, 'medida': 'tasa'}
+
+
+def errores_lugar(filas: list[dict]) -> dict[str, dict]:
+    """Filtro por estado: los dos errores del «lugar de los hechos», por método, en los casos que lo prueban (tienen
+    «hechos» en lo esperado). Falso positivo = marcó como lugar de los hechos un estado que no lo es (el grave: Tlacua
+    citaría el código de un estado que puede no aplicar). Falso negativo = no marcó el lugar de los hechos que sí dijo la
+    persona (Tlacua vuelve a pedir el estado o duda)."""
+    out: dict[str, dict] = {}
+    for f in filas:
+        esp = f.get('esperado') or {}
+        if 'hechos' not in esp:
+            continue
+        quiere = set(esp['hechos'])
+        for m, x in (f.get('salida') or {}).items():
+            if m in ('segundos', 'pregunta_extraida') or not isinstance(x, dict):
+                continue
+            obtuvo = {l['estado'] for l in (x.get('lugares') or []) if l.get('estado') and l.get('rol', 'hechos') == 'hechos'}
+            d = out.setdefault(m, {'casos': 0, 'falsos_positivos': 0, 'falsos_negativos': 0, 'sin_lugar': 0})
+            d['casos'] += 1; d['sin_lugar'] += not quiere
+            d['falsos_positivos'] += bool(obtuvo - quiere); d['falsos_negativos'] += bool(quiere - obtuvo)
+    return out
 
 
 def metricas_recall(filas: list[dict]) -> dict:

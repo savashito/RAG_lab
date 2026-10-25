@@ -1217,16 +1217,20 @@ function compTablaRecall(m, enEstudio){
   const pal = ts => ts.palabras ? `${Math.round(ts.palabras.media).toLocaleString('es-MX')} ± ${Math.round(ts.palabras.de).toLocaleString('es-MX')}` : '<span class="muted">—</span>';
   const mejor = t => Math.max(...Object.values(pv).map(x => v(x[t]) ?? -1));
   const orden = Object.entries(pv).sort((a, b) => (v(b[1].todas) ?? -1) - (v(a[1].todas) ?? -1));
-  const tabla = (cols, conTiempo) => `<div style="overflow-x:auto"><table class="comp-tab"><tr><th>Método</th>${cols.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${x0[t] ? (x0[t].preguntas ?? x0[t].n) + ' casos' : ''}</div></th>`).join('')}${conTiempo ? `<th>Tiempo por caso<div class="muted" style="font-weight:normal">${tasa ? 'la llamada' : 'búsqueda completa'}</div></th>` : ''}${conTiempo && conPalabras ? '<th>Palabras del contexto<div class="muted" style="font-weight:normal">lo que lee el LLM</div></th>' : ''}</tr>
+  // Filtro por estado: los dos errores del lugar de los hechos (falso positivo = marcó un estado que no es; falso negativo = no marcó el que sí).
+  const conLugar = Object.values(pv).some(x => x.lugar_hechos);
+  const lugar = ts => ts.lugar_hechos ? `<td><b>${ts.lugar_hechos.falsos_positivos}</b> <span class="muted">de ${ts.lugar_hechos.casos}</span></td><td><b>${ts.lugar_hechos.falsos_negativos}</b> <span class="muted">de ${ts.lugar_hechos.casos}</span></td>` : '<td>—</td><td>—</td>';
+  const tabla = (cols, conTiempo) => `<div style="overflow-x:auto"><table class="comp-tab"><tr><th>Método</th>${cols.map(t => `<th>${esc(t)}<div class="muted" style="font-weight:normal">${x0[t] ? (x0[t].preguntas ?? x0[t].n) + ' casos' : ''}</div></th>`).join('')}${conTiempo && conLugar ? '<th>Falsos positivos<div class="muted" style="font-weight:normal">marcó un lugar de los hechos que no es</div></th><th>Falsos negativos<div class="muted" style="font-weight:normal">no marcó el lugar que sí dijo</div></th>' : ''}${conTiempo ? `<th>Tiempo por caso<div class="muted" style="font-weight:normal">${tasa ? 'la llamada' : 'búsqueda completa'}</div></th>` : ''}${conTiempo && conPalabras ? '<th>Palabras del contexto<div class="muted" style="font-weight:normal">lo que lee el LLM</div></th>' : ''}</tr>
     ${orden.map(([nom, ts]) => `<tr${nom === enEstudio ? ' style="outline:1px solid #3b82f6"' : ''}><td><b>${esc(nom)}</b>${nom === enEstudio ? ' <span class="pill">ronda 2</span>' : ''}</td>${cols.map(t => { const c = ts[t];
-      return c ? `<td${v(c) === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(v(c))} <span class="muted">${c.aciertos} de ${den(c)}</span></td>` : '<td class="muted">—</td>'; }).join('')}${conTiempo ? `<td>${seg(ts)}</td>` : ''}${conTiempo && conPalabras ? `<td>${pal(ts)}</td>` : ''}</tr>`).join('')}
+      return c ? `<td${v(c) === mejor(t) ? ' class="comp-ok"' : ''}>${cpct(v(c))} <span class="muted">${c.aciertos} de ${den(c)}</span></td>` : '<td class="muted">—</td>'; }).join('')}${conTiempo && conLugar ? lugar(ts) : ''}${conTiempo ? `<td>${seg(ts)}</td>` : ''}${conTiempo && conPalabras ? `<td>${pal(ts)}</td>` : ''}</tr>`).join('')}
     </table></div>`;
   const titulo = tasa ? 'Aciertos: casos donde el resultado es el esperado, en total y por grupo de casos'
     : `Recall: artículos esperados entre los 10 primeros resultados de la búsqueda híbrida, en total y por ${grupos.some(t => t.startsWith('situación ')) ? 'situación' : 'set'}`;
   return `<h3 style="margin:10px 0 4px;font-size:13px;color:#9aa4b2">${titulo}</h3>
     ${tabla(['todas', ...grupos], true)}
     ${tiposP.length ? `<h3 style="margin:12px 0 4px;font-size:13px;color:#9aa4b2">Recall por tipo de pregunta</h3>${tabla(tiposP, false)}` : ''}
-    <p class="muted" style="font-size:12px">En verde, el mejor método de cada columna; con borde azul, el que usa la ronda 2.${tasa ? '' : ' Una pregunta puede ser de varios tipos.'}</p>`;
+    <p class="muted" style="font-size:12px">En verde, el mejor método de cada columna; con borde azul, el que usa la ronda 2.${tasa ? '' : ' Una pregunta puede ser de varios tipos.'}
+    ${conLugar ? ' Falsos positivos y negativos: solo en los casos que prueban el lugar de los hechos. El falso positivo es el error grave (Tlacua citaría el código de un estado que puede no aplicar); el falso negativo hace que Tlacua vuelva a pedir el estado.' : ''}</p>`;
 }
 async function compResultados(rid){
   const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;
