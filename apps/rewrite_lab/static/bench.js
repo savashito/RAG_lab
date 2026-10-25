@@ -1255,7 +1255,7 @@ function compTablaRecall(m){
 }
 async function compResultados(rid){
   const res = await bjson(`/api/componentes/corridas/${rid}`), comp = COMP.sel;
-  if(['division_recall', 'hyde_recall', 'rerank_recall', 'contexto_recall', 'reescritura_recall'].includes(comp)){
+  if(['division_recall', 'hyde_recall', 'rerank_recall', 'contexto_recall', 'reescritura_recall', 'combinacion_recall'].includes(comp)){
     const run = (await bjson(`/api/componentes/${comp}/corridas`)).find(r => r.id === rid) || {};
     const conTexto = comp === 'reescritura_recall';   // muestra con qué texto buscó cada versión
     $('comp-res').innerHTML = compTablaRecall(run.metricas || {}) + `<details><summary class="muted">Caso por caso (${res.length})</summary>
