@@ -17189,5 +17189,309 @@
    "fuente": "set 14 · q416",
    "revisado": true
   }
+ ],
+ "filtro_respuesta_corta": [
+  {
+   "entrada": "Queretaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "mande fotos intimas a alguien y ahora quiere dinero, que hago?"
+     },
+     {
+      "role": "assistant",
+      "content": "Lamento mucho que estés pasando por esta situación. Lo que describes puede constituir extorsión y violencia digital. Según la Ley General en materia de Extorsión, a quien obligue a otro a dar dinero se le imponen de 15 a 25 años. En la Ciudad de México y en Querétaro también se sanciona la difusión de imágenes íntimas. **Para orientarte con precisión, ¿podrías decirme en qué estado de la República ocurrieron estos hechos?**"
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "La prueba del usuario en la ronda 2 (24-oct).",
+   "revisado": false
+  },
+  {
+   "entrada": "en la cdmx",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron el celular en el camión, es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "El robo se sanciona de forma distinta en cada estado: por ejemplo, en la Ciudad de México depende del valor de lo robado y en el Estado de México hay agravantes si fue en transporte público. ¿En qué estado ocurrió el robo?"
+     }
+    ],
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "Querétaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "mi jefe me manda mensajes sexuales y me ofrece un ascenso si salgo con él"
+     },
+     {
+      "role": "assistant",
+      "content": "Lo que describes podría ser hostigamiento o acoso sexual. En Querétaro el artículo 167 Ter sanciona el hostigamiento y en la Ciudad de México el artículo 179 sanciona el acoso sexual. Es necesario precisar en qué entidad federativa ocurrieron los hechos para decirte qué artículo aplica."
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "El asistente pide el lugar sin signos de pregunta.",
+   "revisado": false
+  },
+  {
+   "entrada": "Toluca",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me pelee en una fiesta y le rompi la nariz a alguien, que me puede pasar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Eso podría ser el delito de lesiones; la pena depende de la gravedad y del estado. Indícame en qué estado pasó, por favor."
+     }
+    ],
+    "hechos": [
+     "Estado de México"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "Una ciudad, no el estado.",
+   "revisado": false
+  },
+  {
+   "entrada": "en Cuernavaca",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me vendieron un coche que resultó robado, me pueden acusar?"
+     },
+     {
+      "role": "assistant",
+      "content": "Depende de si sabías que era robado; podría ser encubrimiento por receptación. ¿Dónde ocurrieron los hechos?"
+     }
+    ],
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "Querétaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me llegó un citatorio por una pelea en un bar, qué hago?"
+     },
+     {
+      "role": "assistant",
+      "content": "Un citatorio es una cita de la Fiscalía; conviene acudir con un abogado. ¿El hecho ocurrió en Querétaro o en la Ciudad de México?"
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "A · contesta solo el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "La pregunta del asistente nombra dos estados como opciones: no debe entrar la Ciudad de México.",
+   "revisado": false
+  },
+  {
+   "entrada": "fue en Querétaro, pero yo vivo en la CDMX",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron la cartera en un bar"
+     },
+     {
+      "role": "assistant",
+      "content": "El robo se sanciona de forma distinta en cada estado: por ejemplo, en la Ciudad de México depende del valor de lo robado y en el Estado de México hay agravantes si fue en transporte público. ¿En qué estado ocurrió el robo?"
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "B · contesta lugar y algo más"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "vivo en la CDMX pero no sé dónde fue, fue por internet",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me estafaron con una compra en línea, qué hago?"
+     },
+     {
+      "role": "assistant",
+      "content": "Podría ser fraude. ¿En qué estado ocurrieron los hechos?"
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "B · contesta lugar y algo más"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "Dice dónde vive, no dónde pasó.",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro, pero me pasó en Morelos",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me golpearon y me robaron, qué puedo hacer?"
+     },
+     {
+      "role": "assistant",
+      "content": "Son dos delitos: lesiones y robo. ¿En qué estado ocurrió?"
+     }
+    ],
+    "hechos": [
+     "Morelos"
+    ],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "B · contesta lugar y algo más"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "soy de Querétaro",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron el celular, es delito?"
+     },
+     {
+      "role": "assistant",
+      "content": "Sí, el robo es un delito. Te recomiendo denunciar ante el Ministerio Público y guardar cualquier evidencia."
+     }
+    ],
+    "hechos": [],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "C · control: el asistente no pidió el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "Sin pregunta del asistente: «soy de» es donde vive.",
+   "revisado": false
+  },
+  {
+   "entrada": "y cuánta cárcel le dan?",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "me robaron el celular en Querétaro"
+     },
+     {
+      "role": "assistant",
+      "content": "El robo se sanciona de forma distinta en cada estado: por ejemplo, en la Ciudad de México depende del valor de lo robado y en el Estado de México hay agravantes si fue en transporte público. Te recomiendo denunciar cuanto antes."
+     }
+    ],
+    "hechos": [
+     "Querétaro"
+    ],
+    "tipo_caso": "C · control: el asistente no pidió el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "El lugar venía del primer mensaje.",
+   "revisado": false
+  },
+  {
+   "entrada": "ok, gracias",
+   "esperado": {
+    "conversacion": [
+     {
+      "role": "user",
+      "content": "mi jefe me acosa en el trabajo en la CDMX"
+     },
+     {
+      "role": "assistant",
+      "content": "Lo que describes podría ser hostigamiento o acoso sexual. En Querétaro el artículo 167 Ter sanciona el hostigamiento y en la Ciudad de México el artículo 179 sanciona el acoso sexual. ¿Quieres saber cómo presentar una denuncia?"
+     }
+    ],
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "tipo_caso": "C · control: el asistente no pidió el lugar"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "nota": "El asistente preguntó otra cosa (no el lugar).",
+   "revisado": false
+  },
+  {
+   "entrada": "Me robaron el celular en Querétaro, es delito?",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [
+     "Querétaro"
+    ],
+    "otros": [],
+    "tipo_caso": "D · control: primer mensaje"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  },
+  {
+   "entrada": "Vivo en Querétaro pero me robaron en la Ciudad de México",
+   "esperado": {
+    "conversacion": [],
+    "hechos": [
+     "Ciudad de México"
+    ],
+    "otros": [
+     "Querétaro"
+    ],
+    "tipo_caso": "D · control: primer mensaje"
+   },
+   "fuente": "inventado (Claude, 24-oct)",
+   "revisado": false
+  }
  ]
 }

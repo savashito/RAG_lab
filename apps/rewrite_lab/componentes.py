@@ -69,6 +69,11 @@ COMPONENTES = {
                         'objetivo': 'Para cada pregunta con artículos esperados (sets 3, 13 y 14): cuántos llegan al '
                                     'contexto final que lee el LLM (los k primeros resultados + sus vecinos) y cuántas '
                                     'palabras tiene ese contexto, con y sin vecinos y con distintos k.', 'efecto': True},
+    'filtro_respuesta_corta': {'nombre': 'Filtro por estado · respuesta corta', 'icono': '🚧',
+                               'objetivo': 'Cuando el asistente pidió el lugar y la persona contesta solo eso («Queretaro»), '
+                                           'el filtro debe marcarlo como el lugar de los hechos. Compara el filtro de hoy '
+                                           '(lee solo los mensajes de la persona) contra darle también la frase con la que el '
+                                           'asistente pidió el lugar. Incluye controles donde no debe cambiar nada.'},
     'combinacion_recall': {'nombre': 'Mejor combinación: recall', 'icono': '🎯',
                            'objetivo': 'Para cada pregunta con artículos esperados (sets 3, 13 y 14): cuántos salen entre los '
                                        '10 primeros resultados con la mejor combinación (filtro por estado + descomponer + '
@@ -88,7 +93,8 @@ COMPONENTES = {
 }
 
 # Pruebas cuyo runner recibe (entrada, esperado): el caso trae datos que no caben en el texto de entrada.
-CON_ESPERADO = {'reescritura_recall'}
+CON_ESPERADO = {'reescritura_recall', 'filtro_respuesta_corta'}
+VERSIONES_FILTRO = ('sin la pregunta del asistente', 'con la pregunta del asistente')
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS comp_casos (
@@ -163,6 +169,15 @@ def eval_filtro(esp: dict, sal: dict) -> tuple[bool, dict]:
             fallas.append(k)
     return not fallas, {'obtenido': {k: obtenido[k] for k in esp if k in obtenido}, 'fallas': fallas,
                         'tipo': sal.get('tipo')}
+
+
+def eval_filtro_respuesta_corta(esp: dict, sal: dict) -> tuple[bool, dict]:
+    """Pasa si la versión CON la pregunta del asistente acierta; también se evalúa la de hoy, para comparar."""
+    campos = {k: esp[k] for k in ('hechos', 'otros', 'estados') if k in esp}
+    res = {v: eval_filtro(campos, sal.get(v) or {}) for v in VERSIONES_FILTRO}
+    ok = res['con la pregunta del asistente'][0]
+    return ok, {'por_version': {v: {'ok': r[0], **r[1]} for v, r in res.items()}, 'pregunta_extraida': sal.get('pregunta_extraida'),
+                'fallas': [] if ok else res['con la pregunta del asistente'][1]['fallas']}
 
 
 def _menciona(entidad: str, texto: str) -> bool:
@@ -259,6 +274,7 @@ EVALUADORES = {'filtro': eval_filtro, 'descomponer': eval_descomponer, 'por_deli
                'desc_libre_corto': eval_division('libre_corto'), 'desc_libre_max2': eval_division('libre_max2'),
                'division_recall': eval_recall, 'hyde_recall': eval_recall, 'rerank_recall': eval_recall,
                'reescritura_recall': eval_recall, 'combinacion_recall': eval_recall,
+               'filtro_respuesta_corta': eval_filtro_respuesta_corta,
                'contexto_recall': eval_recall}
 
 # Formas de dividir que compara la prueba de recall: (descomponer, descomponer por delito). descomponer = False, True
@@ -279,6 +295,10 @@ def metricas(componente: str, filas: list[dict]) -> dict:
     out = {'n': len(filas), 'errores': len(filas) - len(ok), 'aciertos': sum(f['ok'] for f in ok),
            'tasa': round(sum(f['ok'] for f in ok) / len(ok), 4) if ok else None}
     grupos: dict[str, list[bool]] = {}
+    if componente == 'filtro_respuesta_corta':   # las dos versiones lado a lado (aciertos de cada una)
+        for f in ok:
+            for v, r in ((f.get('detalle') or {}).get('por_version') or {}).items():
+                grupos.setdefault(v, []).append(bool(r.get('ok')))
     for f in ok:
         g = grupo(componente, f['esperado'])
         if g:
@@ -323,6 +343,8 @@ def grupo(componente: str, esp: dict) -> str | None:
         return 'comparativas' if esp.get('compara') else 'no comparativas'
     if componente.startswith('desc_') and not componente.startswith('desc_libre'):
         return 'debe dividir' if _division_esperada(componente[5:], esp) else 'no debe dividir'
+    if componente == 'filtro_respuesta_corta':
+        return esp.get('tipo_caso')
     if componente == 'filtro':
         return ('papel del lugar' if 'hechos' in esp or 'otros' in esp else 'estados' if 'estados' in esp
                 else 'teórica' if 'teorica' in esp else 'tipo de asunto')

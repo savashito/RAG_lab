@@ -1228,6 +1228,11 @@ async function compDetalle(destino = 'comp-detalle'){
 // Cómo mostrar la salida de cada componente, en corto.
 function compSalida(comp, s){
   if(s == null) return '—';
+  if(comp === 'filtro_respuesta_corta'){   // las dos versiones del filtro lado a lado y la frase que se le agregó
+    const lug = x => (x && x.lugares || []).filter(l => l.estado).map(l => `${esc(l.estado)} (${l.rol === 'otro' ? 'donde vive o trabaja' : 'lugar de los hechos'})`).join(', ') || 'ningún lugar';
+    return `<div class="muted" style="font-size:11px">Frase del asistente que se agrega: ${s.pregunta_extraida ? '«' + esc(s.pregunta_extraida) + '»' : 'ninguna'}</div>
+      <div><b>Hoy:</b> ${lug(s['sin la pregunta del asistente'])}</div><div><b>Con la frase:</b> ${lug(s['con la pregunta del asistente'])}</div>`;
+  }
   if(comp === 'filtro') return (s.lugares || []).map(l => `${l.texto} → ${l.estado || '¿?'} (${l.rol})`).join('<br>') +
     `<div class="muted">tipo: ${esc(s.tipo || '—')}${s.teorica ? ' · teórica' : ''}${s.depende_del_estado ? ' · depende del estado' : ''}</div>`;
   if(Array.isArray(s)) return s.map((x, i) => `${i + 1}. ${esc(x)}`).join('<br>');

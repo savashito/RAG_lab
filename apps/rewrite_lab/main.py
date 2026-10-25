@@ -1135,14 +1135,14 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
 import jurisdiction_gate as jgate  # noqa: E402
 
 
-def gate_for(question: str, topic=None) -> dict:
+def gate_for(question: str, topic=None, sistema: str | None = None, texto_regex: str | None = None) -> dict:
     """Decisión de la compuerta. Los estados «disponibles» salen de las etiquetas `jurisdiction` del
     corpus del tema (un estado está si tiene fragmentos con su etiqueta), no de una lista fija."""
     en_tema = {m.get('jurisdiction') for m in DOC_BY_ID.values() if not topic or m.get('topic') == topic}
     disponibles = {jgate.normalizar_estado(label): jid for jid, label in JURISDICTIONS.items()
                    if jgate.normalizar_estado(label) and jid in en_tema}
     no_estatales = [jid for jid, label in JURISDICTIONS.items() if not jgate.normalizar_estado(label)]
-    return jgate.decidir(question, llm, disponibles, no_estatales)
+    return jgate.decidir(question, llm, disponibles, no_estatales, sistema=sistema, texto_regex=texto_regex)
 
 
 def ask(question, setting, k=5, system=None, topic=None, jurisdictions=None,
@@ -1501,6 +1501,17 @@ def combinacion_recall(pregunta: str) -> dict:
     return r
 
 
+def filtro_respuesta_corta(mensaje: str, esperado: dict) -> dict:
+    """El filtro por estado en un mensaje que sigue a una respuesta del asistente (esperado.conversacion), sin y con la
+    frase con la que el asistente pidió el lugar (jgate.pregunta_de_lugar). Solo la llamada del filtro, sin búsqueda."""
+    msgs = list(esperado.get('conversacion') or []) + [{'role': 'user', 'content': mensaje}]
+    texto_f, persona = jgate.texto_para_filtro(msgs, con_pregunta=True)
+    anterior = next((m['content'] for m in reversed(msgs[:-1]) if m['role'] == 'assistant'), '')
+    return {'pregunta_extraida': jgate.pregunta_de_lugar(anterior) if anterior else None,
+            'sin la pregunta del asistente': jgate.extraer_lugares(gate_text(msgs), llm),
+            'con la pregunta del asistente': jgate.extraer_lugares(texto_f, llm, jgate.EXTRAER_SYSTEM_V2, persona)}
+
+
 def hyde_recall(pregunta: str) -> dict:
     """Recall con y sin HyDE (sin dividir la pregunta), por set."""
     r = _recall(pregunta, {'sin HyDE': {'hyde': False}, 'con HyDE': {'hyde': True}})
@@ -1516,7 +1527,7 @@ componentes = Componentes(
                 for v in ('solo_lugar', 'solo_pregunta', 'lugar_y_pregunta', 'libre', 'libre_corto', 'libre_max2')},
              'division_recall': division_recall, 'hyde_recall': hyde_recall, 'rerank_recall': rerank_recall,
              'contexto_recall': contexto_recall, 'reescritura_recall': reescritura_recall,
-             'combinacion_recall': combinacion_recall},
+             'combinacion_recall': combinacion_recall, 'filtro_respuesta_corta': filtro_respuesta_corta},
     prompts={'filtro': lambda: jgate.EXTRAER_SYSTEM, 'descomponer': lambda: DECOMPOSE_SYSTEM,
              'por_delito': lambda: CONDUCTAS_SYSTEM, 'hyde': lambda: hyde_for(_TEMA_PENAL),
              **{f'desc_{v}': (lambda v=v: DECOMPOSE_VARIANTES[v])
@@ -1528,6 +1539,7 @@ componentes = Componentes(
              'rerank_recall': lambda: f'{reranker.url} · {reranker.formato}\n\n{hyde_for(_TEMA_PENAL)}',
              'contexto_recall': lambda: f'{VERSIONES_CONTEXTO} · tope de vecinos {NEIGHBOR_EXTRA_CAP}\n\n{hyde_for(_TEMA_PENAL)}',
              'reescritura_recall': lambda: f'{CONDENSE_SYSTEM}\n\n{CONDENSE_SYSTEM_V2}\n\n{hyde_for(_TEMA_PENAL)}',
+             'filtro_respuesta_corta': lambda: jgate.EXTRAER_SYSTEM_V2,
              'combinacion_recall': lambda: (f'{jgate.EXTRAER_SYSTEM}\n\n{DECOMPOSE_SYSTEM}\n\n{hyde_for(_TEMA_PENAL)}\n\n'
                                             f'{reranker.url} · {reranker.formato}')})
 app.include_router(componentes.router)
@@ -1567,7 +1579,8 @@ def _study_chat_stream(messages, cfg):
                             bool(cfg.get('route', False)), history=int(cfg.get('historial', 0)) or None,
                             gate=bool(cfg.get('filtro_estado', False)), crimes=bool(cfg.get('por_delito', False)),
                             crime_extra_k=cfg.get('chunks_por_delito'),
-                            remisiones=bool(cfg.get('seguir_remisiones', False)), condensa=cfg.get('condensa', 'v1'))
+                            remisiones=bool(cfg.get('seguir_remisiones', False)), condensa=cfg.get('condensa', 'v1'),
+                            filtro_pregunta=bool(cfg.get('filtro_ve_pregunta', False)))
 
 
 def _study_sistema(cfg):
@@ -2145,7 +2158,7 @@ def _chat_events(messages, setting, k, system, topic, jurisdictions, neighbors, 
 
 def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbors, hyde, rerank=False,
                      decompose=False, route=False, history=None, gate=False, crimes=False, crime_extra_k=None,
-                     remisiones=False, condensa='v1'):
+                     remisiones=False, condensa='v1', filtro_pregunta=False):
     """Los eventos de `_chat_events` como diccionarios (los usa también el estudio con usuarios,
     que guarda el turno completo al terminar). `history` = mensajes previos que ve el LLM
     (default CHAT_HISTORY_MESSAGES)."""
@@ -2165,7 +2178,11 @@ def chat_event_dicts(messages, setting, k, system, topic, jurisdictions, neighbo
         t0 = time.time()
         if search_q != question:
             yield sse({'stage': 'search', 'query': search_q})
-        g = gate_for(gate_text(msgs), topic) if gate else None
+        if gate and filtro_pregunta:   # v2: el filtro ve también la frase con la que el asistente pidió el lugar
+            texto_f, persona = jgate.texto_para_filtro(msgs, con_pregunta=True)
+            g = gate_for(texto_f, topic, sistema=jgate.EXTRAER_SYSTEM_V2, texto_regex=persona)
+        else:
+            g = gate_for(gate_text(msgs), topic) if gate else None
         if g:   # el filtro lee todos los mensajes de la persona: el lugar puede venir de un turno anterior
             jurisdictions = g['jurisdictions']
             yield sse(gate_event(g))

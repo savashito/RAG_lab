@@ -136,3 +136,22 @@ def test_metricas_recall_palabras_del_contexto():
     filas = [{'salida': {'gold': 1, 'aciertos': {'k 10': 1}, 'palabras': {'k 10': 1000}}},
              {'salida': {'gold': 1, 'aciertos': {'k 10': 1}, 'palabras': {'k 10': 3000}}}]
     assert cp.metricas('contexto_recall', filas)['por_version']['k 10']['palabras'] == {'media': 2000.0, 'de': 1000.0}
+
+
+def test_filtro_ve_la_pregunta_del_asistente():
+    import jurisdiction_gate as jg
+    larga = ('Lamento lo que pasa. En la Ciudad de México y en Querétaro se sanciona la difusión de imágenes. '
+             '**Para orientarte, ¿podrías decirme en qué estado de la República ocurrieron estos hechos?**')
+    assert jg.pregunta_de_lugar(larga) == '¿podrías decirme en qué estado de la República ocurrieron estos hechos?'
+    assert jg.pregunta_de_lugar('Es necesario precisar en qué entidad ocurrieron los hechos.').startswith('necesario precisar')
+    assert jg.pregunta_de_lugar('¿El hecho ocurrió en Querétaro o en la Ciudad de México?')
+    assert jg.pregunta_de_lugar('Te recomiendo denunciar. ¿Quieres saber cómo?') is None
+    msgs = [{'role': 'user', 'content': 'mandé fotos y me piden dinero'}, {'role': 'assistant', 'content': larga},
+            {'role': 'user', 'content': 'Queretaro'}]
+    texto, persona = jg.texto_para_filtro(msgs, con_pregunta=True)
+    assert texto.splitlines() == ['mandé fotos y me piden dinero',
+                                  '[El asistente preguntó: ¿podrías decirme en qué estado de la República ocurrieron estos hechos?]',
+                                  'Queretaro']
+    assert persona == 'mandé fotos y me piden dinero\nQueretaro'          # el respaldo por regex no lee la pregunta
+    assert jg.texto_para_filtro(msgs)[0] == persona                       # sin la opción: igual que hoy
+    assert 'Ciudad de México' not in texto                                # las explicaciones del asistente no entran

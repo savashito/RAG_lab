@@ -64,6 +64,64 @@ Devuelve SOLO JSON, sin texto antes ni después:
 {"lugares": [{"texto": "<como aparece>", "estado": "<estado o null>", "rol": "hechos"|"otro"}], "comparar": true|false, "tipo": "delito_comun"|"delito_federal"|"ley_general"|"procedimiento"|"otro", "teorica": true|false}"""
 
 
+# v2 (24-oct-2026): en una conversación, el filtro lee los mensajes de la persona y, ANTES de cada uno, la frase con la que
+# el asistente pidió el lugar (si la hubo). Sin ella, a «¿en qué estado ocurrieron los hechos?» → «Queretaro» el LLM
+# marcaba Querétaro como donde vive la persona («otro»). Solo esa frase: el resto de la respuesta nombra estados al explicar.
+PREGUNTA_PREFIJO = '[El asistente preguntó: '
+EXTRAER_SYSTEM_V2 = EXTRAER_SYSTEM.replace('Devuelve SOLO JSON', (
+    '- Una línea que empieza con «[El asistente preguntó: …]» es una pregunta del asistente, no algo que dijo la persona: '
+    'los lugares que nombre esa línea NO cuentan como lugares mencionados. La línea siguiente es la respuesta de la persona: '
+    'si el asistente preguntó dónde ocurrieron los hechos y la persona contesta con un lugar, ese lugar es de los «hechos».\n'
+    'Devuelve SOLO JSON'), 1)
+_LUGAR_PEDIDO = r'(?:en que (?:estado|entidad|ciudad|lugar|municipio)|que (?:estado|entidad)|donde (?:ocurri|paso|sucedi|fue))'
+# En una pregunta también cuenta «¿ocurrió en Querétaro o en la Ciudad de México?».
+_PIDE_PREGUNTA = re.compile(r'¿[^?¿]*(?:' + _LUGAR_PEDIDO + r'|(?:ocurri|paso|sucedi)\w* en )[^?¿]*\?')
+_PIDE_DIRECTO = re.compile(r'(?:indica(?:me|nos)?|indique(?:me|nos)?|dime|digame|precis(?:a|ar|e)|necesito (?:saber|conocer)|'
+                           r'necesario (?:saber|conocer|precisar)|podrias? (?:decirme|indicarme)|confirm(?:a|e|ar))[^.?!]{0,60}'
+                           + _LUGAR_PEDIDO + r'[^.?!]*')
+
+
+def _sin_acentos(t: str) -> str:
+    import unicodedata
+    t = unicodedata.normalize('NFD', t or '')
+    return ''.join(ch for ch in t if unicodedata.category(ch) != 'Mn').lower()
+
+
+def pregunta_de_lugar(respuesta: str) -> str | None:
+    """La ÚLTIMA frase de una respuesta del asistente que pide el lugar: una pregunta «¿…?» o una petición directa
+    («es necesario precisar en qué estado…»). Sin LLM. None si no pidió el lugar."""
+    original = re.sub(r'[*_#`>]+', '', respuesta or '')
+    plano = _sin_acentos(original)   # mismo largo que el original (solo quita acentos), así las posiciones coinciden
+    if len(plano) != len(original):
+        plano, original = _sin_acentos(original), _sin_acentos(original)
+    hallado = [m for rx in (_PIDE_PREGUNTA, _PIDE_DIRECTO) for m in rx.finditer(plano)]
+    if not hallado:
+        return None
+    # La que termina más tarde; si dos terminan juntas (la pregunta «¿podrías decirme en qué estado…?» y la petición
+    # «podrías decirme en qué estado…» dentro de ella), la más larga, para conservar el «¿».
+    m = max(hallado, key=lambda m: (m.end(), -m.start()))
+    return ' '.join(original[m.start():m.end()].split())
+
+
+def texto_para_filtro(msgs: list[dict], con_pregunta: bool = False) -> tuple[str, str]:
+    """(lo que lee el LLM del filtro, solo los mensajes de la persona). Con `con_pregunta`, antes de cada mensaje de la
+    persona va la frase con la que el asistente pidió el lugar en su respuesta anterior (si la hubo). Los últimos 4000
+    caracteres. El respaldo por regex usa solo los mensajes de la persona (la pregunta puede nombrar estados como opciones)."""
+    lineas, persona, anterior = [], [], None
+    for m in msgs:
+        if m['role'] == 'assistant':
+            anterior = m['content']
+        elif m['role'] == 'user':
+            if con_pregunta and anterior:
+                p = pregunta_de_lugar(anterior)
+                if p:
+                    lineas.append(f'{PREGUNTA_PREFIJO}{p}]')
+            lineas.append(m['content'].strip())
+            persona.append(m['content'].strip())
+            anterior = None
+    return '\n'.join(lineas)[-4000:], '\n'.join(persona)[-4000:]
+
+
 TIPOS = ('delito_comun', 'delito_federal', 'ley_general', 'procedimiento', 'otro')
 
 # La pregunta pide el Código Penal Federal por nombre o el ámbito federal («¿y en el ámbito federal?»): entonces el CPF
@@ -92,15 +150,15 @@ def _json(raw: str) -> dict | None:
     return d if isinstance(d, dict) else None
 
 
-def extraer_lugares(texto: str, llm) -> dict:
+def extraer_lugares(texto: str, llm, sistema: str | None = None, texto_regex: str | None = None) -> dict:
     """{'lugares': [{'texto', 'estado'}], 'comparar': bool, 'fuente': 'llm'|'regex', 'raw': str}.
     Si el LLM falla o devuelve algo ilegible, queda solo el respaldo por regex (codes_in)."""
     # Sin LLM no se sabe si la respuesta depende del estado: se supone que sí (lo seguro es preguntar).
     out = {'lugares': [], 'comparar': False, 'tipo': None, 'depende_del_estado': True, 'delito_federal': False,
-           'pide_federal': pide_federal(texto), 'teorica': False, 'fuente': 'regex', 'raw': ''}
+           'pide_federal': pide_federal(texto if texto_regex is None else texto_regex), 'teorica': False, 'fuente': 'regex', 'raw': ''}
     if llm is not None:
         try:
-            raw = llm.chat(EXTRAER_SYSTEM, f'CONSULTA:\n{texto}', temperature=0.0, max_tokens=300, timeout=60)
+            raw = llm.chat(sistema or EXTRAER_SYSTEM, f'CONSULTA:\n{texto}', temperature=0.0, max_tokens=300, timeout=60)
             out['raw'] = raw
             d = _json(raw)
             if d is not None:
@@ -120,7 +178,7 @@ def extraer_lugares(texto: str, llm) -> dict:
             out['raw'] = f'error: {type(e).__name__}: {e}'
     # Respaldo y complemento: los nombres de estado que reconoce code_routes (sin LLM).
     ya = {x['estado'] for x in out['lugares']}
-    for h in codes_in(texto):
+    for h in codes_in(texto if texto_regex is None else texto_regex):
         est = _RUTA_ESTADO.get(h['label'])
         if est and est not in ya:
             out['lugares'].append({'texto': h['match'], 'estado': est, 'rol': 'hechos', 'regex': True})
@@ -128,7 +186,8 @@ def extraer_lugares(texto: str, llm) -> dict:
     return out
 
 
-def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str], federal: str = 'federal') -> dict:
+def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str], federal: str = 'federal',
+            sistema: str | None = None, texto_regex: str | None = None) -> dict:
     """Qué lugares puede usar la búsqueda y qué nota recibe el LLM.
 
     `disponibles`: estado oficial → id de jurisdicción en la base (p. ej. {'Querétaro': 'queretaro'}),
@@ -137,7 +196,7 @@ def decidir(texto: str, llm, disponibles: dict[str, str], no_estatales: list[str
     que solo entra si el delito es federal: también define delitos comunes (fraude, violencia
     familiar…) que en un caso común NO aplican, y el LLM lo usaba en lugar del código del estado
     (corridas 52–55)."""
-    ex = extraer_lugares(texto, llm)
+    ex = extraer_lugares(texto, llm, sistema, texto_regex)
     estados, otros = [], []   # estados donde ocurrieron los hechos · estados mencionados por otra razón (vive, trabaja)
     for x in ex['lugares']:
         lista = estados if x.get('rol', 'hechos') == 'hechos' else otros
