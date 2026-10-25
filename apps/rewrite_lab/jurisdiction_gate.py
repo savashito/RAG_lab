@@ -96,14 +96,19 @@ def texto_conversacion(msgs: list[dict]) -> tuple[str, str]:
 
 
 _LUGAR_PEDIDO = (r'(?:en que (?:estado|entidad|ciudad|lugar|municipio)|que (?:estado|entidad)|donde (?:ocurri|paso|sucedi|fue)|'
-                 r'(?:su|tu|un|una|el|la) ' + _ESTADO + r'|(?:su|tu) (?:localidad|ubicacion)|'
-                 r'ubicacion (?:exacta |geografica |aproximada )?(?:de|donde)|lugar (?:exacto |aproximado )?donde)')
-_VERBO_PIDE = (r'(?:indica\w*|indique\w*|dime|digame|precis\w*|necesito (?:saber|conocer|confirmar)|necesitaria (?:saber|que)|'
+                 r'(?:su|tu) ' + _ESTADO + r'|(?:un|una) ' + _ESTADO + r' (?:especific|en particular|distint)|(?:su|tu) (?:localidad|ubicacion)|'
+                 r'ubicacion (?:exacta |geografica |aproximada )?(?:de los (?:hechos|eventos)|donde)|lugar (?:exacto )?donde (?:ocurri|se realiz|sucedi)|si los hechos (?:ocurri|sucedi|pasar)\w*)')
+# Solo formas de PEDIR («indícame», «me indique», «confírmame»), no «Indica que…» ni «el Estado debe proporcionar».
+_VERBO_PIDE = (r'(?:indica(?:me|nos)|indique(?:me|nos)?|me indica[sn]?|me indiques?|indicarme|indicarmelo|indicarlo|dime|digame|'
+               r'confirme si|precise|importante saber|es clave saber|'
+               r'necesito (?:saber|conocer|confirmar)|necesitaria (?:saber|que)|precis(?:a|e|ar) en que|'
                r'necesario (?:saber|conocer|precisar|confirmar|que)|indispensable (?:saber|conocer|confirmar|que)|'
                r'se requiere (?:saber|conocer|confirmar)|sigo necesitando|podrias? (?:decirme|indicarme|confirmar\w*)|'
-               r'puedes? (?:decirme|indicarme|decirmelo|indicarmelo)|confirm\w*|proporcion\w*|comparte\w*|agradeceria)')
+               r'puedes? (?:decirme|indicarme|decirmelo|indicarmelo)|confirma(?:me|rme|r si)|confirmeme|me confirmes?|'
+               r'proporcion(?:e|es|ame|eme)\b|comparte(?:me)?\b|agradeceria)')
 # En una pregunta también cuenta «¿ocurrió en Querétaro o en la Ciudad de México?».
-_PIDE_PREGUNTA = re.compile(r'¿[^?¿]*(?:' + _LUGAR_PEDIDO + r'|(?:ocurr|pas|suced)\w*(?: \w+)? (?:en|dentro del?) )[^?¿]*\?')
+_PIDE_PREGUNTA = re.compile(r'¿[^?¿]*(?:' + _LUGAR_PEDIDO + r'|(?:ocurr|pas|suced)\w*(?: \w+)? (?:en|dentro del?) |'
+                            r'te encuentras en (?:el estado|la ciudad))[^?¿]*\?')
 # El verbo puede ir antes o después del lugar («…el código penal de su estado si me indica cuál es»).
 _PIDE_DIRECTO = re.compile(_VERBO_PIDE + r'[^.?!]{0,80}' + _LUGAR_PEDIDO + r'[^.?!]*|[^.?!]*' + _LUGAR_PEDIDO + r'[^.?!]{0,80}'
                            + _VERBO_PIDE + r'[^.?!]*|'
