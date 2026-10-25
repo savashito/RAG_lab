@@ -463,8 +463,9 @@ class Componentes:
             for comp, meta in COMPONENTES.items():
                 cur.execute("SELECT count(*), count(*) FILTER (WHERE revisado) FROM comp_casos WHERE componente = %s", (comp,))
                 n, rev = cur.fetchone()
+                # La última corrida CON resultados: una pausada o cortada no tiene métricas y dejaría la tarjeta en blanco.
                 cur.execute("SELECT id, prompt_md5, status, metricas, created_at::text FROM comp_corridas "
-                            "WHERE componente = %s ORDER BY id DESC LIMIT 1", (comp,))
+                            "WHERE componente = %s AND metricas IS NOT NULL ORDER BY id DESC LIMIT 1", (comp,))
                 ult = cur.fetchone()
                 texto = self._prompt(comp)
                 out.append({'id': comp, **meta, 'casos': n, 'revisados': rev, 'prompt_md5': md5(texto),
