@@ -1066,7 +1066,7 @@ def decompose_conducts(question: str) -> list[str]:
 
 
 def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neighbors=True,
-                    hyde=False, rerank=False, decompose=False, debug=None, route=False, crimes=False):
+                    hyde=False, rerank=False, decompose=False, debug=None, route=False, crimes=False, passage_base=None):
     """Búsqueda completa de una pregunta: retrieve_scored + reranker opcional y, con
     `decompose`, query decomposition: el LLM divide la pregunta comparativa en sub-preguntas
     (una por entidad: ley, estado, autor, enfoque…), se busca cada una con la MISMA config y
@@ -1098,7 +1098,10 @@ def retrieve_ranked(cur, question, setting, topic=None, jurisdictions=None, neig
     base_passage = None
     for q in queries:
         d = {}
-        scored, sk, r = retrieve_scored(cur, q, setting, topic, jurisdictions, neighbors, hyde, debug=d)
+        # `passage_base`: un borrador HyDE ya escrito para el texto de búsqueda original (p. ej. con la historia de la
+        # conversación); las sub-búsquedas de descomponer escriben el suyo.
+        scored, sk, r = retrieve_scored(cur, q, setting, topic, jurisdictions, neighbors, hyde, debug=d,
+                                        passage=passage_base if q is question else None)
         if q is question:
             base_passage = d.get('hyde_passage')
         if rerank and not find_article_ref(q):
@@ -1432,7 +1435,8 @@ def rerank_recall(pregunta: str) -> dict:
 
 # Reescritura multiturno: del 2.º mensaje en adelante la búsqueda híbrida necesita UN texto. Cuatro formas de armarlo,
 # cada una con dos configuraciones de búsqueda: lo mínimo (HyDE, para aislar el texto) y todo lo que mejor funcionó.
-VERSIONES_REESCRITURA = ('solo el último mensaje', 'mensajes de la persona pegados', 'reescritura v1', 'reescritura v2')
+VERSIONES_REESCRITURA = ('solo el último mensaje', 'mensajes de la persona pegados', 'reescritura v1', 'reescritura v2',
+                         'reescritura v1 con respuestas completas', 'HyDE con historia')
 CONFIG_REESCRITURA = {'solo HyDE': {'filtro': False, 'descomponer': False, 'rerank': False},
                       'filtro + descomponer + HyDE + rerank': {'filtro': True, 'descomponer': True, 'rerank': True}}
 
@@ -1443,7 +1447,10 @@ def reescritura_recall(mensaje: str, esperado: dict) -> dict:
     VERSIONES_REESCRITURA: el texto con el que buscaría, y cuántos artículos esperados de la situación salen entre los
     10 primeros resultados de la búsqueda híbrida, con cada configuración de CONFIG_REESCRITURA (el filtro lee los mensajes
     de la persona, como en el estudio). El tiempo incluye la llamada al LLM que reescribe (las dos primeras versiones no
-    la hacen) y, en la configuración completa, la del filtro."""
+    la hacen) y, en la configuración completa, la del filtro.
+    «reescritura v1 con respuestas completas»: la misma llamada, viendo las respuestas del asistente enteras (no solo sus
+    primeros 500 caracteres). «HyDE con historia»: sin reescritura multiturno; BM25 y descomponer buscan con los mensajes
+    de la persona pegados, y HyDE escribe su borrador leyendo la conversación completa (una llamada menos)."""
     from study.validar import escenario_efectivo
     with connect() as c, c.cursor() as cur:
         cur.execute("SELECT t.intento_id, t.n, i.escenario, i.variante, k.estudio FROM estudio_turnos t "
@@ -1470,14 +1477,23 @@ def reescritura_recall(mensaje: str, esperado: dict) -> dict:
                 texto = msgs[-1]['content']
             elif v == 'mensajes de la persona pegados':
                 texto = gate_text(msgs)   # lo mismo que lee el filtro por estado
+            elif v == 'reescritura v1 con respuestas completas':
+                texto = condense_question(msgs, max_turns=10, max_answer_chars=100000, version='v1')
+            elif v == 'HyDE con historia':
+                texto = gate_text(msgs)
             else:
                 texto = condense_question(msgs, max_turns=10, version=v[-2:])
+            borrador = None
+            if v == 'HyDE con historia':   # un solo borrador, escrito con toda la conversación
+                conv = '\n'.join(f"{'Persona' if m['role'] == 'user' else 'Asistente'}: {' '.join(m['content'].split())}" for m in msgs)
+                borrador = llm.hyde_passage('CONVERSACIÓN:\n' + conv, system=hyde_for(tema))
             t_texto = time.time() - t0
-            textos[v] = texto
+            textos[v] = texto + (f'  ·  borrador de HyDE (con la conversación): {" ".join((borrador or "").split())[:300]}…' if borrador else '')
             for nombre, op in CONFIG_REESCRITURA.items():
                 t1 = time.time()
                 jur = gate_for(gate_text(msgs), tema)['jurisdictions'] if op['filtro'] else None
-                scored, _, _ = retrieve_ranked(cur, texto, 'híbrido', tema, jur, True, True, op['rerank'], op['descomponer'])
+                scored, _, _ = retrieve_ranked(cur, texto, 'híbrido', tema, jur, True, True, op['rerank'], op['descomponer'],
+                                               passage_base=borrador)
                 clave = f'{v} · {nombre}'
                 segundos[clave] = round(t_texto + time.time() - t1, 2)
                 chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
