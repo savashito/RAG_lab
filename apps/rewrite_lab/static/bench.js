@@ -1262,7 +1262,7 @@ async function compResultados(rid){
       <div style="overflow-x:auto"><table class="comp-tab"><tr><th>${conTexto ? 'Mensaje de la persona' : 'Pregunta'}</th><th>Tipos</th><th>Artículos esperados</th><th>Aciertos por versión${conTexto ? ' y texto con el que buscó' : ''}</th></tr>
       ${res.map(r => { const s = r.salida || {}; return `<tr><td>${esc(r.entrada)}</td><td class="muted">${esc((s.tipos || []).join(', ') || 'otra')}</td><td>${s.gold ?? '—'}</td>
         <td>${r.error ? esc(r.error) : Object.entries(s.aciertos || {}).map(([v, h]) => `<b>${esc(v)}</b>: ${h}` +
-          (conTexto && (s.textos || {})[v] ? `<div class="muted" style="font-size:11px;margin-bottom:4px">${esc(s.textos[v])}</div>` : '')).join(conTexto ? '' : '<br>')}</td></tr>`; }).join('')}
+          (conTexto && (s.textos || {})[v.split(' · ')[0]] ? `<div class="muted" style="font-size:11px;margin-bottom:4px">${esc(s.textos[v.split(' · ')[0]])}</div>` : '')).join(conTexto ? '' : '<br>')}</td></tr>`; }).join('')}
       </table></div></details>`;
     return;
   }

@@ -74,8 +74,9 @@ COMPONENTES = {
                                        'cada mensaje siguiente real de la ronda 1 (con la conversación tal como quedó '
                                        'guardada): cuántos artículos esperados de la situación salen entre los 10 primeros '
                                        'resultados buscando con solo el último mensaje, con los mensajes de la persona '
-                                       'pegados (sin llamar al LLM), o con lo que reescribe el LLM (v1 y v2). Con HyDE, '
-                                       'sin dividir, sin filtro.', 'efecto': True, 'casos_en_base': True},
+                                       'pegados (sin llamar al LLM), o con lo que reescribe el LLM (v1 y v2). Cada una con dos '
+                                       'configuraciones: solo HyDE (aísla el texto) y la mejor combinación (filtro por '
+                                       'estado + descomponer + HyDE + rerank).', 'efecto': True, 'casos_en_base': True},
     'hyde': {'nombre': 'HyDE', 'icono': '🧪',
              'objetivo': 'Escribir un borrador del artículo que respondería, sin inventar números de artículo y sin '
                          'nombrar estados que la pregunta no nombra.'},

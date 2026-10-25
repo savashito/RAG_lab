@@ -1429,16 +1429,20 @@ def rerank_recall(pregunta: str) -> dict:
     return r
 
 
-# Reescritura multiturno: del 2.º mensaje en adelante la búsqueda híbrida necesita UN texto. Cuatro formas de armarlo.
+# Reescritura multiturno: del 2.º mensaje en adelante la búsqueda híbrida necesita UN texto. Cuatro formas de armarlo,
+# cada una con dos configuraciones de búsqueda: lo mínimo (HyDE, para aislar el texto) y todo lo que mejor funcionó.
 VERSIONES_REESCRITURA = ('solo el último mensaje', 'mensajes de la persona pegados', 'reescritura v1', 'reescritura v2')
+CONFIG_REESCRITURA = {'solo HyDE': {'filtro': False, 'descomponer': False, 'rerank': False},
+                      'filtro + descomponer + HyDE + rerank': {'filtro': True, 'descomponer': True, 'rerank': True}}
 
 
 def reescritura_recall(mensaje: str, esperado: dict) -> dict:
     """Un mensaje siguiente (2.º o después) de una conversación real guardada del estudio (`esperado.turno_id`), con
     la conversación anterior tal como quedó (mensajes de la persona y respuestas del asistente). Para cada versión de
     VERSIONES_REESCRITURA: el texto con el que buscaría, y cuántos artículos esperados de la situación salen entre los
-    10 primeros resultados (híbrido con HyDE, vecinos, sin dividir, sin filtro). El tiempo incluye la llamada al LLM que
-    reescribe (las dos primeras versiones no la hacen)."""
+    10 primeros resultados de la búsqueda híbrida, con cada configuración de CONFIG_REESCRITURA (el filtro lee los mensajes
+    de la persona, como en el estudio). El tiempo incluye la llamada al LLM que reescribe (las dos primeras versiones no
+    la hacen) y, en la configuración completa, la del filtro."""
     from study.validar import escenario_efectivo
     with connect() as c, c.cursor() as cur:
         cur.execute("SELECT t.intento_id, t.n, i.escenario, i.variante, k.estudio FROM estudio_turnos t "
@@ -1467,11 +1471,16 @@ def reescritura_recall(mensaje: str, esperado: dict) -> dict:
                 texto = gate_text(msgs)   # lo mismo que lee el filtro por estado
             else:
                 texto = condense_question(msgs, max_turns=10, version=v[-2:])
-            scored, _, _ = retrieve_ranked(cur, texto, 'híbrido', tema, None, True, True, False, False)
-            segundos[v] = round(time.time() - t0, 2)
+            t_texto = time.time() - t0
             textos[v] = texto
-            chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
-            aciertos[v] = sum(1 for g in chk['groups'] if g['rank'] and g['rank'] <= 10)
+            for nombre, op in CONFIG_REESCRITURA.items():
+                t1 = time.time()
+                jur = gate_for(gate_text(msgs), tema)['jurisdictions'] if op['filtro'] else None
+                scored, _, _ = retrieve_ranked(cur, texto, 'híbrido', tema, jur, True, True, op['rerank'], op['descomponer'])
+                clave = f'{v} · {nombre}'
+                segundos[clave] = round(t_texto + time.time() - t1, 2)
+                chk = retrieval_check(gold, [cid for cid, _ in scored][:50])
+                aciertos[clave] = sum(1 for g in chk['groups'] if g['rank'] and g['rank'] <= 10)
     return {'gold': len(gold), 'aciertos': aciertos, 'segundos': segundos, 'textos': textos,
             'tipos': [f"situación {esc}{' ' + var if var else ''}"]}
 
