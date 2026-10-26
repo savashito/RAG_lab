@@ -431,6 +431,9 @@ async function pantallaEscenario(s, hechos) {
       <textarea id="detecto_cual" placeholder="Si notaste algo, ¿qué fue? (opcional)" style="margin-top:4px"></textarea>
       <div class="q">Si esto te pasara de verdad, ¿actuarías con base en lo que te dijo el asistente?</div>
       ${[['si','Sí'],['no','No'],['no_se','No sé']].map(([k,v]) => `<label class="opt"><input type="radio" name="actuaria" value="${k}"> <span>${v}</span></label>`).join('')}
+      ${(E.escalas_situacion || []).map(q => `<div class="q">${esc(q.texto)}</div>
+      <div class="likert">${[1,2,3,4,5].map(v => `<label><input type="radio" name="escala_${esc(q.id)}" value="${v}">${v}</label>`).join('')}</div>
+      ${q.minimo || q.maximo ? `<div class="muted small">1 = ${esc(q.minimo || '')} · 5 = ${esc(q.maximo || '')}</div>` : ''}`).join('')}
       <div class="q">Comentarios adicionales <span class="muted small">(opcional)</span></div>
       <textarea id="comentario" placeholder="¿Algo más que quieras decirnos sobre esta situación o las respuestas del asistente?"></textarea>
       <p><button class="primary" id="fin">Terminar esta situación</button> <span id="msg" class="err"></span></p></div></div>${chat}</div>`;
@@ -456,6 +459,11 @@ async function pantallaEscenario(s, hechos) {
         const v = val('x_' + q.id);
         if (!v) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
         respuestas['_' + q.id] = v;
+      }
+      for (const q of (E.escalas_situacion || [])) {
+        const v = parseInt(val('escala_' + q.id) || '0');
+        if (!v) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';
+        respuestas['escala_' + q.id] = v;
       }
       const confianza = parseInt(val('confianza') || '0'), actuaria = val('actuaria'), detecto = val('detecto');
       if (!confianza || !actuaria || !detecto) return document.getElementById('msg').textContent = 'Contesta todas las preguntas.';

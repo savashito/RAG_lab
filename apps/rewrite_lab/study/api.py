@@ -240,7 +240,8 @@ def make_router(*, store, chat_stream, gold_refs, resolver_gold, static_dir, cur
         es_ultima = hechos == len(p['asignados']) - 1
         respuestas = limpiar_respuestas(a['spec'], esc, b.get('respuestas') or {}, es_ultima)
         if any(q['id'] not in respuestas for q in esc.get('preguntas') or []) or (
-                es_ultima and any('_' + q['id'] not in respuestas for q in a['spec'].get('ultima_situacion') or [])):
+                es_ultima and any('_' + q['id'] not in respuestas for q in a['spec'].get('ultima_situacion') or [])) or (
+                any('escala_' + q['id'] not in respuestas for q in a['spec'].get('escalas_situacion') or [])):
             return _err('Contesta todas las preguntas.')
         store.terminar(a['codigo'], iid, a['spec'], respuestas,
                        confianza, b['actuaria'], b['detecto'], str(b.get('detecto_cual') or '')[:2000],

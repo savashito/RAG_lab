@@ -169,6 +169,14 @@ def validar(spec_yaml: str, gold_refs=None) -> list[str]:
     for q in spec.get('ultima_situacion') or []:
         if not isinstance(q, dict) or not q.get('id') or not q.get('texto') or not isinstance(q.get('opciones'), dict):
             errs.append('cada pregunta de «ultima_situacion» necesita id, texto y opciones.')
+    # Escalas 1–5 al terminar CADA situación, después de las preguntas fijas (agregadas el 26-oct a pedido de Karen).
+    eids = set()
+    for q in spec.get('escalas_situacion') or []:
+        if (not isinstance(q, dict) or not re.fullmatch(r'[a-z0-9_]+', str(q.get('id') or '')) or q['id'] in eids
+                or not str(q.get('texto') or '').strip()):
+            errs.append('cada elemento de «escalas_situacion» necesita un «id» único (minúsculas, números, guion bajo) y «texto».')
+            continue
+        eids.add(q['id'])
     t = spec.get('tutorial')
     if t is not None and (not isinstance(t, dict) or not t.get('texto')):
         errs.append('«tutorial» necesita «texto» (y opcionalmente «ejemplo» y «max_preguntas»).')
@@ -201,6 +209,8 @@ def vista_publica(spec: dict, asignados: list[str], variantes: dict | None = Non
                      if isinstance(spec.get('tutorial'), dict) else None),
         'ultima_situacion': [{'id': q['id'], 'texto': q['texto'], 'opciones': q['opciones']}
                              for q in spec.get('ultima_situacion') or []],
+        'escalas_situacion': [{k: q[k] for k in ('id', 'texto', 'minimo', 'maximo') if k in q}
+                              for q in spec.get('escalas_situacion') or []],
         'escenarios': vista,
     }
 
@@ -215,7 +225,8 @@ def sistema_de_condicion(spec: dict, condicion: str | None) -> str | None:
 
 def limpiar_respuestas(spec: dict, escenario: dict, respuestas: dict, es_ultima: bool) -> dict:
     """Solo lo que el estudio pregunta: la opción elegida de cada pregunta de comprensión, el texto libre de
-    «otra» (`<pregunta>__texto`) y, en la última situación, las preguntas de `ultima_situacion` (`_<id>`)."""
+    «otra» (`<pregunta>__texto`), en la última situación las preguntas de `ultima_situacion` (`_<id>`) y, en todas, las
+    escalas 1–5 de `escalas_situacion` (`escala_<id>`, entero)."""
     r, out = respuestas or {}, {}
     for q in escenario.get('preguntas') or []:
         v = r.get(q['id'])
@@ -229,6 +240,10 @@ def limpiar_respuestas(spec: dict, escenario: dict, respuestas: dict, es_ultima:
             v = r.get('_' + q['id'])
             if v in (q.get('opciones') or {}):
                 out['_' + q['id']] = v
+    for q in spec.get('escalas_situacion') or []:
+        v = r.get('escala_' + q['id'])
+        if v in (1, 2, 3, 4, 5) and not isinstance(v, bool):
+            out['escala_' + q['id']] = v
     return out
 
 

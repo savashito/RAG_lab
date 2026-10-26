@@ -464,3 +464,26 @@ def test_auth_deja_pasar_solo_rutas_del_estudio():
     assert '/estudio' in auth.PUBLIC_STUDY and '/estudios' not in auth.PUBLIC_STUDY
     assert '/api/estudios/x'.startswith(auth.PUBLIC_PREFIXES) is False
     assert '/api/estudio/k/nuevo'.startswith(auth.PUBLIC_PREFIXES)
+
+
+def test_escalas_situacion():
+    """Escalas 1–5 al terminar cada situación (26-oct): se validan, se muestran y solo se guardan enteros del 1 al 5."""
+    from study.validar import cargar, limpiar_respuestas
+    import yaml
+    spec = cargar(SPEC_YAML)[0]
+    spec['escalas_situacion'] = [{'id': 'confianza_asistente', 'texto': '¿Qué tanta confianza…?', 'minimo': 'nada', 'maximo': 'mucha'}]
+    assert validar(yaml.safe_dump(spec, allow_unicode=True)) == []
+    assert vista_publica(spec, [])['escalas_situacion'] == spec['escalas_situacion']
+    b = spec['escenarios'][1]
+    r = {'p1': 'si', 'escala_confianza_asistente': 4, 'escala_otra': 3}
+    assert limpiar_respuestas(spec, b, r, False) == {'p1': 'si', 'escala_confianza_asistente': 4}
+    for malo in (0, 6, '4', True, None):
+        assert 'escala_confianza_asistente' not in limpiar_respuestas(spec, b, {'escala_confianza_asistente': malo}, False)
+    spec['escalas_situacion'] = [{'id': 'A B', 'texto': 'x'}, {'id': 'ok', 'texto': ''}]
+    assert sum('escalas_situacion' in e for e in validar(yaml.safe_dump(spec, allow_unicode=True))) == 2
+
+
+def test_consulado_es_valido():
+    from bench import gold_refs
+    consulado = SEED.parent / 'ronda2_consulado.yaml'
+    assert validar(consulado.read_text(), lambda t: gold_refs('', [{'kind': 'must', 'text': t}])) == []

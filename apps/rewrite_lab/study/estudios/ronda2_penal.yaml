@@ -287,6 +287,17 @@ ultima_situacion:
     nacional: Era una ley federal o general (aplica en todo el país)
     varios: Citó leyes de varios estados
     no_me_fije: No me fijé
+# Escalas 1–5 al terminar cada situación, DESPUÉS de las preguntas de la ronda 1 (que no cambian de lugar ni de forma).
+# Agregadas el 26-oct a pedido de Karen; quienes terminaron antes no las tienen.
+escalas_situacion:
+- id: confianza_asistente
+  texto: ¿Qué tanta confianza te genera la respuesta del asistente?
+  minimo: nada de confianza
+  maximo: mucha confianza
+- id: correcta_percibida
+  texto: ¿Qué tan correcta crees que es la información jurídica proporcionada?
+  minimo: nada correcta
+  maximo: totalmente correcta
 consentimiento: '### 1. Invitación a participar
 
 
