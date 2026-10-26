@@ -499,13 +499,13 @@
  <h2>👤 Categorías de la persona</h2>
  <p class="muted" style="margin:0 0 6px">De qué depende que una ley aplique, además del lugar de los hechos: por ejemplo el
    <b>sexo</b> o la <b>edad</b> de la persona. Crea la categoría con sus valores y luego, en «Corpus actual», marca a qué
-   valores aplica cada documento (un documento sin marca aplica a todas las personas). El valor <b>«no lo dijo»</b> ya va
+   valores aplica cada documento (un documento sin marca aplica a todas las personas). Cada categoría incluye además el valor <b>«no se sabe»</b>, para cuando la persona que consulta a Tlacua no lo dice; ese va
    incluido en todas. <b>Por ahora son solo etiquetas: la búsqueda todavía no las usa.</b></p>
  <div id="cat-lista"></div>
  <div id="cat-form" class="legend" style="display:none">
    <b id="cat-form-title">Nueva categoría</b>
    <div class="row" style="margin-top:8px"><input type="text" id="cat-nombre" maxlength="80" placeholder="Nombre (ej. Sexo de la persona)" style="min-width:320px"></div>
-   <p class="muted" style="margin:10px 0 4px">Valores, separados por comas (sin «no lo dijo», que ya va incluido):</p>
+   <p class="muted" style="margin:10px 0 4px">Valores posibles, separados por comas. No agregues «no se sabe» (para cuando la persona que consulta a Tlacua no lo dice): ya va incluido.</p>
    <input type="text" id="cat-valores" placeholder="mujer, hombre" style="min-width:320px;width:100%">
    <p class="muted" style="margin:10px 0 4px">Descripción: qué significa y cuándo cuenta (luego le sirve al filtro para saber qué buscar):</p>
    <textarea id="cat-desc" style="min-height:56px" placeholder="La persona dice su sexo o se refiere a sí misma en femenino o masculino. No cuenta el nombre ni suposiciones."></textarea>
@@ -1318,7 +1318,7 @@ async function loadCategorias(){
     const nueva=d.puede_editar?'<button class="ghost" onclick="catAbrir(null)">➕ Nueva categoría</button>':'';
     if(!window.__cats.length){ $('cat-lista').innerHTML=`<div class="row"><span class="muted">Todavía no hay categorías.</span> ${nueva}</div>`; return; }
     $('cat-lista').innerHTML=`<table><tr><th>categoría</th><th>valores</th><th>descripción</th><th>documentos marcados</th><th></th></tr>`+
-      window.__cats.map(c=>`<tr><td><b>${esc(c.nombre)}</b></td><td>${c.valores.map(v=>`<span class="chip">${esc(v)}</span>`).join(' ')} <span class="muted">· no lo dijo</span></td>
+      window.__cats.map(c=>`<tr><td><b>${esc(c.nombre)}</b></td><td>${c.valores.map(v=>`<span class="chip">${esc(v)}</span>`).join(' ')} <span class="muted" title="Para cuando la persona que consulta a Tlacua no lo dice">· no se sabe</span></td>
         <td class="muted" style="max-width:360px">${esc(c.descripcion||'—')}</td><td>${c.documentos}</td>
         <td>${d.puede_editar?`<button class="ghost" onclick="catAbrir(${c.id})">✏️ editar</button> <button class="ghost" onclick="catBorrar(${c.id})">🗑</button>`:''}</td></tr>`).join('')+
       `</table><div class="row" style="margin-top:6px">${nueva}</div>`;
@@ -1332,7 +1332,7 @@ function catAbrir(id){
 }
 async function catGuardar(){
   const c=(window.__cats||[]).find(x=>x.id===catEditando);
-  const valores=$('cat-valores').value.split(',').map(v=>v.trim()).filter(Boolean);
+  const valores=$('cat-valores').value.split(',').map(v=>v.trim()).filter(v=>v && !['no se sabe','no lo dijo'].includes(v.toLowerCase()));
   if(c){ const quita=c.valores.filter(v=>!valores.includes(v));
     if(quita.length && !confirm(`Vas a quitar ${quita.map(v=>'«'+v+'»').join(', ')}. Los documentos marcados con esos valores pierden esa marca. ¿Seguir?`)) return; }
   $('cat-guardar').disabled=true; $('cat-msg').textContent='guardando…';
