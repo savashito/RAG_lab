@@ -33,6 +33,8 @@
  th[title]{cursor:help;text-decoration:underline dotted}
  .hist{width:100%} .hist td{cursor:default}
  canvas{background:#0b0d12;border:1px solid #2a2f3a;border-radius:8px;padding:8px;margin-top:10px;max-height:340px}
+ /* ── Etiquetas de categorías de la persona (Ingesta) ── */
+ .chip{display:inline-block;padding:1px 8px;border-radius:10px;border:1px solid var(--line,#475569);font-size:12px;margin:1px 0}
  /* ── Barra de progreso (ingesta) ── */
  .pbar{height:9px;background:#0b0d12;border:1px solid #2a2f3a;border-radius:6px;overflow:hidden;margin:6px 0}
  .pbar>i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#3b82f6,#60a5fa);transition:width .4s ease}
@@ -494,6 +496,26 @@
  <div id="ing-msg" class="muted"></div>
  <div id="ing-progress"></div>
 
+ <h2>👤 Categorías de la persona</h2>
+ <p class="muted" style="margin:0 0 6px">De qué depende que una ley aplique, además del lugar de los hechos: por ejemplo el
+   <b>sexo</b> o la <b>edad</b> de la persona. Crea la categoría con sus valores y luego, en «Corpus actual», marca a qué
+   valores aplica cada documento (un documento sin marca aplica a todas las personas). El valor <b>«no lo dijo»</b> ya va
+   incluido en todas. <b>Por ahora son solo etiquetas: la búsqueda todavía no las usa.</b></p>
+ <div id="cat-lista"></div>
+ <div id="cat-form" class="legend" style="display:none">
+   <b id="cat-form-title">Nueva categoría</b>
+   <div class="row" style="margin-top:8px"><input type="text" id="cat-nombre" maxlength="80" placeholder="Nombre (ej. Sexo de la persona)" style="min-width:320px"></div>
+   <p class="muted" style="margin:10px 0 4px">Valores, separados por comas (sin «no lo dijo», que ya va incluido):</p>
+   <input type="text" id="cat-valores" placeholder="mujer, hombre" style="min-width:320px;width:100%">
+   <p class="muted" style="margin:10px 0 4px">Descripción: qué significa y cuándo cuenta (luego le sirve al filtro para saber qué buscar):</p>
+   <textarea id="cat-desc" style="min-height:56px" placeholder="La persona dice su sexo o se refiere a sí misma en femenino o masculino. No cuenta el nombre ni suposiciones."></textarea>
+   <div class="row" style="margin-top:10px">
+     <button id="cat-guardar" type="button">Guardar</button>
+     <button id="cat-cancelar" class="ghost" type="button">Cancelar</button>
+     <span id="cat-msg" class="muted"></span>
+   </div>
+ </div>
+
  <h2>Corpus actual</h2>
  <div class="row"><button id="ing-refresh" class="ghost">↻ Recargar</button>
    <span class="muted">documentos del tema seleccionado arriba</span></div>
@@ -867,7 +889,7 @@ function showTab(name, push=true){
     $('tab-'+t).hidden = (t!==name);
     $('tabbtn-'+t).classList.toggle('active', t===name);
   }
-  if(name==='ingest') loadDocuments();
+  if(name==='ingest'){ loadCategorias(); loadDocuments(); }
   if(name==='admin') loadUsers();
   if(name==='chat') chatInit();
   if(name==='bench') benchInit();
@@ -1246,7 +1268,10 @@ let ingTimer=null, ingStart=0;
 
 async function loadDocuments(){
   try{
-    const all=await (await fetch('/ingest/documents')).json();
+    const [all,cats,etqs]=await Promise.all([fetch('/ingest/documents').then(r=>r.json()),
+      fetch('/api/categorias').then(r=>r.json()).catch(()=>({categorias:[]})),
+      fetch('/api/categorias/documentos').then(r=>r.json()).catch(()=>({}))]);
+    window.__cats=cats.categorias||[]; window.__etqs=etqs||{};
     const topic=$('ing-topic') ? $('ing-topic').value : '';
     const tobj=(window.__topics||[]).find(t=>t.topic===topic);
     const tname=tobj?tobj.label:(topic||'—');
@@ -1254,7 +1279,7 @@ async function loadDocuments(){
     const docs=topic ? all.filter(d=>d.topic===topic) : all;
     if(!docs.length){ $('ing-docs').innerHTML=`<p class="muted">El tema <b>${esc(tname)}</b> aún no tiene documentos.</p>`; return; }
     const total=docs.reduce((a,d)=>a+d.chunks,0);
-    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th title="¿Quedó bien partido y etiquetado? Clic para revisar">chunking</th><th></th><th title="Un documento apagado sigue en la base, pero ninguna búsqueda lo ve. Se prende de nuevo aquí.">búsqueda</th><th></th></tr>`;
+    let h=`<table><tr><th>documento (source)</th><th>chunks</th><th title="¿Quedó bien partido y etiquetado? Clic para revisar">chunking</th><th></th><th title="Un documento apagado sigue en la base, pero ninguna búsqueda lo ve. Se prende de nuevo aquí.">búsqueda</th><th title="A qué personas aplica (👤 Categorías de la persona). Sin marca: a todas.">aplica solo a</th><th></th></tr>`;
     for(const d of docs){ const btn=d.clean_available
         ? `<button class="ghost" onclick="viewClean('${esc(d.source)}')">👁 md limpio</button>`
         : `<span class="muted" title="ingerido antes de este pipeline; no se guardó md limpio">—</span>`;
@@ -1268,9 +1293,9 @@ async function loadDocuments(){
                    : `<span title="ingerido antes de que se registrara dónde se procesó">procesado en: —</span>`;
       const diag=`<button class="ghost cdiag" data-src="${esc(d.source)}" onclick="openDiag(this.dataset.src)" title="Revisar cómo quedó partido y etiquetado">🔍 …</button>`;
       const off=d.apagado?' <b style="color:#f59e0b">· apagado: no entra a la búsqueda</b>':'';
-      h+=`<tr${d.apagado?' style="opacity:.6"':''}><td>${esc(d.source)}<div class="muted" style="font-size:.85em">${conv}${off}</div></td><td>${d.chunks}</td><td>${diag}</td><td>${btn}</td><td>${sw}</td><td>${del}</td></tr>`; }
+      h+=`<tr${d.apagado?' style="opacity:.6"':''}><td>${esc(d.source)}<div class="muted" style="font-size:.85em">${conv}${off}</div></td><td>${d.chunks}</td><td>${diag}</td><td>${btn}</td><td>${sw}</td><td>${catCelda(d.source)}</td><td>${del}</td></tr>`; }
     const nOff=docs.filter(d=>d.apagado).length;
-    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos${nOff?` (${nOff} apagados)`:''} · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td><td></td><td></td></tr></table>`;
+    $('ing-docs').innerHTML=h+`<tr><td class="muted">${docs.length} documentos${nOff?` (${nOff} apagados)`:''} · tema ${esc(tname)}</td><td class="muted">${total}</td><td></td><td></td><td></td><td></td><td></td></tr></table>`;
     loadDiagSummary();
   }catch(e){ $('ing-docs').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
 }
@@ -1281,6 +1306,75 @@ function docsMsg(html, ok){
   const el=$('ing-docs-msg'); clearTimeout(docsMsgTimer);
   el.innerHTML=html?`<div class="legend" style="border-color:${ok?'#166534':'#991b1b'};margin:8px 0">${html}</div>`:'';
   if(html) docsMsgTimer=setTimeout(()=>{ el.innerHTML=''; }, 12000);
+}
+
+// ── 👤 Categorías de la persona ──────────────────────────────────────────────
+let catEditando=null;   // id de la categoría en edición (null = nueva)
+async function loadCategorias(){
+  try{
+    const d=await (await fetch('/api/categorias')).json();
+    if(d.error){ $('cat-lista').innerHTML='<p style="color:#f87171">'+esc(d.error)+'</p>'; return; }
+    window.__cats=d.categorias||[];
+    const nueva=d.puede_editar?'<button class="ghost" onclick="catAbrir(null)">➕ Nueva categoría</button>':'';
+    if(!window.__cats.length){ $('cat-lista').innerHTML=`<div class="row"><span class="muted">Todavía no hay categorías.</span> ${nueva}</div>`; return; }
+    $('cat-lista').innerHTML=`<table><tr><th>categoría</th><th>valores</th><th>descripción</th><th>documentos marcados</th><th></th></tr>`+
+      window.__cats.map(c=>`<tr><td><b>${esc(c.nombre)}</b></td><td>${c.valores.map(v=>`<span class="chip">${esc(v)}</span>`).join(' ')} <span class="muted">· no lo dijo</span></td>
+        <td class="muted" style="max-width:360px">${esc(c.descripcion||'—')}</td><td>${c.documentos}</td>
+        <td>${d.puede_editar?`<button class="ghost" onclick="catAbrir(${c.id})">✏️ editar</button> <button class="ghost" onclick="catBorrar(${c.id})">🗑</button>`:''}</td></tr>`).join('')+
+      `</table><div class="row" style="margin-top:6px">${nueva}</div>`;
+  }catch(e){ $('cat-lista').innerHTML='<p style="color:#f87171">'+esc(e)+'</p>'; }
+}
+function catAbrir(id){
+  const c=(window.__cats||[]).find(x=>x.id===id); catEditando=c?c.id:null;
+  $('cat-form-title').textContent=c?'Editar categoría · '+c.nombre:'Nueva categoría';
+  $('cat-nombre').value=c?c.nombre:''; $('cat-valores').value=c?c.valores.join(', '):''; $('cat-desc').value=c?(c.descripcion||''):'';
+  $('cat-msg').textContent=''; $('cat-form').style.display='block'; $('cat-nombre').focus();
+}
+async function catGuardar(){
+  const c=(window.__cats||[]).find(x=>x.id===catEditando);
+  const valores=$('cat-valores').value.split(',').map(v=>v.trim()).filter(Boolean);
+  if(c){ const quita=c.valores.filter(v=>!valores.includes(v));
+    if(quita.length && !confirm(`Vas a quitar ${quita.map(v=>'«'+v+'»').join(', ')}. Los documentos marcados con esos valores pierden esa marca. ¿Seguir?`)) return; }
+  $('cat-guardar').disabled=true; $('cat-msg').textContent='guardando…';
+  try{
+    const r=await fetch('/api/categorias'+(c?'/'+c.id:''),{method:c?'PUT':'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre:$('cat-nombre').value, valores, descripcion:$('cat-desc').value})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok){ $('cat-msg').innerHTML='<span style="color:#f87171">'+esc(d.error||('HTTP '+r.status))+'</span>'; return; }
+    $('cat-form').style.display='none'; await loadCategorias(); loadDocuments();
+  }finally{ $('cat-guardar').disabled=false; }
+}
+async function catBorrar(id){
+  const c=(window.__cats||[]).find(x=>x.id===id); if(!c) return;
+  if(!confirm(`¿Borrar la categoría «${c.nombre}»?\n\nSe quitan sus marcas de ${c.documentos} documento(s). Los documentos no se borran.`)) return;
+  const r=await fetch('/api/categorias/'+id,{method:'DELETE'}); const d=await r.json().catch(()=>({}));
+  if(!r.ok){ alert(d.error||('HTTP '+r.status)); return; }
+  await loadCategorias(); loadDocuments();
+}
+// Celda «aplica solo a» de un documento: sus marcas + botón para cambiarlas.
+function catCelda(source){
+  const ms=(window.__etqs||{})[source]||[];
+  const chips=ms.length?ms.map(m=>`<span class="chip" title="${esc(m.categoria)}">${esc(m.valor)}</span>`).join(' '):'<span class="muted">todas</span>';
+  const edit=(window.__cats||[]).length?` <button class="ghost" data-src="${esc(source)}" onclick="catMarcar(this)" title="Elegir a qué personas aplica este documento">✏️</button>`:'';
+  return `<div class="catcel">${chips}${edit}</div>`;
+}
+function catMarcar(btn){
+  const source=btn.dataset.src, cel=btn.closest('.catcel');
+  const ms=new Set(((window.__etqs||{})[source]||[]).map(m=>m.categoria_id+'|'+m.valor));
+  cel.innerHTML=(window.__cats||[]).map(c=>`<div style="font-size:13px;margin:2px 0"><b>${esc(c.nombre)}:</b> `+
+    c.valores.map(v=>`<label style="white-space:nowrap;margin-right:6px"><input type="checkbox" data-cid="${c.id}" data-valor="${esc(v)}" ${ms.has(c.id+'|'+v)?'checked':''}> ${esc(v)}</label>`).join('')+'</div>').join('')+
+    `<div class="muted" style="font-size:12px">Sin marcar = aplica a todas las personas.</div>
+     <button class="ghost" data-src="${esc(source)}" onclick="catMarcarGuardar(this)">💾 Guardar</button> <button class="ghost" onclick="loadDocuments()">Cancelar</button>`;
+}
+async function catMarcarGuardar(btn){
+  const source=btn.dataset.src, cel=btn.closest('.catcel');
+  const etiquetas=[...cel.querySelectorAll('input[type=checkbox]:checked')].map(i=>({categoria_id:+i.dataset.cid, valor:i.dataset.valor}));
+  btn.disabled=true;
+  const r=await fetch('/api/categorias/documentos',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({source, etiquetas})});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){ docsMsg(`✗ No se pudo marcar «${esc(source)}»: ${esc(d.error||('HTTP '+r.status))}`, false); btn.disabled=false; return; }
+  docsMsg(`👤 «${esc(source)}»: ${etiquetas.length?'aplica solo a '+etiquetas.map(e=>esc(e.valor)).join(', '):'aplica a todas las personas'}.`, true);
+  await loadCategorias(); loadDocuments();
 }
 
 async function setApagado(source, apagado, btn){
@@ -1843,6 +1937,8 @@ $('ing-topic-new').addEventListener('click',()=>openTopicForm('create'));
 $('ing-topic-edit').addEventListener('click',()=>openTopicForm('edit'));
 $('ing-topic-cancel').addEventListener('click',closeTopicForm);
 $('ing-topic-create').addEventListener('click',saveTopic);
+$('cat-guardar').addEventListener('click',catGuardar);
+$('cat-cancelar').addEventListener('click',()=>{ $('cat-form').style.display='none'; });
 
 // ── Tab "Usuarios" (superadmin) ──────────────────────────────────────────────────
 async function loadUsers(){

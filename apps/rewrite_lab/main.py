@@ -1678,6 +1678,14 @@ repeticiones = Repeticiones(connect=connect, chat_stream=_study_chat_stream, stu
              'y los últimos 250 caracteres (al final suelen ir las preguntas del asistente, como «¿en qué estado ocurrió?»).'}])
 app.include_router(repeticiones.router)
 
+# 👤 Categorías de la persona (📥 Ingestar): de qué depende que una ley aplique además del lugar (sexo, edad…). Fase 1:
+# solo etiquetas por documento; la búsqueda todavía no las usa.
+from categorias import Categorias  # noqa: E402
+categorias = Categorias(connect=connect, current_email=current_email, can_edit=can_ingest,
+                        can_tag=lambda email, source: bool(can_ingest(email)) and ingest_mgr.topic_of(source) is not None
+                        and can_upload_topic(email, ingest_mgr.topic_of(source)))
+app.include_router(categorias.router)
+
 
 @app.get('/healthz')
 def healthz():
