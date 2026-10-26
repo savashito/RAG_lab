@@ -380,7 +380,7 @@ async function pantallaEscenario(s, hechos) {
   if (fase === 'chat') {
     zona.innerHTML = `<div class="card"><div class="msgs" id="msgs">
         ${intento.turnos.map(t => `<div class="msg user">${esc(t.pregunta)}</div>${burbujaRespuesta(t)}`).join('')}</div>
-      <div class="composer"><textarea id="txt" placeholder="Escribe tu pregunta al asistente…"></textarea>
+      <div class="composer"><textarea id="txt" placeholder="Cuéntame qué pasó y qué quieres saber…"></textarea>
         <button class="primary" id="send">Enviar</button></div>
       <p class="muted small">${n} de ${E.max_turnos} preguntas · Enter envía · Shift+Enter hace un salto de línea.</p>
       <button class="primary" id="listo" ${n ? '' : 'disabled'}>Ya entendí la situación → pasar a las preguntas</button>
