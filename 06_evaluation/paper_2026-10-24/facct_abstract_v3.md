@@ -33,6 +33,20 @@ prompts, is under way. We
 argue that legal RAG must be evaluated with the people it is meant to serve, and that its metrics must check whether
 a cited law applies to where they are and who they are.
 
+## Keywords
+
+legal information access, retrieval-augmented generation, jurisdiction, user study, evaluation practices, overreliance,
+access to justice, Mexico
+
+## TL;DR
+
+A legal RAG assistant for Mexico cited the wrong state's penal code in most first answers, users without legal training
+rarely noticed, and a jurisdiction gate nearly eliminated the error while exposing another: laws that depend on who
+the user is.
+
+Shorter option: Legal RAG fails lay users when it ignores where they are and who they are; we audit this with real users
+and repair the first.
+
 ### Round-2 sentence (choose one before submitting)
 
 - **If round 2 has no results by Oct 27 (likely):** keep «A second round … is under way.»
