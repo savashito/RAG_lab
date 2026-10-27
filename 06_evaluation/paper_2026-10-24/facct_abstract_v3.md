@@ -1,7 +1,9 @@
 # FAccT 2027 — abstract v3 (25-oct-2026)
 
 Deadlines: abstract **2026-10-27**, paper 2026-11-03 (AoE). Anonymous: no names, URLs or project names.
-Focus areas: Evaluations and evaluation practices (primary), System development and deployment, Law and policy.
+Focus areas (the form allows only primary + secondary): **primary = Evaluations and evaluation practices**, **secondary =
+Experiences and interactions** (v3 puts the users at the center: who notices the error, who would act). v2 listed System
+development and deployment and Law and policy as secondary candidates.
 
 Changes from v2 (`facct_abstract_v2.md`, 24-oct): (1) the gap by legal training (who notices the error vs who would act);
 (2) the second applicability condition: who the person is, not only where the facts occurred; (3) the reranker's
