@@ -289,6 +289,9 @@ def resumen(datos: dict, fase: str | None = None) -> dict:
         cnd[k]['palabras'].append(a.get('palabras'))
         cnd[k]['pide_lugar'].append(a.get('pide_lugar'))
         cnd[k]['pide_lugar_estricto'].append(a.get('pide_lugar_estricto'))
+        cnd[k]['errores'].append(bool(t.get('error')))
+        if not t.get('error'):
+            cnd[k]['segundos'].append(t.get('segundos'))
         if t['n'] == 1:
             cnd[k]['cita_ley_gold'].append(a.get('cita_ley_gold'))
             cnd[k]['cita_articulo_gold'].append(a.get('cita_articulo_gold'))
@@ -317,6 +320,9 @@ def resumen(datos: dict, fase: str | None = None) -> dict:
             cnd[k]['eligio_otra'].append(any(v == 'otra' for q, v in r.items() if not q.startswith('_')))
     out['_por_condicion'] = {k: {
         'participantes': sum(1 for p in part.values() if (p.get('condicion') or '(sin condición)') == k),
+        'terminaron': sum(1 for p in part.values() if (p.get('condicion') or '(sin condición)') == k and p.get('terminado_at')),
+        'mensajes': len(m['errores']), 'mensajes_con_error': sum(m['errores']),
+        'segundos_por_respuesta': round(media(m['segundos']), 1) if media(m['segundos']) is not None else None,
         'situaciones': len(m['comprension']), 'comprension': media(m['comprension']),
         'confianza_media': media(m['confianza']), 'comprension_con_confianza_alta': media(m['comprension_conf_alta']),
         'noto_problema': media(m['detecto']), 'actuaria': media(m['actuaria']), 'eligio_no_esta_mi_respuesta': media(m['eligio_otra']),

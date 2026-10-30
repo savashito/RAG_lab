@@ -240,7 +240,9 @@ async function resumen(id) {
   const r = await api('GET', `/api/estudios/${id}/resumen?fase=${encodeURIComponent(elegida)}`);
   sel.innerHTML = '<option value="">todas</option>' + (r._fases || []).map(f => `<option value="${esc(f.fase)}" ${f.fase === elegida ? 'selected' : ''}>${esc(f.fase)} (${f.n})</option>`).join('');
   const C = r._por_condicion || {}, conds = Object.keys(C);
-  const filasC = [['participantes', 'Participantes'], ['situaciones', 'Situaciones terminadas'], ['comprension', 'Comprensión (aciertos)'],
+  const filasC = [['participantes', 'Participantes (aceptaron el consentimiento)'], ['terminaron', 'Terminaron el estudio'],
+    ['mensajes', 'Mensajes al asistente'], ['mensajes_con_error', '  sin respuesta por error'],
+    ['segundos_por_respuesta', 'Segundos por respuesta (promedio)'], ['situaciones', 'Situaciones terminadas'], ['comprension', 'Comprensión (aciertos)'],
     ['confianza_media', 'Confianza media (1–5)'], ['comprension_con_confianza_alta', 'Comprensión cuando dijeron confianza 4–5'],
     ['noto_problema', 'Notaron un problema'], ['actuaria', 'Actuarían con la respuesta'], ['eligio_no_esta_mi_respuesta', 'Eligieron «no está mi respuesta»'],
     ['palabras_por_respuesta', 'Palabras por respuesta del asistente'],
