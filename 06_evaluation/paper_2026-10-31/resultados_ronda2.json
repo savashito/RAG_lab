@@ -1,0 +1,1962 @@
+{
+ "fecha_datos": "2026-10-31 07:57:53.843127+00",
+ "participantes": {
+  "por_prompt": {
+   "nuevo": 18,
+   "original": 17,
+   "intermedio": 17
+  },
+  "terminaron_por_prompt": {
+   "original": 12,
+   "nuevo": 13,
+   "intermedio": 12
+  },
+  "por_prompt_y_formacion": {
+   "nuevo · sin formación jurídica": 12,
+   "original · sin formación jurídica": 16,
+   "nuevo · con formación jurídica": 6,
+   "original · con formación jurídica": 1,
+   "intermedio · sin formación jurídica": 12,
+   "intermedio · con formación jurídica": 5
+  },
+  "perfil_estudios": {
+   "lic_terminada": 27,
+   "maestria": 10,
+   "lic_curso": 6,
+   "doctorado": 2,
+   "prepa": 7
+  },
+  "perfil_area": {
+   "humanidades": 5,
+   "derecho": 8,
+   "fisico_mat": 6,
+   "sociales": 9,
+   "biologicas": 14,
+   "null": 7,
+   "otra": 3
+  },
+  "perfil_formacion": {
+   "ninguna": 29,
+   "materias": 14,
+   "carrera": 3,
+   "trabajo": 6
+  },
+  "perfil_uso_ia": {
+   "diario": 19,
+   "mes": 22,
+   "semana": 6,
+   "nunca": 5
+  },
+  "perfil_edad": {
+   "45_59": 12,
+   "35_44": 19,
+   "25_34": 12,
+   "18_24": 6,
+   "60": 3
+  },
+  "origen": {
+   "enlace #17": 21,
+   "kiosco #18": 3,
+   "kiosco #23": 1,
+   "enlace #33": 2,
+   "enlace #32": 23,
+   "kiosco #34": 1,
+   "kiosco #35": 1
+  },
+  "situaciones_terminadas": 114,
+  "mensajes": 232,
+  "mensajes_con_error": 6,
+  "segundos_por_respuesta_media": 12.1,
+  "segundos_por_respuesta_p90": 14.8
+ },
+ "por_prompt": {
+  "original": {
+   "personas": 17,
+   "comprension": [
+    0.608,
+    37
+   ],
+   "confianza_1a5": [
+    3.892,
+    37
+   ],
+   "confianza_alta_4o5": [
+    0.73,
+    37
+   ],
+   "actuaria": [
+    0.351,
+    37
+   ],
+   "noto_problema": [
+    0.108,
+    37
+   ],
+   "escala_confianza_asistente": [
+    3.28,
+    25
+   ],
+   "escala_correcta_percibida": [
+    3.52,
+    25
+   ],
+   "mensajes_por_situacion": [
+    2.0,
+    37
+   ],
+   "minutos_por_situacion": [
+    17.158,
+    37
+   ],
+   "1a_cita_ley_correcta": [
+    0.658,
+    38
+   ],
+   "1a_cita_articulo_correcto": [
+    0.5,
+    38
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.079,
+    38
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.158,
+    38
+   ],
+   "1a_otro_estado_corregida": [
+    0.053,
+    38
+   ],
+   "alguna_otro_estado_corregida": [
+    0.053,
+    38
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.558,
+    38
+   ],
+   "palabras_por_respuesta": [
+    446.946,
+    38
+   ],
+   "recall10_1er_mensaje": [
+    0.237,
+    38
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    12
+   ]
+  },
+  "nuevo": {
+   "personas": 16,
+   "comprension": [
+    0.738,
+    40
+   ],
+   "confianza_1a5": [
+    4.225,
+    40
+   ],
+   "confianza_alta_4o5": [
+    0.8,
+    40
+   ],
+   "actuaria": [
+    0.825,
+    40
+   ],
+   "noto_problema": [
+    0.1,
+    40
+   ],
+   "escala_confianza_asistente": [
+    3.935,
+    31
+   ],
+   "escala_correcta_percibida": [
+    4.129,
+    31
+   ],
+   "mensajes_por_situacion": [
+    1.775,
+    40
+   ],
+   "minutos_por_situacion": [
+    11.243,
+    40
+   ],
+   "1a_cita_ley_correcta": [
+    0.683,
+    41
+   ],
+   "1a_cita_articulo_correcto": [
+    0.561,
+    41
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.098,
+    41
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.171,
+    41
+   ],
+   "1a_otro_estado_corregida": [
+    0.0,
+    41
+   ],
+   "alguna_otro_estado_corregida": [
+    0.0,
+    41
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.364,
+    41
+   ],
+   "palabras_por_respuesta": [
+    485.522,
+    41
+   ],
+   "recall10_1er_mensaje": [
+    0.393,
+    42
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    14
+   ]
+  },
+  "intermedio": {
+   "personas": 17,
+   "comprension": [
+    0.676,
+    37
+   ],
+   "confianza_1a5": [
+    4.135,
+    37
+   ],
+   "confianza_alta_4o5": [
+    0.811,
+    37
+   ],
+   "actuaria": [
+    0.784,
+    37
+   ],
+   "noto_problema": [
+    0.162,
+    37
+   ],
+   "escala_confianza_asistente": [
+    4.189,
+    37
+   ],
+   "escala_correcta_percibida": [
+    4.243,
+    37
+   ],
+   "mensajes_por_situacion": [
+    2.108,
+    37
+   ],
+   "minutos_por_situacion": [
+    37.918,
+    37
+   ],
+   "1a_cita_ley_correcta": [
+    0.658,
+    38
+   ],
+   "1a_cita_articulo_correcto": [
+    0.553,
+    38
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.079,
+    38
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.184,
+    38
+   ],
+   "1a_otro_estado_corregida": [
+    0.0,
+    38
+   ],
+   "alguna_otro_estado_corregida": [
+    0.079,
+    38
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.303,
+    38
+   ],
+   "palabras_por_respuesta": [
+    433.147,
+    38
+   ],
+   "recall10_1er_mensaje": [
+    0.289,
+    38
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    13
+   ]
+  }
+ },
+ "por_prompt_sin_formacion": {
+  "original": {
+   "personas": 16,
+   "comprension": [
+    0.632,
+    34
+   ],
+   "confianza_1a5": [
+    3.912,
+    34
+   ],
+   "confianza_alta_4o5": [
+    0.735,
+    34
+   ],
+   "actuaria": [
+    0.353,
+    34
+   ],
+   "noto_problema": [
+    0.118,
+    34
+   ],
+   "escala_confianza_asistente": [
+    3.28,
+    25
+   ],
+   "escala_correcta_percibida": [
+    3.52,
+    25
+   ],
+   "mensajes_por_situacion": [
+    2.088,
+    34
+   ],
+   "minutos_por_situacion": [
+    18.47,
+    34
+   ],
+   "1a_cita_ley_correcta": [
+    0.629,
+    35
+   ],
+   "1a_cita_articulo_correcto": [
+    0.486,
+    35
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.057,
+    35
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.143,
+    35
+   ],
+   "1a_otro_estado_corregida": [
+    0.029,
+    35
+   ],
+   "alguna_otro_estado_corregida": [
+    0.029,
+    35
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.549,
+    35
+   ],
+   "palabras_por_respuesta": [
+    446.884,
+    35
+   ],
+   "recall10_1er_mensaje": [
+    0.243,
+    35
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    11
+   ]
+  },
+  "nuevo": {
+   "personas": 10,
+   "comprension": [
+    0.625,
+    24
+   ],
+   "confianza_1a5": [
+    4.042,
+    24
+   ],
+   "confianza_alta_4o5": [
+    0.708,
+    24
+   ],
+   "actuaria": [
+    0.875,
+    24
+   ],
+   "noto_problema": [
+    0.042,
+    24
+   ],
+   "escala_confianza_asistente": [
+    4.0,
+    18
+   ],
+   "escala_correcta_percibida": [
+    4.278,
+    18
+   ],
+   "mensajes_por_situacion": [
+    2.167,
+    24
+   ],
+   "minutos_por_situacion": [
+    15.167,
+    24
+   ],
+   "1a_cita_ley_correcta": [
+    0.64,
+    25
+   ],
+   "1a_cita_articulo_correcto": [
+    0.48,
+    25
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.0,
+    25
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.12,
+    25
+   ],
+   "1a_otro_estado_corregida": [
+    0.0,
+    25
+   ],
+   "alguna_otro_estado_corregida": [
+    0.0,
+    25
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.417,
+    25
+   ],
+   "palabras_por_respuesta": [
+    488.717,
+    25
+   ],
+   "recall10_1er_mensaje": [
+    0.25,
+    26
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    9
+   ]
+  },
+  "intermedio": {
+   "personas": 12,
+   "comprension": [
+    0.696,
+    28
+   ],
+   "confianza_1a5": [
+    4.071,
+    28
+   ],
+   "confianza_alta_4o5": [
+    0.75,
+    28
+   ],
+   "actuaria": [
+    0.857,
+    28
+   ],
+   "noto_problema": [
+    0.107,
+    28
+   ],
+   "escala_confianza_asistente": [
+    4.25,
+    28
+   ],
+   "escala_correcta_percibida": [
+    4.214,
+    28
+   ],
+   "mensajes_por_situacion": [
+    1.857,
+    28
+   ],
+   "minutos_por_situacion": [
+    7.661,
+    28
+   ],
+   "1a_cita_ley_correcta": [
+    0.655,
+    29
+   ],
+   "1a_cita_articulo_correcto": [
+    0.552,
+    29
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.034,
+    29
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.138,
+    29
+   ],
+   "1a_otro_estado_corregida": [
+    0.0,
+    29
+   ],
+   "alguna_otro_estado_corregida": [
+    0.069,
+    29
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.322,
+    29
+   ],
+   "palabras_por_respuesta": [
+    422.095,
+    29
+   ],
+   "recall10_1er_mensaje": [
+    0.31,
+    29
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    10
+   ]
+  }
+ },
+ "por_prompt_con_formacion": {
+  "original": {
+   "personas": 1,
+   "comprension": [
+    0.333,
+    3
+   ],
+   "confianza_1a5": [
+    3.667,
+    3
+   ],
+   "confianza_alta_4o5": [
+    0.667,
+    3
+   ],
+   "actuaria": [
+    0.333,
+    3
+   ],
+   "noto_problema": [
+    0.0,
+    3
+   ],
+   "escala_confianza_asistente": [
+    null,
+    0
+   ],
+   "escala_correcta_percibida": [
+    null,
+    0
+   ],
+   "mensajes_por_situacion": [
+    1.0,
+    3
+   ],
+   "minutos_por_situacion": [
+    2.289,
+    3
+   ],
+   "1a_cita_ley_correcta": [
+    1.0,
+    3
+   ],
+   "1a_cita_articulo_correcto": [
+    0.667,
+    3
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.333,
+    3
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.333,
+    3
+   ],
+   "1a_otro_estado_corregida": [
+    0.333,
+    3
+   ],
+   "alguna_otro_estado_corregida": [
+    0.333,
+    3
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.667,
+    3
+   ],
+   "palabras_por_respuesta": [
+    447.667,
+    3
+   ],
+   "recall10_1er_mensaje": [
+    0.167,
+    3
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    1
+   ]
+  },
+  "nuevo": {
+   "personas": 6,
+   "comprension": [
+    0.906,
+    16
+   ],
+   "confianza_1a5": [
+    4.5,
+    16
+   ],
+   "confianza_alta_4o5": [
+    0.938,
+    16
+   ],
+   "actuaria": [
+    0.75,
+    16
+   ],
+   "noto_problema": [
+    0.188,
+    16
+   ],
+   "escala_confianza_asistente": [
+    3.846,
+    13
+   ],
+   "escala_correcta_percibida": [
+    3.923,
+    13
+   ],
+   "mensajes_por_situacion": [
+    1.188,
+    16
+   ],
+   "minutos_por_situacion": [
+    5.357,
+    16
+   ],
+   "1a_cita_ley_correcta": [
+    0.75,
+    16
+   ],
+   "1a_cita_articulo_correcto": [
+    0.688,
+    16
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.25,
+    16
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.25,
+    16
+   ],
+   "1a_otro_estado_corregida": [
+    0.0,
+    16
+   ],
+   "alguna_otro_estado_corregida": [
+    0.0,
+    16
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.281,
+    16
+   ],
+   "palabras_por_respuesta": [
+    480.531,
+    16
+   ],
+   "recall10_1er_mensaje": [
+    0.625,
+    16
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    5
+   ]
+  },
+  "intermedio": {
+   "personas": 5,
+   "comprension": [
+    0.611,
+    9
+   ],
+   "confianza_1a5": [
+    4.333,
+    9
+   ],
+   "confianza_alta_4o5": [
+    1.0,
+    9
+   ],
+   "actuaria": [
+    0.556,
+    9
+   ],
+   "noto_problema": [
+    0.333,
+    9
+   ],
+   "escala_confianza_asistente": [
+    4.0,
+    9
+   ],
+   "escala_correcta_percibida": [
+    4.333,
+    9
+   ],
+   "mensajes_por_situacion": [
+    2.889,
+    9
+   ],
+   "minutos_por_situacion": [
+    132.048,
+    9
+   ],
+   "1a_cita_ley_correcta": [
+    0.667,
+    9
+   ],
+   "1a_cita_articulo_correcto": [
+    0.556,
+    9
+   ],
+   "1a_nombra_codigo_de_otro_estado": [
+    0.222,
+    9
+   ],
+   "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+    0.333,
+    9
+   ],
+   "1a_otro_estado_corregida": [
+    0.0,
+    9
+   ],
+   "alguna_otro_estado_corregida": [
+    0.111,
+    9
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.241,
+    9
+   ],
+   "palabras_por_respuesta": [
+    468.759,
+    9
+   ],
+   "recall10_1er_mensaje": [
+    0.222,
+    9
+   ],
+   "fotos_cita_ley_mujeres": [
+    0.0,
+    3
+   ]
+  }
+ },
+ "por_prompt_y_situacion": {
+  "mensajes_trabajo": {
+   "original": {
+    "personas": 17,
+    "comprension": [
+     0.625,
+     12
+    ],
+    "confianza_1a5": [
+     4.167,
+     12
+    ],
+    "confianza_alta_4o5": [
+     1.0,
+     12
+    ],
+    "actuaria": [
+     0.5,
+     12
+    ],
+    "noto_problema": [
+     0.167,
+     12
+    ],
+    "escala_confianza_asistente": [
+     3.25,
+     8
+    ],
+    "escala_correcta_percibida": [
+     3.5,
+     8
+    ],
+    "mensajes_por_situacion": [
+     2.417,
+     12
+    ],
+    "minutos_por_situacion": [
+     36.874,
+     12
+    ],
+    "1a_cita_ley_correcta": [
+     0.462,
+     13
+    ],
+    "1a_cita_articulo_correcto": [
+     0.462,
+     13
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.077,
+     13
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.077,
+     13
+    ],
+    "1a_otro_estado_corregida": [
+     0.077,
+     13
+    ],
+    "alguna_otro_estado_corregida": [
+     0.077,
+     13
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.782,
+     13
+    ],
+    "palabras_por_respuesta": [
+     437.199,
+     13
+    ],
+    "recall10_1er_mensaje": [
+     0.077,
+     13
+    ],
+    "fotos_cita_ley_mujeres": [
+     null,
+     0
+    ]
+   },
+   "nuevo": {
+    "personas": 16,
+    "comprension": [
+     0.731,
+     13
+    ],
+    "confianza_1a5": [
+     4.385,
+     13
+    ],
+    "confianza_alta_4o5": [
+     0.769,
+     13
+    ],
+    "actuaria": [
+     0.769,
+     13
+    ],
+    "noto_problema": [
+     0.077,
+     13
+    ],
+    "escala_confianza_asistente": [
+     4.1,
+     10
+    ],
+    "escala_correcta_percibida": [
+     4.4,
+     10
+    ],
+    "mensajes_por_situacion": [
+     1.769,
+     13
+    ],
+    "minutos_por_situacion": [
+     6.596,
+     13
+    ],
+    "1a_cita_ley_correcta": [
+     0.385,
+     13
+    ],
+    "1a_cita_articulo_correcto": [
+     0.385,
+     13
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.0,
+     13
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.0,
+     13
+    ],
+    "1a_otro_estado_corregida": [
+     0.0,
+     13
+    ],
+    "alguna_otro_estado_corregida": [
+     0.0,
+     13
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.551,
+     13
+    ],
+    "palabras_por_respuesta": [
+     471.179,
+     13
+    ],
+    "recall10_1er_mensaje": [
+     0.357,
+     14
+    ],
+    "fotos_cita_ley_mujeres": [
+     null,
+     0
+    ]
+   },
+   "intermedio": {
+    "personas": 17,
+    "comprension": [
+     0.708,
+     12
+    ],
+    "confianza_1a5": [
+     4.333,
+     12
+    ],
+    "confianza_alta_4o5": [
+     0.917,
+     12
+    ],
+    "actuaria": [
+     0.833,
+     12
+    ],
+    "noto_problema": [
+     0.167,
+     12
+    ],
+    "escala_confianza_asistente": [
+     4.417,
+     12
+    ],
+    "escala_correcta_percibida": [
+     4.417,
+     12
+    ],
+    "mensajes_por_situacion": [
+     2.083,
+     12
+    ],
+    "minutos_por_situacion": [
+     11.11,
+     12
+    ],
+    "1a_cita_ley_correcta": [
+     0.25,
+     12
+    ],
+    "1a_cita_articulo_correcto": [
+     0.25,
+     12
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.0,
+     12
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.167,
+     12
+    ],
+    "1a_otro_estado_corregida": [
+     0.0,
+     12
+    ],
+    "alguna_otro_estado_corregida": [
+     0.167,
+     12
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.632,
+     12
+    ],
+    "palabras_por_respuesta": [
+     423.924,
+     12
+    ],
+    "recall10_1er_mensaje": [
+     0.25,
+     12
+    ],
+    "fotos_cita_ley_mujeres": [
+     null,
+     0
+    ]
+   }
+  },
+  "fotos": {
+   "original": {
+    "personas": 17,
+    "comprension": [
+     0.625,
+     12
+    ],
+    "confianza_1a5": [
+     3.833,
+     12
+    ],
+    "confianza_alta_4o5": [
+     0.667,
+     12
+    ],
+    "actuaria": [
+     0.333,
+     12
+    ],
+    "noto_problema": [
+     0.167,
+     12
+    ],
+    "escala_confianza_asistente": [
+     3.375,
+     8
+    ],
+    "escala_correcta_percibida": [
+     3.5,
+     8
+    ],
+    "mensajes_por_situacion": [
+     1.667,
+     12
+    ],
+    "minutos_por_situacion": [
+     8.057,
+     12
+    ],
+    "1a_cita_ley_correcta": [
+     0.667,
+     12
+    ],
+    "1a_cita_articulo_correcto": [
+     0.417,
+     12
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.083,
+     12
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.333,
+     12
+    ],
+    "1a_otro_estado_corregida": [
+     0.0,
+     12
+    ],
+    "alguna_otro_estado_corregida": [
+     0.0,
+     12
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.628,
+     12
+    ],
+    "palabras_por_respuesta": [
+     455.572,
+     12
+    ],
+    "recall10_1er_mensaje": [
+     0.208,
+     12
+    ],
+    "fotos_cita_ley_mujeres": [
+     0.0,
+     12
+    ]
+   },
+   "nuevo": {
+    "personas": 16,
+    "comprension": [
+     0.615,
+     13
+    ],
+    "confianza_1a5": [
+     4.154,
+     13
+    ],
+    "confianza_alta_4o5": [
+     0.846,
+     13
+    ],
+    "actuaria": [
+     0.846,
+     13
+    ],
+    "noto_problema": [
+     0.231,
+     13
+    ],
+    "escala_confianza_asistente": [
+     3.9,
+     10
+    ],
+    "escala_correcta_percibida": [
+     4.1,
+     10
+    ],
+    "mensajes_por_situacion": [
+     1.846,
+     13
+    ],
+    "minutos_por_situacion": [
+     7.004,
+     13
+    ],
+    "1a_cita_ley_correcta": [
+     0.714,
+     14
+    ],
+    "1a_cita_articulo_correcto": [
+     0.429,
+     14
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.286,
+     14
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.5,
+     14
+    ],
+    "1a_otro_estado_corregida": [
+     0.0,
+     14
+    ],
+    "alguna_otro_estado_corregida": [
+     0.0,
+     14
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.482,
+     14
+    ],
+    "palabras_por_respuesta": [
+     496.125,
+     14
+    ],
+    "recall10_1er_mensaje": [
+     0.25,
+     14
+    ],
+    "fotos_cita_ley_mujeres": [
+     0.0,
+     14
+    ]
+   },
+   "intermedio": {
+    "personas": 17,
+    "comprension": [
+     0.577,
+     13
+    ],
+    "confianza_1a5": [
+     4.0,
+     13
+    ],
+    "confianza_alta_4o5": [
+     0.769,
+     13
+    ],
+    "actuaria": [
+     0.769,
+     13
+    ],
+    "noto_problema": [
+     0.154,
+     13
+    ],
+    "escala_confianza_asistente": [
+     4.231,
+     13
+    ],
+    "escala_correcta_percibida": [
+     4.154,
+     13
+    ],
+    "mensajes_por_situacion": [
+     2.231,
+     13
+    ],
+    "minutos_por_situacion": [
+     86.641,
+     13
+    ],
+    "1a_cita_ley_correcta": [
+     0.692,
+     13
+    ],
+    "1a_cita_articulo_correcto": [
+     0.538,
+     13
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.231,
+     13
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.385,
+     13
+    ],
+    "1a_otro_estado_corregida": [
+     0.0,
+     13
+    ],
+    "alguna_otro_estado_corregida": [
+     0.077,
+     13
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.276,
+     13
+    ],
+    "palabras_por_respuesta": [
+     444.147,
+     13
+    ],
+    "recall10_1er_mensaje": [
+     0.346,
+     13
+    ],
+    "fotos_cita_ley_mujeres": [
+     0.0,
+     13
+    ]
+   }
+  },
+  "citatorio": {
+   "original": {
+    "personas": 17,
+    "comprension": [
+     0.577,
+     13
+    ],
+    "confianza_1a5": [
+     3.692,
+     13
+    ],
+    "confianza_alta_4o5": [
+     0.538,
+     13
+    ],
+    "actuaria": [
+     0.231,
+     13
+    ],
+    "noto_problema": [
+     0.0,
+     13
+    ],
+    "escala_confianza_asistente": [
+     3.222,
+     9
+    ],
+    "escala_correcta_percibida": [
+     3.556,
+     9
+    ],
+    "mensajes_por_situacion": [
+     1.923,
+     13
+    ],
+    "minutos_por_situacion": [
+     7.36,
+     13
+    ],
+    "1a_cita_ley_correcta": [
+     0.846,
+     13
+    ],
+    "1a_cita_articulo_correcto": [
+     0.615,
+     13
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.077,
+     13
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.077,
+     13
+    ],
+    "1a_otro_estado_corregida": [
+     0.077,
+     13
+    ],
+    "alguna_otro_estado_corregida": [
+     0.077,
+     13
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.269,
+     13
+    ],
+    "palabras_por_respuesta": [
+     448.731,
+     13
+    ],
+    "recall10_1er_mensaje": [
+     0.423,
+     13
+    ],
+    "fotos_cita_ley_mujeres": [
+     null,
+     0
+    ]
+   },
+   "nuevo": {
+    "personas": 16,
+    "comprension": [
+     0.857,
+     14
+    ],
+    "confianza_1a5": [
+     4.143,
+     14
+    ],
+    "confianza_alta_4o5": [
+     0.786,
+     14
+    ],
+    "actuaria": [
+     0.857,
+     14
+    ],
+    "noto_problema": [
+     0.0,
+     14
+    ],
+    "escala_confianza_asistente": [
+     3.818,
+     11
+    ],
+    "escala_correcta_percibida": [
+     3.909,
+     11
+    ],
+    "mensajes_por_situacion": [
+     1.714,
+     14
+    ],
+    "minutos_por_situacion": [
+     19.494,
+     14
+    ],
+    "1a_cita_ley_correcta": [
+     0.929,
+     14
+    ],
+    "1a_cita_articulo_correcto": [
+     0.857,
+     14
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.0,
+     14
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.0,
+     14
+    ],
+    "1a_otro_estado_corregida": [
+     0.0,
+     14
+    ],
+    "alguna_otro_estado_corregida": [
+     0.0,
+     14
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.071,
+     14
+    ],
+    "palabras_por_respuesta": [
+     488.238,
+     14
+    ],
+    "recall10_1er_mensaje": [
+     0.571,
+     14
+    ],
+    "fotos_cita_ley_mujeres": [
+     null,
+     0
+    ]
+   },
+   "intermedio": {
+    "personas": 17,
+    "comprension": [
+     0.75,
+     12
+    ],
+    "confianza_1a5": [
+     4.083,
+     12
+    ],
+    "confianza_alta_4o5": [
+     0.75,
+     12
+    ],
+    "actuaria": [
+     0.75,
+     12
+    ],
+    "noto_problema": [
+     0.167,
+     12
+    ],
+    "escala_confianza_asistente": [
+     3.917,
+     12
+    ],
+    "escala_correcta_percibida": [
+     4.167,
+     12
+    ],
+    "mensajes_por_situacion": [
+     2.0,
+     12
+    ],
+    "minutos_por_situacion": [
+     11.942,
+     12
+    ],
+    "1a_cita_ley_correcta": [
+     1.0,
+     13
+    ],
+    "1a_cita_articulo_correcto": [
+     0.846,
+     13
+    ],
+    "1a_nombra_codigo_de_otro_estado": [
+     0.0,
+     13
+    ],
+    "cualquier_respuesta_nombra_codigo_de_otro_estado": [
+     0.0,
+     13
+    ],
+    "1a_otro_estado_corregida": [
+     0.0,
+     13
+    ],
+    "alguna_otro_estado_corregida": [
+     0.0,
+     13
+    ],
+    "respuestas_que_piden_el_estado": [
+     0.026,
+     13
+    ],
+    "palabras_por_respuesta": [
+     430.66,
+     13
+    ],
+    "recall10_1er_mensaje": [
+     0.269,
+     13
+    ],
+    "fotos_cita_ley_mujeres": [
+     null,
+     0
+    ]
+   }
+  }
+ },
+ "minutos_por_situacion_mediana": {
+  "original": 6.9,
+  "nuevo": 5.1,
+  "intermedio": 5.8
+ },
+ "diferencias_ic95": {
+  "1a_otro_estado_corregida": {
+   "nuevo − original": [
+    -0.053,
+    -0.125,
+    0.0
+   ],
+   "intermedio − original": [
+    -0.053,
+    -0.128,
+    0.0
+   ],
+   "intermedio − nuevo": [
+    0,
+    0.0,
+    0.0
+   ]
+  },
+  "alguna_otro_estado_corregida": {
+   "nuevo − original": [
+    -0.053,
+    -0.128,
+    0.0
+   ],
+   "intermedio − original": [
+    0.026,
+    -0.088,
+    0.158
+   ],
+   "intermedio − nuevo": [
+    0.079,
+    0.0,
+    0.195
+   ]
+  },
+  "comprension": {
+   "nuevo − original": [
+    0.129,
+    -0.084,
+    0.339
+   ],
+   "intermedio − original": [
+    0.068,
+    -0.121,
+    0.268
+   ],
+   "intermedio − nuevo": [
+    -0.062,
+    -0.226,
+    0.11
+   ]
+  },
+  "escala_confianza_asistente": {
+   "nuevo − original": [
+    0.655,
+    -0.024,
+    1.472
+   ],
+   "intermedio − original": [
+    0.909,
+    0.199,
+    1.752
+   ],
+   "intermedio − nuevo": [
+    0.254,
+    -0.216,
+    0.735
+   ]
+  },
+  "escala_correcta_percibida": {
+   "nuevo − original": [
+    0.609,
+    -0.152,
+    1.519
+   ],
+   "intermedio − original": [
+    0.723,
+    -0.021,
+    1.583
+   ],
+   "intermedio − nuevo": [
+    0.114,
+    -0.326,
+    0.552
+   ]
+  },
+  "confianza_1a5": {
+   "nuevo − original": [
+    0.333,
+    -0.175,
+    0.798
+   ],
+   "intermedio − original": [
+    0.243,
+    -0.215,
+    0.683
+   ],
+   "intermedio − nuevo": [
+    -0.09,
+    -0.556,
+    0.391
+   ]
+  },
+  "actuaria": {
+   "nuevo − original": [
+    0.474,
+    0.227,
+    0.712
+   ],
+   "intermedio − original": [
+    0.432,
+    0.167,
+    0.678
+   ],
+   "intermedio − nuevo": [
+    -0.041,
+    -0.27,
+    0.181
+   ]
+  },
+  "noto_problema": {
+   "nuevo − original": [
+    -0.008,
+    -0.164,
+    0.147
+   ],
+   "intermedio − original": [
+    0.054,
+    -0.129,
+    0.239
+   ],
+   "intermedio − nuevo": [
+    0.062,
+    -0.115,
+    0.238
+   ]
+  },
+  "1a_cita_ley_correcta": {
+   "nuevo − original": [
+    0.025,
+    -0.222,
+    0.273
+   ],
+   "intermedio − original": [
+    0.0,
+    -0.202,
+    0.224
+   ],
+   "intermedio − nuevo": [
+    -0.025,
+    -0.205,
+    0.164
+   ]
+  },
+  "1a_cita_articulo_correcto": {
+   "nuevo − original": [
+    0.061,
+    -0.19,
+    0.324
+   ],
+   "intermedio − original": [
+    0.053,
+    -0.184,
+    0.296
+   ],
+   "intermedio − nuevo": [
+    -0.008,
+    -0.221,
+    0.232
+   ]
+  },
+  "1a_nombra_codigo_de_otro_estado": {
+   "nuevo − original": [
+    0.019,
+    -0.095,
+    0.126
+   ],
+   "intermedio − original": [
+    0.0,
+    -0.114,
+    0.113
+   ],
+   "intermedio − nuevo": [
+    -0.019,
+    -0.132,
+    0.093
+   ]
+  },
+  "respuestas_que_piden_el_estado": {
+   "nuevo − original": [
+    -0.194,
+    -0.388,
+    0.013
+   ],
+   "intermedio − original": [
+    -0.255,
+    -0.438,
+    -0.062
+   ],
+   "intermedio − nuevo": [
+    -0.061,
+    -0.211,
+    0.076
+   ]
+  },
+  "palabras_por_respuesta": {
+   "nuevo − original": [
+    38.576,
+    -11.272,
+    93.151
+   ],
+   "intermedio − original": [
+    -13.799,
+    -62.461,
+    39.905
+   ],
+   "intermedio − nuevo": [
+    -52.375,
+    -93.053,
+    -11.57
+   ]
+  },
+  "fotos_cita_ley_mujeres": {
+   "nuevo − original": [
+    0,
+    0.0,
+    0.0
+   ],
+   "intermedio − original": [
+    0,
+    0.0,
+    0.0
+   ],
+   "intermedio − nuevo": [
+    0,
+    0.0,
+    0.0
+   ]
+  }
+ },
+ "diferencias_ic95_sin_formacion": {
+  "comprension": {
+   "nuevo − original": [
+    -0.007,
+    -0.265,
+    0.244
+   ],
+   "intermedio − original": [
+    0.064,
+    -0.14,
+    0.278
+   ],
+   "intermedio − nuevo": [
+    0.071,
+    -0.135,
+    0.292
+   ]
+  },
+  "escala_confianza_asistente": {
+   "nuevo − original": [
+    0.72,
+    -0.093,
+    1.661
+   ],
+   "intermedio − original": [
+    0.97,
+    0.233,
+    1.793
+   ],
+   "intermedio − nuevo": [
+    0.25,
+    -0.442,
+    0.887
+   ]
+  },
+  "actuaria": {
+   "nuevo − original": [
+    0.522,
+    0.252,
+    0.775
+   ],
+   "intermedio − original": [
+    0.504,
+    0.25,
+    0.746
+   ],
+   "intermedio − nuevo": [
+    -0.018,
+    -0.213,
+    0.202
+   ]
+  },
+  "noto_problema": {
+   "nuevo − original": [
+    -0.076,
+    -0.235,
+    0.064
+   ],
+   "intermedio − original": [
+    -0.011,
+    -0.195,
+    0.188
+   ],
+   "intermedio − nuevo": [
+    0.065,
+    -0.083,
+    0.233
+   ]
+  }
+ },
+ "comprension_segun_escala_confianza": {
+  "intermedio": {
+   "alta": [
+    0.683,
+    30
+   ],
+   "baja": [
+    0.643,
+    7
+   ]
+  },
+  "nuevo": {
+   "alta": [
+    0.792,
+    24
+   ],
+   "baja": [
+    0.643,
+    7
+   ]
+  },
+  "original": {
+   "baja": [
+    0.5,
+    11
+   ],
+   "alta": [
+    0.643,
+    14
+   ]
+  }
+ },
+ "sus_por_prompt": {
+  "original": [
+   65.4,
+   12
+  ],
+  "nuevo": [
+   77.9,
+   13
+  ],
+  "intermedio": [
+   79.0,
+   12
+  ]
+ },
+ "ultima_situacion_estado_citado": {},
+ "md5_prompts_usados": {
+  "original f68239bf": 75,
+  "nuevo aa50feb0": 78,
+  "intermedio 3a6a7bbe": 79
+ },
+ "tamano_de_muestra": {
+  "comprension · diferencia 0.1": {
+   "de_por_persona": 0.261,
+   "personas_por_prompt_detectar_80pct": 107
+  },
+  "comprension · diferencia 0.15": {
+   "de_por_persona": 0.261,
+   "personas_por_prompt_detectar_80pct": 48
+  },
+  "escala_confianza_asistente · diferencia 0.5": {
+   "de_por_persona": 0.825,
+   "personas_por_prompt_detectar_80pct": 43
+  },
+  "noto_problema · diferencia 0.1": {
+   "de_por_persona": 0.221,
+   "personas_por_prompt_detectar_80pct": 77
+  },
+  "actuaria · diferencia 0.15": {
+   "de_por_persona": 0.395,
+   "personas_por_prompt_detectar_80pct": 109
+  },
+  "comprension · equivalencia ±0.10 (TOST, 80 %, diferencia real 0)": {
+   "de_por_persona": 0.261,
+   "personas_por_prompt": 117
+  }
+ },
+ "ronda1_1a_otro_estado_corregida": {
+  "actual": [
+   0.571,
+   24,
+   42
+  ],
+  "piloto": [
+   0.692,
+   18,
+   26
+  ],
+  "sencillo": [
+   0.385,
+   15,
+   39
+  ],
+  "todas": [
+   0.533,
+   57,
+   107
+  ]
+ },
+ "ronda1_1a_otro_estado_corregida_por_situacion": {
+  "citatorio": [
+   0.485,
+   16,
+   33
+  ],
+  "fotos": [
+   0.595,
+   22,
+   37
+  ],
+  "mensajes_trabajo": [
+   0.514,
+   19,
+   37
+  ]
+ },
+ "ronda1_1a_nombra_codigo_de_otro_estado": {
+  "actual": [
+   0.571,
+   24,
+   42
+  ],
+  "piloto": [
+   0.692,
+   18,
+   26
+  ],
+  "sencillo": [
+   0.385,
+   15,
+   39
+  ],
+  "todas": [
+   0.533,
+   57,
+   107
+  ]
+ }
+}
