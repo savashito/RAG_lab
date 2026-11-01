@@ -168,6 +168,19 @@ def main_():
     out['diferencias_ic95'] = {m: {f'{b} − {a}': dif(m, a, b) for a, b in pares} for m in clave}
     out['diferencias_ic95_sin_formacion'] = {m: {f'{b} − {a}': dif(m, a, b, lambda p: form[p] == 'sin formación jurídica') for a, b in pares}
                                              for m in ('comprension', 'escala_confianza_asistente', 'actuaria', 'noto_problema')}
+    # Con formación jurídica − sin formación, juntando los prompts y dentro de cada uno.
+    def dif_formacion(m, c=None):
+        L = [p for p in ints if form[p] == 'con formación jurídica' and (c is None or cond[p] == c)]
+        N = [p for p in ints if form[p] == 'sin formación jurídica' and (c is None or cond[p] == c)]
+        def mu(ps):
+            return media([sit[i['id']][m] for p in ps for i in ints[p]])
+        if not L or not N:
+            return None
+        bs = sorted(x for x in ((mu([rng.choice(L) for _ in L]) or 0) - (mu([rng.choice(N) for _ in N]) or 0)
+                                for _ in range(4000)))
+        return [round(mu(L) - mu(N), 3), round(bs[100], 3), round(bs[3899], 3), len(L), len(N)]
+    out['con_menos_sin_formacion_ic95'] = {m: {c or 'todos los prompts': dif_formacion(m, c) for c in (None, 'original', 'nuevo', 'intermedio')}
+                                           for m in ('comprension', 'escala_confianza_asistente', 'actuaria', 'noto_problema')}
     # Confianza vs comprensión: ¿la confianza alta acompaña a la comprensión? (por situación)
     cc = defaultdict(lambda: defaultdict(list))
     for p in ints:
