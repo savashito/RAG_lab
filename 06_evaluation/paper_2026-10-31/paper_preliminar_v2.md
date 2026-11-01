@@ -227,7 +227,11 @@ for law students and professionals) and a plain-language prompt; a non-randomize
 The application assigns each new participant the condition with the fewest participants so far (ties broken at
 random), and stores it before the first situation; participants do not see it. Because the third prompt was added on 28
 October with 6 participants in each of the first two, the next six participants all received it. Its first participants
-therefore arrived on later dates than the average participant of the other two conditions (Section 7).
+therefore arrived on later dates than the average participant of the other two conditions (Section 7). From 1
+November, after Table 1 showed only 2 legally trained participants with the formal prompt, the application assigns the
+condition with the fewest participants *within the person's legal-training stratum* (classified from the profile, with
+the same rule as the analysis), breaking ties by the overall count and then at random. Earlier assignments were not
+changed.
 
 ### 4.4 Participants
 
@@ -463,7 +467,8 @@ systems they score.
   detected yet (Section 8), and effects moved noticeably between v1 and v2 of this draft. The comprehension result is
   an absence of evidence, not evidence of absence.
 - **Uneven legal training across prompts** (2, 6 and 6 legally trained participants). We report lay participants
-  separately and legal training with prompts pooled; stratified assignment would have prevented this.
+  separately and legal training with prompts pooled. Assignment has been stratified by legal training since 1 November;
+it balances new participants but does not repair the imbalance already in the data.
 - **Time confound for the third prompt.** Its first six participants arrived consecutively after 28 October.
 - **Self-reported willingness to act**, not behavior. Trust scales exist only from 26 October.
 - **Recruitment** through public links in messaging groups; participants may share networks.
