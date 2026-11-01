@@ -20,7 +20,7 @@ import random
 import secrets
 from pathlib import Path
 
-from study.analisis import asignar, asignar_variante, necesita_experto, puntuar_comprension
+from study.analisis import asignar, asignar_condicion, asignar_variante, grupo_de, necesita_experto, puntuar_comprension
 from study.validar import cargar, escenario_efectivo, validar
 
 SCHEMA = """
@@ -290,11 +290,13 @@ class StudyStore:
                 variantes[e['id']] = asignar_variante(vs, {u['v']: u['n'] for u in usados}, rng)
         condicion = None
         cids = [c['id'] for c in spec.get('condiciones') or []]
-        if cids:   # la menos asignada en su grupo (y en esta fase): mitad y mitad
-            usadas = self._q("SELECT p.condicion AS c, count(*) AS n FROM estudio_participantes p JOIN estudio_codigos k "
+        if cids:   # la menos asignada en su grupo y fase, dentro de su estrato de formación jurídica (desde el 1-nov)
+            usadas = self._q("SELECT p.condicion AS c, p.perfil FROM estudio_participantes p JOIN estudio_codigos k "
                              "USING (codigo) WHERE k.estudio = %s AND k.grupo = %s AND p.fase IS NOT DISTINCT FROM %s "
-                             "GROUP BY 1", (acceso['estudio'], acceso['grupo'], spec.get('fase')))
-            condicion = asignar_variante(cids, {u['c']: u['n'] for u in usadas}, rng)
+                             "AND p.condicion IS NOT NULL", (acceso['estudio'], acceso['grupo'], spec.get('fase')))
+            def estrato(pf):
+                return grupo_de({'grupo': acceso['grupo'], 'perfil': pf})
+            condicion = asignar_condicion(cids, [(u['c'], estrato(u['perfil'])) for u in usadas], estrato(perfil), rng)
         texto = spec.get('consentimiento') or ''
         md5 = hashlib.md5(texto.encode()).hexdigest()
         self._q("INSERT INTO estudio_consentimientos (md5, texto) VALUES (%s,%s) ON CONFLICT DO NOTHING", (md5, texto), commit=True)

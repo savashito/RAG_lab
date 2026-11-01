@@ -45,6 +45,17 @@ def asignar_variante(variantes: list[str], conteos: dict[str, int], rng: random.
     return min(variantes, key=lambda v: (conteos.get(v, 0), rng.random()))
 
 
+def asignar_condicion(condiciones: list[str], previos: list[tuple[str, str]], estrato: str,
+                      rng: random.Random | None = None) -> str:
+    """Condición experimental por estrato (p. ej. con o sin formación jurídica): la menos asignada en el estrato de la
+    persona; si empatan, la menos asignada en total; si siguen empatadas, asignación aleatoria. Así cada estrato queda
+    parejo entre condiciones y el total también. `previos` = [(condición, estrato)] de quienes ya entraron."""
+    rng = rng or random.Random()
+    en_estrato = Counter(c for c, e in previos if e == estrato)
+    total = Counter(c for c, _ in previos)
+    return min(condiciones, key=lambda c: (en_estrato.get(c, 0), total.get(c, 0), rng.random()))
+
+
 def puntuar_comprension(escenario: dict, respuestas: dict) -> dict:
     """{'aciertos', 'total', 'no_se', 'detalle': {pregunta: bool | None}} — None = contestó «no sé»."""
     detalle = {}

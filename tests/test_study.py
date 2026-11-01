@@ -125,6 +125,26 @@ def test_asignar_variante():
     assert A.asignar_variante(['qro', 'cdmx'], {'qro': 3, 'cdmx': 2}) == 'cdmx'
 
 
+def test_asignar_condicion_por_estrato():
+    # Ronda 2 al 1-nov: con formación jurídica 2/6/6, sin formación 21/17/16.
+    previos = ([('original', 'derecho')] * 2 + [('nuevo', 'derecho')] * 6 + [('intermedio', 'derecho')] * 6 +
+               [('original', 'no_derecho')] * 21 + [('nuevo', 'no_derecho')] * 17 + [('intermedio', 'no_derecho')] * 16)
+    cids = ['original', 'nuevo', 'intermedio']
+    assert A.asignar_condicion(cids, previos, 'derecho') == 'original'
+    assert A.asignar_condicion(cids, previos, 'no_derecho') == 'intermedio'
+    # Empate en el estrato: decide el total (original lleva menos en total).
+    assert A.asignar_condicion(cids, [('nuevo', 'no_derecho'), ('intermedio', 'no_derecho')], 'derecho') == 'original'
+    # Simulación: llegan 60 personas, un tercio con formación jurídica; cada estrato queda parejo.
+    import random
+    rng, sim = random.Random(3), []
+    for k in range(60):
+        e = 'derecho' if k % 3 == 0 else 'no_derecho'
+        sim.append((A.asignar_condicion(cids, sim, e, rng), e))
+    for e in ('derecho', 'no_derecho'):
+        n = [sum(1 for c, x in sim if c == cid and x == e) for cid in cids]
+        assert max(n) - min(n) <= 1
+
+
 def test_vista_publica_no_filtra_respuestas():
     import yaml
     v = vista_publica(yaml.safe_load(SPEC_YAML), ['b', 'a'])
