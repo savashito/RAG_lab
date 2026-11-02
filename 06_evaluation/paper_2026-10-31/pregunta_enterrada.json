@@ -1,14 +1,14 @@
 {
  "todas": {
-  "situaciones": 79,
-  "personas": 46,
+  "situaciones": 82,
+  "personas": 48,
   "mando_otro": [
-   0.532,
-   79
+   0.512,
+   82
   ],
   "dio_estado": [
-   0.38,
-   79
+   0.366,
+   82
   ],
   "dio_estado_si_mando_otro": [
    0.714,
@@ -16,15 +16,15 @@
   ]
  },
  "sin formación": {
-  "situaciones": 68,
-  "personas": 38,
+  "situaciones": 70,
+  "personas": 39,
   "mando_otro": [
-   0.574,
-   68
+   0.557,
+   70
   ],
   "dio_estado": [
-   0.426,
-   68
+   0.414,
+   70
   ],
   "dio_estado_si_mando_otro": [
    0.744,
@@ -32,15 +32,15 @@
   ]
  },
  "con formación": {
-  "situaciones": 11,
-  "personas": 8,
+  "situaciones": 12,
+  "personas": 9,
   "mando_otro": [
-   0.273,
-   11
+   0.25,
+   12
   ],
   "dio_estado": [
-   0.091,
-   11
+   0.083,
+   12
   ],
   "dio_estado_si_mando_otro": [
    0.333,
@@ -49,97 +49,97 @@
  },
  "rasgos_de_la_respuesta": {
   "palabras": {
-   "mediana": 417,
-   "media": 420.987
+   "mediana": 416.5,
+   "media": 419.951
   },
   "posicion": {
-   "mediana": 0.755,
-   "media": 0.672
+   "mediana": 0.757,
+   "media": 0.677
   },
   "palabras_despues": {
-   "mediana": 90,
-   "media": 133.241
+   "mediana": 86.5,
+   "media": 130.732
   },
   "negritas": {
    "mediana": 1.0,
-   "media": 0.519
+   "media": 0.537
   },
   "parrafo_propio": {
    "mediana": 1.0,
-   "media": 0.595
+   "media": 0.61
   },
   "preguntas_en_respuesta": {
-   "mediana": 1,
-   "media": 1.405
+   "mediana": 1.0,
+   "media": 1.415
   },
   "ya_cita_ley": {
    "mediana": 0.0,
-   "media": 0.392
+   "media": 0.39
   }
  },
  "cortes": {
-  "palabras (≤ 417 vs > 417)": {
+  "palabras (≤ 416.5 vs > 416.5)": {
    "bajo": {
-    "situaciones": 40,
-    "personas": 27,
+    "situaciones": 41,
+    "personas": 28,
     "mando_otro": [
-     0.475,
-     40
+     0.439,
+     41
     ],
     "dio_estado": [
-     0.325,
-     40
+     0.293,
+     41
     ],
     "dio_estado_si_mando_otro": [
-     0.684,
-     19
+     0.667,
+     18
     ]
    },
    "alto": {
-    "situaciones": 39,
-    "personas": 29,
+    "situaciones": 41,
+    "personas": 31,
     "mando_otro": [
-     0.59,
-     39
+     0.585,
+     41
     ],
     "dio_estado": [
-     0.436,
-     39
+     0.439,
+     41
     ],
     "dio_estado_si_mando_otro": [
-     0.739,
-     23
+     0.75,
+     24
     ]
    },
    "alto − bajo": {
     "mando_otro": [
-     0.115,
-     -0.125,
-     0.349
+     0.146,
+     -0.084,
+     0.38
     ],
     "dio_estado": [
-     0.111,
-     -0.138,
-     0.337
+     0.146,
+     -0.094,
+     0.369
     ],
     "dio_estado_si_mando_otro": [
-     0.055,
-     -0.268,
-     0.374
+     0.083,
+     -0.25,
+     0.39
     ]
    }
   },
-  "posicion (≤ 0.75 vs > 0.75)": {
+  "posicion (≤ 0.76 vs > 0.76)": {
    "bajo": {
-    "situaciones": 40,
-    "personas": 28,
+    "situaciones": 41,
+    "personas": 29,
     "mando_otro": [
-     0.475,
-     40
+     0.463,
+     41
     ],
     "dio_estado": [
-     0.275,
-     40
+     0.268,
+     41
     ],
     "dio_estado_si_mando_otro": [
      0.579,
@@ -147,15 +147,15 @@
     ]
    },
    "alto": {
-    "situaciones": 39,
-    "personas": 29,
+    "situaciones": 41,
+    "personas": 30,
     "mando_otro": [
-     0.59,
-     39
+     0.561,
+     41
     ],
     "dio_estado": [
-     0.487,
-     39
+     0.463,
+     41
     ],
     "dio_estado_si_mando_otro": [
      0.826,
@@ -164,84 +164,84 @@
    },
    "alto − bajo": {
     "mando_otro": [
-     0.115,
-     -0.128,
-     0.35
+     0.098,
+     -0.131,
+     0.332
     ],
     "dio_estado": [
-     0.212,
-     -0.033,
-     0.446
+     0.195,
+     -0.04,
+     0.429
     ],
     "dio_estado_si_mando_otro": [
      0.247,
-     -0.068,
-     0.572
+     -0.083,
+     0.571
     ]
    }
   },
-  "palabras_despues (≤ 90 vs > 90)": {
+  "palabras_despues (≤ 86.5 vs > 86.5)": {
    "bajo": {
-    "situaciones": 40,
+    "situaciones": 41,
     "personas": 29,
     "mando_otro": [
-     0.6,
-     40
+     0.561,
+     41
     ],
     "dio_estado": [
-     0.5,
-     40
+     0.463,
+     41
     ],
     "dio_estado_si_mando_otro": [
-     0.833,
-     24
+     0.826,
+     23
     ]
    },
    "alto": {
-    "situaciones": 39,
-    "personas": 27,
+    "situaciones": 41,
+    "personas": 29,
     "mando_otro": [
-     0.462,
-     39
+     0.463,
+     41
     ],
     "dio_estado": [
-     0.256,
-     39
+     0.268,
+     41
     ],
     "dio_estado_si_mando_otro": [
-     0.556,
-     18
+     0.579,
+     19
     ]
    },
    "alto − bajo": {
     "mando_otro": [
-     -0.138,
-     -0.381,
-     0.108
+     -0.098,
+     -0.326,
+     0.137
     ],
     "dio_estado": [
-     -0.244,
-     -0.476,
-     0.004
+     -0.195,
+     -0.441,
+     0.041
     ],
     "dio_estado_si_mando_otro": [
-     -0.278,
-     -0.612,
-     0.047
+     -0.247,
+     -0.583,
+     0.079
     ]
    }
   },
-  "preguntas_en_respuesta (≤ 1 vs > 1)": {
+  "preguntas_en_respuesta (≤ 1.0 vs > 1.0)": {
    "bajo": {
-    "situaciones": 43,
-    "personas": 28,
+    "situaciones": 44,
+    "personas": 29,
     "mando_otro": [
-     0.419,
-     43
+     0.409,
+     44
     ],
     "dio_estado": [
-     0.302,
-     43
+     0.295,
+     44
     ],
     "dio_estado_si_mando_otro": [
      0.722,
@@ -249,15 +249,15 @@
     ]
    },
    "alto": {
-    "situaciones": 36,
-    "personas": 25,
+    "situaciones": 38,
+    "personas": 27,
     "mando_otro": [
-     0.667,
-     36
+     0.632,
+     38
     ],
     "dio_estado": [
-     0.472,
-     36
+     0.447,
+     38
     ],
     "dio_estado_si_mando_otro": [
      0.708,
@@ -266,19 +266,19 @@
    },
    "alto − bajo": {
     "mando_otro": [
-     0.248,
-     -0.001,
-     0.482
+     0.222,
+     -0.019,
+     0.45
     ],
     "dio_estado": [
-     0.17,
-     -0.073,
-     0.408
+     0.152,
+     -0.082,
+     0.386
     ],
     "dio_estado_si_mando_otro": [
      -0.014,
-     -0.309,
-     0.284
+     -0.319,
+     0.304
     ]
    }
   },
@@ -300,15 +300,15 @@
     ]
    },
    "sí": {
-    "situaciones": 41,
-    "personas": 27,
+    "situaciones": 44,
+    "personas": 29,
     "mando_otro": [
-     0.61,
-     41
+     0.568,
+     44
     ],
     "dio_estado": [
-     0.463,
-     41
+     0.432,
+     44
     ],
     "dio_estado_si_mando_otro": [
      0.76,
@@ -317,19 +317,19 @@
    },
    "sí − no": {
     "mando_otro": [
-     0.162,
-     -0.079,
-     0.392
+     0.121,
+     -0.126,
+     0.354
     ],
     "dio_estado": [
-     0.174,
-     -0.07,
-     0.404
+     0.142,
+     -0.102,
+     0.37
     ],
     "dio_estado_si_mando_otro": [
      0.113,
-     -0.208,
-     0.458
+     -0.21,
+     0.455
     ]
    }
   },
@@ -351,15 +351,15 @@
     ]
    },
    "sí": {
-    "situaciones": 47,
-    "personas": 31,
+    "situaciones": 50,
+    "personas": 33,
     "mando_otro": [
-     0.617,
-     47
+     0.58,
+     50
     ],
     "dio_estado": [
-     0.447,
-     47
+     0.42,
+     50
     ],
     "dio_estado_si_mando_otro": [
      0.724,
@@ -368,33 +368,33 @@
    },
    "sí − no": {
     "mando_otro": [
-     0.211,
-     -0.036,
-     0.433
+     0.174,
+     -0.071,
+     0.393
     ],
     "dio_estado": [
-     0.166,
-     -0.086,
-     0.407
+     0.139,
+     -0.112,
+     0.371
     ],
     "dio_estado_si_mando_otro": [
      0.032,
-     -0.27,
-     0.371
+     -0.277,
+     0.383
     ]
    }
   },
   "ya_cita_ley": {
    "no": {
-    "situaciones": 48,
-    "personas": 40,
+    "situaciones": 50,
+    "personas": 42,
     "mando_otro": [
-     0.521,
-     48
+     0.5,
+     50
     ],
     "dio_estado": [
-     0.375,
-     48
+     0.36,
+     50
     ],
     "dio_estado_si_mando_otro": [
      0.72,
@@ -402,15 +402,15 @@
     ]
    },
    "sí": {
-    "situaciones": 31,
-    "personas": 28,
+    "situaciones": 32,
+    "personas": 29,
     "mando_otro": [
-     0.548,
-     31
+     0.531,
+     32
     ],
     "dio_estado": [
-     0.387,
-     31
+     0.375,
+     32
     ],
     "dio_estado_si_mando_otro": [
      0.706,
@@ -419,19 +419,19 @@
    },
    "sí − no": {
     "mando_otro": [
-     0.028,
-     -0.213,
-     0.277
+     0.031,
+     -0.205,
+     0.269
     ],
     "dio_estado": [
-     0.012,
-     -0.232,
-     0.257
+     0.015,
+     -0.223,
+     0.25
     ],
     "dio_estado_si_mando_otro": [
      -0.014,
-     -0.314,
-     0.271
+     -0.325,
+     0.273
     ]
    }
   }
@@ -474,22 +474,22 @@
    "posicion_mediana": 0.96
   },
   "intermedio": {
-   "situaciones": 22,
-   "personas": 15,
+   "situaciones": 25,
+   "personas": 17,
    "mando_otro": [
-    0.545,
-    22
+    0.48,
+    25
    ],
    "dio_estado": [
-    0.409,
-    22
+    0.36,
+    25
    ],
    "dio_estado_si_mando_otro": [
     0.75,
     12
    ],
-   "palabras_mediana": 401.0,
-   "posicion_mediana": 0.78
+   "palabras_mediana": 401,
+   "posicion_mediana": 0.79
   }
  }
 }

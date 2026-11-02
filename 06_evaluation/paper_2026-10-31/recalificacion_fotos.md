@@ -1,8 +1,9 @@
 # Re-scoring "the photos" in both rounds: corrections for the manuscript
 
-*Text for the manuscript, in English. Data: rounds 1 and 2 as of 2 November 2026, 21:22 UTC. The current draft uses
-data frozen at 09:27 UTC, and round 2 kept collecting in between, so some "before" values differ slightly from the
-draft. Use the "after" column. Aggregates only; no participant text. Sources at the end.*
+*Text for the manuscript, in English. Data: rounds 1 and 2 frozen at 2 November 2026, 22:35 UTC (last participant
+activity 20:20 UTC; 81 round-2 participants, 192 completed situations). The current draft uses data frozen at 09:27 UTC,
+and round 2 kept collecting in between (9 more situations, 3 more participants), so some "before" values differ
+slightly from the draft. Use the "after" column. Aggregates only; no participant text. Sources at the end.*
 
 ---
 
@@ -93,8 +94,8 @@ bootstrap, 4000 replicates, 95% CI.
    expected articles, the dashboard metric no longer counts Querétaro's code as another state in "the photos".
 8. **Table 2 (replay).** Remove the ⚠ in Appendix C about the replay's "correct law" row only after checking which
    answer key the replay used. *Not yet verified.*
-9. **Every round-2 number.** Re-freeze the data at a single time and update all tables together; this document uses
-   21:22 UTC on 2 November.
+9. **Every round-2 number.** Update all tables together from the same freeze (22:35 UTC on 2 November). The source
+   files listed in Appendix A were regenerated with this freeze and the scoring rule.
 
 ## Sources
 
@@ -102,3 +103,4 @@ bootstrap, 4000 replicates, 95% CI.
 |---|---|
 | Scoring rule | `06_evaluation/paper_2026-10-31/analisis_ronda2.py` (`CLAVE_FOTOS`, `LEY_FOTOS_CORRECTAS`, `GOLD_167Q`); every analysis script loads data through it. `CLAVE_FOTOS=solo_lg15` reproduces the previous scoring. |
 | Table R1 | `06_evaluation/paper_2026-10-31/recalificacion_fotos_2026-11-02/antes/*.json` and `despues/*.json`; every changed value is listed in `cambios.txt` |
+| All paper tables | The JSON files in `06_evaluation/paper_2026-10-31/` (Appendix A), regenerated at the 22:35 UTC freeze with the scoring rule (`CORTE='2026-11-02 22:35:00'`) |

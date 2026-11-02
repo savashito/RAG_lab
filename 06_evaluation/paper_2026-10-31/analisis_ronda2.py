@@ -44,12 +44,23 @@ MUJERES = re.compile(r'(?i)acceso\s+de\s+las\s+mujeres\s+a\s+una\s+vida\s+libre|
 CLAVE_FOTOS = os.environ.get('CLAVE_FOTOS', 'extorsion_o_167quinquies')
 LEY_FOTOS_CORRECTAS = {'lg_15'} if CLAVE_FOTOS == 'solo_lg15' else {'lg_15', 'qro_167quinquies'}
 GOLD_167Q = 'Cita el artículo 167 Quinquies del Código Penal del Estado de Querétaro'
+# Corte de datos (UTC, «2026-11-02 22:35:00»; se compara como texto con los timestamps del export): CORTE=… en el entorno.
+CORTE = os.environ.get('CORTE', '')
 ARCHIVADA = {'piloto_penal': RAIZ / '06_evaluation' / 'estudio_ronda1_2026-10-13' / 'piloto_penal_v7_final.yaml'}
 
 
 def cargar(eid):
     from study.validar import cargar as cargar_yaml
     d = main.study_store.export(eid)
+    if CORTE:                                     # todos los scripts ven los mismos datos: lo ocurrido hasta CORTE
+        d['participantes'] = [p for p in d['participantes'] if str(p.get('consentimiento_at') or '') <= CORTE]
+        cods = {p['codigo'] for p in d['participantes']}
+        d['intentos'] = [i for i in d['intentos'] if i['codigo'] in cods and str(i.get('inicio') or '') <= CORTE]
+        for i in d['intentos']:
+            if str(i.get('fin') or '') > CORTE:
+                i['fin'] = None
+        ids = {i['id'] for i in d['intentos']}
+        d['turnos'] = [t for t in d['turnos'] if t['intento_id'] in ids and str(t.get('ts') or '') <= CORTE]
     spec = cargar_yaml(ARCHIVADA[eid].read_text())[0] if eid in ARCHIVADA else main.study_store.spec(eid)
     por_id = {e['id']: e for e in spec['escenarios']}
     gold = {}
