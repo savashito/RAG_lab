@@ -36,8 +36,15 @@ def otro_estado(resp, esc, var):
 MUJERES = re.compile(r'(?i)acceso\s+de\s+las\s+mujeres\s+a\s+una\s+vida\s+libre|\blgamvlv\b')
 
 
+# La ronda 1 se mide con la versión que vieron las personas (v7, archivada). La de prod es la v9: Karen la editó el
+# 21-oct 19:19 UTC, ya terminada la ronda, y le agregó el art. 167 Quinquies de Querétaro al gold de «fotos».
+ARCHIVADA = {'piloto_penal': RAIZ / '06_evaluation' / 'estudio_ronda1_2026-10-13' / 'piloto_penal_v7_final.yaml'}
+
+
 def cargar(eid):
-    d = main.study_store.export(eid); spec = main.study_store.spec(eid)
+    from study.validar import cargar as cargar_yaml
+    d = main.study_store.export(eid)
+    spec = cargar_yaml(ARCHIVADA[eid].read_text())[0] if eid in ARCHIVADA else main.study_store.spec(eid)
     por_id = {e['id']: e for e in spec['escenarios']}
     gold = {}
     for i in d['intentos']:
