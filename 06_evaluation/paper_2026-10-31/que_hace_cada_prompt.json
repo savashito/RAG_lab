@@ -1,0 +1,1342 @@
+{
+ "n_situaciones": {
+  "todos": {
+   "original": 64,
+   "nuevo": 63,
+   "intermedio": 65
+  },
+  "sin": {
+   "original": 46,
+   "nuevo": 47,
+   "intermedio": 50
+  },
+  "con": {
+   "original": 18,
+   "nuevo": 16,
+   "intermedio": 15
+  }
+ },
+ "rasgos_por_prompt": {
+  "primera": {
+   "palabras": {
+    "original": 421.5,
+    "nuevo": 450.19,
+    "intermedio": 402.03
+   },
+   "palabras_por_frase": {
+    "original": 29.77,
+    "nuevo": 16.27,
+    "intermedio": 18.27
+   },
+   "legibilidad_inflesz": {
+    "original": 40.46,
+    "nuevo": 56.75,
+    "intermedio": 51.38
+   },
+   "lineas_en_vinetas_pct": {
+    "original": 24.17,
+    "nuevo": 39.98,
+    "intermedio": 46.31
+   },
+   "encabezados": {
+    "original": 0.09,
+    "nuevo": 3.67,
+    "intermedio": 3.35
+   },
+   "articulos_citados": {
+    "original": 4.89,
+    "nuevo": 2.59,
+    "intermedio": 2.32
+   },
+   "tecnicismos_por_100": {
+    "original": 1.0,
+    "nuevo": 0.54,
+    "intermedio": 0.56
+   },
+   "cautela_por_100": {
+    "original": 0.63,
+    "nuevo": 0.55,
+    "intermedio": 0.52
+   },
+   "menciona_abogado": {
+    "original": 0.09,
+    "nuevo": 0.56,
+    "intermedio": 0.48
+   },
+   "habla_del_contexto_o_limites": {
+    "original": 0.19,
+    "nuevo": 0.02,
+    "intermedio": 0.09
+   },
+   "pasos_concretos": {
+    "original": 0.73,
+    "nuevo": 3.22,
+    "intermedio": 2.89
+   },
+   "ofrece_redactar": {
+    "original": 0.0,
+    "nuevo": 0.19,
+    "intermedio": 0.02
+   },
+   "preguntas": {
+    "original": 0.22,
+    "nuevo": 2.44,
+    "intermedio": 1.63
+   },
+   "empatia": {
+    "original": 0.02,
+    "nuevo": 0.97,
+    "intermedio": 0.62
+   },
+   "trata_de_usted": {
+    "original": 0.36,
+    "nuevo": 0.0,
+    "intermedio": 0.02
+   },
+   "dice_si_es_delito": {
+    "original": 0.02,
+    "nuevo": 0.43,
+    "intermedio": 0.38
+   }
+  },
+  "todas": {
+   "palabras": {
+    "original": 435.9,
+    "nuevo": 473.35,
+    "intermedio": 417.6
+   },
+   "palabras_por_frase": {
+    "original": 29.73,
+    "nuevo": 15.96,
+    "intermedio": 18.19
+   },
+   "legibilidad_inflesz": {
+    "original": 40.12,
+    "nuevo": 57.57,
+    "intermedio": 51.87
+   },
+   "lineas_en_vinetas_pct": {
+    "original": 25.51,
+    "nuevo": 40.87,
+    "intermedio": 47.86
+   },
+   "encabezados": {
+    "original": 0.14,
+    "nuevo": 4.14,
+    "intermedio": 3.39
+   },
+   "articulos_citados": {
+    "original": 5.27,
+    "nuevo": 2.81,
+    "intermedio": 2.68
+   },
+   "tecnicismos_por_100": {
+    "original": 1.02,
+    "nuevo": 0.6,
+    "intermedio": 0.61
+   },
+   "cautela_por_100": {
+    "original": 0.59,
+    "nuevo": 0.42,
+    "intermedio": 0.42
+   },
+   "menciona_abogado": {
+    "original": 0.09,
+    "nuevo": 0.55,
+    "intermedio": 0.51
+   },
+   "habla_del_contexto_o_limites": {
+    "original": 0.2,
+    "nuevo": 0.03,
+    "intermedio": 0.1
+   },
+   "pasos_concretos": {
+    "original": 0.75,
+    "nuevo": 3.53,
+    "intermedio": 3.04
+   },
+   "ofrece_redactar": {
+    "original": 0.0,
+    "nuevo": 0.3,
+    "intermedio": 0.02
+   },
+   "preguntas": {
+    "original": 0.2,
+    "nuevo": 2.34,
+    "intermedio": 1.49
+   },
+   "empatia": {
+    "original": 0.01,
+    "nuevo": 0.89,
+    "intermedio": 0.51
+   },
+   "trata_de_usted": {
+    "original": 0.39,
+    "nuevo": 0.0,
+    "intermedio": 0.03
+   },
+   "dice_si_es_delito": {
+    "original": 0.02,
+    "nuevo": 0.37,
+    "intermedio": 0.33
+   }
+  }
+ },
+ "respuestas_por_situacion": {
+  "original": 1.72,
+  "nuevo": 1.97,
+  "intermedio": 2.02
+ },
+ "rasgo_vs_desenlace_dentro_del_prompt": {
+  "sin": {
+   "actuaria": {
+    "palabras": [
+     0.039,
+     -0.158,
+     0.233
+    ],
+    "palabras_por_frase": [
+     -0.062,
+     -0.239,
+     0.116
+    ],
+    "legibilidad_inflesz": [
+     0.101,
+     -0.084,
+     0.304
+    ],
+    "lineas_en_vinetas_pct": [
+     0.051,
+     -0.134,
+     0.277
+    ],
+    "encabezados": [
+     -0.084,
+     -0.315,
+     0.181
+    ],
+    "articulos_citados": [
+     0.08,
+     -0.122,
+     0.263
+    ],
+    "tecnicismos_por_100": [
+     0.164,
+     -0.049,
+     0.358
+    ],
+    "cautela_por_100": [
+     0.123,
+     -0.056,
+     0.348
+    ],
+    "menciona_abogado": [
+     0.104,
+     -0.117,
+     0.296
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     0.04,
+     -0.11,
+     0.195
+    ],
+    "ofrece_redactar": [
+     -0.091,
+     -0.381,
+     0.167
+    ],
+    "preguntas": [
+     -0.156,
+     -0.358,
+     0.079
+    ],
+    "empatia": [
+     -0.172,
+     -0.368,
+     0.231
+    ],
+    "trata_de_usted": [
+     -0.017,
+     -0.417,
+     0.342
+    ],
+    "dice_si_es_delito": [
+     0.147,
+     -0.07,
+     0.386
+    ]
+   },
+   "confianza_1a5": {
+    "palabras": [
+     0.041,
+     -0.314,
+     0.431
+    ],
+    "palabras_por_frase": [
+     -0.061,
+     -0.4,
+     0.369
+    ],
+    "legibilidad_inflesz": [
+     0.058,
+     -0.384,
+     0.361
+    ],
+    "lineas_en_vinetas_pct": [
+     0.002,
+     -0.346,
+     0.474
+    ],
+    "encabezados": [
+     -0.064,
+     -0.526,
+     0.397
+    ],
+    "articulos_citados": [
+     0.408,
+     -0.066,
+     0.646
+    ],
+    "tecnicismos_por_100": [
+     -0.102,
+     -0.459,
+     0.332
+    ],
+    "cautela_por_100": [
+     -0.122,
+     -0.477,
+     0.334
+    ],
+    "menciona_abogado": [
+     -0.096,
+     -0.538,
+     0.267
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     0.036,
+     -0.175,
+     0.41
+    ],
+    "ofrece_redactar": [
+     0.409,
+     0.056,
+     0.747
+    ],
+    "preguntas": [
+     -0.4,
+     -0.759,
+     0.043
+    ],
+    "empatia": [
+     0.687,
+     -0.228,
+     1.315
+    ],
+    "trata_de_usted": [
+     0.473,
+     0.0,
+     0.917
+    ],
+    "dice_si_es_delito": [
+     0.286,
+     -0.189,
+     0.714
+    ]
+   },
+   "escala_confianza_asistente": {
+    "palabras": [
+     0.061,
+     -0.386,
+     0.509
+    ],
+    "palabras_por_frase": [
+     -0.155,
+     -0.548,
+     0.304
+    ],
+    "legibilidad_inflesz": [
+     0.06,
+     -0.322,
+     0.489
+    ],
+    "lineas_en_vinetas_pct": [
+     0.16,
+     -0.299,
+     0.704
+    ],
+    "encabezados": [
+     -0.321,
+     -0.749,
+     0.147
+    ],
+    "articulos_citados": [
+     0.443,
+     -0.049,
+     0.758
+    ],
+    "tecnicismos_por_100": [
+     0.271,
+     -0.185,
+     0.641
+    ],
+    "cautela_por_100": [
+     0.136,
+     -0.297,
+     0.496
+    ],
+    "menciona_abogado": [
+     -0.214,
+     -0.474,
+     0.135
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     0.177,
+     -0.163,
+     0.536
+    ],
+    "ofrece_redactar": [
+     0.316,
+     -0.261,
+     0.697
+    ],
+    "preguntas": [
+     -0.29,
+     -0.693,
+     0.187
+    ],
+    "empatia": [
+     -0.04,
+     -0.529,
+     0.572
+    ],
+    "trata_de_usted": [
+     0.395,
+     -0.5,
+     1.365
+    ],
+    "dice_si_es_delito": [
+     0.366,
+     -0.026,
+     0.783
+    ]
+   }
+  },
+  "con": {
+   "actuaria": {
+    "palabras": [
+     0.022,
+     -0.33,
+     0.344
+    ],
+    "palabras_por_frase": [
+     -0.141,
+     -0.511,
+     0.165
+    ],
+    "legibilidad_inflesz": [
+     0.185,
+     -0.172,
+     0.364
+    ],
+    "lineas_en_vinetas_pct": [
+     0.19,
+     -0.302,
+     0.455
+    ],
+    "encabezados": [
+     -0.133,
+     -0.5,
+     0.309
+    ],
+    "articulos_citados": [
+     0.173,
+     -0.116,
+     0.455
+    ],
+    "tecnicismos_por_100": [
+     0.18,
+     -0.184,
+     0.496
+    ],
+    "cautela_por_100": [
+     0.017,
+     -0.21,
+     0.254
+    ],
+    "menciona_abogado": [
+     0.033,
+     -0.4,
+     0.441
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     -0.431,
+     -0.839,
+     0.234
+    ],
+    "ofrece_redactar": null,
+    "preguntas": [
+     -0.09,
+     -0.341,
+     0.306
+    ],
+    "empatia": [
+     -0.35,
+     -0.667,
+     0.167
+    ],
+    "trata_de_usted": null,
+    "dice_si_es_delito": [
+     -0.125,
+     -0.467,
+     0.344
+    ]
+   },
+   "confianza_1a5": {
+    "palabras": [
+     0.108,
+     -0.379,
+     0.768
+    ],
+    "palabras_por_frase": [
+     0.092,
+     -0.479,
+     0.729
+    ],
+    "legibilidad_inflesz": [
+     0.034,
+     -0.698,
+     0.671
+    ],
+    "lineas_en_vinetas_pct": [
+     0.034,
+     -0.749,
+     0.535
+    ],
+    "encabezados": [
+     0.267,
+     -0.514,
+     0.667
+    ],
+    "articulos_citados": [
+     0.591,
+     0.062,
+     1.121
+    ],
+    "tecnicismos_por_100": [
+     0.299,
+     -0.318,
+     1.063
+    ],
+    "cautela_por_100": [
+     -0.575,
+     -0.949,
+     0.059
+    ],
+    "menciona_abogado": [
+     -0.066,
+     -0.388,
+     0.278
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     -0.358,
+     -0.843,
+     0.419
+    ],
+    "ofrece_redactar": null,
+    "preguntas": [
+     0.106,
+     -0.311,
+     0.436
+    ],
+    "empatia": [
+     -1.175,
+     -2.667,
+     0.8
+    ],
+    "trata_de_usted": null,
+    "dice_si_es_delito": [
+     0.875,
+     -0.333,
+     1.821
+    ]
+   },
+   "escala_confianza_asistente": {
+    "palabras": [
+     0.37,
+     -0.255,
+     1.139
+    ],
+    "palabras_por_frase": [
+     0.165,
+     -0.583,
+     0.725
+    ],
+    "legibilidad_inflesz": [
+     0.093,
+     -0.58,
+     0.83
+    ],
+    "lineas_en_vinetas_pct": [
+     -0.123,
+     -0.706,
+     0.586
+    ],
+    "encabezados": [
+     0.075,
+     -0.667,
+     0.909
+    ],
+    "articulos_citados": [
+     0.288,
+     -0.412,
+     0.964
+    ],
+    "tecnicismos_por_100": [
+     0.463,
+     -0.34,
+     1.179
+    ],
+    "cautela_por_100": [
+     -0.147,
+     -0.714,
+     0.629
+    ],
+    "menciona_abogado": [
+     0.124,
+     -0.747,
+     0.5
+    ],
+    "habla_del_contexto_o_limites": [
+     0.3,
+     -0.667,
+     1.5
+    ],
+    "pasos_concretos": [
+     0.296,
+     -0.563,
+     1.143
+    ],
+    "ofrece_redactar": null,
+    "preguntas": [
+     -0.031,
+     -0.676,
+     0.833
+    ],
+    "empatia": [
+     -1.15,
+     -2.667,
+     0.5
+    ],
+    "trata_de_usted": null,
+    "dice_si_es_delito": [
+     1.125,
+     -0.103,
+     2.143
+    ]
+   }
+  },
+  "todos": {
+   "actuaria": {
+    "palabras": [
+     -0.006,
+     -0.171,
+     0.182
+    ],
+    "palabras_por_frase": [
+     -0.051,
+     -0.226,
+     0.104
+    ],
+    "legibilidad_inflesz": [
+     0.071,
+     -0.11,
+     0.223
+    ],
+    "lineas_en_vinetas_pct": [
+     0.076,
+     -0.114,
+     0.252
+    ],
+    "encabezados": [
+     -0.042,
+     -0.273,
+     0.139
+    ],
+    "articulos_citados": [
+     0.101,
+     -0.073,
+     0.253
+    ],
+    "tecnicismos_por_100": [
+     0.207,
+     0.014,
+     0.359
+    ],
+    "cautela_por_100": [
+     0.056,
+     -0.097,
+     0.251
+    ],
+    "menciona_abogado": [
+     0.123,
+     -0.08,
+     0.28
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     -0.064,
+     -0.244,
+     0.097
+    ],
+    "ofrece_redactar": [
+     -0.148,
+     -0.344,
+     0.072
+    ],
+    "preguntas": [
+     -0.153,
+     -0.317,
+     0.069
+    ],
+    "empatia": [
+     -0.183,
+     -0.389,
+     0.11
+    ],
+    "trata_de_usted": [
+     -0.028,
+     -0.412,
+     0.276
+    ],
+    "dice_si_es_delito": [
+     0.088,
+     -0.117,
+     0.268
+    ]
+   },
+   "confianza_1a5": {
+    "palabras": [
+     0.001,
+     -0.315,
+     0.373
+    ],
+    "palabras_por_frase": [
+     0.11,
+     -0.249,
+     0.388
+    ],
+    "legibilidad_inflesz": [
+     -0.027,
+     -0.378,
+     0.257
+    ],
+    "lineas_en_vinetas_pct": [
+     0.029,
+     -0.347,
+     0.374
+    ],
+    "encabezados": [
+     -0.047,
+     -0.391,
+     0.346
+    ],
+    "articulos_citados": [
+     0.454,
+     0.071,
+     0.706
+    ],
+    "tecnicismos_por_100": [
+     0.108,
+     -0.284,
+     0.424
+    ],
+    "cautela_por_100": [
+     -0.272,
+     -0.566,
+     0.114
+    ],
+    "menciona_abogado": [
+     -0.092,
+     -0.411,
+     0.266
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     -0.13,
+     -0.314,
+     0.271
+    ],
+    "ofrece_redactar": [
+     0.199,
+     -0.146,
+     0.504
+    ],
+    "preguntas": [
+     -0.331,
+     -0.646,
+     -0.01
+    ],
+    "empatia": [
+     0.237,
+     -0.511,
+     0.955
+    ],
+    "trata_de_usted": [
+     0.162,
+     -0.293,
+     0.598
+    ],
+    "dice_si_es_delito": [
+     0.27,
+     -0.072,
+     0.654
+    ]
+   },
+   "escala_confianza_asistente": {
+    "palabras": [
+     0.165,
+     -0.251,
+     0.508
+    ],
+    "palabras_por_frase": [
+     -0.021,
+     -0.335,
+     0.309
+    ],
+    "legibilidad_inflesz": [
+     -0.055,
+     -0.405,
+     0.272
+    ],
+    "lineas_en_vinetas_pct": [
+     0.143,
+     -0.245,
+     0.627
+    ],
+    "encabezados": [
+     -0.1,
+     -0.522,
+     0.224
+    ],
+    "articulos_citados": [
+     0.41,
+     -0.045,
+     0.767
+    ],
+    "tecnicismos_por_100": [
+     0.303,
+     -0.13,
+     0.639
+    ],
+    "cautela_por_100": [
+     -0.04,
+     -0.353,
+     0.384
+    ],
+    "menciona_abogado": [
+     -0.069,
+     -0.365,
+     0.183
+    ],
+    "habla_del_contexto_o_limites": null,
+    "pasos_concretos": [
+     0.116,
+     -0.158,
+     0.431
+    ],
+    "ofrece_redactar": [
+     0.141,
+     -0.255,
+     0.488
+    ],
+    "preguntas": [
+     -0.191,
+     -0.534,
+     0.175
+    ],
+    "empatia": [
+     -0.157,
+     -0.912,
+     0.484
+    ],
+    "trata_de_usted": [
+     0.022,
+     -0.676,
+     0.845
+    ],
+    "dice_si_es_delito": [
+     0.378,
+     0.014,
+     0.77
+    ]
+   }
+  }
+ },
+ "efecto_del_prompt_con_ajuste": {
+  "sin": {
+   "actuaria": {
+    "intermedio − original": {
+     "sin ajuste": [
+      0.429,
+      0.215,
+      0.63
+     ],
+     "extensión y estructura": [
+      0.359,
+      -0.137,
+      0.863
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.329,
+      -0.029,
+      0.731
+     ],
+     "cautela y límites": [
+      0.443,
+      0.221,
+      0.663
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      0.332,
+      0.091,
+      0.556
+     ],
+     "preguntas y empatía": [
+      0.453,
+      0.161,
+      0.739
+     ],
+     "todos los rasgos": [
+      0.41,
+      -0.251,
+      1.128
+     ]
+    },
+    "nuevo − original": {
+     "sin ajuste": [
+      0.183,
+      -0.093,
+      0.452
+     ],
+     "extensión y estructura": [
+      0.061,
+      -0.492,
+      0.61
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.006,
+      -0.473,
+      0.543
+     ],
+     "cautela y límites": [
+      0.208,
+      -0.096,
+      0.486
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      0.157,
+      -0.141,
+      0.452
+     ],
+     "preguntas y empatía": [
+      0.232,
+      -0.197,
+      0.727
+     ],
+     "todos los rasgos": [
+      0.242,
+      -0.469,
+      1.025
+     ]
+    }
+   },
+   "confianza_1a5": {
+    "intermedio − original": {
+     "sin ajuste": [
+      0.202,
+      -0.228,
+      0.622
+     ],
+     "extensión y estructura": [
+      0.435,
+      -0.494,
+      1.575
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.237,
+      -0.339,
+      0.93
+     ],
+     "cautela y límites": [
+      0.205,
+      -0.279,
+      0.665
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      0.068,
+      -0.39,
+      0.532
+     ],
+     "preguntas y empatía": [
+      0.204,
+      -0.489,
+      0.857
+     ],
+     "todos los rasgos": [
+      0.441,
+      -0.652,
+      1.76
+     ]
+    },
+    "nuevo − original": {
+     "sin ajuste": [
+      0.022,
+      -0.509,
+      0.532
+     ],
+     "extensión y estructura": [
+      0.218,
+      -0.648,
+      1.426
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.006,
+      -0.792,
+      0.918
+     ],
+     "cautela y límites": [
+      0.003,
+      -0.543,
+      0.497
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      -0.137,
+      -0.774,
+      0.45
+     ],
+     "preguntas y empatía": [
+      0.07,
+      -0.937,
+      0.834
+     ],
+     "todos los rasgos": [
+      -0.032,
+      -1.387,
+      1.446
+     ]
+    }
+   },
+   "escala_confianza_asistente": {
+    "intermedio − original": {
+     "sin ajuste": [
+      0.762,
+      0.244,
+      1.382
+     ],
+     "extensión y estructura": [
+      1.2,
+      0.083,
+      2.564
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.659,
+      0.015,
+      1.606
+     ],
+     "cautela y límites": [
+      0.8,
+      0.257,
+      1.317
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      0.521,
+      -0.03,
+      1.152
+     ],
+     "preguntas y empatía": [
+      0.686,
+      0.041,
+      1.459
+     ],
+     "todos los rasgos": [
+      1.377,
+      0.002,
+      3.198
+     ]
+    },
+    "nuevo − original": {
+     "sin ajuste": [
+      0.231,
+      -0.345,
+      0.889
+     ],
+     "extensión y estructura": [
+      0.514,
+      -0.588,
+      1.848
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      -0.023,
+      -0.847,
+      1.148
+     ],
+     "cautela y límites": [
+      0.258,
+      -0.279,
+      0.818
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      -0.059,
+      -0.686,
+      0.626
+     ],
+     "preguntas y empatía": [
+      0.105,
+      -0.798,
+      1.228
+     ],
+     "todos los rasgos": [
+      0.584,
+      -0.96,
+      2.547
+     ]
+    }
+   }
+  },
+  "todos": {
+   "actuaria": {
+    "intermedio − original": {
+     "sin ajuste": [
+      0.285,
+      0.075,
+      0.492
+     ],
+     "extensión y estructura": [
+      0.101,
+      -0.321,
+      0.525
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.214,
+      -0.112,
+      0.55
+     ],
+     "cautela y límites": [
+      0.287,
+      0.062,
+      0.494
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      0.233,
+      0.021,
+      0.448
+     ],
+     "preguntas y empatía": [
+      0.343,
+      0.079,
+      0.592
+     ],
+     "todos los rasgos": [
+      0.11,
+      -0.413,
+      0.67
+     ]
+    },
+    "nuevo − original": {
+     "sin ajuste": [
+      0.135,
+      -0.111,
+      0.37
+     ],
+     "extensión y estructura": [
+      -0.012,
+      -0.463,
+      0.419
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.019,
+      -0.38,
+      0.447
+     ],
+     "cautela y límites": [
+      0.149,
+      -0.121,
+      0.413
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      0.139,
+      -0.121,
+      0.392
+     ],
+     "preguntas y empatía": [
+      0.233,
+      -0.133,
+      0.64
+     ],
+     "todos los rasgos": [
+      0.107,
+      -0.487,
+      0.75
+     ]
+    }
+   },
+   "confianza_1a5": {
+    "intermedio − original": {
+     "sin ajuste": [
+      -0.002,
+      -0.406,
+      0.401
+     ],
+     "extensión y estructura": [
+      0.285,
+      -0.505,
+      1.174
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.108,
+      -0.46,
+      0.742
+     ],
+     "cautela y límites": [
+      -0.033,
+      -0.484,
+      0.408
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      -0.106,
+      -0.558,
+      0.352
+     ],
+     "preguntas y empatía": [
+      0.161,
+      -0.39,
+      0.685
+     ],
+     "todos los rasgos": [
+      0.577,
+      -0.408,
+      1.702
+     ]
+    },
+    "nuevo − original": {
+     "sin ajuste": [
+      -0.029,
+      -0.458,
+      0.365
+     ],
+     "extensión y estructura": [
+      0.306,
+      -0.485,
+      1.198
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.095,
+      -0.619,
+      0.848
+     ],
+     "cautela y límites": [
+      -0.063,
+      -0.51,
+      0.373
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      -0.142,
+      -0.659,
+      0.348
+     ],
+     "preguntas y empatía": [
+      0.241,
+      -0.501,
+      0.904
+     ],
+     "todos los rasgos": [
+      0.518,
+      -0.7,
+      1.806
+     ]
+    }
+   },
+   "escala_confianza_asistente": {
+    "intermedio − original": {
+     "sin ajuste": [
+      0.412,
+      -0.107,
+      0.955
+     ],
+     "extensión y estructura": [
+      0.846,
+      -0.022,
+      1.821
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.361,
+      -0.235,
+      1.022
+     ],
+     "cautela y límites": [
+      0.443,
+      -0.081,
+      0.982
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      0.183,
+      -0.38,
+      0.74
+     ],
+     "preguntas y empatía": [
+      0.439,
+      -0.089,
+      1.035
+     ],
+     "todos los rasgos": [
+      1.001,
+      -0.055,
+      2.369
+     ]
+    },
+    "nuevo − original": {
+     "sin ajuste": [
+      0.109,
+      -0.375,
+      0.641
+     ],
+     "extensión y estructura": [
+      0.535,
+      -0.328,
+      1.515
+     ],
+     "lenguaje (legibilidad, tecnicismos, usted)": [
+      0.003,
+      -0.642,
+      0.772
+     ],
+     "cautela y límites": [
+      0.153,
+      -0.326,
+      0.633
+     ],
+     "acción (pasos, ofrece redactar, dice si es delito)": [
+      -0.112,
+      -0.642,
+      0.419
+     ],
+     "preguntas y empatía": [
+      0.157,
+      -0.603,
+      1.003
+     ],
+     "todos los rasgos": [
+      0.792,
+      -0.468,
+      2.373
+     ]
+    }
+   }
+  }
+ }
+}
