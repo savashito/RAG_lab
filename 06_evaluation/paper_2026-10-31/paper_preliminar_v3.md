@@ -20,7 +20,8 @@ procedural code and 32 state penal codes, so whether a law applies depends on wh
 open-weight, locally hosted RAG assistant over Mexican criminal law in two rounds with its intended users, who consulted
 it in their own words about three fictional situations. In round 1 (45 participants), 53% of first answers (57 of 107)
 named the penal code of a state other than the one where the facts occurred, and in 120 of 121 cases that code had been
-supplied by retrieval, not invented by the model. Participants without legal training noticed a problem in 8% of
+supplied by retrieval, not invented by the model. The error struck 85% of lay participants' first answers when their
+message did not name the state, and 45% when it did. Participants without legal training noticed a problem in 8% of
 situations and were as willing to act when an answer cited another state's code as when none did (63% vs 67%);
 legally trained participants rarely named the error but were far less willing to act on such answers (23% vs 58%). A jurisdiction gate, an LLM step that identifies where the
 facts occurred and restricts retrieval to that state's code plus national law, cut wrong-state answers from 60% to 2%
@@ -71,8 +72,8 @@ tone. One prompt was used in both rounds, which lets us compare the rounds with 
 
 We ask five research questions:
 
-- **RQ1.** How often does the assistant cite law from a state other than the one where the facts occurred, and where in
-  the pipeline does that law come from?
+- **RQ1.** How often does the assistant cite law from a state other than the one where the facts occurred, where in
+  the pipeline does that law come from, and who bears the error?
 - **RQ2.** Do users notice these errors, and does legal training change that?
 - **RQ3.** Does a system-level jurisdiction gate remove the error, and does removing it improve users' comprehension?
 - **RQ4.** Does a plain-language, warmer prompt improve comprehension, or does it raise trust and willingness to act
@@ -81,7 +82,8 @@ We ask five research questions:
   those who leave out the facts on which applicability depends?
 
 Our contributions are: (1) evidence, from real conversations, that wrong-jurisdiction citations in legal RAG are mostly
-a retrieval failure, invisible to lay users and felt but not named by legally trained ones; (2) a jurisdiction gate evaluated by replaying every real conversation,
+a retrieval failure that falls hardest on lay users, who more often leave out where the facts occurred, and that is
+invisible to them while felt but not named by legally trained users; (2) a jurisdiction gate evaluated by replaying every real conversation,
 then deployed, and the finding that removing the error did not by itself raise comprehension; (3) a randomized
 comparison of three prompts showing that plain language raised trust and stated willingness to act among lay users
 without raising their comprehension or the accuracy of the answers; (4) evidence that lay users omit the place where the
@@ -299,7 +301,7 @@ use: daily 30, weekly 8, a few times a month 33, never 8.
 
 ## 5. Results
 
-### 5.1 RQ1: wrong-state citations come from retrieval
+### 5.1 RQ1: wrong-state citations come from retrieval, and fall hardest on those who do not name the state
 
 In round 1, 53% of first answers (57 of 107) named the penal code of a state other than the one where the facts
 occurred: 57% (24 of 42) with the formal legal prompt, 38% (15 of 39) with the plain-language prompt, and 69% (18 of 26)
@@ -307,6 +309,25 @@ in the pilot. By situation: workplace messages 51%, photos 59%, summons 48%. The
 round-1 answers, 120 of the 121 wrong-state codes named (in 76 answers) had been retrieved into the context. The
 plain-language prompt of round 1 asked for the state more often, which lowered but did not remove the error; prompting
 alone does not change what the model sees.
+
+The failure is the system's, but its cost was not shared equally. Separating first answers by whether the participant's
+message named the state:
+
+**Table 1a. First answers naming another state's code, by whether the participant's first message named the state**
+(n = situations; differences with 95% CI, participant bootstrap).
+
+| | Message did not name the state | Message named it | Difference |
+|---|---|---|---|
+| Round 1, without legal training | 85% (39) | 45% (29) | **+40 [24, 56]** |
+| Round 1, with legal training | 33% (15) | 25% (24) | +8 [−16, +38] |
+| Round 1, all participants | 70% (54) | 36% (53) | **+35 [18, 51]** |
+| Round 2 (with the gate), all participants | 4% (103) | 5% (87) | −1 [−7, +5] |
+
+Even when participants named the state, the round-1 system cited another state's code in 36% of first answers: its
+router added the named state's code to the search but did not remove the others. No way of asking avoided the error,
+so it is a system failure. But when the message did not name the state, the error rose to 70%, and to 85% for lay
+participants, who left the state out more often (Section 5.7). The people least able to detect the error (Section 5.2)
+were the ones who received it most. With the gate, the error no longer depends on how people ask.
 
 ### 5.2 RQ2: lay users do not notice; legally trained users distrust without naming the error
 
@@ -846,6 +867,7 @@ All scripts are in `06_evaluation/paper_2026-10-31/` and were run on the product
 | Table 8; Section 5.5 recruitment-date check | `pruebas_aprendizaje_y_fecha.py` → `pruebas.json` |
 | Tables 7a–7c | `como_preguntan.py` → `como_preguntan.json` |
 | Table 7d | `pregunta_enterrada.py` → `pregunta_enterrada.json` |
+| Table 1a | `error_segun_mensaje.py` → `error_segun_mensaje.json` |
 | Recall by naming the state; Table 6c last two rows | `recall_primer_mensaje.py`, `estado_por_orden_de_situacion.py` |
 | Table 1c; Section 5.4 prediction | `actuar_segun_error.py` (round 1); round 2 from `resultados_ronda2.json` |
 | 120 of 121 codes came from retrieval | all round-1 answers, 24 Oct (`replay_ronda1_2026-10-24`) |
