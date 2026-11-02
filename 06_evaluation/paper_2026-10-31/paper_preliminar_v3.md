@@ -1,7 +1,7 @@
-# Where You Are and Who You Are: Applicability Errors and Misplaced Trust in a Legal RAG Assistant, Audited with Its Users
+# The Right Law from the Wrong State: Auditing and Repairing Jurisdiction Errors in a Legal RAG Assistant
 
 *Preliminary draft v3 (2 November 2026). Anonymous submission to ACM FAccT 2027. Round-2 data frozen on 2 November
-2026, 09:27 UTC (last participant activity 05:30 UTC); collection continues. Changes from v2: data updated (68 → 79
+2026, 09:27 UTC (last participant activity 05:30 UTC); collection continues. Changes from v2: title restored to the one submitted with the abstract; data updated (68 → 79
 participants); new Section 5.4 compares rounds 1 and 2 with the same prompt; new Section 5.7 on how participants with
 and without legal training phrase their questions and whether the assistant guides them; new Section 5.8 on what
 drives comprehension; the comprehension questionnaire is described in full (Table 0); round-1 answer metrics now use
