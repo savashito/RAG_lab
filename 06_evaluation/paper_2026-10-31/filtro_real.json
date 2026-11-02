@@ -1,0 +1,113 @@
+{
+ "todos los mensajes · todos": {
+  "n": 375,
+  "matriz": {
+   "no nombró ningún estado": {
+    "ningún código estatal": 138,
+    "solo el código del estado de la situación": 12
+   },
+   "nombró el estado de la situación": {
+    "solo el código del estado de la situación": 197,
+    "ningún código estatal": 7,
+    "código de otro estado": 1
+   },
+   "nombró solo otro estado": {
+    "código de otro estado": 16,
+    "ningún código estatal": 3,
+    "el de la situación y otro": 1
+   }
+  }
+ },
+ "todos los mensajes · sin": {
+  "n": 301,
+  "matriz": {
+   "no nombró ningún estado": {
+    "ningún código estatal": 117,
+    "solo el código del estado de la situación": 6
+   },
+   "nombró el estado de la situación": {
+    "solo el código del estado de la situación": 158,
+    "ningún código estatal": 7
+   },
+   "nombró solo otro estado": {
+    "código de otro estado": 9,
+    "ningún código estatal": 3,
+    "el de la situación y otro": 1
+   }
+  }
+ },
+ "todos los mensajes · con": {
+  "n": 74,
+  "matriz": {
+   "no nombró ningún estado": {
+    "ningún código estatal": 21,
+    "solo el código del estado de la situación": 6
+   },
+   "nombró el estado de la situación": {
+    "solo el código del estado de la situación": 39,
+    "código de otro estado": 1
+   },
+   "nombró solo otro estado": {
+    "código de otro estado": 7
+   }
+  }
+ },
+ "primeros mensajes · todos": {
+  "n": 197,
+  "matriz": {
+   "no nombró ningún estado": {
+    "ningún código estatal": 105,
+    "solo el código del estado de la situación": 2
+   },
+   "nombró el estado de la situación": {
+    "solo el código del estado de la situación": 82,
+    "ningún código estatal": 2,
+    "código de otro estado": 1
+   },
+   "nombró solo otro estado": {
+    "ningún código estatal": 2,
+    "el de la situación y otro": 1,
+    "código de otro estado": 2
+   }
+  }
+ },
+ "primeros mensajes · sin": {
+  "n": 148,
+  "matriz": {
+   "no nombró ningún estado": {
+    "ningún código estatal": 87,
+    "solo el código del estado de la situación": 1
+   },
+   "nombró el estado de la situación": {
+    "solo el código del estado de la situación": 54,
+    "ningún código estatal": 2
+   },
+   "nombró solo otro estado": {
+    "ningún código estatal": 2,
+    "el de la situación y otro": 1,
+    "código de otro estado": 1
+   }
+  }
+ },
+ "primeros mensajes · con": {
+  "n": 49,
+  "matriz": {
+   "no nombró ningún estado": {
+    "ningún código estatal": 18,
+    "solo el código del estado de la situación": 1
+   },
+   "nombró el estado de la situación": {
+    "solo el código del estado de la situación": 28,
+    "código de otro estado": 1
+   },
+   "nombró solo otro estado": {
+    "código de otro estado": 1
+   }
+  }
+ },
+ "codigo_penal_federal_en_ranking": {
+  "false": 245,
+  "true": 130
+ }
+}
+
