@@ -6,7 +6,8 @@ participants); new Section 5.4 compares rounds 1 and 2 with the same prompt; new
 and without legal training phrase their questions and whether the assistant guides them; new Section 5.8 on what
 drives comprehension; the comprehension questionnaire is described in full (Table 0); round-1 answer metrics now use
 the answer key participants saw (Appendix C); Section 5.2 now shows that legally trained participants responded to
-wrong-state answers by not acting on them, and Section 5.4 tests the prediction this makes for round 2. Every number has a source in Appendix A. Items marked ⚠ must be checked
+wrong-state answers by not acting on them, and Section 5.4 tests the prediction this makes for round 2; the *who* finding and the methodological lessons moved
+to Appendices D and E. Every number has a source in Appendix A. Items marked ⚠ must be checked
 before submission.*
 
 ---
@@ -35,9 +36,7 @@ of cases, and retrieval then rose to 57%; legally trained participants almost ne
 assigned each participant at random one of three system prompts. Among lay participants, a plain-and-cautious prompt
 raised the share who would act on the answer from 39% to 81% (+42 points, 95% CI 21 to 62) and trust by 0.8 points on a
 five-point scale (CI 0.2 to 1.4), with no detectable change in comprehension; the answers cited the correct law equally
-often with all three prompts. Fixing
-*where* also exposed *who*: after the gate, answers in a gender-neutral extortion scenario cited a law that protects only
-women in 33% of replayed answers. We argue that legal RAG must be evaluated with the people it serves, that accuracy,
+often with all three prompts. We argue that legal RAG must be evaluated with the people it serves, that accuracy,
 comprehension and trust must be measured separately, and that an assistant for lay users must ask for the facts on which
 applicability depends.
 
@@ -75,8 +74,7 @@ We ask five research questions:
 - **RQ1.** How often does the assistant cite law from a state other than the one where the facts occurred, and where in
   the pipeline does that law come from?
 - **RQ2.** Do users notice these errors, and does legal training change that?
-- **RQ3.** Does a system-level jurisdiction gate remove the error, does removing it improve users' comprehension, and
-  what does it expose?
+- **RQ3.** Does a system-level jurisdiction gate remove the error, and does removing it improve users' comprehension?
 - **RQ4.** Does a plain-language, warmer prompt improve comprehension, or does it raise trust and willingness to act
   without improving comprehension?
 - **RQ5.** Do people with and without legal training describe their problem differently, and can the assistant guide
@@ -88,10 +86,9 @@ then deployed, and the finding that removing the error did not by itself raise c
 comparison of three prompts showing that plain language raised trust and stated willingness to act among lay users
 without raising their comprehension or the accuracy of the answers; (4) evidence that lay users omit the place where the
 facts occurred far more often than legally trained users, that this omission, not legal vocabulary, drives the retrieval
-gap between them, and that an assistant that asks for the place closes most of that gap; (5) the observation that
-applicability has at least two conditions, where the person is and who the person is, and that the second surfaces only
-after the first is fixed; and (6) a methodological lesson: our own metrics and answer keys misled us several times, and
-we document how.
+gap between them, and that an assistant that asks for the place closes most of that gap. Two secondary findings are
+reported in the appendices: fixing *where* exposed a second applicability condition, *who* the person is (Appendix D),
+and our own metrics and answer keys misled us several times (Appendix E).
 
 ## 2. Background and related work
 
@@ -190,10 +187,10 @@ interleaved it with the general search. It did not remove other states' passages
    code cannot be retrieved until the user names the state. A second rule decides whether the current question names a
    place so that a later message does not inherit a state from an unrelated earlier one.
 2. **Reranker.** A cross-encoder reranker (Qwen3-Reranker-0.6B) reorders the fused candidates. On round-1 first
-   messages, it raised recall@10 of the expected article from 25.3% to 35.0% (Table 7).
+   messages, it raised recall@10 of the expected article from 25.3% to 35.0% (Table 9).
 3. **Nine sources switched off for search** on 25 October, the day round 2 opened, by the research team through an
    administration page: among them the General Law on Women's Access to a Life Free of Violence and a technical note
-   on "Ley Olimpia" (Section 5.9). Round 2 searches 42 sources and 6,766 passages. Round 1 and all replays used all 51.
+   on "Ley Olimpia" (Appendix D). Round 2 searches 42 sources and 6,766 passages. Round 1 and all replays used all 51.
 4. **System prompts** (Section 4.3).
 
 Answers took 12.2 seconds on average in round 2 (90% within 14.7 s).
@@ -596,20 +593,7 @@ would raise this question from 26% to 56% (round 1) and from 40% to 77% (round 2
 and does not bias the comparisons, but it lowers comprehension in "the photos" for a defensible answer. ⚠ The legal
 expert must decide whether the paper scores art. 167 Quinquies as correct.
 
-### 5.9 Fixing *where* exposed *who*
-
-Once the gate kept the right state's law in the context, a different applicability error became visible. "The photos"
-is gender-neutral, yet in the replay with the gate, 33% of answers (37 of 112) cited the General Law on Women's Access to
-a Life Free of Violence, against 13% without it (Table 2): with other states' codes removed, this general law, which
-applies nationwide but protects only women, rose in the ranking. The citation is correct about *where* and wrong about
-*who*. On 25 October, before round 2 opened, the team switched that law and eight other sources off for search; no
-round-2 "photos" answer cited it (0 of 61). This is a stopgap that removes the law for the people it does protect. The
-principled fix is a second applicability condition, the person's characteristics (sex, age, relationship to the other
-party), that the system must ask about or infer before citing a law that depends on them. We have built the first step,
-an editor page where legal experts tag whole documents with the person categories they apply to; the filter itself is
-future work.
-
-### 5.10 Retrieval is still the ceiling
+### 5.9 Retrieval is still the ceiling
 
 **Table 9. Recall@10 of the expected articles, round-1 first messages replayed through each configuration.**
 
@@ -670,29 +654,7 @@ assistant asked, lay participants who supplied the place quadrupled retrieval of
 legally trained participants shrank from 14 to 6 points. Two design consequences follow. First, the assistant should ask
 *before* answering when a decisive fact is missing, rather than answering from national law and asking at the end, since
 the first answer is the one most people act on and six in ten did not answer the question. Second, the same logic
-extends to *who* (Section 5.9): the person's characteristics are another fact lay users will not volunteer.
-
-### 6.5 Applicability has more than one condition
-
-The gate solved *where* and exposed *who*. Switching off the women's-violence law fixed the gender-neutral scenario at the
-price of hiding the law from the women it protects. A legal assistant must reason about the person, not only the place,
-and must ask when the answer depends on facts the user has not given. Each repair moves the error to the next condition
-the system does not model, which is an argument for evaluating with real users, whose stories contain the conditions
-benchmark authors did not anticipate.
-
-### 6.6 Our metrics and answer keys misled us
-
-Our first wrong-state metric counted any mention of a place: the correct summons answer "Querétaro, not Mexico City,
-governs" scored as citing Mexico City. Our second, the version in the study dashboard, treated as allowed only the codes
-of the laws in the answer key; in "the photos" the key is a general law, so citing Querétaro's own penal code, which is
-the right state, counted as an error, inflating round-2 wrong-state rates from 4% to about 14%. We report the strict
-version, defined by the place where the facts occurred (Appendix B). The comprehension key for "the photos" scores as
-wrong an answer its own reference calls applicable (Section 5.8). And an edit to the round-1 study definition made after
-the round closed silently changed the answer key our analysis read, inflating round-1 "correct law" rates by 6 to 13
-points until we pinned the version participants saw (Appendix C). Finally, asking participants whether they noticed an error
-understated what legally trained participants perceived: they rarely said yes, but they stopped acting on wrong-state
-answers (Table 1c). Willingness to act was the more sensitive measure. Applicability metrics need the same scrutiny as
-the systems they score, and analyses must pin the definition that participants actually saw.
+extends to *who* (Appendix D): the person's characteristics are another fact lay users will not volunteer.
 
 ## 7. Limitations
 
@@ -752,7 +714,7 @@ Fictional situations, anonymous codes, informed consent approved by ⚠ [institu
 immediate deletion, and deletion on request by code. No names, emails or IP addresses are stored with responses. The
 assistant was evaluated as a research system; it states that it does not replace a lawyer. The situations include
 sexual harassment and threats to publish intimate images; participants could stop at any time. Switching off the
-women's-violence law is a research stopgap with a cost we name in Section 6.5.
+women's-violence law is a research stopgap with a cost we name in Appendix D.
 
 ## 10. Conclusion
 
@@ -763,7 +725,7 @@ understood when the assistant gave them the right article, and the assistant gav
 were, which lay users did far less often than legally trained ones. Asking for the place closed most of that gap.
 Making the assistant speak plainly, which is the right goal for access to justice, raised trust and willingness to act
 without raising comprehension or accuracy. Evaluations of legal AI should be run with the people it is meant to serve,
-should measure accuracy, comprehension and trust separately, should check applicability (where and who), and should
+should measure accuracy, comprehension and trust separately, should check applicability (where, and who; Appendix D), and should
 treat both tone and the questions the assistant asks as part of the safety case.
 
 ---
@@ -920,3 +882,36 @@ points depending on the group (for example, formal prompt, all participants: 71%
 draft use the archived version 7 (`06_evaluation/estudio_ronda1_2026-10-13/piloto_penal_v7_final.yaml`). The wrong-state
 metric and comprehension are unaffected. ⚠ The replay in Table 2 was run after the edit; its "correct law" row must be
 checked against version 7 before submission (the wrong-state rows are unaffected).
+
+## Appendix D. Fixing *where* exposed *who*
+
+Once the gate kept the right state's law in the context, a different applicability error became visible. "The photos"
+is gender-neutral, yet in the replay with the gate, 33% of answers (37 of 112) cited the General Law on Women's Access to
+a Life Free of Violence, against 13% without it (Table 2): with other states' codes removed, this general law, which
+applies nationwide but protects only women, rose in the ranking. The citation is correct about *where* and wrong about
+*who*. On 25 October, before round 2 opened, the team switched that law and eight other sources off for search; no
+round-2 "photos" answer cited it (0 of 61). This is a stopgap that removes the law for the people it does protect. The
+principled fix is a second applicability condition, the person's characteristics (sex, age, relationship to the other
+party), that the system must ask about or infer before citing a law that depends on them. We have built the first step,
+an editor page where legal experts tag whole documents with the person categories they apply to; the filter itself is
+future work.
+
+The gate solved *where* and exposed *who*. Switching off the women's-violence law fixed the gender-neutral scenario at the
+price of hiding the law from the women it protects. A legal assistant must reason about the person, not only the place,
+and must ask when the answer depends on facts the user has not given. Each repair moves the error to the next condition
+the system does not model, which is an argument for evaluating with real users, whose stories contain the conditions
+benchmark authors did not anticipate.
+
+## Appendix E. Our metrics and answer keys misled us
+
+Our first wrong-state metric counted any mention of a place: the correct summons answer "Querétaro, not Mexico City,
+governs" scored as citing Mexico City. Our second, the version in the study dashboard, treated as allowed only the codes
+of the laws in the answer key; in "the photos" the key is a general law, so citing Querétaro's own penal code, which is
+the right state, counted as an error, inflating round-2 wrong-state rates from 4% to about 14%. We report the strict
+version, defined by the place where the facts occurred (Appendix B). The comprehension key for "the photos" scores as
+wrong an answer its own reference calls applicable (Section 5.8). And an edit to the round-1 study definition made after
+the round closed silently changed the answer key our analysis read, inflating round-1 "correct law" rates by 6 to 13
+points until we pinned the version participants saw (Appendix C). Finally, asking participants whether they noticed an error
+understated what legally trained participants perceived: they rarely said yes, but they stopped acting on wrong-state
+answers (Table 1c). Willingness to act was the more sensitive measure. Applicability metrics need the same scrutiny as
+the systems they score, and analyses must pin the definition that participants actually saw.
