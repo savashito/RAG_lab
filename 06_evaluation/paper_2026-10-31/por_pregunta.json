@@ -1,0 +1,3050 @@
+{
+ "preguntas_sin": {
+  "ley": {
+   "r1 formal": [
+    0.333,
+    12,
+    6
+   ],
+   "r1 sencillo": [
+    0.375,
+    16,
+    8
+   ],
+   "r1 piloto": [
+    0.533,
+    15,
+    8
+   ],
+   "r2 formal": [
+    0.467,
+    30,
+    15
+   ],
+   "r2 nuevo": [
+    0.517,
+    29,
+    15
+   ],
+   "r2 intermedio": [
+    0.484,
+    31,
+    16
+   ],
+   "r1 todos": [
+    0.419,
+    43,
+    22
+   ],
+   "r2 todos": [
+    0.489,
+    90,
+    46
+   ]
+  },
+  "otras": {
+   "r1 formal": [
+    0.75,
+    18,
+    6
+   ],
+   "r1 sencillo": [
+    0.854,
+    24,
+    8
+   ],
+   "r1 piloto": [
+    0.705,
+    22,
+    8
+   ],
+   "r2 formal": [
+    0.728,
+    46,
+    16
+   ],
+   "r2 nuevo": [
+    0.705,
+    44,
+    15
+   ],
+   "r2 intermedio": [
+    0.83,
+    47,
+    17
+   ],
+   "r1 todos": [
+    0.773,
+    64,
+    22
+   ],
+   "r2 todos": [
+    0.755,
+    137,
+    48
+   ]
+  },
+  "p:mensajes_trabajo:ley": {
+   "r1 formal": [
+    0.667,
+    6,
+    6
+   ],
+   "r1 sencillo": [
+    0.625,
+    8,
+    8
+   ],
+   "r1 piloto": [
+    0.571,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.533,
+    15,
+    15
+   ],
+   "r2 nuevo": [
+    0.667,
+    15,
+    15
+   ],
+   "r2 intermedio": [
+    0.733,
+    15,
+    15
+   ],
+   "r1 todos": [
+    0.619,
+    21,
+    21
+   ],
+   "r2 todos": [
+    0.644,
+    45,
+    45
+   ]
+  },
+  "p:mensajes_trabajo:superior": {
+   "r1 formal": [
+    0.833,
+    6,
+    6
+   ],
+   "r1 sencillo": [
+    0.875,
+    8,
+    8
+   ],
+   "r1 piloto": [
+    0.714,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.733,
+    15,
+    15
+   ],
+   "r2 nuevo": [
+    0.667,
+    15,
+    15
+   ],
+   "r2 intermedio": [
+    0.8,
+    15,
+    15
+   ],
+   "r1 todos": [
+    0.81,
+    21,
+    21
+   ],
+   "r2 todos": [
+    0.733,
+    45,
+    45
+   ]
+  },
+  "p:fotos:consentimiento": {
+   "r1 formal": [
+    0.667,
+    6,
+    6
+   ],
+   "r1 sencillo": [
+    1.0,
+    8,
+    8
+   ],
+   "r1 piloto": [
+    0.625,
+    8,
+    8
+   ],
+   "r2 formal": [
+    0.8,
+    15,
+    15
+   ],
+   "r2 nuevo": [
+    0.714,
+    14,
+    14
+   ],
+   "r2 intermedio": [
+    0.938,
+    16,
+    16
+   ],
+   "r1 todos": [
+    0.773,
+    22,
+    22
+   ],
+   "r2 todos": [
+    0.822,
+    45,
+    45
+   ]
+  },
+  "p:fotos:ley": {
+   "r1 formal": [
+    0.0,
+    6,
+    6
+   ],
+   "r1 sencillo": [
+    0.125,
+    8,
+    8
+   ],
+   "r1 piloto": [
+    0.5,
+    8,
+    8
+   ],
+   "r2 formal": [
+    0.4,
+    15,
+    15
+   ],
+   "r2 nuevo": [
+    0.357,
+    14,
+    14
+   ],
+   "r2 intermedio": [
+    0.25,
+    16,
+    16
+   ],
+   "r1 todos": [
+    0.227,
+    22,
+    22
+   ],
+   "r2 todos": [
+    0.333,
+    45,
+    45
+   ]
+  },
+  "p:citatorio:codigo": {
+   "r1 formal": [
+    0.667,
+    6,
+    6
+   ],
+   "r1 sencillo": [
+    0.75,
+    8,
+    8
+   ],
+   "r1 piloto": [
+    0.714,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.625,
+    16,
+    16
+   ],
+   "r2 nuevo": [
+    0.667,
+    15,
+    15
+   ],
+   "r2 intermedio": [
+    0.75,
+    16,
+    16
+   ],
+   "r1 todos": [
+    0.714,
+    21,
+    21
+   ],
+   "r2 todos": [
+    0.681,
+    47,
+    47
+   ]
+  },
+  "p:citatorio:lugar": {
+   "r1 formal": [
+    0.833,
+    6,
+    6
+   ],
+   "r1 sencillo": [
+    0.625,
+    8,
+    8
+   ],
+   "r1 piloto": [
+    0.857,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.688,
+    16,
+    16
+   ],
+   "r2 nuevo": [
+    0.8,
+    15,
+    15
+   ],
+   "r2 intermedio": [
+    0.75,
+    16,
+    16
+   ],
+   "r1 todos": [
+    0.762,
+    21,
+    21
+   ],
+   "r2 todos": [
+    0.745,
+    47,
+    47
+   ]
+  }
+ },
+ "preguntas_r2_menos_r1_sin": {
+  "ley": {
+   "formal": [
+    0.133,
+    -0.131,
+    0.401
+   ],
+   "todos los prompts": [
+    0.07,
+    -0.067,
+    0.212
+   ]
+  },
+  "otras": {
+   "formal": [
+    -0.022,
+    -0.272,
+    0.248
+   ],
+   "todos los prompts": [
+    -0.018,
+    -0.138,
+    0.103
+   ]
+  },
+  "p:mensajes_trabajo:ley": {
+   "formal": [
+    -0.133,
+    -0.562,
+    0.346
+   ],
+   "todos los prompts": [
+    0.025,
+    -0.228,
+    0.276
+   ]
+  },
+  "p:mensajes_trabajo:superior": {
+   "formal": [
+    -0.1,
+    -0.438,
+    0.286
+   ],
+   "todos los prompts": [
+    -0.076,
+    -0.289,
+    0.146
+   ]
+  },
+  "p:fotos:consentimiento": {
+   "formal": [
+    0.133,
+    -0.294,
+    0.6
+   ],
+   "todos los prompts": [
+    0.049,
+    -0.151,
+    0.269
+   ]
+  },
+  "p:fotos:ley": {
+   "formal": [
+    0.4,
+    0.154,
+    0.647
+   ],
+   "todos los prompts": [
+    0.106,
+    -0.117,
+    0.324
+   ]
+  },
+  "p:citatorio:codigo": {
+   "formal": [
+    -0.042,
+    -0.467,
+    0.437
+   ],
+   "todos los prompts": [
+    -0.033,
+    -0.261,
+    0.216
+   ]
+  },
+  "p:citatorio:lugar": {
+   "formal": [
+    -0.146,
+    -0.5,
+    0.265
+   ],
+   "todos los prompts": [
+    -0.017,
+    -0.227,
+    0.217
+   ]
+  }
+ },
+ "escenarios_sin": {
+  "mensajes_trabajo": {
+   "comprension": {
+    "r1 formal": [
+     0.75,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.75,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.643,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.633,
+     15,
+     15
+    ],
+    "r2 nuevo": [
+     0.667,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.767,
+     15,
+     15
+    ],
+    "r1 todos": [
+     0.714,
+     21,
+     21
+    ],
+    "r2 todos": [
+     0.689,
+     45,
+     45
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.5,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.625,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.571,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.467,
+     15,
+     15
+    ],
+    "r2 nuevo": [
+     0.6,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.8,
+     15,
+     15
+    ],
+    "r1 todos": [
+     0.571,
+     21,
+     21
+    ],
+    "r2 todos": [
+     0.622,
+     45,
+     45
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.857,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.5,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.625,
+     8,
+     8
+    ],
+    "r2 formal": [
+     0.125,
+     16,
+     16
+    ],
+    "r2 nuevo": [
+     0.0,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.0,
+     15,
+     15
+    ],
+    "r1 todos": [
+     0.652,
+     23,
+     23
+    ],
+    "r2 todos": [
+     0.043,
+     46,
+     46
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.429,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.625,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.25,
+     8,
+     8
+    ],
+    "r2 formal": [
+     0.375,
+     16,
+     16
+    ],
+    "r2 nuevo": [
+     0.267,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.333,
+     15,
+     15
+    ],
+    "r1 todos": [
+     0.435,
+     23,
+     23
+    ],
+    "r2 todos": [
+     0.326,
+     46,
+     46
+    ]
+   }
+  },
+  "fotos": {
+   "comprension": {
+    "r1 formal": [
+     0.333,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.562,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.562,
+     8,
+     8
+    ],
+    "r2 formal": [
+     0.6,
+     15,
+     15
+    ],
+    "r2 nuevo": [
+     0.536,
+     14,
+     14
+    ],
+    "r2 intermedio": [
+     0.594,
+     16,
+     16
+    ],
+    "r1 todos": [
+     0.5,
+     22,
+     22
+    ],
+    "r2 todos": [
+     0.578,
+     45,
+     45
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.5,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.875,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.625,
+     8,
+     8
+    ],
+    "r2 formal": [
+     0.4,
+     15,
+     15
+    ],
+    "r2 nuevo": [
+     0.643,
+     14,
+     14
+    ],
+    "r2 intermedio": [
+     0.812,
+     16,
+     16
+    ],
+    "r1 todos": [
+     0.682,
+     22,
+     22
+    ],
+    "r2 todos": [
+     0.622,
+     45,
+     45
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     1.0,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.5,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.8,
+     10,
+     10
+    ],
+    "r2 formal": [
+     0.0,
+     15,
+     15
+    ],
+    "r2 nuevo": [
+     0.0,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.0,
+     16,
+     16
+    ],
+    "r1 todos": [
+     0.75,
+     24,
+     24
+    ],
+    "r2 todos": [
+     0.0,
+     46,
+     46
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.167,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.25,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.4,
+     10,
+     10
+    ],
+    "r2 formal": [
+     0.467,
+     15,
+     15
+    ],
+    "r2 nuevo": [
+     0.4,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.5,
+     16,
+     16
+    ],
+    "r1 todos": [
+     0.292,
+     24,
+     24
+    ],
+    "r2 todos": [
+     0.457,
+     46,
+     46
+    ]
+   }
+  },
+  "citatorio": {
+   "comprension": {
+    "r1 formal": [
+     0.75,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.688,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.786,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.656,
+     16,
+     16
+    ],
+    "r2 nuevo": [
+     0.733,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.75,
+     16,
+     16
+    ],
+    "r1 todos": [
+     0.738,
+     21,
+     21
+    ],
+    "r2 todos": [
+     0.713,
+     47,
+     47
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.667,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.75,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.571,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.312,
+     16,
+     16
+    ],
+    "r2 nuevo": [
+     0.6,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.812,
+     16,
+     16
+    ],
+    "r1 todos": [
+     0.667,
+     21,
+     21
+    ],
+    "r2 todos": [
+     0.574,
+     47,
+     47
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.333,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.75,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.714,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.0,
+     17,
+     17
+    ],
+    "r2 nuevo": [
+     0.067,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.059,
+     17,
+     17
+    ],
+    "r1 todos": [
+     0.619,
+     21,
+     21
+    ],
+    "r2 todos": [
+     0.041,
+     49,
+     49
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.667,
+     6,
+     6
+    ],
+    "r1 sencillo": [
+     0.875,
+     8,
+     8
+    ],
+    "r1 piloto": [
+     0.571,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.706,
+     17,
+     17
+    ],
+    "r2 nuevo": [
+     0.867,
+     15,
+     15
+    ],
+    "r2 intermedio": [
+     0.941,
+     17,
+     17
+    ],
+    "r1 todos": [
+     0.714,
+     21,
+     21
+    ],
+    "r2 todos": [
+     0.837,
+     49,
+     49
+    ]
+   }
+  }
+ },
+ "escenarios_r2_menos_r1_sin": {
+  "mensajes_trabajo": {
+   "comprension": [
+    -0.025,
+    -0.198,
+    0.155
+   ],
+   "actuaria": [
+    0.051,
+    -0.19,
+    0.305
+   ],
+   "1a_otro_estado": [
+    -0.609,
+    -0.805,
+    -0.391
+   ],
+   "1a_cita_articulo_correcto": [
+    -0.109,
+    -0.352,
+    0.13
+   ]
+  },
+  "fotos": {
+   "comprension": [
+    0.078,
+    -0.075,
+    0.231
+   ],
+   "actuaria": [
+    -0.06,
+    -0.294,
+    0.188
+   ],
+   "1a_otro_estado": [
+    -0.75,
+    -0.917,
+    -0.583
+   ],
+   "1a_cita_articulo_correcto": [
+    0.165,
+    -0.076,
+    0.396
+   ]
+  },
+  "citatorio": {
+   "comprension": [
+    -0.025,
+    -0.219,
+    0.173
+   ],
+   "actuaria": [
+    -0.092,
+    -0.324,
+    0.168
+   ],
+   "1a_otro_estado": [
+    -0.578,
+    -0.78,
+    -0.35
+   ],
+   "1a_cita_articulo_correcto": [
+    0.122,
+    -0.09,
+    0.353
+   ]
+  }
+ },
+ "preguntas_con": {
+  "ley": {
+   "r1 formal": [
+    0.667,
+    15,
+    8
+   ],
+   "r1 sencillo": [
+    0.3,
+    10,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    0.583,
+    12,
+    6
+   ],
+   "r2 nuevo": [
+    0.8,
+    10,
+    5
+   ],
+   "r2 intermedio": [
+    0.5,
+    8,
+    4
+   ],
+   "r1 todos": [
+    0.52,
+    25,
+    13
+   ],
+   "r2 todos": [
+    0.633,
+    30,
+    15
+   ]
+  },
+  "otras": {
+   "r1 formal": [
+    0.841,
+    22,
+    8
+   ],
+   "r1 sencillo": [
+    0.933,
+    15,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    0.806,
+    18,
+    6
+   ],
+   "r2 nuevo": [
+    0.938,
+    16,
+    6
+   ],
+   "r2 intermedio": [
+    0.708,
+    12,
+    4
+   ],
+   "r1 todos": [
+    0.878,
+    37,
+    13
+   ],
+   "r2 todos": [
+    0.826,
+    46,
+    16
+   ]
+  },
+  "p:mensajes_trabajo:ley": {
+   "r1 formal": [
+    0.875,
+    8,
+    8
+   ],
+   "r1 sencillo": [
+    0.4,
+    5,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    0.5,
+    6,
+    6
+   ],
+   "r2 nuevo": [
+    1.0,
+    5,
+    5
+   ],
+   "r2 intermedio": [
+    0.5,
+    4,
+    4
+   ],
+   "r1 todos": [
+    0.692,
+    13,
+    13
+   ],
+   "r2 todos": [
+    0.667,
+    15,
+    15
+   ]
+  },
+  "p:mensajes_trabajo:superior": {
+   "r1 formal": [
+    0.875,
+    8,
+    8
+   ],
+   "r1 sencillo": [
+    1.0,
+    5,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    1.0,
+    6,
+    6
+   ],
+   "r2 nuevo": [
+    1.0,
+    5,
+    5
+   ],
+   "r2 intermedio": [
+    0.5,
+    4,
+    4
+   ],
+   "r1 todos": [
+    0.923,
+    13,
+    13
+   ],
+   "r2 todos": [
+    0.867,
+    15,
+    15
+   ]
+  },
+  "p:fotos:consentimiento": {
+   "r1 formal": [
+    0.714,
+    7,
+    7
+   ],
+   "r1 sencillo": [
+    1.0,
+    5,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    0.833,
+    6,
+    6
+   ],
+   "r2 nuevo": [
+    0.8,
+    5,
+    5
+   ],
+   "r2 intermedio": [
+    0.75,
+    4,
+    4
+   ],
+   "r1 todos": [
+    0.833,
+    12,
+    12
+   ],
+   "r2 todos": [
+    0.8,
+    15,
+    15
+   ]
+  },
+  "p:fotos:ley": {
+   "r1 formal": [
+    0.429,
+    7,
+    7
+   ],
+   "r1 sencillo": [
+    0.2,
+    5,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    0.667,
+    6,
+    6
+   ],
+   "r2 nuevo": [
+    0.6,
+    5,
+    5
+   ],
+   "r2 intermedio": [
+    0.5,
+    4,
+    4
+   ],
+   "r1 todos": [
+    0.333,
+    12,
+    12
+   ],
+   "r2 todos": [
+    0.6,
+    15,
+    15
+   ]
+  },
+  "p:citatorio:codigo": {
+   "r1 formal": [
+    0.857,
+    7,
+    7
+   ],
+   "r1 sencillo": [
+    0.8,
+    5,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    0.5,
+    6,
+    6
+   ],
+   "r2 nuevo": [
+    1.0,
+    6,
+    6
+   ],
+   "r2 intermedio": [
+    1.0,
+    4,
+    4
+   ],
+   "r1 todos": [
+    0.833,
+    12,
+    12
+   ],
+   "r2 todos": [
+    0.812,
+    16,
+    16
+   ]
+  },
+  "p:citatorio:lugar": {
+   "r1 formal": [
+    1.0,
+    7,
+    7
+   ],
+   "r1 sencillo": [
+    0.8,
+    5,
+    5
+   ],
+   "r1 piloto": [
+    null,
+    0,
+    0
+   ],
+   "r2 formal": [
+    0.667,
+    6,
+    6
+   ],
+   "r2 nuevo": [
+    1.0,
+    6,
+    6
+   ],
+   "r2 intermedio": [
+    0.75,
+    4,
+    4
+   ],
+   "r1 todos": [
+    0.917,
+    12,
+    12
+   ],
+   "r2 todos": [
+    0.812,
+    16,
+    16
+   ]
+  }
+ },
+ "preguntas_r2_menos_r1_con": {
+  "ley": {
+   "formal": [
+    -0.083,
+    -0.438,
+    0.278
+   ],
+   "todos los prompts": [
+    0.113,
+    -0.159,
+    0.389
+   ]
+  },
+  "otras": {
+   "formal": [
+    -0.035,
+    -0.286,
+    0.194
+   ],
+   "todos los prompts": [
+    -0.052,
+    -0.192,
+    0.091
+   ]
+  },
+  "p:mensajes_trabajo:ley": {
+   "formal": [
+    -0.375,
+    -0.833,
+    0.111
+   ],
+   "todos los prompts": [
+    -0.026,
+    -0.371,
+    0.324
+   ]
+  },
+  "p:mensajes_trabajo:superior": {
+   "formal": [
+    0.125,
+    0.0,
+    0.375
+   ],
+   "todos los prompts": [
+    -0.056,
+    -0.286,
+    0.16
+   ]
+  },
+  "p:fotos:consentimiento": {
+   "formal": [
+    0.119,
+    -0.333,
+    0.571
+   ],
+   "todos los prompts": [
+    -0.033,
+    -0.317,
+    0.273
+   ]
+  },
+  "p:fotos:ley": {
+   "formal": [
+    0.238,
+    -0.333,
+    0.722
+   ],
+   "todos los prompts": [
+    0.267,
+    -0.115,
+    0.617
+   ]
+  },
+  "p:citatorio:codigo": {
+   "formal": [
+    -0.357,
+    -0.833,
+    0.143
+   ],
+   "todos los prompts": [
+    -0.021,
+    -0.3,
+    0.267
+   ]
+  },
+  "p:citatorio:lugar": {
+   "formal": [
+    -0.333,
+    -0.667,
+    0.0
+   ],
+   "todos los prompts": [
+    -0.104,
+    -0.353,
+    0.148
+   ]
+  }
+ },
+ "escenarios_con": {
+  "mensajes_trabajo": {
+   "comprension": {
+    "r1 formal": [
+     0.875,
+     8,
+     8
+    ],
+    "r1 sencillo": [
+     0.7,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.75,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     1.0,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.5,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.808,
+     13,
+     13
+    ],
+    "r2 todos": [
+     0.767,
+     15,
+     15
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.5,
+     8,
+     8
+    ],
+    "r1 sencillo": [
+     0.4,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.833,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.6,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.5,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.462,
+     13,
+     13
+    ],
+    "r2 todos": [
+     0.667,
+     15,
+     15
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.5,
+     8,
+     8
+    ],
+    "r1 sencillo": [
+     0.0,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     0.0,
+     1,
+     1
+    ],
+    "r2 formal": [
+     0.167,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.0,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.0,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.286,
+     14,
+     14
+    ],
+    "r2 todos": [
+     0.067,
+     15,
+     15
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.375,
+     8,
+     8
+    ],
+    "r1 sencillo": [
+     0.8,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     1.0,
+     1,
+     1
+    ],
+    "r2 formal": [
+     0.667,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.8,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.25,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.571,
+     14,
+     14
+    ],
+    "r2 todos": [
+     0.6,
+     15,
+     15
+    ]
+   }
+  },
+  "fotos": {
+   "comprension": {
+    "r1 formal": [
+     0.571,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.6,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.75,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.7,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.625,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.583,
+     12,
+     12
+    ],
+    "r2 todos": [
+     0.7,
+     15,
+     15
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.429,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.4,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.667,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.8,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.5,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.417,
+     12,
+     12
+    ],
+    "r2 todos": [
+     0.667,
+     15,
+     15
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.375,
+     8,
+     8
+    ],
+    "r1 sencillo": [
+     0.2,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.333,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.0,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.0,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.308,
+     13,
+     13
+    ],
+    "r2 todos": [
+     0.133,
+     15,
+     15
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.25,
+     8,
+     8
+    ],
+    "r1 sencillo": [
+     0.4,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.667,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.4,
+     5,
+     5
+    ],
+    "r2 intermedio": [
+     0.75,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.308,
+     13,
+     13
+    ],
+    "r2 todos": [
+     0.6,
+     15,
+     15
+    ]
+   }
+  },
+  "citatorio": {
+   "comprension": {
+    "r1 formal": [
+     0.929,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.8,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.583,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     1.0,
+     6,
+     6
+    ],
+    "r2 intermedio": [
+     0.875,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.875,
+     12,
+     12
+    ],
+    "r2 todos": [
+     0.812,
+     16,
+     16
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.571,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.4,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.667,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.833,
+     6,
+     6
+    ],
+    "r2 intermedio": [
+     0.5,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.5,
+     12,
+     12
+    ],
+    "r2 todos": [
+     0.688,
+     16,
+     16
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.429,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.0,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     0.167,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.0,
+     6,
+     6
+    ],
+    "r2 intermedio": [
+     0.0,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.25,
+     12,
+     12
+    ],
+    "r2 todos": [
+     0.062,
+     16,
+     16
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.714,
+     7,
+     7
+    ],
+    "r1 sencillo": [
+     0.8,
+     5,
+     5
+    ],
+    "r1 piloto": [
+     null,
+     0,
+     0
+    ],
+    "r2 formal": [
+     1.0,
+     6,
+     6
+    ],
+    "r2 nuevo": [
+     0.833,
+     6,
+     6
+    ],
+    "r2 intermedio": [
+     0.75,
+     4,
+     4
+    ],
+    "r1 todos": [
+     0.75,
+     12,
+     12
+    ],
+    "r2 todos": [
+     0.875,
+     16,
+     16
+    ]
+   }
+  }
+ },
+ "escenarios_r2_menos_r1_con": {
+  "mensajes_trabajo": {
+   "comprension": [
+    -0.041,
+    -0.251,
+    0.161
+   ],
+   "actuaria": [
+    0.205,
+    -0.162,
+    0.55
+   ],
+   "1a_otro_estado": [
+    -0.219,
+    -0.5,
+    0.048
+   ],
+   "1a_cita_articulo_correcto": [
+    0.029,
+    -0.324,
+    0.381
+   ]
+  },
+  "fotos": {
+   "comprension": [
+    0.117,
+    -0.107,
+    0.354
+   ],
+   "actuaria": [
+    0.25,
+    -0.13,
+    0.625
+   ],
+   "1a_otro_estado": [
+    -0.174,
+    -0.5,
+    0.133
+   ],
+   "1a_cita_articulo_correcto": [
+    0.292,
+    -0.071,
+    0.646
+   ]
+  },
+  "citatorio": {
+   "comprension": [
+    -0.062,
+    -0.283,
+    0.135
+   ],
+   "actuaria": [
+    0.188,
+    -0.186,
+    0.549
+   ],
+   "1a_otro_estado": [
+    -0.188,
+    -0.5,
+    0.062
+   ],
+   "1a_cita_articulo_correcto": [
+    0.125,
+    -0.167,
+    0.417
+   ]
+  }
+ },
+ "preguntas_todos": {
+  "ley": {
+   "r1 formal": [
+    0.519,
+    27,
+    14
+   ],
+   "r1 sencillo": [
+    0.346,
+    26,
+    13
+   ],
+   "r1 piloto": [
+    0.533,
+    15,
+    8
+   ],
+   "r2 formal": [
+    0.5,
+    42,
+    21
+   ],
+   "r2 nuevo": [
+    0.59,
+    39,
+    20
+   ],
+   "r2 intermedio": [
+    0.487,
+    39,
+    20
+   ],
+   "r1 todos": [
+    0.456,
+    68,
+    35
+   ],
+   "r2 todos": [
+    0.525,
+    120,
+    61
+   ]
+  },
+  "otras": {
+   "r1 formal": [
+    0.8,
+    40,
+    14
+   ],
+   "r1 sencillo": [
+    0.885,
+    39,
+    13
+   ],
+   "r1 piloto": [
+    0.705,
+    22,
+    8
+   ],
+   "r2 formal": [
+    0.75,
+    64,
+    22
+   ],
+   "r2 nuevo": [
+    0.767,
+    60,
+    21
+   ],
+   "r2 intermedio": [
+    0.805,
+    59,
+    21
+   ],
+   "r1 todos": [
+    0.812,
+    101,
+    35
+   ],
+   "r2 todos": [
+    0.773,
+    183,
+    64
+   ]
+  },
+  "p:mensajes_trabajo:ley": {
+   "r1 formal": [
+    0.786,
+    14,
+    14
+   ],
+   "r1 sencillo": [
+    0.538,
+    13,
+    13
+   ],
+   "r1 piloto": [
+    0.571,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.524,
+    21,
+    21
+   ],
+   "r2 nuevo": [
+    0.75,
+    20,
+    20
+   ],
+   "r2 intermedio": [
+    0.684,
+    19,
+    19
+   ],
+   "r1 todos": [
+    0.647,
+    34,
+    34
+   ],
+   "r2 todos": [
+    0.65,
+    60,
+    60
+   ]
+  },
+  "p:mensajes_trabajo:superior": {
+   "r1 formal": [
+    0.857,
+    14,
+    14
+   ],
+   "r1 sencillo": [
+    0.923,
+    13,
+    13
+   ],
+   "r1 piloto": [
+    0.714,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.81,
+    21,
+    21
+   ],
+   "r2 nuevo": [
+    0.75,
+    20,
+    20
+   ],
+   "r2 intermedio": [
+    0.737,
+    19,
+    19
+   ],
+   "r1 todos": [
+    0.853,
+    34,
+    34
+   ],
+   "r2 todos": [
+    0.767,
+    60,
+    60
+   ]
+  },
+  "p:fotos:consentimiento": {
+   "r1 formal": [
+    0.692,
+    13,
+    13
+   ],
+   "r1 sencillo": [
+    1.0,
+    13,
+    13
+   ],
+   "r1 piloto": [
+    0.625,
+    8,
+    8
+   ],
+   "r2 formal": [
+    0.81,
+    21,
+    21
+   ],
+   "r2 nuevo": [
+    0.737,
+    19,
+    19
+   ],
+   "r2 intermedio": [
+    0.9,
+    20,
+    20
+   ],
+   "r1 todos": [
+    0.794,
+    34,
+    34
+   ],
+   "r2 todos": [
+    0.817,
+    60,
+    60
+   ]
+  },
+  "p:fotos:ley": {
+   "r1 formal": [
+    0.231,
+    13,
+    13
+   ],
+   "r1 sencillo": [
+    0.154,
+    13,
+    13
+   ],
+   "r1 piloto": [
+    0.5,
+    8,
+    8
+   ],
+   "r2 formal": [
+    0.476,
+    21,
+    21
+   ],
+   "r2 nuevo": [
+    0.421,
+    19,
+    19
+   ],
+   "r2 intermedio": [
+    0.3,
+    20,
+    20
+   ],
+   "r1 todos": [
+    0.265,
+    34,
+    34
+   ],
+   "r2 todos": [
+    0.4,
+    60,
+    60
+   ]
+  },
+  "p:citatorio:codigo": {
+   "r1 formal": [
+    0.769,
+    13,
+    13
+   ],
+   "r1 sencillo": [
+    0.769,
+    13,
+    13
+   ],
+   "r1 piloto": [
+    0.714,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.591,
+    22,
+    22
+   ],
+   "r2 nuevo": [
+    0.762,
+    21,
+    21
+   ],
+   "r2 intermedio": [
+    0.8,
+    20,
+    20
+   ],
+   "r1 todos": [
+    0.758,
+    33,
+    33
+   ],
+   "r2 todos": [
+    0.714,
+    63,
+    63
+   ]
+  },
+  "p:citatorio:lugar": {
+   "r1 formal": [
+    0.923,
+    13,
+    13
+   ],
+   "r1 sencillo": [
+    0.692,
+    13,
+    13
+   ],
+   "r1 piloto": [
+    0.857,
+    7,
+    7
+   ],
+   "r2 formal": [
+    0.682,
+    22,
+    22
+   ],
+   "r2 nuevo": [
+    0.857,
+    21,
+    21
+   ],
+   "r2 intermedio": [
+    0.75,
+    20,
+    20
+   ],
+   "r1 todos": [
+    0.818,
+    33,
+    33
+   ],
+   "r2 todos": [
+    0.762,
+    63,
+    63
+   ]
+  }
+ },
+ "preguntas_r2_menos_r1_todos": {
+  "ley": {
+   "formal": [
+    -0.019,
+    -0.262,
+    0.219
+   ],
+   "todos los prompts": [
+    0.069,
+    -0.06,
+    0.194
+   ]
+  },
+  "otras": {
+   "formal": [
+    -0.05,
+    -0.23,
+    0.13
+   ],
+   "todos los prompts": [
+    -0.039,
+    -0.129,
+    0.059
+   ]
+  },
+  "p:mensajes_trabajo:ley": {
+   "formal": [
+    -0.262,
+    -0.556,
+    0.048
+   ],
+   "todos los prompts": [
+    0.003,
+    -0.188,
+    0.213
+   ]
+  },
+  "p:mensajes_trabajo:superior": {
+   "formal": [
+    -0.048,
+    -0.298,
+    0.199
+   ],
+   "todos los prompts": [
+    -0.086,
+    -0.245,
+    0.084
+   ]
+  },
+  "p:fotos:consentimiento": {
+   "formal": [
+    0.117,
+    -0.182,
+    0.415
+   ],
+   "todos los prompts": [
+    0.023,
+    -0.14,
+    0.196
+   ]
+  },
+  "p:fotos:ley": {
+   "formal": [
+    0.245,
+    -0.079,
+    0.552
+   ],
+   "todos los prompts": [
+    0.135,
+    -0.067,
+    0.32
+   ]
+  },
+  "p:citatorio:codigo": {
+   "formal": [
+    -0.178,
+    -0.478,
+    0.139
+   ],
+   "todos los prompts": [
+    -0.043,
+    -0.229,
+    0.148
+   ]
+  },
+  "p:citatorio:lugar": {
+   "formal": [
+    -0.241,
+    -0.48,
+    0.017
+   ],
+   "todos los prompts": [
+    -0.056,
+    -0.216,
+    0.12
+   ]
+  }
+ },
+ "escenarios_todos": {
+  "mensajes_trabajo": {
+   "comprension": {
+    "r1 formal": [
+     0.821,
+     14,
+     14
+    ],
+    "r1 sencillo": [
+     0.731,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.643,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.667,
+     21,
+     21
+    ],
+    "r2 nuevo": [
+     0.75,
+     20,
+     20
+    ],
+    "r2 intermedio": [
+     0.711,
+     19,
+     19
+    ],
+    "r1 todos": [
+     0.75,
+     34,
+     34
+    ],
+    "r2 todos": [
+     0.708,
+     60,
+     60
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.5,
+     14,
+     14
+    ],
+    "r1 sencillo": [
+     0.538,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.571,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.571,
+     21,
+     21
+    ],
+    "r2 nuevo": [
+     0.6,
+     20,
+     20
+    ],
+    "r2 intermedio": [
+     0.737,
+     19,
+     19
+    ],
+    "r1 todos": [
+     0.529,
+     34,
+     34
+    ],
+    "r2 todos": [
+     0.633,
+     60,
+     60
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.667,
+     15,
+     15
+    ],
+    "r1 sencillo": [
+     0.308,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.556,
+     9,
+     9
+    ],
+    "r2 formal": [
+     0.136,
+     22,
+     22
+    ],
+    "r2 nuevo": [
+     0.0,
+     20,
+     20
+    ],
+    "r2 intermedio": [
+     0.0,
+     19,
+     19
+    ],
+    "r1 todos": [
+     0.514,
+     37,
+     37
+    ],
+    "r2 todos": [
+     0.049,
+     61,
+     61
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.4,
+     15,
+     15
+    ],
+    "r1 sencillo": [
+     0.692,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.333,
+     9,
+     9
+    ],
+    "r2 formal": [
+     0.455,
+     22,
+     22
+    ],
+    "r2 nuevo": [
+     0.4,
+     20,
+     20
+    ],
+    "r2 intermedio": [
+     0.316,
+     19,
+     19
+    ],
+    "r1 todos": [
+     0.486,
+     37,
+     37
+    ],
+    "r2 todos": [
+     0.393,
+     61,
+     61
+    ]
+   }
+  },
+  "fotos": {
+   "comprension": {
+    "r1 formal": [
+     0.462,
+     13,
+     13
+    ],
+    "r1 sencillo": [
+     0.577,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.562,
+     8,
+     8
+    ],
+    "r2 formal": [
+     0.643,
+     21,
+     21
+    ],
+    "r2 nuevo": [
+     0.579,
+     19,
+     19
+    ],
+    "r2 intermedio": [
+     0.6,
+     20,
+     20
+    ],
+    "r1 todos": [
+     0.529,
+     34,
+     34
+    ],
+    "r2 todos": [
+     0.608,
+     60,
+     60
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.462,
+     13,
+     13
+    ],
+    "r1 sencillo": [
+     0.692,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.625,
+     8,
+     8
+    ],
+    "r2 formal": [
+     0.476,
+     21,
+     21
+    ],
+    "r2 nuevo": [
+     0.684,
+     19,
+     19
+    ],
+    "r2 intermedio": [
+     0.75,
+     20,
+     20
+    ],
+    "r1 todos": [
+     0.588,
+     34,
+     34
+    ],
+    "r2 todos": [
+     0.633,
+     60,
+     60
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.643,
+     14,
+     14
+    ],
+    "r1 sencillo": [
+     0.385,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.8,
+     10,
+     10
+    ],
+    "r2 formal": [
+     0.095,
+     21,
+     21
+    ],
+    "r2 nuevo": [
+     0.0,
+     20,
+     20
+    ],
+    "r2 intermedio": [
+     0.0,
+     20,
+     20
+    ],
+    "r1 todos": [
+     0.595,
+     37,
+     37
+    ],
+    "r2 todos": [
+     0.033,
+     61,
+     61
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.214,
+     14,
+     14
+    ],
+    "r1 sencillo": [
+     0.308,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.4,
+     10,
+     10
+    ],
+    "r2 formal": [
+     0.524,
+     21,
+     21
+    ],
+    "r2 nuevo": [
+     0.4,
+     20,
+     20
+    ],
+    "r2 intermedio": [
+     0.55,
+     20,
+     20
+    ],
+    "r1 todos": [
+     0.297,
+     37,
+     37
+    ],
+    "r2 todos": [
+     0.492,
+     61,
+     61
+    ]
+   }
+  },
+  "citatorio": {
+   "comprension": {
+    "r1 formal": [
+     0.846,
+     13,
+     13
+    ],
+    "r1 sencillo": [
+     0.731,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.786,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.636,
+     22,
+     22
+    ],
+    "r2 nuevo": [
+     0.81,
+     21,
+     21
+    ],
+    "r2 intermedio": [
+     0.775,
+     20,
+     20
+    ],
+    "r1 todos": [
+     0.788,
+     33,
+     33
+    ],
+    "r2 todos": [
+     0.738,
+     63,
+     63
+    ]
+   },
+   "actuaria": {
+    "r1 formal": [
+     0.615,
+     13,
+     13
+    ],
+    "r1 sencillo": [
+     0.615,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.571,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.409,
+     22,
+     22
+    ],
+    "r2 nuevo": [
+     0.667,
+     21,
+     21
+    ],
+    "r2 intermedio": [
+     0.75,
+     20,
+     20
+    ],
+    "r1 todos": [
+     0.606,
+     33,
+     33
+    ],
+    "r2 todos": [
+     0.603,
+     63,
+     63
+    ]
+   },
+   "1a_otro_estado": {
+    "r1 formal": [
+     0.385,
+     13,
+     13
+    ],
+    "r1 sencillo": [
+     0.462,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.714,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.043,
+     23,
+     23
+    ],
+    "r2 nuevo": [
+     0.048,
+     21,
+     21
+    ],
+    "r2 intermedio": [
+     0.048,
+     21,
+     21
+    ],
+    "r1 todos": [
+     0.485,
+     33,
+     33
+    ],
+    "r2 todos": [
+     0.046,
+     65,
+     65
+    ]
+   },
+   "1a_cita_articulo_correcto": {
+    "r1 formal": [
+     0.692,
+     13,
+     13
+    ],
+    "r1 sencillo": [
+     0.846,
+     13,
+     13
+    ],
+    "r1 piloto": [
+     0.571,
+     7,
+     7
+    ],
+    "r2 formal": [
+     0.783,
+     23,
+     23
+    ],
+    "r2 nuevo": [
+     0.857,
+     21,
+     21
+    ],
+    "r2 intermedio": [
+     0.905,
+     21,
+     21
+    ],
+    "r1 todos": [
+     0.727,
+     33,
+     33
+    ],
+    "r2 todos": [
+     0.846,
+     65,
+     65
+    ]
+   }
+  }
+ },
+ "escenarios_r2_menos_r1_todos": {
+  "mensajes_trabajo": {
+   "comprension": [
+    -0.042,
+    -0.183,
+    0.094
+   ],
+   "actuaria": [
+    0.104,
+    -0.113,
+    0.31
+   ],
+   "1a_otro_estado": [
+    -0.464,
+    -0.635,
+    -0.3
+   ],
+   "1a_cita_articulo_correcto": [
+    -0.093,
+    -0.295,
+    0.104
+   ]
+  },
+  "fotos": {
+   "comprension": [
+    0.079,
+    -0.055,
+    0.211
+   ],
+   "actuaria": [
+    0.045,
+    -0.159,
+    0.256
+   ],
+   "1a_otro_estado": [
+    -0.562,
+    -0.724,
+    -0.397
+   ],
+   "1a_cita_articulo_correcto": [
+    0.195,
+    0.001,
+    0.386
+   ]
+  },
+  "citatorio": {
+   "comprension": [
+    -0.05,
+    -0.2,
+    0.102
+   ],
+   "actuaria": [
+    -0.003,
+    -0.212,
+    0.208
+   ],
+   "1a_otro_estado": [
+    -0.439,
+    -0.619,
+    -0.257
+   ],
+   "1a_cita_articulo_correcto": [
+    0.119,
+    -0.049,
+    0.304
+   ]
+  }
+ }
+}
