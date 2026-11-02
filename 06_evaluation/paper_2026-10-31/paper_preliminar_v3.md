@@ -544,6 +544,32 @@ retrieval found the expected article almost four times as often. Legally trained
 almost never answered the question; they also sent fewer messages per situation (1.5 vs 2.0). We do not yet know why;
 the open answers at the end of the study may tell.
 
+**Why so few gave the state.** We examined the 79 round-2 situations (46 participants) whose first message lacked the
+state and whose first answer asked for it. Supplying the state takes two steps, and most of the loss is in the first:
+only 53% of participants sent another message at all (57% of lay participants), while 71% of those who did gave the
+state (74% of lay participants). The first answer, with orientation, laws and next steps, may read as complete; the
+study's questionnaire also waits after it. Where the question sat in the answer mattered more than how long the answer
+was:
+
+**Table 7d. Participants who gave the state after the assistant asked, by features of the first answer** (79
+situations; split at the median for continuous features; differences with 95% CI, participant bootstrap).
+
+| Feature of the first answer | Gave the state | Difference |
+|---|---|---|
+| Question in the last quarter of the text / earlier | 49% / 27% | +21 [−3, +45] |
+| At most 90 words after the question / more | 50% / 26% | +24 [0, +48] |
+| Question in bold / not | 46% / 29% | +17 [−7, +40] |
+| Question in its own short paragraph / inside a longer one | 45% / 28% | +17 [−9, +41] |
+| Answer longer than 417 words / shorter | 44% / 33% | +11 [−14, +34] |
+| Answer already cited the correct law / not | 39% / 38% | +1 [−23, +26] |
+
+Every feature points the same way, a question placed at the end and set apart is answered about twice as often as one
+buried mid-text, but no single difference is clearly distinguishable from zero. The prompts show the same pattern more
+sharply and with a confound: the warm-and-comprehensive prompt placed the question at the very end (median position
+96% of the text, against 69% for the formal prompt) and 61% of its participants gave the state, against 21% with the
+formal prompt; but that prompt also offers to draft a complaint once the state is known, which gives people a reason to
+answer. These data cannot separate placement from that incentive; Section 8 proposes the experiment that would.
+
 **Table 7c. Best recall@10 reached in the conversation.**
 
 | | Without legal training | With legal training | Difference [95% CI] |
@@ -653,7 +679,9 @@ general public therefore cannot assume that the question contains what the answe
 assistant asked, lay participants who supplied the place quadrupled retrieval of the expected article, and the gap with
 legally trained participants shrank from 14 to 6 points. Two design consequences follow. First, the assistant should ask
 *before* answering when a decisive fact is missing, rather than answering from national law and asking at the end, since
-the first answer is the one most people act on and six in ten did not answer the question. Second, the same logic
+the first answer is the one most people act on and six in ten did not answer the question: almost half never wrote
+again, and a question buried mid-answer was answered half as often as one at the end (Table 7d). If the assistant must
+answer first, the question belongs at the end, set apart, with a reason to answer it. Second, the same logic
 extends to *who* (Appendix D): the person's characteristics are another fact lay users will not volunteer.
 
 ## 7. Limitations
@@ -705,8 +733,12 @@ Read the other way, the smallest difference detectable with 80% power:
 The willingness-to-act and trust differences between the formal and plain-and-cautious prompts are already detected.
 The submission will report about 25 participants per prompt, with comprehension framed as an open question;
 collection continues toward 30–45 per prompt, with assignment within strata of legal training, for the camera-ready
-version or a preregistered follow-up. A follow-up should measure comprehension with questions that depend on the answer,
-and should test asking for the place before the first answer.
+version or a preregistered follow-up. A follow-up should measure comprehension with questions that depend on the
+answer. It should also test, with random assignment, how the assistant asks for the place: (A) as now, answering and
+asking within the text; (B) the same answer with the question as a bold final line that says why the place matters;
+(C) a short first reply that only asks for the place and why, followed by the answer. The outcome is the share of
+participants who supply the place and the recall@10 and comprehension that follow. Changing this during round 2 would
+alter the study mid-collection, so it belongs to a third round.
 
 ## 9. Ethical considerations
 
@@ -813,6 +845,7 @@ All scripts are in `06_evaluation/paper_2026-10-31/` and were run on the product
 | Section 5.4 by situation; Section 5.8 questionnaire; Table A3 | `por_pregunta_y_escenario.py` → `por_pregunta.json` |
 | Table 8; Section 5.5 recruitment-date check | `pruebas_aprendizaje_y_fecha.py` → `pruebas.json` |
 | Tables 7a–7c | `como_preguntan.py` → `como_preguntan.json` |
+| Table 7d | `pregunta_enterrada.py` → `pregunta_enterrada.json` |
 | Recall by naming the state; Table 6c last two rows | `recall_primer_mensaje.py`, `estado_por_orden_de_situacion.py` |
 | Table 1c; Section 5.4 prediction | `actuar_segun_error.py` (round 1); round 2 from `resultados_ronda2.json` |
 | 120 of 121 codes came from retrieval | all round-1 answers, 24 Oct (`replay_ronda1_2026-10-24`) |
