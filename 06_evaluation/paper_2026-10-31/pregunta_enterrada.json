@@ -1,0 +1,495 @@
+{
+ "todas": {
+  "situaciones": 79,
+  "personas": 46,
+  "mando_otro": [
+   0.532,
+   79
+  ],
+  "dio_estado": [
+   0.38,
+   79
+  ],
+  "dio_estado_si_mando_otro": [
+   0.714,
+   42
+  ]
+ },
+ "sin formación": {
+  "situaciones": 68,
+  "personas": 38,
+  "mando_otro": [
+   0.574,
+   68
+  ],
+  "dio_estado": [
+   0.426,
+   68
+  ],
+  "dio_estado_si_mando_otro": [
+   0.744,
+   39
+  ]
+ },
+ "con formación": {
+  "situaciones": 11,
+  "personas": 8,
+  "mando_otro": [
+   0.273,
+   11
+  ],
+  "dio_estado": [
+   0.091,
+   11
+  ],
+  "dio_estado_si_mando_otro": [
+   0.333,
+   3
+  ]
+ },
+ "rasgos_de_la_respuesta": {
+  "palabras": {
+   "mediana": 417,
+   "media": 420.987
+  },
+  "posicion": {
+   "mediana": 0.755,
+   "media": 0.672
+  },
+  "palabras_despues": {
+   "mediana": 90,
+   "media": 133.241
+  },
+  "negritas": {
+   "mediana": 1.0,
+   "media": 0.519
+  },
+  "parrafo_propio": {
+   "mediana": 1.0,
+   "media": 0.595
+  },
+  "preguntas_en_respuesta": {
+   "mediana": 1,
+   "media": 1.405
+  },
+  "ya_cita_ley": {
+   "mediana": 0.0,
+   "media": 0.392
+  }
+ },
+ "cortes": {
+  "palabras (≤ 417 vs > 417)": {
+   "bajo": {
+    "situaciones": 40,
+    "personas": 27,
+    "mando_otro": [
+     0.475,
+     40
+    ],
+    "dio_estado": [
+     0.325,
+     40
+    ],
+    "dio_estado_si_mando_otro": [
+     0.684,
+     19
+    ]
+   },
+   "alto": {
+    "situaciones": 39,
+    "personas": 29,
+    "mando_otro": [
+     0.59,
+     39
+    ],
+    "dio_estado": [
+     0.436,
+     39
+    ],
+    "dio_estado_si_mando_otro": [
+     0.739,
+     23
+    ]
+   },
+   "alto − bajo": {
+    "mando_otro": [
+     0.115,
+     -0.125,
+     0.349
+    ],
+    "dio_estado": [
+     0.111,
+     -0.138,
+     0.337
+    ],
+    "dio_estado_si_mando_otro": [
+     0.055,
+     -0.268,
+     0.374
+    ]
+   }
+  },
+  "posicion (≤ 0.75 vs > 0.75)": {
+   "bajo": {
+    "situaciones": 40,
+    "personas": 28,
+    "mando_otro": [
+     0.475,
+     40
+    ],
+    "dio_estado": [
+     0.275,
+     40
+    ],
+    "dio_estado_si_mando_otro": [
+     0.579,
+     19
+    ]
+   },
+   "alto": {
+    "situaciones": 39,
+    "personas": 29,
+    "mando_otro": [
+     0.59,
+     39
+    ],
+    "dio_estado": [
+     0.487,
+     39
+    ],
+    "dio_estado_si_mando_otro": [
+     0.826,
+     23
+    ]
+   },
+   "alto − bajo": {
+    "mando_otro": [
+     0.115,
+     -0.128,
+     0.35
+    ],
+    "dio_estado": [
+     0.212,
+     -0.033,
+     0.446
+    ],
+    "dio_estado_si_mando_otro": [
+     0.247,
+     -0.068,
+     0.572
+    ]
+   }
+  },
+  "palabras_despues (≤ 90 vs > 90)": {
+   "bajo": {
+    "situaciones": 40,
+    "personas": 29,
+    "mando_otro": [
+     0.6,
+     40
+    ],
+    "dio_estado": [
+     0.5,
+     40
+    ],
+    "dio_estado_si_mando_otro": [
+     0.833,
+     24
+    ]
+   },
+   "alto": {
+    "situaciones": 39,
+    "personas": 27,
+    "mando_otro": [
+     0.462,
+     39
+    ],
+    "dio_estado": [
+     0.256,
+     39
+    ],
+    "dio_estado_si_mando_otro": [
+     0.556,
+     18
+    ]
+   },
+   "alto − bajo": {
+    "mando_otro": [
+     -0.138,
+     -0.381,
+     0.108
+    ],
+    "dio_estado": [
+     -0.244,
+     -0.476,
+     0.004
+    ],
+    "dio_estado_si_mando_otro": [
+     -0.278,
+     -0.612,
+     0.047
+    ]
+   }
+  },
+  "preguntas_en_respuesta (≤ 1 vs > 1)": {
+   "bajo": {
+    "situaciones": 43,
+    "personas": 28,
+    "mando_otro": [
+     0.419,
+     43
+    ],
+    "dio_estado": [
+     0.302,
+     43
+    ],
+    "dio_estado_si_mando_otro": [
+     0.722,
+     18
+    ]
+   },
+   "alto": {
+    "situaciones": 36,
+    "personas": 25,
+    "mando_otro": [
+     0.667,
+     36
+    ],
+    "dio_estado": [
+     0.472,
+     36
+    ],
+    "dio_estado_si_mando_otro": [
+     0.708,
+     24
+    ]
+   },
+   "alto − bajo": {
+    "mando_otro": [
+     0.248,
+     -0.001,
+     0.482
+    ],
+    "dio_estado": [
+     0.17,
+     -0.073,
+     0.408
+    ],
+    "dio_estado_si_mando_otro": [
+     -0.014,
+     -0.309,
+     0.284
+    ]
+   }
+  },
+  "negritas": {
+   "no": {
+    "situaciones": 38,
+    "personas": 24,
+    "mando_otro": [
+     0.447,
+     38
+    ],
+    "dio_estado": [
+     0.289,
+     38
+    ],
+    "dio_estado_si_mando_otro": [
+     0.647,
+     17
+    ]
+   },
+   "sí": {
+    "situaciones": 41,
+    "personas": 27,
+    "mando_otro": [
+     0.61,
+     41
+    ],
+    "dio_estado": [
+     0.463,
+     41
+    ],
+    "dio_estado_si_mando_otro": [
+     0.76,
+     25
+    ]
+   },
+   "sí − no": {
+    "mando_otro": [
+     0.162,
+     -0.079,
+     0.392
+    ],
+    "dio_estado": [
+     0.174,
+     -0.07,
+     0.404
+    ],
+    "dio_estado_si_mando_otro": [
+     0.113,
+     -0.208,
+     0.458
+    ]
+   }
+  },
+  "parrafo_propio": {
+   "no": {
+    "situaciones": 32,
+    "personas": 22,
+    "mando_otro": [
+     0.406,
+     32
+    ],
+    "dio_estado": [
+     0.281,
+     32
+    ],
+    "dio_estado_si_mando_otro": [
+     0.692,
+     13
+    ]
+   },
+   "sí": {
+    "situaciones": 47,
+    "personas": 31,
+    "mando_otro": [
+     0.617,
+     47
+    ],
+    "dio_estado": [
+     0.447,
+     47
+    ],
+    "dio_estado_si_mando_otro": [
+     0.724,
+     29
+    ]
+   },
+   "sí − no": {
+    "mando_otro": [
+     0.211,
+     -0.036,
+     0.433
+    ],
+    "dio_estado": [
+     0.166,
+     -0.086,
+     0.407
+    ],
+    "dio_estado_si_mando_otro": [
+     0.032,
+     -0.27,
+     0.371
+    ]
+   }
+  },
+  "ya_cita_ley": {
+   "no": {
+    "situaciones": 48,
+    "personas": 40,
+    "mando_otro": [
+     0.521,
+     48
+    ],
+    "dio_estado": [
+     0.375,
+     48
+    ],
+    "dio_estado_si_mando_otro": [
+     0.72,
+     25
+    ]
+   },
+   "sí": {
+    "situaciones": 31,
+    "personas": 28,
+    "mando_otro": [
+     0.548,
+     31
+    ],
+    "dio_estado": [
+     0.387,
+     31
+    ],
+    "dio_estado_si_mando_otro": [
+     0.706,
+     17
+    ]
+   },
+   "sí − no": {
+    "mando_otro": [
+     0.028,
+     -0.213,
+     0.277
+    ],
+    "dio_estado": [
+     0.012,
+     -0.232,
+     0.257
+    ],
+    "dio_estado_si_mando_otro": [
+     -0.014,
+     -0.314,
+     0.271
+    ]
+   }
+  }
+ },
+ "por_prompt": {
+  "original": {
+   "situaciones": 34,
+   "personas": 18,
+   "mando_otro": [
+    0.353,
+    34
+   ],
+   "dio_estado": [
+    0.206,
+    34
+   ],
+   "dio_estado_si_mando_otro": [
+    0.583,
+    12
+   ],
+   "palabras_mediana": 450.5,
+   "posicion_mediana": 0.69
+  },
+  "nuevo": {
+   "situaciones": 23,
+   "personas": 13,
+   "mando_otro": [
+    0.783,
+    23
+   ],
+   "dio_estado": [
+    0.609,
+    23
+   ],
+   "dio_estado_si_mando_otro": [
+    0.778,
+    18
+   ],
+   "palabras_mediana": 391,
+   "posicion_mediana": 0.96
+  },
+  "intermedio": {
+   "situaciones": 22,
+   "personas": 15,
+   "mando_otro": [
+    0.545,
+    22
+   ],
+   "dio_estado": [
+    0.409,
+    22
+   ],
+   "dio_estado_si_mando_otro": [
+    0.75,
+    12
+   ],
+   "palabras_mediana": 401.0,
+   "posicion_mediana": 0.78
+  }
+ }
+}
