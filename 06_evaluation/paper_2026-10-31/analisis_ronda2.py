@@ -38,6 +38,12 @@ MUJERES = re.compile(r'(?i)acceso\s+de\s+las\s+mujeres\s+a\s+una\s+vida\s+libre|
 
 # La ronda 1 se mide con la versión que vieron las personas (v7, archivada). La de prod es la v9: Karen la editó el
 # 21-oct 19:19 UTC, ya terminada la ronda, y le agregó el art. 167 Quinquies de Querétaro al gold de «fotos».
+# Regla de calificación de «fotos» (decisión del 14-oct, en las dos rondas): la extorsión (Ley General, art. 15) o el
+# art. 167 Quinquies del Código Penal de Querétaro cuentan como correctos, en la pregunta «¿qué ley?» de la persona y en
+# lo que cita el asistente (alternativa del art. 15). CLAVE_FOTOS=solo_lg15 reproduce la calificación anterior.
+CLAVE_FOTOS = os.environ.get('CLAVE_FOTOS', 'extorsion_o_167quinquies')
+LEY_FOTOS_CORRECTAS = {'lg_15'} if CLAVE_FOTOS == 'solo_lg15' else {'lg_15', 'qro_167quinquies'}
+GOLD_167Q = 'Cita el artículo 167 Quinquies del Código Penal del Estado de Querétaro'
 ARCHIVADA = {'piloto_penal': RAIZ / '06_evaluation' / 'estudio_ronda1_2026-10-13' / 'piloto_penal_v7_final.yaml'}
 
 
@@ -52,6 +58,14 @@ def cargar(eid):
         if k not in gold and i['escenario'] in por_id:
             ef = escenario_efectivo(por_id[i['escenario']], i['variante'])
             gold[k] = main._study_resolver([g for x in ef.get('gold') or [] for g in main._study_gold_refs(x)])
+            if k[0] == 'fotos' and 'qro_167quinquies' in LEY_FOTOS_CORRECTAS and gold[k]:
+                q = main._study_resolver(main._study_gold_refs(GOLD_167Q))
+                gold[k] = [gold[k][0] + [x for g in q for x in g]] + gold[k][1:]
+    for i in d['intentos']:
+        sc, r = i.get('comprension') or {}, (i.get('respuestas') or {}).get('ley')
+        if i['escenario'] == 'fotos' and 'ley' in (sc.get('detalle') or {}):
+            sc['detalle']['ley'] = None if r in (None, '', 'no_se') else r in LEY_FOTOS_CORRECTAS
+            sc['aciertos'] = sum(1 for v in sc['detalle'].values() if v)
     esc = {i['id']: (i['escenario'], i['variante']) for i in d['intentos']}
     for t in d['turnos']:
         g = gold.get(esc.get(t['intento_id'])) or []

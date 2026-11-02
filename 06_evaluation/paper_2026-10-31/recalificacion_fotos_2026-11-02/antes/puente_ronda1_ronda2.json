@@ -1,0 +1,857 @@
+{
+ "md5_ronda1_actual": {
+  "f68239bf": 42
+ },
+ "md5_ronda2_original": {
+  "f68239bf": 66
+ },
+ "tabla_todos": {
+  "ronda1 formal (actual)": {
+   "personas": 16,
+   "comprension": [
+    0.713,
+    40
+   ],
+   "confianza_1a5": [
+    4.225,
+    40
+   ],
+   "actuaria": [
+    0.525,
+    40
+   ],
+   "noto_problema": [
+    0.075,
+    40
+   ],
+   "1a_otro_estado": [
+    0.571,
+    42
+   ],
+   "1a_cita_ley_correcta": [
+    0.595,
+    42
+   ],
+   "1a_cita_articulo_correcto": [
+    0.429,
+    42
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.0,
+    42
+   ],
+   "recall10_1er_mensaje": [
+    0.202,
+    42
+   ]
+  },
+  "ronda1 sencillo": {
+   "personas": 15,
+   "comprension": [
+    0.679,
+    39
+   ],
+   "confianza_1a5": [
+    3.974,
+    39
+   ],
+   "actuaria": [
+    0.615,
+    39
+   ],
+   "noto_problema": [
+    0.179,
+    39
+   ],
+   "1a_otro_estado": [
+    0.385,
+    39
+   ],
+   "1a_cita_ley_correcta": [
+    0.718,
+    39
+   ],
+   "1a_cita_articulo_correcto": [
+    0.615,
+    39
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.276,
+    39
+   ],
+   "recall10_1er_mensaje": [
+    0.25,
+    40
+   ]
+  },
+  "ronda1 piloto": {
+   "personas": 12,
+   "comprension": [
+    0.659,
+    22
+   ],
+   "confianza_1a5": [
+    3.727,
+    22
+   ],
+   "actuaria": [
+    0.591,
+    22
+   ],
+   "noto_problema": [
+    0.091,
+    22
+   ],
+   "1a_otro_estado": [
+    0.692,
+    26
+   ],
+   "1a_cita_ley_correcta": [
+    0.615,
+    26
+   ],
+   "1a_cita_articulo_correcto": [
+    0.423,
+    26
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.0,
+    26
+   ],
+   "recall10_1er_mensaje": [
+    0.25,
+    26
+   ]
+  },
+  "ronda2 formal (original)": {
+   "personas": 27,
+   "comprension": [
+    0.648,
+    64
+   ],
+   "confianza_1a5": [
+    4.156,
+    64
+   ],
+   "actuaria": [
+    0.484,
+    64
+   ],
+   "noto_problema": [
+    0.109,
+    64
+   ],
+   "1a_otro_estado": [
+    0.091,
+    66
+   ],
+   "1a_cita_ley_correcta": [
+    0.697,
+    66
+   ],
+   "1a_cita_articulo_correcto": [
+    0.591,
+    66
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.473,
+    66
+   ],
+   "recall10_1er_mensaje": [
+    0.28,
+    66
+   ]
+  },
+  "ronda2 nuevo": {
+   "personas": 24,
+   "comprension": [
+    0.73,
+    63
+   ],
+   "confianza_1a5": [
+    4.127,
+    63
+   ],
+   "actuaria": [
+    0.619,
+    63
+   ],
+   "noto_problema": [
+    0.127,
+    63
+   ],
+   "1a_otro_estado": [
+    0.016,
+    64
+   ],
+   "1a_cita_ley_correcta": [
+    0.688,
+    64
+   ],
+   "1a_cita_articulo_correcto": [
+    0.562,
+    64
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.339,
+    64
+   ],
+   "recall10_1er_mensaje": [
+    0.377,
+    65
+   ]
+  },
+  "ronda2 intermedio": {
+   "personas": 27,
+   "comprension": [
+    0.677,
+    65
+   ],
+   "confianza_1a5": [
+    4.154,
+    65
+   ],
+   "actuaria": [
+    0.769,
+    65
+   ],
+   "noto_problema": [
+    0.123,
+    65
+   ],
+   "1a_otro_estado": [
+    0.015,
+    66
+   ],
+   "1a_cita_ley_correcta": [
+    0.682,
+    66
+   ],
+   "1a_cita_articulo_correcto": [
+    0.576,
+    66
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.338,
+    66
+   ],
+   "recall10_1er_mensaje": [
+    0.348,
+    66
+   ]
+  }
+ },
+ "puente_formal_r2_menos_r1_todos": {
+  "comprension": [
+   -0.064,
+   -0.219,
+   0.085
+  ],
+  "confianza_1a5": [
+   -0.069,
+   -0.544,
+   0.443
+  ],
+  "actuaria": [
+   -0.041,
+   -0.31,
+   0.224
+  ],
+  "noto_problema": [
+   0.034,
+   -0.075,
+   0.148
+  ],
+  "1a_otro_estado": [
+   -0.481,
+   -0.644,
+   -0.315
+  ],
+  "1a_cita_ley_correcta": [
+   0.102,
+   -0.085,
+   0.288
+  ],
+  "1a_cita_articulo_correcto": [
+   0.162,
+   -0.043,
+   0.367
+  ],
+  "respuestas_que_piden_el_estado": [
+   0.473,
+   0.35,
+   0.595
+  ],
+  "recall10_1er_mensaje": [
+   0.078,
+   -0.078,
+   0.228
+  ]
+ },
+ "tabla_sin": {
+  "ronda1 formal (actual)": {
+   "personas": 7,
+   "comprension": [
+    0.611,
+    18
+   ],
+   "confianza_1a5": [
+    3.944,
+    18
+   ],
+   "actuaria": [
+    0.556,
+    18
+   ],
+   "noto_problema": [
+    0.0,
+    18
+   ],
+   "1a_otro_estado": [
+    0.737,
+    19
+   ],
+   "1a_cita_ley_correcta": [
+    0.632,
+    19
+   ],
+   "1a_cita_articulo_correcto": [
+    0.421,
+    19
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.0,
+    19
+   ],
+   "recall10_1er_mensaje": [
+    0.237,
+    19
+   ]
+  },
+  "ronda1 sencillo": {
+   "personas": 8,
+   "comprension": [
+    0.667,
+    24
+   ],
+   "confianza_1a5": [
+    3.75,
+    24
+   ],
+   "actuaria": [
+    0.75,
+    24
+   ],
+   "noto_problema": [
+    0.125,
+    24
+   ],
+   "1a_otro_estado": [
+    0.583,
+    24
+   ],
+   "1a_cita_ley_correcta": [
+    0.667,
+    24
+   ],
+   "1a_cita_articulo_correcto": [
+    0.583,
+    24
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.24,
+    24
+   ],
+   "recall10_1er_mensaje": [
+    0.229,
+    24
+   ]
+  },
+  "ronda1 piloto": {
+   "personas": 11,
+   "comprension": [
+    0.659,
+    22
+   ],
+   "confianza_1a5": [
+    3.727,
+    22
+   ],
+   "actuaria": [
+    0.591,
+    22
+   ],
+   "noto_problema": [
+    0.091,
+    22
+   ],
+   "1a_otro_estado": [
+    0.72,
+    25
+   ],
+   "1a_cita_ley_correcta": [
+    0.6,
+    25
+   ],
+   "1a_cita_articulo_correcto": [
+    0.4,
+    25
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.0,
+    25
+   ],
+   "recall10_1er_mensaje": [
+    0.26,
+    25
+   ]
+  },
+  "ronda2 formal (original)": {
+   "personas": 21,
+   "comprension": [
+    0.63,
+    46
+   ],
+   "confianza_1a5": [
+    3.978,
+    46
+   ],
+   "actuaria": [
+    0.391,
+    46
+   ],
+   "noto_problema": [
+    0.13,
+    46
+   ],
+   "1a_otro_estado": [
+    0.042,
+    48
+   ],
+   "1a_cita_ley_correcta": [
+    0.646,
+    48
+   ],
+   "1a_cita_articulo_correcto": [
+    0.521,
+    48
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.525,
+    48
+   ],
+   "recall10_1er_mensaje": [
+    0.25,
+    48
+   ]
+  },
+  "ronda2 nuevo": {
+   "personas": 18,
+   "comprension": [
+    0.67,
+    47
+   ],
+   "confianza_1a5": [
+    4.0,
+    47
+   ],
+   "actuaria": [
+    0.574,
+    47
+   ],
+   "noto_problema": [
+    0.106,
+    47
+   ],
+   "1a_otro_estado": [
+    0.021,
+    48
+   ],
+   "1a_cita_ley_correcta": [
+    0.667,
+    48
+   ],
+   "1a_cita_articulo_correcto": [
+    0.521,
+    48
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.358,
+    48
+   ],
+   "recall10_1er_mensaje": [
+    0.296,
+    49
+   ]
+  },
+  "ronda2 intermedio": {
+   "personas": 20,
+   "comprension": [
+    0.68,
+    50
+   ],
+   "confianza_1a5": [
+    4.18,
+    50
+   ],
+   "actuaria": [
+    0.82,
+    50
+   ],
+   "noto_problema": [
+    0.08,
+    50
+   ],
+   "1a_otro_estado": [
+    0.02,
+    51
+   ],
+   "1a_cita_ley_correcta": [
+    0.686,
+    51
+   ],
+   "1a_cita_articulo_correcto": [
+    0.569,
+    51
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.355,
+    51
+   ],
+   "recall10_1er_mensaje": [
+    0.353,
+    51
+   ]
+  }
+ },
+ "puente_formal_r2_menos_r1_sin": {
+  "comprension": [
+   0.019,
+   -0.179,
+   0.225
+  ],
+  "confianza_1a5": [
+   0.034,
+   -0.542,
+   0.705
+  ],
+  "actuaria": [
+   -0.164,
+   -0.571,
+   0.235
+  ],
+  "noto_problema": [
+   0.13,
+   0.038,
+   0.242
+  ],
+  "1a_otro_estado": [
+   -0.695,
+   -0.882,
+   -0.509
+  ],
+  "1a_cita_ley_correcta": [
+   0.014,
+   -0.194,
+   0.24
+  ],
+  "1a_cita_articulo_correcto": [
+   0.1,
+   -0.143,
+   0.366
+  ],
+  "respuestas_que_piden_el_estado": [
+   0.525,
+   0.391,
+   0.659
+  ],
+  "recall10_1er_mensaje": [
+   0.013,
+   -0.217,
+   0.228
+  ]
+ },
+ "tabla_con": {
+  "ronda1 formal (actual)": {
+   "personas": 9,
+   "comprension": [
+    0.795,
+    22
+   ],
+   "confianza_1a5": [
+    4.455,
+    22
+   ],
+   "actuaria": [
+    0.5,
+    22
+   ],
+   "noto_problema": [
+    0.136,
+    22
+   ],
+   "1a_otro_estado": [
+    0.435,
+    23
+   ],
+   "1a_cita_ley_correcta": [
+    0.565,
+    23
+   ],
+   "1a_cita_articulo_correcto": [
+    0.435,
+    23
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.0,
+    23
+   ],
+   "recall10_1er_mensaje": [
+    0.174,
+    23
+   ]
+  },
+  "ronda1 sencillo": {
+   "personas": 7,
+   "comprension": [
+    0.7,
+    15
+   ],
+   "confianza_1a5": [
+    4.333,
+    15
+   ],
+   "actuaria": [
+    0.4,
+    15
+   ],
+   "noto_problema": [
+    0.267,
+    15
+   ],
+   "1a_otro_estado": [
+    0.067,
+    15
+   ],
+   "1a_cita_ley_correcta": [
+    0.8,
+    15
+   ],
+   "1a_cita_articulo_correcto": [
+    0.667,
+    15
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.333,
+    15
+   ],
+   "recall10_1er_mensaje": [
+    0.281,
+    16
+   ]
+  },
+  "ronda1 piloto": {
+   "personas": 1,
+   "comprension": [
+    null,
+    0
+   ],
+   "confianza_1a5": [
+    null,
+    0
+   ],
+   "actuaria": [
+    null,
+    0
+   ],
+   "noto_problema": [
+    null,
+    0
+   ],
+   "1a_otro_estado": [
+    0.0,
+    1
+   ],
+   "1a_cita_ley_correcta": [
+    1.0,
+    1
+   ],
+   "1a_cita_articulo_correcto": [
+    1.0,
+    1
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.0,
+    1
+   ],
+   "recall10_1er_mensaje": [
+    0.0,
+    1
+   ]
+  },
+  "ronda2 formal (original)": {
+   "personas": 6,
+   "comprension": [
+    0.694,
+    18
+   ],
+   "confianza_1a5": [
+    4.611,
+    18
+   ],
+   "actuaria": [
+    0.722,
+    18
+   ],
+   "noto_problema": [
+    0.056,
+    18
+   ],
+   "1a_otro_estado": [
+    0.222,
+    18
+   ],
+   "1a_cita_ley_correcta": [
+    0.833,
+    18
+   ],
+   "1a_cita_articulo_correcto": [
+    0.778,
+    18
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.333,
+    18
+   ],
+   "recall10_1er_mensaje": [
+    0.361,
+    18
+   ]
+  },
+  "ronda2 nuevo": {
+   "personas": 6,
+   "comprension": [
+    0.906,
+    16
+   ],
+   "confianza_1a5": [
+    4.5,
+    16
+   ],
+   "actuaria": [
+    0.75,
+    16
+   ],
+   "noto_problema": [
+    0.188,
+    16
+   ],
+   "1a_otro_estado": [
+    0.0,
+    16
+   ],
+   "1a_cita_ley_correcta": [
+    0.75,
+    16
+   ],
+   "1a_cita_articulo_correcto": [
+    0.688,
+    16
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.281,
+    16
+   ],
+   "recall10_1er_mensaje": [
+    0.625,
+    16
+   ]
+  },
+  "ronda2 intermedio": {
+   "personas": 7,
+   "comprension": [
+    0.667,
+    15
+   ],
+   "confianza_1a5": [
+    4.067,
+    15
+   ],
+   "actuaria": [
+    0.6,
+    15
+   ],
+   "noto_problema": [
+    0.267,
+    15
+   ],
+   "1a_otro_estado": [
+    0.0,
+    15
+   ],
+   "1a_cita_ley_correcta": [
+    0.667,
+    15
+   ],
+   "1a_cita_articulo_correcto": [
+    0.6,
+    15
+   ],
+   "respuestas_que_piden_el_estado": [
+    0.278,
+    15
+   ],
+   "recall10_1er_mensaje": [
+    0.333,
+    15
+   ]
+  }
+ },
+ "puente_formal_r2_menos_r1_con": {
+  "comprension": [
+   -0.101,
+   -0.319,
+   0.095
+  ],
+  "confianza_1a5": [
+   0.157,
+   -0.5,
+   0.861
+  ],
+  "actuaria": [
+   0.222,
+   -0.204,
+   0.616
+  ],
+  "noto_problema": [
+   -0.081,
+   -0.235,
+   0.069
+  ],
+  "1a_otro_estado": [
+   -0.213,
+   -0.463,
+   0.014
+  ],
+  "1a_cita_ley_correcta": [
+   0.268,
+   0.009,
+   0.526
+  ],
+  "1a_cita_articulo_correcto": [
+   0.343,
+   0.058,
+   0.609
+  ],
+  "respuestas_que_piden_el_estado": [
+   0.333,
+   0.111,
+   0.556
+  ],
+  "recall10_1er_mensaje": [
+   0.187,
+   -0.042,
+   0.375
+  ]
+ }
+}

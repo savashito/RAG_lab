@@ -1,0 +1,338 @@
+{
+ "ronda 1": {
+  "sin": {
+   "personas": 25,
+   "situaciones": 68,
+   "r10_1er": [
+    0.265,
+    68
+   ],
+   "estado_1er": [
+    0.426,
+    68
+   ],
+   "delito_1er": [
+    0.353,
+    68
+   ],
+   "ley_1er": [
+    0.059,
+    68
+   ],
+   "palabras_1er": [
+    35.191,
+    68
+   ],
+   "mensajes": [
+    1.647,
+    68
+   ],
+   "r10_mejor": [
+    0.346,
+    68
+   ],
+   "r10_1er_sin_estado": [
+    0.154,
+    39
+   ],
+   "asistente_pidio_estado": [
+    0.205,
+    39
+   ],
+   "persona_dio_estado_despues": [
+    0.308,
+    39
+   ],
+   "dio_estado_si_se_lo_pidieron": [
+    0.75,
+    8
+   ],
+   "r10_al_dar_estado": [
+    0.333,
+    12
+   ]
+  },
+  "con": {
+   "personas": 15,
+   "situaciones": 40,
+   "r10_1er": [
+    0.275,
+    40
+   ],
+   "estado_1er": [
+    0.6,
+    40
+   ],
+   "delito_1er": [
+    0.475,
+    40
+   ],
+   "ley_1er": [
+    0.075,
+    40
+   ],
+   "palabras_1er": [
+    33.75,
+    40
+   ],
+   "mensajes": [
+    1.425,
+    40
+   ],
+   "r10_mejor": [
+    0.275,
+    40
+   ],
+   "r10_1er_sin_estado": [
+    0.219,
+    16
+   ],
+   "asistente_pidio_estado": [
+    0.25,
+    16
+   ],
+   "persona_dio_estado_despues": [
+    0.188,
+    16
+   ],
+   "dio_estado_si_se_lo_pidieron": [
+    0.0,
+    4
+   ],
+   "r10_al_dar_estado": [
+    0.0,
+    3
+   ]
+  },
+  "con − sin": {
+   "r10_1er": [
+    0.01,
+    -0.128,
+    0.152
+   ],
+   "estado_1er": [
+    0.174,
+    -0.027,
+    0.364
+   ],
+   "delito_1er": [
+    0.122,
+    -0.053,
+    0.287
+   ],
+   "ley_1er": [
+    0.016,
+    -0.072,
+    0.114
+   ],
+   "palabras_1er": [
+    -1.441,
+    -14.388,
+    11.486
+   ],
+   "mensajes": [
+    -0.222,
+    -0.622,
+    0.167
+   ],
+   "r10_mejor": [
+    -0.071,
+    -0.216,
+    0.071
+   ],
+   "r10_1er_sin_estado": [
+    0.065,
+    -0.148,
+    0.277
+   ],
+   "asistente_pidio_estado": [
+    0.045,
+    -0.233,
+    0.323
+   ],
+   "persona_dio_estado_despues": [
+    -0.12,
+    -0.36,
+    0.15
+   ],
+   "dio_estado_si_se_lo_pidieron": [
+    -0.75,
+    -1.0,
+    -0.333
+   ],
+   "r10_al_dar_estado": [
+    -0.333,
+    -0.5,
+    -0.125
+   ]
+  }
+ },
+ "ronda 2": {
+  "sin": {
+   "personas": 54,
+   "situaciones": 148,
+   "r10_1er": [
+    0.321,
+    148
+   ],
+   "estado_1er": [
+    0.399,
+    148
+   ],
+   "delito_1er": [
+    0.27,
+    148
+   ],
+   "ley_1er": [
+    0.041,
+    148
+   ],
+   "palabras_1er": [
+    31.757,
+    148
+   ],
+   "mensajes": [
+    2.034,
+    148
+   ],
+   "r10_mejor": [
+    0.47,
+    148
+   ],
+   "r10_1er_sin_estado": [
+    0.157,
+    89
+   ],
+   "asistente_pidio_estado": [
+    0.809,
+    89
+   ],
+   "persona_dio_estado_despues": [
+    0.371,
+    89
+   ],
+   "dio_estado_si_se_lo_pidieron": [
+    0.403,
+    72
+   ],
+   "r10_al_dar_estado": [
+    0.682,
+    33
+   ]
+  },
+  "con": {
+   "personas": 17,
+   "situaciones": 49,
+   "r10_1er": [
+    0.48,
+    49
+   ],
+   "estado_1er": [
+    0.612,
+    49
+   ],
+   "delito_1er": [
+    0.408,
+    49
+   ],
+   "ley_1er": [
+    0.122,
+    49
+   ],
+   "palabras_1er": [
+    36.265,
+    49
+   ],
+   "mensajes": [
+    1.51,
+    49
+   ],
+   "r10_mejor": [
+    0.52,
+    49
+   ],
+   "r10_1er_sin_estado": [
+    0.158,
+    19
+   ],
+   "asistente_pidio_estado": [
+    0.632,
+    19
+   ],
+   "persona_dio_estado_despues": [
+    0.105,
+    19
+   ],
+   "dio_estado_si_se_lo_pidieron": [
+    0.083,
+    12
+   ],
+   "r10_al_dar_estado": [
+    0.25,
+    2
+   ]
+  },
+  "con − sin": {
+   "r10_1er": [
+    0.159,
+    0.012,
+    0.295
+   ],
+   "estado_1er": [
+    0.214,
+    0.038,
+    0.386
+   ],
+   "delito_1er": [
+    0.138,
+    -0.02,
+    0.3
+   ],
+   "ley_1er": [
+    0.082,
+    -0.022,
+    0.206
+   ],
+   "palabras_1er": [
+    4.509,
+    -6.205,
+    15.381
+   ],
+   "mensajes": [
+    -0.524,
+    -1.042,
+    0.21
+   ],
+   "r10_mejor": [
+    0.051,
+    -0.109,
+    0.207
+   ],
+   "r10_1er_sin_estado": [
+    0.001,
+    -0.127,
+    0.15
+   ],
+   "asistente_pidio_estado": [
+    -0.177,
+    -0.369,
+    0.007
+   ],
+   "persona_dio_estado_despues": [
+    -0.266,
+    -0.44,
+    -0.064
+   ],
+   "dio_estado_si_se_lo_pidieron": [
+    -0.319,
+    -0.509,
+    -0.061
+   ],
+   "r10_al_dar_estado": [
+    -0.432,
+    -0.768,
+    -0.1
+   ]
+  }
+ }
+}

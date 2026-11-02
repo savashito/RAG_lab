@@ -1,0 +1,2184 @@
+{
+ "versiones_ronda1": {
+  "null": 22,
+  "7": 78,
+  "9": 1
+ },
+ "prueba1_acierta_ley_segun_articulo": {
+  "ronda 1 · todos · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.677,
+     31
+    ],
+    "asistente_no_lo_cito": [
+     0.541,
+     37
+    ],
+    "si_menos_no": [
+     0.137,
+     -0.094,
+     0.357
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.649,
+     37
+    ],
+    "asistente_no_lo_cito": [
+     0.548,
+     31
+    ],
+    "si_menos_no": [
+     0.1,
+     -0.126,
+     0.325
+    ]
+   }
+  },
+  "ronda 1 · todos · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.765,
+     17
+    ],
+    "asistente_no_lo_cito": [
+     0.529,
+     17
+    ],
+    "si_menos_no": [
+     0.235,
+     -0.059,
+     0.529
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.727,
+     22
+    ],
+    "asistente_no_lo_cito": [
+     0.5,
+     12
+    ],
+    "si_menos_no": [
+     0.227,
+     -0.114,
+     0.561
+    ]
+   }
+  },
+  "ronda 1 · todos · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.571,
+     14
+    ],
+    "asistente_no_lo_cito": [
+     0.55,
+     20
+    ],
+    "si_menos_no": [
+     0.021,
+     -0.314,
+     0.357
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.533,
+     15
+    ],
+    "asistente_no_lo_cito": [
+     0.579,
+     19
+    ],
+    "si_menos_no": [
+     -0.046,
+     -0.365,
+     0.274
+    ]
+   }
+  },
+  "ronda 1 · sin · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.611,
+     18
+    ],
+    "asistente_no_lo_cito": [
+     0.48,
+     25
+    ],
+    "si_menos_no": [
+     0.131,
+     -0.15,
+     0.415
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.583,
+     24
+    ],
+    "asistente_no_lo_cito": [
+     0.474,
+     19
+    ],
+    "si_menos_no": [
+     0.11,
+     -0.17,
+     0.382
+    ]
+   }
+  },
+  "ronda 1 · sin · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.8,
+     10
+    ],
+    "asistente_no_lo_cito": [
+     0.455,
+     11
+    ],
+    "si_menos_no": [
+     0.345,
+     -0.036,
+     0.718
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.733,
+     15
+    ],
+    "asistente_no_lo_cito": [
+     0.333,
+     6
+    ],
+    "si_menos_no": [
+     0.4,
+     -0.067,
+     0.8
+    ]
+   }
+  },
+  "ronda 1 · sin · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.375,
+     8
+    ],
+    "asistente_no_lo_cito": [
+     0.5,
+     14
+    ],
+    "si_menos_no": [
+     -0.125,
+     -0.536,
+     0.286
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.333,
+     9
+    ],
+    "asistente_no_lo_cito": [
+     0.538,
+     13
+    ],
+    "si_menos_no": [
+     -0.205,
+     -0.615,
+     0.214
+    ]
+   }
+  },
+  "ronda 1 · con · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.769,
+     13
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     12
+    ],
+    "si_menos_no": [
+     0.103,
+     -0.282,
+     0.462
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.769,
+     13
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     12
+    ],
+    "si_menos_no": [
+     0.103,
+     -0.285,
+     0.462
+    ]
+   }
+  },
+  "ronda 1 · con · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.714,
+     7
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     6
+    ],
+    "si_menos_no": [
+     0.048,
+     -0.429,
+     0.524
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.714,
+     7
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     6
+    ],
+    "si_menos_no": [
+     0.048,
+     -0.429,
+     0.524
+    ]
+   }
+  },
+  "ronda 1 · con · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.833,
+     6
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     6
+    ],
+    "si_menos_no": [
+     0.167,
+     -0.333,
+     0.667
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.833,
+     6
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     6
+    ],
+    "si_menos_no": [
+     0.167,
+     -0.333,
+     0.667
+    ]
+   }
+  },
+  "ronda 2 · todos · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.869,
+     61
+    ],
+    "asistente_no_lo_cito": [
+     0.523,
+     65
+    ],
+    "si_menos_no": [
+     0.346,
+     0.186,
+     0.494
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.841,
+     82
+    ],
+    "asistente_no_lo_cito": [
+     0.409,
+     44
+    ],
+    "si_menos_no": [
+     0.432,
+     0.25,
+     0.597
+    ]
+   }
+  },
+  "ronda 2 · todos · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.87,
+     23
+    ],
+    "asistente_no_lo_cito": [
+     0.5,
+     40
+    ],
+    "si_menos_no": [
+     0.37,
+     0.158,
+     0.575
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.838,
+     37
+    ],
+    "asistente_no_lo_cito": [
+     0.346,
+     26
+    ],
+    "si_menos_no": [
+     0.492,
+     0.268,
+     0.711
+    ]
+   }
+  },
+  "ronda 2 · todos · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.868,
+     38
+    ],
+    "asistente_no_lo_cito": [
+     0.56,
+     25
+    ],
+    "si_menos_no": [
+     0.308,
+     0.082,
+     0.522
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.844,
+     45
+    ],
+    "asistente_no_lo_cito": [
+     0.5,
+     18
+    ],
+    "si_menos_no": [
+     0.344,
+     0.089,
+     0.589
+    ]
+   }
+  },
+  "ronda 2 · sin · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.875,
+     40
+    ],
+    "asistente_no_lo_cito": [
+     0.537,
+     54
+    ],
+    "si_menos_no": [
+     0.338,
+     0.148,
+     0.513
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.833,
+     60
+    ],
+    "asistente_no_lo_cito": [
+     0.412,
+     34
+    ],
+    "si_menos_no": [
+     0.422,
+     0.196,
+     0.625
+    ]
+   }
+  },
+  "ronda 2 · sin · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.857,
+     14
+    ],
+    "asistente_no_lo_cito": [
+     0.545,
+     33
+    ],
+    "si_menos_no": [
+     0.312,
+     0.045,
+     0.545
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.821,
+     28
+    ],
+    "asistente_no_lo_cito": [
+     0.368,
+     19
+    ],
+    "si_menos_no": [
+     0.453,
+     0.19,
+     0.701
+    ]
+   }
+  },
+  "ronda 2 · sin · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.885,
+     26
+    ],
+    "asistente_no_lo_cito": [
+     0.524,
+     21
+    ],
+    "si_menos_no": [
+     0.361,
+     0.112,
+     0.599
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.844,
+     32
+    ],
+    "asistente_no_lo_cito": [
+     0.467,
+     15
+    ],
+    "si_menos_no": [
+     0.377,
+     0.083,
+     0.644
+    ]
+   }
+  },
+  "ronda 2 · con · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.857,
+     21
+    ],
+    "asistente_no_lo_cito": [
+     0.455,
+     11
+    ],
+    "si_menos_no": [
+     0.403,
+     0.082,
+     0.717
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.864,
+     22
+    ],
+    "asistente_no_lo_cito": [
+     0.4,
+     10
+    ],
+    "si_menos_no": [
+     0.464,
+     0.143,
+     0.77
+    ]
+   }
+  },
+  "ronda 2 · con · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.889,
+     9
+    ],
+    "asistente_no_lo_cito": [
+     0.286,
+     7
+    ],
+    "si_menos_no": [
+     0.603,
+     0.206,
+     1.0
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.889,
+     9
+    ],
+    "asistente_no_lo_cito": [
+     0.286,
+     7
+    ],
+    "si_menos_no": [
+     0.603,
+     0.175,
+     1.0
+    ]
+   }
+  },
+  "ronda 2 · con · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.833,
+     12
+    ],
+    "asistente_no_lo_cito": [
+     0.75,
+     4
+    ],
+    "si_menos_no": [
+     0.083,
+     -0.333,
+     0.583
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.846,
+     13
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     3
+    ],
+    "si_menos_no": [
+     0.179,
+     -0.308,
+     0.769
+    ]
+   }
+  },
+  "las dos rondas · todos · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.804,
+     92
+    ],
+    "asistente_no_lo_cito": [
+     0.529,
+     102
+    ],
+    "si_menos_no": [
+     0.275,
+     0.145,
+     0.404
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.782,
+     119
+    ],
+    "asistente_no_lo_cito": [
+     0.467,
+     75
+    ],
+    "si_menos_no": [
+     0.315,
+     0.177,
+     0.452
+    ]
+   }
+  },
+  "las dos rondas · todos · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.825,
+     40
+    ],
+    "asistente_no_lo_cito": [
+     0.509,
+     57
+    ],
+    "si_menos_no": [
+     0.316,
+     0.143,
+     0.489
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.797,
+     59
+    ],
+    "asistente_no_lo_cito": [
+     0.395,
+     38
+    ],
+    "si_menos_no": [
+     0.402,
+     0.212,
+     0.583
+    ]
+   }
+  },
+  "las dos rondas · todos · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.788,
+     52
+    ],
+    "asistente_no_lo_cito": [
+     0.556,
+     45
+    ],
+    "si_menos_no": [
+     0.233,
+     0.045,
+     0.414
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.767,
+     60
+    ],
+    "asistente_no_lo_cito": [
+     0.541,
+     37
+    ],
+    "si_menos_no": [
+     0.226,
+     0.031,
+     0.422
+    ]
+   }
+  },
+  "las dos rondas · sin · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.793,
+     58
+    ],
+    "asistente_no_lo_cito": [
+     0.519,
+     79
+    ],
+    "si_menos_no": [
+     0.274,
+     0.112,
+     0.426
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.762,
+     84
+    ],
+    "asistente_no_lo_cito": [
+     0.434,
+     53
+    ],
+    "si_menos_no": [
+     0.328,
+     0.151,
+     0.494
+    ]
+   }
+  },
+  "las dos rondas · sin · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.833,
+     24
+    ],
+    "asistente_no_lo_cito": [
+     0.523,
+     44
+    ],
+    "si_menos_no": [
+     0.311,
+     0.091,
+     0.508
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.791,
+     43
+    ],
+    "asistente_no_lo_cito": [
+     0.36,
+     25
+    ],
+    "si_menos_no": [
+     0.431,
+     0.211,
+     0.647
+    ]
+   }
+  },
+  "las dos rondas · sin · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.765,
+     34
+    ],
+    "asistente_no_lo_cito": [
+     0.514,
+     35
+    ],
+    "si_menos_no": [
+     0.25,
+     0.02,
+     0.455
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.732,
+     41
+    ],
+    "asistente_no_lo_cito": [
+     0.5,
+     28
+    ],
+    "si_menos_no": [
+     0.232,
+     -0.007,
+     0.459
+    ]
+   }
+  },
+  "las dos rondas · con · las dos situaciones": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.824,
+     34
+    ],
+    "asistente_no_lo_cito": [
+     0.565,
+     23
+    ],
+    "si_menos_no": [
+     0.258,
+     0.015,
+     0.487
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.829,
+     35
+    ],
+    "asistente_no_lo_cito": [
+     0.545,
+     22
+    ],
+    "si_menos_no": [
+     0.283,
+     0.045,
+     0.521
+    ]
+   }
+  },
+  "las dos rondas · con · mensajes_trabajo": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.812,
+     16
+    ],
+    "asistente_no_lo_cito": [
+     0.462,
+     13
+    ],
+    "si_menos_no": [
+     0.351,
+     0.024,
+     0.692
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.812,
+     16
+    ],
+    "asistente_no_lo_cito": [
+     0.462,
+     13
+    ],
+    "si_menos_no": [
+     0.351,
+     0.01,
+     0.692
+    ]
+   }
+  },
+  "las dos rondas · con · fotos": {
+   "articulo_1a": {
+    "asistente_si_lo_cito": [
+     0.833,
+     18
+    ],
+    "asistente_no_lo_cito": [
+     0.7,
+     10
+    ],
+    "si_menos_no": [
+     0.133,
+     -0.178,
+     0.478
+    ]
+   },
+   "articulo_alguna": {
+    "asistente_si_lo_cito": [
+     0.842,
+     19
+    ],
+    "asistente_no_lo_cito": [
+     0.667,
+     9
+    ],
+    "si_menos_no": [
+     0.175,
+     -0.152,
+     0.509
+    ]
+   }
+  }
+ },
+ "prueba2_desde": "2026-10-29 00:21:44.013413+00",
+ "prueba2_misma_epoca": {
+  "desde que existe intermedio · todos": {
+   "tabla": {
+    "original": {
+     "personas": 18,
+     "comprension": [
+      0.673,
+      52
+     ],
+     "escala_confianza_asistente": [
+      3.558,
+      52
+     ],
+     "confianza_1a5": [
+      4.212,
+      52
+     ],
+     "actuaria": [
+      0.558,
+      52
+     ],
+     "noto_problema": [
+      0.135,
+      52
+     ]
+    },
+    "nuevo": {
+     "personas": 19,
+     "comprension": [
+      0.806,
+      54
+     ],
+     "escala_confianza_asistente": [
+      3.667,
+      54
+     ],
+     "confianza_1a5": [
+      4.037,
+      54
+     ],
+     "actuaria": [
+      0.574,
+      54
+     ],
+     "noto_problema": [
+      0.148,
+      54
+     ]
+    },
+    "intermedio": {
+     "personas": 23,
+     "comprension": [
+      0.746,
+      65
+     ],
+     "escala_confianza_asistente": [
+      3.969,
+      65
+     ],
+     "confianza_1a5": [
+      4.154,
+      65
+     ],
+     "actuaria": [
+      0.769,
+      65
+     ],
+     "noto_problema": [
+      0.123,
+      65
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": [
+      0.073,
+      -0.078,
+      0.232
+     ],
+     "intermedio − nuevo": [
+      -0.059,
+      -0.207,
+      0.094
+     ],
+     "nuevo − original": [
+      0.132,
+      -0.047,
+      0.305
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": [
+      0.412,
+      -0.094,
+      0.947
+     ],
+     "intermedio − nuevo": [
+      0.303,
+      -0.145,
+      0.741
+     ],
+     "nuevo − original": [
+      0.109,
+      -0.355,
+      0.608
+     ]
+    },
+    "confianza_1a5": {
+     "intermedio − original": [
+      -0.058,
+      -0.481,
+      0.363
+     ],
+     "intermedio − nuevo": [
+      0.117,
+      -0.368,
+      0.601
+     ],
+     "nuevo − original": [
+      -0.175,
+      -0.64,
+      0.266
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": [
+      0.212,
+      0.003,
+      0.431
+     ],
+     "intermedio − nuevo": [
+      0.195,
+      -0.029,
+      0.423
+     ],
+     "nuevo − original": [
+      0.016,
+      -0.247,
+      0.276
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": [
+      -0.012,
+      -0.147,
+      0.116
+     ],
+     "intermedio − nuevo": [
+      -0.025,
+      -0.163,
+      0.113
+     ],
+     "nuevo − original": [
+      0.014,
+      -0.125,
+      0.156
+     ]
+    }
+   }
+  },
+  "desde que existe intermedio · sin": {
+   "tabla": {
+    "original": {
+     "personas": 13,
+     "comprension": [
+      0.635,
+      37
+     ],
+     "escala_confianza_asistente": [
+      3.378,
+      37
+     ],
+     "confianza_1a5": [
+      3.973,
+      37
+     ],
+     "actuaria": [
+      0.459,
+      37
+     ],
+     "noto_problema": [
+      0.162,
+      37
+     ]
+    },
+    "nuevo": {
+     "personas": 14,
+     "comprension": [
+      0.756,
+      41
+     ],
+     "escala_confianza_asistente": [
+      3.61,
+      41
+     ],
+     "confianza_1a5": [
+      3.927,
+      41
+     ],
+     "actuaria": [
+      0.512,
+      41
+     ],
+     "noto_problema": [
+      0.122,
+      41
+     ]
+    },
+    "intermedio": {
+     "personas": 18,
+     "comprension": [
+      0.75,
+      50
+     ],
+     "escala_confianza_asistente": [
+      4.14,
+      50
+     ],
+     "confianza_1a5": [
+      4.18,
+      50
+     ],
+     "actuaria": [
+      0.82,
+      50
+     ],
+     "noto_problema": [
+      0.08,
+      50
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": [
+      0.115,
+      -0.08,
+      0.304
+     ],
+     "intermedio − nuevo": [
+      -0.006,
+      -0.197,
+      0.2
+     ],
+     "nuevo − original": [
+      0.121,
+      -0.101,
+      0.336
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": [
+      0.762,
+      0.236,
+      1.374
+     ],
+     "intermedio − nuevo": [
+      0.53,
+      0.071,
+      1.015
+     ],
+     "nuevo − original": [
+      0.231,
+      -0.325,
+      0.854
+     ]
+    },
+    "confianza_1a5": {
+     "intermedio − original": [
+      0.207,
+      -0.23,
+      0.622
+     ],
+     "intermedio − nuevo": [
+      0.253,
+      -0.292,
+      0.815
+     ],
+     "nuevo − original": [
+      -0.046,
+      -0.6,
+      0.482
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": [
+      0.361,
+      0.155,
+      0.573
+     ],
+     "intermedio − nuevo": [
+      0.308,
+      0.057,
+      0.562
+     ],
+     "nuevo − original": [
+      0.053,
+      -0.226,
+      0.332
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": [
+      -0.082,
+      -0.235,
+      0.068
+     ],
+     "intermedio − nuevo": [
+      -0.042,
+      -0.176,
+      0.092
+     ],
+     "nuevo − original": [
+      -0.04,
+      -0.196,
+      0.124
+     ]
+    }
+   }
+  },
+  "desde que existe intermedio · con": {
+   "tabla": {
+    "original": {
+     "personas": 5,
+     "comprension": [
+      0.767,
+      15
+     ],
+     "escala_confianza_asistente": [
+      4.0,
+      15
+     ],
+     "confianza_1a5": [
+      4.8,
+      15
+     ],
+     "actuaria": [
+      0.8,
+      15
+     ],
+     "noto_problema": [
+      0.067,
+      15
+     ]
+    },
+    "nuevo": {
+     "personas": 5,
+     "comprension": [
+      0.962,
+      13
+     ],
+     "escala_confianza_asistente": [
+      3.846,
+      13
+     ],
+     "confianza_1a5": [
+      4.385,
+      13
+     ],
+     "actuaria": [
+      0.769,
+      13
+     ],
+     "noto_problema": [
+      0.231,
+      13
+     ]
+    },
+    "intermedio": {
+     "personas": 5,
+     "comprension": [
+      0.733,
+      15
+     ],
+     "escala_confianza_asistente": [
+      3.4,
+      15
+     ],
+     "confianza_1a5": [
+      4.067,
+      15
+     ],
+     "actuaria": [
+      0.6,
+      15
+     ],
+     "noto_problema": [
+      0.267,
+      15
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": [
+      -0.033,
+      -0.233,
+      0.167
+     ],
+     "intermedio − nuevo": [
+      -0.228,
+      -0.367,
+      -0.1
+     ],
+     "nuevo − original": [
+      0.195,
+      0.033,
+      0.367
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": [
+      -0.6,
+      -1.667,
+      0.267
+     ],
+     "intermedio − nuevo": [
+      -0.446,
+      -1.4,
+      0.364
+     ],
+     "nuevo − original": [
+      -0.154,
+      -0.855,
+      0.533
+     ]
+    },
+    "confianza_1a5": {
+     "intermedio − original": [
+      -0.733,
+      -1.667,
+      0.067
+     ],
+     "intermedio − nuevo": [
+      -0.318,
+      -1.267,
+      0.467
+     ],
+     "nuevo − original": [
+      -0.415,
+      -0.8,
+      0.026
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": [
+      -0.2,
+      -0.667,
+      0.333
+     ],
+     "intermedio − nuevo": [
+      -0.169,
+      -0.6,
+      0.305
+     ],
+     "nuevo − original": [
+      -0.031,
+      -0.545,
+      0.418
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": [
+      0.2,
+      -0.067,
+      0.467
+     ],
+     "intermedio − nuevo": [
+      0.036,
+      -0.297,
+      0.376
+     ],
+     "nuevo − original": [
+      0.164,
+      -0.109,
+      0.462
+     ]
+    }
+   }
+  },
+  "antes (solo original y nuevo) · todos": {
+   "tabla": {
+    "original": {
+     "personas": 4,
+     "comprension": [
+      0.75,
+      12
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      3.917,
+      12
+     ],
+     "actuaria": [
+      0.167,
+      12
+     ],
+     "noto_problema": [
+      0.0,
+      12
+     ]
+    },
+    "nuevo": {
+     "personas": 3,
+     "comprension": [
+      0.722,
+      9
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      4.667,
+      9
+     ],
+     "actuaria": [
+      0.889,
+      9
+     ],
+     "noto_problema": [
+      0.0,
+      9
+     ]
+    },
+    "intermedio": {
+     "personas": 0,
+     "comprension": [
+      null,
+      0
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      null,
+      0
+     ],
+     "actuaria": [
+      null,
+      0
+     ],
+     "noto_problema": [
+      null,
+      0
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      -0.028,
+      -0.361,
+      0.333
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": null
+    },
+    "confianza_1a5": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.75,
+      0.0,
+      1.5
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.722,
+      0.444,
+      0.917
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.0,
+      0,
+      0
+     ]
+    }
+   }
+  },
+  "antes (solo original y nuevo) · sin": {
+   "tabla": {
+    "original": {
+     "personas": 3,
+     "comprension": [
+      0.889,
+      9
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      4.0,
+      9
+     ],
+     "actuaria": [
+      0.111,
+      9
+     ],
+     "noto_problema": [
+      0.0,
+      9
+     ]
+    },
+    "nuevo": {
+     "personas": 2,
+     "comprension": [
+      0.583,
+      6
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      4.5,
+      6
+     ],
+     "actuaria": [
+      1.0,
+      6
+     ],
+     "noto_problema": [
+      0.0,
+      6
+     ]
+    },
+    "intermedio": {
+     "personas": 0,
+     "comprension": [
+      null,
+      0
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      null,
+      0
+     ],
+     "actuaria": [
+      null,
+      0
+     ],
+     "noto_problema": [
+      null,
+      0
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      -0.306,
+      -0.5,
+      -0.083
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": null
+    },
+    "confianza_1a5": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.5,
+      -0.556,
+      1.556
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.889,
+      0.667,
+      1.0
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.0,
+      0,
+      0
+     ]
+    }
+   }
+  },
+  "antes (solo original y nuevo) · con": {
+   "tabla": {
+    "original": {
+     "personas": 1,
+     "comprension": [
+      0.333,
+      3
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      3.667,
+      3
+     ],
+     "actuaria": [
+      0.333,
+      3
+     ],
+     "noto_problema": [
+      0.0,
+      3
+     ]
+    },
+    "nuevo": {
+     "personas": 1,
+     "comprension": [
+      1.0,
+      3
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      5.0,
+      3
+     ],
+     "actuaria": [
+      0.667,
+      3
+     ],
+     "noto_problema": [
+      0.0,
+      3
+     ]
+    },
+    "intermedio": {
+     "personas": 0,
+     "comprension": [
+      null,
+      0
+     ],
+     "escala_confianza_asistente": [
+      null,
+      0
+     ],
+     "confianza_1a5": [
+      null,
+      0
+     ],
+     "actuaria": [
+      null,
+      0
+     ],
+     "noto_problema": [
+      null,
+      0
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.667,
+      0.667,
+      0.667
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": null
+    },
+    "confianza_1a5": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      1.333,
+      1.333,
+      1.333
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.333,
+      0.333,
+      0.333
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": null,
+     "intermedio − nuevo": null,
+     "nuevo − original": [
+      0.0,
+      0,
+      0
+     ]
+    }
+   }
+  },
+  "toda la ronda 2 · todos": {
+   "tabla": {
+    "original": {
+     "personas": 22,
+     "comprension": [
+      0.688,
+      64
+     ],
+     "escala_confianza_asistente": [
+      3.558,
+      52
+     ],
+     "confianza_1a5": [
+      4.156,
+      64
+     ],
+     "actuaria": [
+      0.484,
+      64
+     ],
+     "noto_problema": [
+      0.109,
+      64
+     ]
+    },
+    "nuevo": {
+     "personas": 22,
+     "comprension": [
+      0.794,
+      63
+     ],
+     "escala_confianza_asistente": [
+      3.667,
+      54
+     ],
+     "confianza_1a5": [
+      4.127,
+      63
+     ],
+     "actuaria": [
+      0.619,
+      63
+     ],
+     "noto_problema": [
+      0.127,
+      63
+     ]
+    },
+    "intermedio": {
+     "personas": 23,
+     "comprension": [
+      0.746,
+      65
+     ],
+     "escala_confianza_asistente": [
+      3.969,
+      65
+     ],
+     "confianza_1a5": [
+      4.154,
+      65
+     ],
+     "actuaria": [
+      0.769,
+      65
+     ],
+     "noto_problema": [
+      0.123,
+      65
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": [
+      0.059,
+      -0.084,
+      0.203
+     ],
+     "intermedio − nuevo": [
+      -0.047,
+      -0.189,
+      0.103
+     ],
+     "nuevo − original": [
+      0.106,
+      -0.059,
+      0.258
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": [
+      0.412,
+      -0.082,
+      0.94
+     ],
+     "intermedio − nuevo": [
+      0.303,
+      -0.145,
+      0.725
+     ],
+     "nuevo − original": [
+      0.109,
+      -0.347,
+      0.631
+     ]
+    },
+    "confianza_1a5": {
+     "intermedio − original": [
+      -0.002,
+      -0.41,
+      0.397
+     ],
+     "intermedio − nuevo": [
+      0.027,
+      -0.423,
+      0.464
+     ],
+     "nuevo − original": [
+      -0.029,
+      -0.453,
+      0.382
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": [
+      0.285,
+      0.076,
+      0.48
+     ],
+     "intermedio − nuevo": [
+      0.15,
+      -0.07,
+      0.369
+     ],
+     "nuevo − original": [
+      0.135,
+      -0.102,
+      0.366
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": [
+      0.014,
+      -0.101,
+      0.135
+     ],
+     "intermedio − nuevo": [
+      -0.004,
+      -0.134,
+      0.126
+     ],
+     "nuevo − original": [
+      0.018,
+      -0.102,
+      0.142
+     ]
+    }
+   }
+  },
+  "toda la ronda 2 · sin": {
+   "tabla": {
+    "original": {
+     "personas": 16,
+     "comprension": [
+      0.685,
+      46
+     ],
+     "escala_confianza_asistente": [
+      3.378,
+      37
+     ],
+     "confianza_1a5": [
+      3.978,
+      46
+     ],
+     "actuaria": [
+      0.391,
+      46
+     ],
+     "noto_problema": [
+      0.13,
+      46
+     ]
+    },
+    "nuevo": {
+     "personas": 16,
+     "comprension": [
+      0.734,
+      47
+     ],
+     "escala_confianza_asistente": [
+      3.61,
+      41
+     ],
+     "confianza_1a5": [
+      4.0,
+      47
+     ],
+     "actuaria": [
+      0.574,
+      47
+     ],
+     "noto_problema": [
+      0.106,
+      47
+     ]
+    },
+    "intermedio": {
+     "personas": 18,
+     "comprension": [
+      0.75,
+      50
+     ],
+     "escala_confianza_asistente": [
+      4.14,
+      50
+     ],
+     "confianza_1a5": [
+      4.18,
+      50
+     ],
+     "actuaria": [
+      0.82,
+      50
+     ],
+     "noto_problema": [
+      0.08,
+      50
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": [
+      0.065,
+      -0.117,
+      0.252
+     ],
+     "intermedio − nuevo": [
+      0.016,
+      -0.16,
+      0.198
+     ],
+     "nuevo − original": [
+      0.049,
+      -0.151,
+      0.25
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": [
+      0.762,
+      0.235,
+      1.333
+     ],
+     "intermedio − nuevo": [
+      0.53,
+      0.052,
+      1.006
+     ],
+     "nuevo − original": [
+      0.231,
+      -0.339,
+      0.878
+     ]
+    },
+    "confianza_1a5": {
+     "intermedio − original": [
+      0.202,
+      -0.219,
+      0.611
+     ],
+     "intermedio − nuevo": [
+      0.18,
+      -0.294,
+      0.709
+     ],
+     "nuevo − original": [
+      0.022,
+      -0.478,
+      0.506
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": [
+      0.429,
+      0.215,
+      0.633
+     ],
+     "intermedio − nuevo": [
+      0.246,
+      0.003,
+      0.48
+     ],
+     "nuevo − original": [
+      0.183,
+      -0.104,
+      0.453
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": [
+      -0.05,
+      -0.185,
+      0.082
+     ],
+     "intermedio − nuevo": [
+      -0.026,
+      -0.162,
+      0.103
+     ],
+     "nuevo − original": [
+      -0.024,
+      -0.163,
+      0.121
+     ]
+    }
+   }
+  },
+  "toda la ronda 2 · con": {
+   "tabla": {
+    "original": {
+     "personas": 6,
+     "comprension": [
+      0.694,
+      18
+     ],
+     "escala_confianza_asistente": [
+      4.0,
+      15
+     ],
+     "confianza_1a5": [
+      4.611,
+      18
+     ],
+     "actuaria": [
+      0.722,
+      18
+     ],
+     "noto_problema": [
+      0.056,
+      18
+     ]
+    },
+    "nuevo": {
+     "personas": 6,
+     "comprension": [
+      0.969,
+      16
+     ],
+     "escala_confianza_asistente": [
+      3.846,
+      13
+     ],
+     "confianza_1a5": [
+      4.5,
+      16
+     ],
+     "actuaria": [
+      0.75,
+      16
+     ],
+     "noto_problema": [
+      0.188,
+      16
+     ]
+    },
+    "intermedio": {
+     "personas": 5,
+     "comprension": [
+      0.733,
+      15
+     ],
+     "escala_confianza_asistente": [
+      3.4,
+      15
+     ],
+     "confianza_1a5": [
+      4.067,
+      15
+     ],
+     "actuaria": [
+      0.6,
+      15
+     ],
+     "noto_problema": [
+      0.267,
+      15
+     ]
+    }
+   },
+   "diferencias": {
+    "comprension": {
+     "intermedio − original": [
+      0.039,
+      -0.167,
+      0.244
+     ],
+     "intermedio − nuevo": [
+      -0.235,
+      -0.367,
+      -0.111
+     ],
+     "nuevo − original": [
+      0.274,
+      0.083,
+      0.472
+     ]
+    },
+    "escala_confianza_asistente": {
+     "intermedio − original": [
+      -0.6,
+      -1.633,
+      0.3
+     ],
+     "intermedio − nuevo": [
+      -0.446,
+      -1.4,
+      0.371
+     ],
+     "nuevo − original": [
+      -0.154,
+      -0.875,
+      0.477
+     ]
+    },
+    "confianza_1a5": {
+     "intermedio − original": [
+      -0.544,
+      -1.5,
+      0.322
+     ],
+     "intermedio − nuevo": [
+      -0.433,
+      -1.389,
+      0.411
+     ],
+     "nuevo − original": [
+      -0.111,
+      -0.576,
+      0.438
+     ]
+    },
+    "actuaria": {
+     "intermedio − original": [
+      -0.122,
+      -0.567,
+      0.344
+     ],
+     "intermedio − nuevo": [
+      -0.15,
+      -0.55,
+      0.256
+     ],
+     "nuevo − original": [
+      0.028,
+      -0.375,
+      0.444
+     ]
+    },
+    "noto_problema": {
+     "intermedio − original": [
+      0.211,
+      -0.033,
+      0.467
+     ],
+     "intermedio − nuevo": [
+      0.079,
+      -0.242,
+      0.4
+     ],
+     "nuevo − original": [
+      0.132,
+      -0.111,
+      0.375
+     ]
+    }
+   }
+  }
+ }
+}
