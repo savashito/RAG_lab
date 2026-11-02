@@ -5,7 +5,8 @@
 participants); new Section 5.4 compares rounds 1 and 2 with the same prompt; new Section 5.7 on how participants with
 and without legal training phrase their questions and whether the assistant guides them; new Section 5.8 on what
 drives comprehension; the comprehension questionnaire is described in full (Table 0); round-1 answer metrics now use
-the answer key participants saw (Appendix C). Every number has a source in Appendix A. Items marked ⚠ must be checked
+the answer key participants saw (Appendix C); Section 5.2 now shows that legally trained participants responded to
+wrong-state answers by not acting on them, and Section 5.4 tests the prediction this makes for round 2. Every number has a source in Appendix A. Items marked ⚠ must be checked
 before submission.*
 
 ---
@@ -19,7 +20,8 @@ open-weight, locally hosted RAG assistant over Mexican criminal law in two round
 it in their own words about three fictional situations. In round 1 (45 participants), 53% of first answers (57 of 107)
 named the penal code of a state other than the one where the facts occurred, and in 120 of 121 cases that code had been
 supplied by retrieval, not invented by the model. Participants without legal training noticed a problem in 8% of
-situations, yet said they would act on the answer in 64%. A jurisdiction gate, an LLM step that identifies where the
+situations and were as willing to act when an answer cited another state's code as when none did (63% vs 67%);
+legally trained participants rarely named the error but were far less willing to act on such answers (23% vs 58%). A jurisdiction gate, an LLM step that identifies where the
 facts occurred and restricts retrieval to that state's code plus national law, cut wrong-state answers from 60% to 2%
 when replayed on all 108 real conversations. Deployed in round 2 (79 participants so far), 8 of 187 first answers (4%)
 named another state's code. With the same formal prompt in both rounds, wrong-state first answers to participants
@@ -81,7 +83,7 @@ We ask five research questions:
   those who leave out the facts on which applicability depends?
 
 Our contributions are: (1) evidence, from real conversations, that wrong-jurisdiction citations in legal RAG are mostly
-a retrieval failure, invisible to most users; (2) a jurisdiction gate evaluated by replaying every real conversation,
+a retrieval failure, invisible to lay users and felt but not named by legally trained ones; (2) a jurisdiction gate evaluated by replaying every real conversation,
 then deployed, and the finding that removing the error did not by itself raise comprehension; (3) a randomized
 comparison of three prompts showing that plain language raised trust and stated willingness to act among lay users
 without raising their comprehension or the accuracy of the answers; (4) evidence that lay users omit the place where the
@@ -309,13 +311,37 @@ round-1 answers, 120 of the 121 wrong-state codes named (in 76 answers) had been
 plain-language prompt of round 1 asked for the state more often, which lowered but did not remove the error; prompting
 alone does not change what the model sees.
 
-### 5.2 RQ2: users rarely notice
+### 5.2 RQ2: lay users do not notice; legally trained users distrust without naming the error
 
-Participants without legal training noticed a problem in 8% of round-1 situations (64 situations) and said they would act
-on the answer in 64%. Participants with legal training noticed a problem more often (19% of 37 situations) and were more
-cautious (would act in 46%). Legal training made people more skeptical in general, but it did not make the specific
-error visible: legally trained participants also chose the wrong state's article in the workplace scenario, and their
-comments expressed general caution ("verify against the law") rather than pointing at the other state's code.
+After each situation, participants answered "Did you notice any problem or error in the assistant's answers?" (yes /
+no / not sure, with an optional box "if so, what?") and "If this happened to you, would you act on what the assistant
+told you?" (yes / no / don't know). Participants without legal training noticed a problem in 8% of round-1 situations
+(64 situations) and said they would act on the answer in 64%. Participants with legal training noticed a problem more
+often (19% of 37 situations) and were more cautious (would act in 46%).
+
+The first question asks people to name an error; the second captures whether they believe the answer. Comparing
+situations in which some answer cited another state's code with situations in which none did separates the two groups:
+
+**Table 1c. Round 1: responses by whether an answer in the situation cited another state's code** (n = situations;
+differences with 95% CI, participant bootstrap).
+
+| | Wrong-state answer | No wrong-state answer | Difference |
+|---|---|---|---|
+| *With legal training (13 participants)* | (13) | (24) | |
+| Would act on the answer | 23% | 58% | **−35 [−66, 0]** |
+| Answered "yes, I noticed a problem" | 15% | 21% | −5 [−37, +26] |
+| Answered "not sure" | 31% | 13% | +18 [−26, +62] |
+| *Without legal training (22 participants)* | (46) | (18) | |
+| Would act on the answer | 63% | 67% | −4 [−31, +21] |
+| Answered "yes, I noticed a problem" | 9% | 6% | +3 [−8, +16] |
+
+Legally trained participants responded to the error: they were far less willing to act on answers that cited another
+state's code, and more often unsure whether something was wrong, yet they did not label it as an error more often, and
+only one of their four comments in those situations touched on jurisdiction, without naming the wrong code. Their
+comments expressed general caution ("verify against the law", "too generic"). Legal training made the error felt, if
+not named. For lay participants it was invisible: they were as willing to act on a wrong-state answer as on any
+other. The interval for legally trained participants reaches zero and rests on 13 people, so we treat it as a strong
+indication rather than a settled result.
 
 ### 5.3 RQ3: the jurisdiction gate, replayed and deployed
 
@@ -364,6 +390,18 @@ plausibly because the assistant now said it lacked the state. With all three pro
 pooled, the same pattern holds in each situation: wrong-state first answers fell by 44 to 56 points (workplace 51% → 5%,
 photos 60% → 3%, summons 48% → 5%), while comprehension changed by −5 to +8 points, none distinguishable from zero
 (Appendix A, Table A3). Sections 5.7 and 5.8 explain why removing the error did not raise comprehension.
+
+**A prediction from round 1, tested in round 2.** Table 1c predicts how removing the error should change willingness to
+act. Round 1's 46% for legally trained participants mixed 58% in situations without a wrong-state answer and 23% in
+situations with one; if the gate removes the error, their willingness to act should rise toward 58%. For lay
+participants, whose willingness did not depend on the error, it should not change. Both held: legally trained
+participants would act in 67% of round-2 situations (46; 68% in the 41 without a wrong-state answer), and lay
+participants in 61% (137), against 64% in round 1. Three cautions apply: 13 and 18 legally trained participants, a
+different population in each round (law students in round 1, professionals recruited through messaging groups in
+round 2), and an effect of the prompt in round 2 (legally trained participants would act in 72% and 75% of situations
+with the formal and warm prompts and 50% with the plain one). We read this as a prediction that came true, not as a
+test of the gate. What moved lay participants' willingness to act in round 2 was the prompt (39% formal, 81% plain;
+Section 5.5), not the error.
 
 ### 5.5 RQ4: plain language raised trust and willingness to act, not comprehension
 
@@ -651,8 +689,10 @@ the right state, counted as an error, inflating round-2 wrong-state rates from 4
 version, defined by the place where the facts occurred (Appendix B). The comprehension key for "the photos" scores as
 wrong an answer its own reference calls applicable (Section 5.8). And an edit to the round-1 study definition made after
 the round closed silently changed the answer key our analysis read, inflating round-1 "correct law" rates by 6 to 13
-points until we pinned the version participants saw (Appendix C). Applicability metrics need the same scrutiny as the
-systems they score, and analyses must pin the definition that participants actually saw.
+points until we pinned the version participants saw (Appendix C). Finally, asking participants whether they noticed an error
+understated what legally trained participants perceived: they rarely said yes, but they stopped acting on wrong-state
+answers (Table 1c). Willingness to act was the more sensitive measure. Applicability metrics need the same scrutiny as
+the systems they score, and analyses must pin the definition that participants actually saw.
 
 ## 7. Limitations
 
@@ -668,6 +708,8 @@ systems they score, and analyses must pin the definition that participants actua
   pre-test, and one key that scores a defensible answer as wrong (Section 5.8).
 - **Recruitment dates for the third prompt.** Its participants arrived from 29 October; restricting to that period does
   not change the result (Section 5.5), but its first six participants were assigned consecutively.
+- **"Noticed a problem" asks people to name an error** and misses diffuse distrust; we count "not sure" as not
+  noticing. Willingness to act captured more (Table 1c).
 - **Self-reported willingness to act**, not behavior. Trust scales exist only from 26 October.
 - **Prompts differ in more than tone** (length, structure, whether they ask for the state, whether they offer to draft
   filings), so we cannot isolate tone.
@@ -810,6 +852,7 @@ All scripts are in `06_evaluation/paper_2026-10-31/` and were run on the product
 | Table 8; Section 5.5 recruitment-date check | `pruebas_aprendizaje_y_fecha.py` → `pruebas.json` |
 | Tables 7a–7c | `como_preguntan.py` → `como_preguntan.json` |
 | Recall by naming the state; Table 6c last two rows | `recall_primer_mensaje.py`, `estado_por_orden_de_situacion.py` |
+| Table 1c; Section 5.4 prediction | `actuar_segun_error.py` (round 1); round 2 from `resultados_ronda2.json` |
 | 120 of 121 codes came from retrieval | all round-1 answers, 24 Oct (`replay_ronda1_2026-10-24`) |
 | Noticed / would act by legal training, round 1 | final round-1 data by profile, 25 Oct |
 | Table 2 (replay) | "Ronda 1 real" runs #1–#2 (A), #4–#5 (B), #12–#13 (B + reranker), #6–#7 (C) |
