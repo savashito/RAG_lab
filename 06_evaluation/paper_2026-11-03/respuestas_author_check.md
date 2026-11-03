@@ -15,7 +15,7 @@ only the authors have. Aggregates only; no participant text.*
 | 3 | §3.2, l. 203 | Archived conversation without an answer; eligibility; compensation | Answered; authors confirmed both rounds |
 | 4 | §4.1, l. 304 | Retrieval-origin count after the exclusions | Answered: 117 of 118 |
 | 5 | §4.2, l. 340 | Replay artifacts and answer key | Answered; raw outputs archived on 3 Nov |
-| 6 | §6, l. 568 | Independent legal validation; human validation of automatic metrics | Partly done (gate coding); the rest is pending **[authors]** |
+| 6 | §6, l. 568 | Independent legal validation; human validation of automatic metrics | Gate coding done; answer-measure validation in progress (100 answers); answer keys: future work |
 | 7 | Ethics, l. 598 | Ethics body, protocol, retention, access | Answered: anonymized for submission; retention text supplied |
 | 8 | GenAI statement, l. 613 | Model versions; other tools | **[authors]** for versions; the statement must also be corrected (C1) |
 
@@ -102,14 +102,26 @@ gate-plus-reranker replay is stored in the study database.
 
 ## 6. Legal and human validation (§6, line 568)
 
-Done: the place of the facts in the 98 deployed messages flagged by the regular expression was coded by the team's
-legal expert, blind to the gate's output (see C2).
+**Done: gate coding.** The place of the facts in the 98 deployed messages flagged by the regular expression was coded
+by the team's legal expert, blind to the gate's output (see C2).
 
-Still pending **[authors]**: independent legal validation of the answer keys, and human validation of the rule-based
-wrong-state, citation and response-feature measures on a stratified sample. If they are not done before submission,
-replace the AUTHOR CHECK with:
+**In progress: human validation of the automatic answer measures.** The team's legal expert is coding a stratified
+random sample of 100 first answers, blind to the rule-based labels, round and prompt: round 1, 30 of the 56 answers the
+rule flagged as wrong-state and 30 of the 49 it did not; round 2, all 8 flagged and 32 of the 188 not flagged. For each
+answer she records whether it names another entity's penal code (and whether only to rule it out), whether it names an
+accepted law, whether it cites an accepted article, and whether it asks where the facts occurred. **The agreement
+figures will be added when the coding is returned; do not insert numbers before then.** Placeholder text for §3.4 or
+§6:
 
-> Independent legal validation of the answer keys and human validation of the rule-based measures remain future work.
+> A legal expert on the team, blind to the rule-based labels, round and prompt, coded a stratified random sample of
+> 100 first answers. The wrong-state rule agreed with her coding in [X] of 100 answers ([details by stratum]); the
+> accepted-law, accepted-article and asks-for-place rules agreed in [X], [X] and [X].
+
+**Not done: independent legal validation of the answer keys.** The keys were prepared by the team's legal expert; an
+independent review needs a second lawyer. Replace the AUTHOR CHECK with:
+
+> Independent legal validation of the answer keys by a second legal expert remains future work. The rule-based
+> response-feature indicators in Table 8 were not human-validated and are reported descriptively.
 
 ## 7. Ethics (line 598)
 
