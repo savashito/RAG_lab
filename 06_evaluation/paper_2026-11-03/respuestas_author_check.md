@@ -15,7 +15,7 @@ only the authors have. Aggregates only; no participant text.*
 | 3 | §3.2, l. 203 | Archived conversation without an answer; eligibility; compensation | Answered; authors confirmed both rounds |
 | 4 | §4.1, l. 304 | Retrieval-origin count after the exclusions | Answered: 117 of 118 |
 | 5 | §4.2, l. 340 | Replay artifacts and answer key | Answered; raw outputs archived on 3 Nov |
-| 6 | §6, l. 568 | Independent legal validation; human validation of automatic metrics | Gate coding done; answer-measure validation in progress (100 answers); answer keys: future work |
+| 6 | §6, l. 568 | Independent legal validation; human validation of automatic metrics | Gate coding done; answer-measure validation (100 answers) and answer-key validation (second lawyer) in progress |
 | 7 | Ethics, l. 598 | Ethics body, protocol, retention, access | Answered: anonymized for submission; retention text supplied |
 | 8 | GenAI statement, l. 613 | Model versions; other tools | **[authors]** for versions; the statement must also be corrected (C1) |
 
@@ -117,8 +117,14 @@ figures will be added when the coding is returned; do not insert numbers before 
 > 100 first answers. The wrong-state rule agreed with her coding in [X] of 100 answers ([details by stratum]); the
 > accepted-law, accepted-article and asks-for-place rules agreed in [X], [X] and [X].
 
-**Not done: independent legal validation of the answer keys.** The keys were prepared by the team's legal expert; an
-independent review needs a second lawyer. Replace the AUTHOR CHECK with:
+**In progress: independent legal validation of the answer keys.** A second lawyer, who did not write the
+questionnaire, is answering the 7 multiple-choice items (the workplace item in both variants) and naming the applicable
+articles, blind to the study's keys. **Insert the result only when it is returned.** Placeholder text:
+
+> A second legal expert who did not write the questionnaire answered the items blind to the study's keys and agreed
+> with [X] of 7 keys; [describe any disagreement and how it was resolved].
+
+If it is not returned before submission, use instead:
 
 > Independent legal validation of the answer keys by a second legal expert remains future work. The rule-based
 > response-feature indicators in Table 8 were not human-validated and are reported descriptively.
