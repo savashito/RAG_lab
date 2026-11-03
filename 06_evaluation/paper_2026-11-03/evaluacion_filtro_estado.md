@@ -79,20 +79,20 @@ depending on the state.
 The deployed system did not log the gate's decision for each message. We reconstructed it from the retrieved
 candidates: for each of the 375 messages that participants sent in round 2, we recorded which state penal codes appeared
 among the 50 candidates the retriever returned after filtering. We compared that with the state where the participant
-said the facts occurred in their messages up to that point. First, a regular expression located every state name; then
-one author read every message where the two disagreed (98 of 375) and coded the place of the facts by hand.
+said the facts occurred in their messages up to that point. First, a regular expression located every state name. The
+277 messages where the states named and the codes retrieved agreed were accepted automatically. For the other 98, a
+legal expert on the team (an author), blind to the gate's output, read each message with the participant's earlier
+messages and coded the place of the facts (3 November 2026).
 
 **Table G4. Jurisdiction gate in 375 real round-2 messages (three situations).**
 
 | Place of the facts, as the participant described it \ State codes retrieved | Only that state's code | Another state's code | No state code |
 |---|---|---|---|
-| Querétaro (173) | 171 | **0** | 2 |
+| Querétaro (178) | 171 | **0** | 7 |
 | Mexico City (45) | 45 | **0** | 0 |
 | State of Mexico (10) | 10 | **0** | 0 |
 | Compares two states in the corpus (1) | 1 (both) | 0 | 0 |
-| A state not in the corpus, or "another state" without naming it (3) | — | **0** | 3 |
-| Ambiguous: says where they are or live, facts online (5) | 0 | **0** | 5 |
-| No place given (138) | — | **0** | 138 |
+| No place of the facts given (141) | — | **0** | 141 |
 
 The gate never let through the code of a state other than the one where the participant placed the facts (0 of 375).
 It followed what participants wrote, not the scenario: when participants placed a situation in Mexico City or the State
@@ -101,20 +101,25 @@ and Mexico City. In 74, the gate retrieved only Querétaro's code. In one, the p
 City and said they were from Querétaro, and the gate retrieved only Mexico City's code, following the participant's
 account. The remaining one is one of the two follow-ups that did not inherit the place (no state code). This is the
 distinction a reviewer might worry it confuses (residence vs. place of the facts). When a participant mentioned only where they live, the code
-of that state is retrieved by design as a hypothesis (see above); Table G4 counts those messages under that state.
+of that state is retrieved by design as a hypothesis (see above). Messages that named only one state and retrieved only
+that state's code were accepted automatically and are counted under that state, whether the participant described it
+as the place of the facts or as their residence.
 
-The gate missed in two ways. First, two follow-up messages that did not mention a place (a closing remark and a detail about the summons) did not
-inherit the state named earlier, so no state code was retrieved. Second, five messages in
-the online-extortion scenario said only where the participant was or lived, or where the other person lived. The gate
-treated these as no place of the facts; for that scenario, the expected law is a general law that applies nationwide.
-Counting only the follow-ups as errors, the gate was correct in 373 of 375 messages (99%); also counting the five
-ambiguous messages, in 368 of 375 (98%).
+The gate missed in seven messages, all by retrieving no state code where the coder placed the facts in Querétaro.
+Two were follow-up messages that did not mention a place (a closing remark and a detail about the summons) and did not
+inherit the state named earlier. Five were in the photographs situation: the participant said they were in, lived in,
+or had a partner in Querétaro, and the gate did not treat that as the place of the facts. The expected law in that
+situation is a general law that applies nationwide, but Querétaro art. 167 Quinquies is also accepted, so these misses
+could withhold an accepted answer. The gate retrieved the expected code in 368 of 375 messages (98%) and another
+state's code in none.
 
 ## Limits of this evaluation
 
 1. **The test cases are not independent of development.** The authors wrote them and adjusted the gate's prompt using
    the same cases. Table G4 uses messages the gate had not seen, but in three situations designed by the authors.
-2. **One coder.** The place of the facts in Table G4 was coded by one author; agreement between coders was not measured.
+2. **One coder.** The place of the facts in the 98 flagged messages was coded by one legal expert, blind to the gate's
+   output; agreement between coders was not measured. The 277 messages where the regular expression and the retrieved
+   codes agreed were not read by a person.
 3. **Reconstructed decisions.** Table G4 infers the gate's decision from the 50 retrieved candidates. A state allowed
    by the gate whose code produced no candidate would be counted as "no state code".
 4. **Untested cases.** All three study situations occur in a single state and none is a federal crime. Neither the test
@@ -137,5 +142,5 @@ ambiguous messages, in 368 of 375 (98%).
 | Table | Source |
 |---|---|
 | G1–G3 | Component test "filtro_metodos", run 32 (25 Oct 2026), production table `comp_resultados`; version "v2 · + the sentence where the assistant asked for the place"; `apps/rewrite_lab/componentes.py` (`eval_filtro`, `errores_lugar`) |
-| G4 | `06_evaluation/paper_2026-11-03/filtro_en_conversaciones_reales.py` → `filtro_real.json` (regular-expression matrix), plus hand coding of the 98 discordant messages by one author |
+| G4 | `06_evaluation/paper_2026-11-03/filtro_en_conversaciones_reales.py` → `filtro_real.json` (regular-expression matrix), plus blind coding of the 98 discordant messages by one legal expert (the coded spreadsheet contains participant text and is kept outside the repository) |
 | Gate logic | `apps/rewrite_lab/jurisdiction_gate.py` (`decidir`) |
