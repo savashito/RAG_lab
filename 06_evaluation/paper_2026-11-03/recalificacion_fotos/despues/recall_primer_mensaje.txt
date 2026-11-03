@@ -1,0 +1,200 @@
+{
+ "con original": {
+  "n": 18,
+  "personas": 6,
+  "r10": 0.389,
+  "palabras": 28.278,
+  "estado": 0.556,
+  "ley": 0.167,
+  "delito": 0.444,
+  "r10_por_situacion": {
+   "mensajes_trabajo": [
+    0.5,
+    6
+   ],
+   "fotos": [
+    0.333,
+    6
+   ],
+   "citatorio": [
+    0.333,
+    6
+   ]
+  }
+ },
+ "con nuevo": {
+  "n": 16,
+  "personas": 6,
+  "r10": 0.688,
+  "palabras": 41.0,
+  "estado": 0.812,
+  "ley": 0.062,
+  "delito": 0.5,
+  "r10_por_situacion": {
+   "mensajes_trabajo": [
+    0.8,
+    5
+   ],
+   "fotos": [
+    0.5,
+    5
+   ],
+   "citatorio": [
+    0.75,
+    6
+   ]
+  }
+ },
+ "con intermedio": {
+  "n": 15,
+  "personas": 5,
+  "r10": 0.367,
+  "palabras": 40.8,
+  "estado": 0.467,
+  "ley": 0.133,
+  "delito": 0.267,
+  "r10_por_situacion": {
+   "mensajes_trabajo": [
+    0.2,
+    5
+   ],
+   "fotos": [
+    0.5,
+    5
+   ],
+   "citatorio": [
+    0.4,
+    5
+   ]
+  }
+ },
+ "sin original": {
+  "n": 48,
+  "personas": 18,
+  "r10": 0.271,
+  "palabras": 24.875,
+  "estado": 0.312,
+  "ley": 0.0,
+  "delito": 0.292,
+  "r10_por_situacion": {
+   "mensajes_trabajo": [
+    0.062,
+    16
+   ],
+   "fotos": [
+    0.3,
+    15
+   ],
+   "citatorio": [
+    0.441,
+    17
+   ]
+  }
+ },
+ "sin nuevo": {
+  "n": 49,
+  "personas": 18,
+  "r10": 0.327,
+  "palabras": 35.551,
+  "estado": 0.429,
+  "ley": 0.041,
+  "delito": 0.224,
+  "r10_por_situacion": {
+   "mensajes_trabajo": [
+    0.235,
+    17
+   ],
+   "fotos": [
+    0.344,
+    16
+   ],
+   "citatorio": [
+    0.406,
+    16
+   ]
+  }
+ },
+ "sin intermedio": {
+  "n": 51,
+  "personas": 18,
+  "r10": 0.363,
+  "palabras": 34.588,
+  "estado": 0.451,
+  "ley": 0.078,
+  "delito": 0.294,
+  "r10_por_situacion": {
+   "mensajes_trabajo": [
+    0.312,
+    16
+   ],
+   "fotos": [
+    0.382,
+    17
+   ],
+   "citatorio": [
+    0.389,
+    18
+   ]
+  }
+ },
+ "r10 si el 1er mensaje estado": {
+  "sí": [
+   0.607,
+   89
+  ],
+  "no": [
+   0.157,
+   108
+  ]
+ },
+ "r10 si el 1er mensaje ley": {
+  "sí": [
+   0.375,
+   12
+  ],
+  "no": [
+   0.359,
+   185
+  ]
+ },
+ "r10 si el 1er mensaje delito": {
+  "sí": [
+   0.458,
+   60
+  ],
+  "no": [
+   0.318,
+   137
+  ]
+ },
+ "r10 por situación (todos)": {
+  "mensajes_trabajo": [
+   0.277,
+   65
+  ],
+  "fotos": [
+   0.367,
+   64
+  ],
+  "citatorio": [
+   0.434,
+   68
+  ]
+ },
+ "con nuevo: recall por persona": [
+  0.33,
+  0.5,
+  0.67,
+  0.83,
+  0.83,
+  0.83
+ ],
+ "con original: recall por persona": [
+  0.0,
+  0.17,
+  0.5,
+  0.5,
+  0.5,
+  0.67
+ ]
+}

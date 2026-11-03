@@ -1,0 +1,956 @@
+=== analisis_ronda2.txt: 142 valores cambian de 1064
+  comprension_segun_escala_confianza › intermedio › alta[0] :: 0.66 → 0.734
+  comprension_segun_escala_confianza › intermedio › baja[0] :: 0.722 → 0.778
+  comprension_segun_escala_confianza › nuevo › alta[0] :: 0.794 → 0.868
+  comprension_segun_escala_confianza › nuevo › baja[0] :: 0.65 → 0.7
+  comprension_segun_escala_confianza › original › alta[0] :: 0.734 → 0.766
+  comprension_segun_escala_confianza › original › baja[0] :: 0.5 → 0.525
+  con_menos_sin_formacion_ic95 › comprension › intermedio[0] :: -0.013 → -0.017
+  con_menos_sin_formacion_ic95 › comprension › intermedio[1] :: -0.219 → -0.19
+  con_menos_sin_formacion_ic95 › comprension › intermedio[2] :: 0.167 → 0.145
+  con_menos_sin_formacion_ic95 › comprension › nuevo[0] :: 0.236 → 0.235
+  con_menos_sin_formacion_ic95 › comprension › nuevo[1] :: 0.103 → 0.094
+  con_menos_sin_formacion_ic95 › comprension › nuevo[2] :: 0.387 → 0.393
+  con_menos_sin_formacion_ic95 › comprension › original[0] :: 0.064 → 0.01
+  con_menos_sin_formacion_ic95 › comprension › original[1] :: -0.167 → -0.219
+  con_menos_sin_formacion_ic95 › comprension › original[2] :: 0.288 → 0.234
+  con_menos_sin_formacion_ic95 › comprension › todos los prompts[0] :: 0.094 → 0.072
+  con_menos_sin_formacion_ic95 › comprension › todos los prompts[1] :: -0.028 → -0.052
+  con_menos_sin_formacion_ic95 › comprension › todos los prompts[2] :: 0.21 → 0.191
+  diferencias_ic95 › 1a_cita_articulo_correcto › intermedio − nuevo[0] :: 0.013 → -0.034
+  diferencias_ic95 › 1a_cita_articulo_correcto › intermedio − nuevo[1] :: -0.154 → -0.21
+  diferencias_ic95 › 1a_cita_articulo_correcto › intermedio − nuevo[2] :: 0.19 → 0.145
+  diferencias_ic95 › 1a_cita_articulo_correcto › intermedio − original[1] :: -0.176 → -0.173
+  diferencias_ic95 › 1a_cita_articulo_correcto › intermedio − original[2] :: 0.159 → 0.158
+  diferencias_ic95 › 1a_cita_articulo_correcto › nuevo − original[0] :: -0.028 → 0.019
+  diferencias_ic95 › 1a_cita_articulo_correcto › nuevo − original[1] :: -0.213 → -0.161
+  diferencias_ic95 › 1a_cita_articulo_correcto › nuevo − original[2] :: 0.156 → 0.197
+  diferencias_ic95 › 1a_cita_ley_correcta › intermedio − nuevo[0] :: -0.006 → -0.037
+  diferencias_ic95 › 1a_cita_ley_correcta › intermedio − nuevo[1] :: -0.15 → -0.18
+  diferencias_ic95 › 1a_cita_ley_correcta › intermedio − nuevo[2] :: 0.14 → 0.098
+  diferencias_ic95 › 1a_cita_ley_correcta › intermedio − original[0] :: -0.015 → -0.03
+  diferencias_ic95 › 1a_cita_ley_correcta › intermedio − original[1] :: -0.156 → -0.172
+  diferencias_ic95 › 1a_cita_ley_correcta › intermedio − original[2] :: 0.13 → 0.123
+  diferencias_ic95 › 1a_cita_ley_correcta › nuevo − original[0] :: -0.009 → 0.007
+  diferencias_ic95 › 1a_cita_ley_correcta › nuevo − original[1] :: -0.175 → -0.15
+  diferencias_ic95 › 1a_cita_ley_correcta › nuevo − original[2] :: 0.155 → 0.167
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › intermedio − nuevo[0] :: -0.035 → -0.0
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › intermedio − nuevo[1] :: -0.126 → -0.045
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › intermedio − nuevo[2] :: 0.058 → 0.042
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › intermedio − original[0] :: -0.045 → -0.076
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › intermedio − original[1] :: -0.138 → -0.146
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › intermedio − original[2] :: 0.052 → -0.012
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › nuevo − original[0] :: -0.011 → -0.075
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › nuevo − original[1] :: -0.111 → -0.144
+  diferencias_ic95 › 1a_nombra_codigo_de_otro_estado › nuevo − original[2] :: 0.088 → -0.005
+  diferencias_ic95 › comprension › intermedio − nuevo[0] :: -0.053 → -0.047
+  diferencias_ic95 › comprension › intermedio − nuevo[1] :: -0.193 → -0.192
+  diferencias_ic95 › comprension › intermedio − nuevo[2] :: 0.086 → 0.101
+  diferencias_ic95 › comprension › intermedio − original[0] :: 0.028 → 0.059
+  diferencias_ic95 › comprension › intermedio − original[1] :: -0.114 → -0.085
+  diferencias_ic95 › comprension › intermedio − original[2] :: 0.17 → 0.202
+  diferencias_ic95 › comprension › nuevo − original[0] :: 0.082 → 0.106
+  diferencias_ic95 › comprension › nuevo − original[1] :: -0.073 → -0.053
+  diferencias_ic95 › comprension › nuevo − original[2] :: 0.233 → 0.266
+  diferencias_ic95_sin_formacion › comprension › intermedio − nuevo[0] :: 0.01 → 0.016
+  diferencias_ic95_sin_formacion › comprension › intermedio − nuevo[1] :: -0.151 → -0.157
+  diferencias_ic95_sin_formacion › comprension › intermedio − nuevo[2] :: 0.177 → 0.199
+  diferencias_ic95_sin_formacion › comprension › intermedio − original[0] :: 0.05 → 0.065
+  diferencias_ic95_sin_formacion › comprension › intermedio − original[1] :: -0.122 → -0.119
+  diferencias_ic95_sin_formacion › comprension › intermedio − original[2] :: 0.223 → 0.248
+  diferencias_ic95_sin_formacion › comprension › nuevo − original[0] :: 0.04 → 0.049
+  diferencias_ic95_sin_formacion › comprension › nuevo − original[1] :: -0.148 → -0.144
+  diferencias_ic95_sin_formacion › comprension › nuevo − original[2] :: 0.227 → 0.24
+  por_prompt › intermedio › 1a_cita_articulo_correcto[0] :: 0.576 → 0.591
+  por_prompt › intermedio › 1a_cita_ley_correcta[0] :: 0.682 → 0.697
+  por_prompt › intermedio › 1a_nombra_codigo_de_otro_estado[0] :: 0.106 → 0.015
+  por_prompt › intermedio › comprension[0] :: 0.677 → 0.746
+  por_prompt › intermedio › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.212 → 0.061
+  por_prompt › intermedio › recall10_1er_mensaje[0] :: 0.348 → 0.364
+  por_prompt › nuevo › 1a_cita_articulo_correcto[0] :: 0.562 → 0.625
+  por_prompt › nuevo › 1a_cita_ley_correcta[0] :: 0.688 → 0.734
+  por_prompt › nuevo › 1a_nombra_codigo_de_otro_estado[0] :: 0.141 → 0.016
+  por_prompt › nuevo › comprension[0] :: 0.73 → 0.794
+  por_prompt › nuevo › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.203 → 0.016
+  por_prompt › nuevo › recall10_1er_mensaje[0] :: 0.377 → 0.415
+  por_prompt › original › 1a_cita_articulo_correcto[0] :: 0.591 → 0.606
+  por_prompt › original › 1a_cita_ley_correcta[0] :: 0.697 → 0.727
+  por_prompt › original › 1a_nombra_codigo_de_otro_estado[0] :: 0.152 → 0.091
+  por_prompt › original › comprension[0] :: 0.648 → 0.688
+  por_prompt › original › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.197 → 0.091
+  por_prompt › original › recall10_1er_mensaje[0] :: 0.28 → 0.303
+  por_prompt_con_formacion › intermedio › 1a_nombra_codigo_de_otro_estado[0] :: 0.2 → 0.0
+  por_prompt_con_formacion › intermedio › comprension[0] :: 0.667 → 0.733
+  por_prompt_con_formacion › intermedio › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.267 → 0.067
+  por_prompt_con_formacion › intermedio › recall10_1er_mensaje[0] :: 0.333 → 0.367
+  por_prompt_con_formacion › nuevo › 1a_cita_articulo_correcto[0] :: 0.688 → 0.812
+  por_prompt_con_formacion › nuevo › 1a_cita_ley_correcta[0] :: 0.75 → 0.875
+  por_prompt_con_formacion › nuevo › 1a_nombra_codigo_de_otro_estado[0] :: 0.25 → 0.0
+  por_prompt_con_formacion › nuevo › comprension[0] :: 0.906 → 0.969
+  por_prompt_con_formacion › nuevo › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.25 → 0.0
+  por_prompt_con_formacion › nuevo › recall10_1er_mensaje[0] :: 0.625 → 0.688
+  por_prompt_con_formacion › original › 1a_cita_ley_correcta[0] :: 0.833 → 0.889
+  por_prompt_con_formacion › original › 1a_nombra_codigo_de_otro_estado[0] :: 0.333 → 0.222
+  por_prompt_con_formacion › original › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.333 → 0.222
+  por_prompt_con_formacion › original › recall10_1er_mensaje[0] :: 0.361 → 0.389
+  por_prompt_sin_formacion › intermedio › 1a_cita_articulo_correcto[0] :: 0.569 → 0.588
+  por_prompt_sin_formacion › intermedio › 1a_cita_ley_correcta[0] :: 0.686 → 0.706
+  por_prompt_sin_formacion › intermedio › 1a_nombra_codigo_de_otro_estado[0] :: 0.078 → 0.02
+  por_prompt_sin_formacion › intermedio › comprension[0] :: 0.68 → 0.75
+  por_prompt_sin_formacion › intermedio › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.196 → 0.059
+  por_prompt_sin_formacion › intermedio › recall10_1er_mensaje[0] :: 0.353 → 0.363
+  por_prompt_sin_formacion › nuevo › 1a_cita_articulo_correcto[0] :: 0.521 → 0.562
+  por_prompt_sin_formacion › nuevo › 1a_cita_ley_correcta[0] :: 0.667 → 0.688
+  por_prompt_sin_formacion › nuevo › 1a_nombra_codigo_de_otro_estado[0] :: 0.104 → 0.021
+  por_prompt_sin_formacion › nuevo › comprension[0] :: 0.67 → 0.734
+  por_prompt_sin_formacion › nuevo › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.188 → 0.021
+  por_prompt_sin_formacion › nuevo › recall10_1er_mensaje[0] :: 0.296 → 0.327
+  por_prompt_sin_formacion › original › 1a_cita_articulo_correcto[0] :: 0.521 → 0.542
+  por_prompt_sin_formacion › original › 1a_cita_ley_correcta[0] :: 0.646 → 0.667
+  por_prompt_sin_formacion › original › 1a_nombra_codigo_de_otro_estado[0] :: 0.083 → 0.042
+  por_prompt_sin_formacion › original › comprension[0] :: 0.63 → 0.685
+  por_prompt_sin_formacion › original › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.146 → 0.042
+  por_prompt_sin_formacion › original › recall10_1er_mensaje[0] :: 0.25 → 0.271
+  por_prompt_y_situacion › fotos › intermedio › 1a_cita_articulo_correcto[0] :: 0.545 → 0.591
+  por_prompt_y_situacion › fotos › intermedio › 1a_cita_ley_correcta[0] :: 0.773 → 0.818
+  por_prompt_y_situacion › fotos › intermedio › 1a_nombra_codigo_de_otro_estado[0] :: 0.273 → 0.0
+  por_prompt_y_situacion › fotos › intermedio › comprension[0] :: 0.591 → 0.795
+  por_prompt_y_situacion › fotos › intermedio › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.5 → 0.045
+  por_prompt_y_situacion › fotos › intermedio › recall10_1er_mensaje[0] :: 0.364 → 0.409
+  por_prompt_y_situacion › fotos › nuevo › 1a_cita_articulo_correcto[0] :: 0.429 → 0.619
+  por_prompt_y_situacion › fotos › nuevo › 1a_cita_ley_correcta[0] :: 0.714 → 0.857
+  por_prompt_y_situacion › fotos › nuevo › 1a_nombra_codigo_de_otro_estado[0] :: 0.381 → 0.0
+  por_prompt_y_situacion › fotos › nuevo › comprension[0] :: 0.6 → 0.8
+  por_prompt_y_situacion › fotos › nuevo › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.571 → 0.0
+  por_prompt_y_situacion › fotos › nuevo › recall10_1er_mensaje[0] :: 0.262 → 0.381
+  por_prompt_y_situacion › fotos › original › 1a_cita_articulo_correcto[0] :: 0.524 → 0.571
+  por_prompt_y_situacion › fotos › original › 1a_cita_ley_correcta[0] :: 0.714 → 0.81
+  por_prompt_y_situacion › fotos › original › 1a_nombra_codigo_de_otro_estado[0] :: 0.286 → 0.095
+  por_prompt_y_situacion › fotos › original › comprension[0] :: 0.643 → 0.762
+  por_prompt_y_situacion › fotos › original › cualquier_respuesta_nombra_codigo_de_otro_estado[0] :: 0.429 → 0.095
+  por_prompt_y_situacion › fotos › original › recall10_1er_mensaje[0] :: 0.238 → 0.31
+  ronda1_1a_nombra_codigo_de_otro_estado › actual[0] :: 0.6 → 0.575
+  ronda1_1a_nombra_codigo_de_otro_estado › actual[1] :: 24 → 23
+  ronda1_1a_nombra_codigo_de_otro_estado › sencillo[0] :: 0.436 → 0.385
+  ronda1_1a_nombra_codigo_de_otro_estado › sencillo[1] :: 17 → 15
+  ronda1_1a_nombra_codigo_de_otro_estado › todas[0] :: 0.562 → 0.533
+  ronda1_1a_nombra_codigo_de_otro_estado › todas[1] :: 59 → 56
+  tamano_de_muestra › comprension · diferencia 0.1 › de_por_persona :: 0.256 → 0.265
+  tamano_de_muestra › comprension · diferencia 0.1 › personas_por_prompt_detectar_80pct :: 103 → 111
+  tamano_de_muestra › comprension · diferencia 0.15 › de_por_persona :: 0.256 → 0.265
+  tamano_de_muestra › comprension · diferencia 0.15 › personas_por_prompt_detectar_80pct :: 46 → 49
+  tamano_de_muestra › comprension · equivalencia ±0.10 (TOST, 80 %, diferencia real 0) › de_por_persona :: 0.256 → 0.265
+  tamano_de_muestra › comprension · equivalencia ±0.10 (TOST, 80 %, diferencia real 0) › personas_por_prompt :: 113 → 121
+=== como_preguntan.txt: 36 valores cambian de 176
+  ronda 1 › con › r10_1er[0] :: 0.197 → 0.263
+  ronda 1 › con › r10_1er_sin_estado[0] :: 0.167 → 0.233
+  ronda 1 › con › r10_mejor[0] :: 0.197 → 0.263
+  ronda 1 › con − sin › r10_1er[0] :: -0.045 → -0.002
+  ronda 1 › con − sin › r10_1er[1] :: -0.189 → -0.147
+  ronda 1 › con − sin › r10_1er[2] :: 0.097 → 0.14
+  ronda 1 › con − sin › r10_1er_sin_estado[0] :: 0.013 → 0.079
+  ronda 1 › con − sin › r10_1er_sin_estado[1] :: -0.207 → -0.144
+  ronda 1 › con − sin › r10_1er_sin_estado[2] :: 0.236 → 0.299
+  ronda 1 › con − sin › r10_al_dar_estado[0] :: -0.292 → -0.333
+  ronda 1 › con − sin › r10_al_dar_estado[1] :: -0.467 → -0.5
+  ronda 1 › con − sin › r10_al_dar_estado[2] :: -0.071 → -0.125
+  ronda 1 › con − sin › r10_mejor[0] :: -0.126 → -0.082
+  ronda 1 › con − sin › r10_mejor[1] :: -0.275 → -0.227
+  ronda 1 › con − sin › r10_mejor[2] :: 0.025 → 0.061
+  ronda 1 › sin › r10_1er[0] :: 0.243 → 0.265
+  ronda 1 › sin › r10_al_dar_estado[0] :: 0.292 → 0.333
+  ronda 1 › sin › r10_mejor[0] :: 0.324 → 0.346
+  ronda 2 › con › r10_1er[0] :: 0.439 → 0.48
+  ronda 2 › con › r10_1er_sin_estado[0] :: 0.132 → 0.158
+  ronda 2 › con › r10_mejor[0] :: 0.5 → 0.52
+  ronda 2 › con − sin › r10_1er[0] :: 0.138 → 0.159
+  ronda 2 › con − sin › r10_1er[1] :: -0.006 → 0.012
+  ronda 2 › con − sin › r10_1er[2] :: 0.275 → 0.295
+  ronda 2 › con − sin › r10_1er_sin_estado[0] :: -0.026 → 0.001
+  ronda 2 › con − sin › r10_1er_sin_estado[1] :: -0.153 → -0.127
+  ronda 2 › con − sin › r10_1er_sin_estado[2] :: 0.123 → 0.15
+  ronda 2 › con − sin › r10_al_dar_estado[0] :: -0.341 → -0.432
+  ronda 2 › con − sin › r10_al_dar_estado[1] :: -0.688 → -0.768
+  ronda 2 › con − sin › r10_al_dar_estado[2] :: 0.0 → -0.1
+  ronda 2 › con − sin › r10_mejor[0] :: 0.054 → 0.051
+  ronda 2 › con − sin › r10_mejor[1] :: -0.108 → -0.109
+  ronda 2 › con − sin › r10_mejor[2] :: 0.212 → 0.207
+  ronda 2 › sin › r10_1er[0] :: 0.301 → 0.321
+  ronda 2 › sin › r10_al_dar_estado[0] :: 0.591 → 0.682
+  ronda 2 › sin › r10_mejor[0] :: 0.446 → 0.47
+=== estado_por_orden_de_situacion.txt: 14 valores cambian de 80
+  con intermedio › segunda o tercera · r10[0] :: 0.5 → 0.55
+  con nuevo › segunda o tercera · r10[0] :: 0.6 → 0.7
+  con original › segunda o tercera · r10[0] :: 0.46 → 0.5
+  sin intermedio › primera · r10[0] :: 0.28 → 0.31
+  sin nuevo › primera · r10[0] :: 0.25 → 0.28
+  sin nuevo › segunda o tercera · r10[0] :: 0.32 → 0.35
+  sin original › segunda o tercera · r10[0] :: 0.23 → 0.27
+  todos intermedio › primera · r10[0] :: 0.22 → 0.24
+  todos intermedio › segunda o tercera · r10[0] :: 0.42 → 0.43
+  todos nuevo › primera · r10[0] :: 0.35 → 0.38
+  todos nuevo › segunda o tercera · r10[0] :: 0.39 → 0.44
+  todos original › segunda o tercera · r10[0] :: 0.3 → 0.33
+  todos › primera · r10[0] :: 0.27 → 0.29
+  todos › segunda o tercera · r10[0] :: 0.37 → 0.4
+=== por_pregunta_y_escenario.txt: 138 valores cambian de 1692
+  escenarios_con › fotos › 1a_cita_articulo_correcto › r1 formal[0] :: 0.143 → 0.429
+  escenarios_con › fotos › 1a_cita_articulo_correcto › r1 sencillo[0] :: 0.4 → 0.6
+  escenarios_con › fotos › 1a_cita_articulo_correcto › r1 todos[0] :: 0.25 → 0.5
+  escenarios_con › fotos › 1a_cita_articulo_correcto › r2 nuevo[0] :: 0.4 → 0.8
+  escenarios_con › fotos › 1a_cita_articulo_correcto › r2 todos[0] :: 0.625 → 0.75
+  escenarios_con › fotos › comprension › r1 formal[0] :: 0.571 → 0.786
+  escenarios_con › fotos › comprension › r1 sencillo[0] :: 0.6 → 0.8
+  escenarios_con › fotos › comprension › r1 todos[0] :: 0.583 → 0.792
+  escenarios_con › fotos › comprension › r2 intermedio[0] :: 0.6 → 0.8
+  escenarios_con › fotos › comprension › r2 nuevo[0] :: 0.7 → 0.9
+  escenarios_con › fotos › comprension › r2 todos[0] :: 0.688 → 0.812
+  escenarios_r2_menos_r1_con › fotos › 1a_cita_articulo_correcto[0] :: 0.375 → 0.25
+  escenarios_r2_menos_r1_con › fotos › 1a_cita_articulo_correcto[1] :: 0.021 → -0.094
+  escenarios_r2_menos_r1_con › fotos › 1a_cita_articulo_correcto[2] :: 0.693 → 0.6
+  escenarios_r2_menos_r1_con › fotos › comprension[0] :: 0.104 → 0.021
+  escenarios_r2_menos_r1_con › fotos › comprension[1] :: -0.116 → -0.188
+  escenarios_r2_menos_r1_con › fotos › comprension[2] :: 0.344 → 0.245
+  escenarios_r2_menos_r1_sin › fotos › 1a_cita_articulo_correcto[0] :: 0.167 → 0.208
+  escenarios_r2_menos_r1_sin › fotos › 1a_cita_articulo_correcto[1] :: -0.069 → -0.03
+  escenarios_r2_menos_r1_sin › fotos › 1a_cita_articulo_correcto[2] :: 0.395 → 0.436
+  escenarios_r2_menos_r1_sin › fotos › comprension[0] :: 0.085 → 0.163
+  escenarios_r2_menos_r1_sin › fotos › comprension[1] :: -0.075 → 0.009
+  escenarios_r2_menos_r1_sin › fotos › comprension[2] :: 0.233 → 0.312
+  escenarios_r2_menos_r1_todos › fotos › 1a_cita_articulo_correcto[0] :: 0.222 → 0.205
+  escenarios_r2_menos_r1_todos › fotos › 1a_cita_articulo_correcto[1] :: 0.026 → -0.002
+  escenarios_r2_menos_r1_todos › fotos › 1a_cita_articulo_correcto[2] :: 0.409 → 0.396
+  escenarios_r2_menos_r1_todos › fotos › comprension[0] :: 0.082 → 0.109
+  escenarios_r2_menos_r1_todos › fotos › comprension[1] :: -0.049 → -0.019
+  escenarios_r2_menos_r1_todos › fotos › comprension[2] :: 0.208 → 0.236
+  escenarios_sin › fotos › 1a_cita_articulo_correcto › r1 sencillo[0] :: 0.25 → 0.375
+  escenarios_sin › fotos › 1a_cita_articulo_correcto › r1 todos[0] :: 0.292 → 0.333
+  escenarios_sin › fotos › 1a_cita_articulo_correcto › r2 formal[0] :: 0.467 → 0.533
+  escenarios_sin › fotos › 1a_cita_articulo_correcto › r2 intermedio[0] :: 0.471 → 0.529
+  escenarios_sin › fotos › 1a_cita_articulo_correcto › r2 nuevo[0] :: 0.438 → 0.562
+  escenarios_sin › fotos › 1a_cita_articulo_correcto › r2 todos[0] :: 0.458 → 0.542
+  escenarios_sin › fotos › comprension › r1 formal[0] :: 0.333 → 0.417
+  escenarios_sin › fotos › comprension › r1 piloto[0] :: 0.562 → 0.688
+  escenarios_sin › fotos › comprension › r1 sencillo[0] :: 0.562 → 0.688
+  escenarios_sin › fotos › comprension › r1 todos[0] :: 0.5 → 0.614
+  escenarios_sin › fotos › comprension › r2 formal[0] :: 0.6 → 0.767
+  escenarios_sin › fotos › comprension › r2 intermedio[0] :: 0.588 → 0.794
+  escenarios_sin › fotos › comprension › r2 nuevo[0] :: 0.567 → 0.767
+  escenarios_sin › fotos › comprension › r2 todos[0] :: 0.585 → 0.777
+  escenarios_todos › fotos › 1a_cita_articulo_correcto › r1 formal[0] :: 0.154 → 0.308
+  escenarios_todos › fotos › 1a_cita_articulo_correcto › r1 sencillo[0] :: 0.308 → 0.462
+  escenarios_todos › fotos › 1a_cita_articulo_correcto › r1 todos[0] :: 0.278 → 0.389
+  escenarios_todos › fotos › 1a_cita_articulo_correcto › r2 formal[0] :: 0.524 → 0.571
+  escenarios_todos › fotos › 1a_cita_articulo_correcto › r2 intermedio[0] :: 0.545 → 0.591
+  escenarios_todos › fotos › 1a_cita_articulo_correcto › r2 nuevo[0] :: 0.429 → 0.619
+  escenarios_todos › fotos › 1a_cita_articulo_correcto › r2 todos[0] :: 0.5 → 0.594
+  escenarios_todos › fotos › comprension › r1 formal[0] :: 0.462 → 0.615
+  escenarios_todos › fotos › comprension › r1 piloto[0] :: 0.562 → 0.688
+  escenarios_todos › fotos › comprension › r1 sencillo[0] :: 0.577 → 0.731
+  escenarios_todos › fotos › comprension › r1 todos[0] :: 0.529 → 0.676
+  escenarios_todos › fotos › comprension › r2 formal[0] :: 0.643 → 0.762
+  escenarios_todos › fotos › comprension › r2 intermedio[0] :: 0.591 → 0.795
+  escenarios_todos › fotos › comprension › r2 nuevo[0] :: 0.6 → 0.8
+  escenarios_todos › fotos › comprension › r2 todos[0] :: 0.611 → 0.786
+  preguntas_con › ley › r1 formal[0] :: 0.643 → 0.857
+  preguntas_con › ley › r1 sencillo[0] :: 0.3 → 0.5
+  preguntas_con › ley › r1 todos[0] :: 0.5 → 0.708
+  preguntas_con › ley › r2 intermedio[0] :: 0.4 → 0.6
+  preguntas_con › ley › r2 nuevo[0] :: 0.8 → 1.0
+  preguntas_con › ley › r2 todos[0] :: 0.594 → 0.719
+  preguntas_con › p:fotos:ley › r1 formal[0] :: 0.429 → 0.857
+  preguntas_con › p:fotos:ley › r1 sencillo[0] :: 0.2 → 0.6
+  preguntas_con › p:fotos:ley › r1 todos[0] :: 0.333 → 0.75
+  preguntas_con › p:fotos:ley › r2 intermedio[0] :: 0.4 → 0.8
+  preguntas_con › p:fotos:ley › r2 nuevo[0] :: 0.6 → 1.0
+  preguntas_con › p:fotos:ley › r2 todos[0] :: 0.562 → 0.812
+  preguntas_r2_menos_r1_con › ley › formal[0] :: -0.06 → -0.274
+  preguntas_r2_menos_r1_con › ley › formal[1] :: -0.44 → -0.595
+  preguntas_r2_menos_r1_con › ley › formal[2] :: 0.321 → 0.048
+  preguntas_r2_menos_r1_con › ley › todos los prompts[0] :: 0.094 → 0.01
+  preguntas_r2_menos_r1_con › ley › todos los prompts[1] :: -0.188 → -0.241
+  preguntas_r2_menos_r1_con › ley › todos los prompts[2] :: 0.383 → 0.265
+  preguntas_r2_menos_r1_con › p:fotos:ley › formal[0] :: 0.238 → -0.19
+  preguntas_r2_menos_r1_con › p:fotos:ley › formal[1] :: -0.286 → -0.667
+  preguntas_r2_menos_r1_con › p:fotos:ley › formal[2] :: 0.714 → 0.286
+  preguntas_r2_menos_r1_con › p:fotos:ley › todos los prompts[0] :: 0.229 → 0.062
+  preguntas_r2_menos_r1_con › p:fotos:ley › todos los prompts[1] :: -0.155 → -0.25
+  preguntas_r2_menos_r1_con › p:fotos:ley › todos los prompts[2] :: 0.588 → 0.375
+  preguntas_r2_menos_r1_sin › ley › formal[0] :: 0.133 → 0.217
+  preguntas_r2_menos_r1_sin › ley › formal[1] :: -0.131 → -0.033
+  preguntas_r2_menos_r1_sin › ley › formal[2] :: 0.401 → 0.468
+  preguntas_r2_menos_r1_sin › ley › todos los prompts[0] :: 0.071 → 0.146
+  preguntas_r2_menos_r1_sin › ley › todos los prompts[1] :: -0.068 → -0.014
+  preguntas_r2_menos_r1_sin › ley › todos los prompts[2] :: 0.22 → 0.304
+  preguntas_r2_menos_r1_sin › p:fotos:ley › formal[0] :: 0.4 → 0.567
+  preguntas_r2_menos_r1_sin › p:fotos:ley › formal[1] :: 0.154 → 0.171
+  preguntas_r2_menos_r1_sin › p:fotos:ley › formal[2] :: 0.643 → 0.889
+  preguntas_r2_menos_r1_sin › p:fotos:ley › todos los prompts[0] :: 0.113 → 0.269
+  preguntas_r2_menos_r1_sin › p:fotos:ley › todos los prompts[1] :: -0.11 → 0.017
+  preguntas_r2_menos_r1_sin › p:fotos:ley › todos los prompts[2] :: 0.333 → 0.518
+  preguntas_r2_menos_r1_todos › ley › formal[0] :: 0.0 → -0.035
+  preguntas_r2_menos_r1_todos › ley › formal[1] :: -0.246 → -0.264
+  preguntas_r2_menos_r1_todos › ley › formal[2] :: 0.246 → 0.2
+  preguntas_r2_menos_r1_todos › ley › todos los prompts[0] :: 0.068 → 0.093
+  preguntas_r2_menos_r1_todos › ley › todos los prompts[1] :: -0.06 → -0.045
+  preguntas_r2_menos_r1_todos › ley › todos los prompts[2] :: 0.2 → 0.233
+  preguntas_r2_menos_r1_todos › p:fotos:ley › formal[0] :: 0.245 → 0.176
+  preguntas_r2_menos_r1_todos › p:fotos:ley › formal[1] :: -0.066 → -0.15
+  preguntas_r2_menos_r1_todos › p:fotos:ley › formal[2] :: 0.542 → 0.52
+  preguntas_r2_menos_r1_todos › p:fotos:ley › todos los prompts[0] :: 0.132 → 0.187
+  preguntas_r2_menos_r1_todos › p:fotos:ley › todos los prompts[1] :: -0.07 → -0.015
+  preguntas_r2_menos_r1_todos › p:fotos:ley › todos los prompts[2] :: 0.317 → 0.382
+  preguntas_sin › ley › r1 formal[0] :: 0.333 → 0.417
+  preguntas_sin › ley › r1 piloto[0] :: 0.533 → 0.667
+  preguntas_sin › ley › r1 sencillo[0] :: 0.375 → 0.5
+  preguntas_sin › ley › r1 todos[0] :: 0.419 → 0.535
+  preguntas_sin › ley › r2 formal[0] :: 0.467 → 0.633
+  preguntas_sin › ley › r2 intermedio[0] :: 0.455 → 0.667
+  preguntas_sin › ley › r2 nuevo[0] :: 0.548 → 0.742
+  preguntas_sin › ley › r2 todos[0] :: 0.489 → 0.681
+  preguntas_sin › p:fotos:ley › r1 formal[0] :: 0.0 → 0.167
+  preguntas_sin › p:fotos:ley › r1 piloto[0] :: 0.5 → 0.75
+  preguntas_sin › p:fotos:ley › r1 sencillo[0] :: 0.125 → 0.375
+  preguntas_sin › p:fotos:ley › r1 todos[0] :: 0.227 → 0.455
+  preguntas_sin › p:fotos:ley › r2 formal[0] :: 0.4 → 0.733
+  preguntas_sin › p:fotos:ley › r2 intermedio[0] :: 0.235 → 0.647
+  preguntas_sin › p:fotos:ley › r2 nuevo[0] :: 0.4 → 0.8
+  preguntas_sin › p:fotos:ley › r2 todos[0] :: 0.34 → 0.723
+  preguntas_todos › ley › r1 formal[0] :: 0.5 → 0.654
+  preguntas_todos › ley › r1 piloto[0] :: 0.533 → 0.667
+  preguntas_todos › ley › r1 sencillo[0] :: 0.346 → 0.5
+  preguntas_todos › ley › r1 todos[0] :: 0.448 → 0.597
+  preguntas_todos › ley › r2 formal[0] :: 0.5 → 0.619
+  preguntas_todos › ley › r2 intermedio[0] :: 0.442 → 0.651
+  preguntas_todos › ley › r2 nuevo[0] :: 0.61 → 0.805
+  preguntas_todos › ley › r2 todos[0] :: 0.516 → 0.69
+  preguntas_todos › p:fotos:ley › r1 formal[0] :: 0.231 → 0.538
+  preguntas_todos › p:fotos:ley › r1 piloto[0] :: 0.5 → 0.75
+  preguntas_todos › p:fotos:ley › r1 sencillo[0] :: 0.154 → 0.462
+  preguntas_todos › p:fotos:ley › r1 todos[0] :: 0.265 → 0.559
+  preguntas_todos › p:fotos:ley › r2 formal[0] :: 0.476 → 0.714
+  preguntas_todos › p:fotos:ley › r2 intermedio[0] :: 0.273 → 0.682
+  preguntas_todos › p:fotos:ley › r2 nuevo[0] :: 0.45 → 0.85
+  preguntas_todos › p:fotos:ley › r2 todos[0] :: 0.397 → 0.746
+=== pregunta_enterrada.txt: 0 valores cambian de 243
+=== pruebas_aprendizaje_y_fecha.txt: 444 valores cambian de 1017
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.333 → 0.7
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_1a › asistente_no_lo_cito[1] :: 15 → 10
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.615 → 0.833
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_1a › asistente_si_lo_cito[1] :: 13 → 18
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_1a › si_menos_no[0] :: 0.282 → 0.133
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_1a › si_menos_no[1] :: -0.082 → -0.178
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_1a › si_menos_no[2] :: 0.626 → 0.478
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.231 → 0.667
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 13 → 9
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.667 → 0.842
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 15 → 19
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_alguna › si_menos_no[0] :: 0.436 → 0.175
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_alguna › si_menos_no[1] :: 0.082 → -0.152
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · fotos › articulo_alguna › si_menos_no[2] :: 0.733 → 0.556
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.393 → 0.565
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 28 → 23
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.714 → 0.818
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 28 → 33
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.321 → 0.253
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_1a › si_menos_no[1] :: 0.081 → 0.015
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.552 → 0.492
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.346 → 0.545
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 26 → 22
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.733 → 0.824
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 30 → 34
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.387 → 0.278
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.147 → 0.036
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.618 → 0.508
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · mensajes_trabajo › articulo_1a › si_menos_no[2] :: 0.692 → 0.646
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · mensajes_trabajo › articulo_alguna › si_menos_no[1] :: -0.026 → -0.015
+  prueba1_acierta_ley_segun_articulo › las dos rondas · con · mensajes_trabajo › articulo_alguna › si_menos_no[2] :: 0.646 → 0.692
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.225 → 0.514
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_1a › asistente_no_lo_cito[1] :: 40 → 35
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.414 → 0.765
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_1a › asistente_si_lo_cito[1] :: 29 → 34
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_1a › si_menos_no[0] :: 0.189 → 0.25
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_1a › si_menos_no[1] :: -0.04 → 0.019
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_1a › si_menos_no[2] :: 0.408 → 0.455
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.235 → 0.5
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 34 → 28
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.371 → 0.732
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 35 → 41
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_alguna › si_menos_no[0] :: 0.136 → 0.232
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_alguna › si_menos_no[1] :: -0.069 → -0.007
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · fotos › articulo_alguna › si_menos_no[2] :: 0.339 → 0.461
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.381 → 0.519
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 84 → 79
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.604 → 0.793
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 53 → 58
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.223 → 0.274
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_1a › si_menos_no[1] :: 0.058 → 0.112
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.386 → 0.425
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.288 → 0.434
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 59 → 53
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.603 → 0.762
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 78 → 84
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.314 → 0.328
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.16 → 0.151
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.466 → 0.494
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · mensajes_trabajo › articulo_1a › si_menos_no[2] :: 0.511 → 0.508
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · mensajes_trabajo › articulo_alguna › si_menos_no[1] :: 0.207 → 0.214
+  prueba1_acierta_ley_segun_articulo › las dos rondas · sin · mensajes_trabajo › articulo_alguna › si_menos_no[2] :: 0.654 → 0.65
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.255 → 0.556
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_1a › asistente_no_lo_cito[1] :: 55 → 45
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.476 → 0.788
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_1a › asistente_si_lo_cito[1] :: 42 → 52
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_1a › si_menos_no[0] :: 0.222 → 0.233
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_1a › si_menos_no[1] :: 0.027 → 0.045
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_1a › si_menos_no[2] :: 0.413 → 0.415
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.234 → 0.541
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 47 → 37
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.46 → 0.767
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 50 → 60
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_alguna › si_menos_no[1] :: 0.038 → 0.031
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · fotos › articulo_alguna › si_menos_no[2] :: 0.41 → 0.422
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.384 → 0.529
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 112 → 102
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.642 → 0.802
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 81 → 91
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.258 → 0.273
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_1a › si_menos_no[1] :: 0.12 → 0.141
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.39 → 0.397
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.306 → 0.467
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 85 → 75
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.639 → 0.78
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 108 → 118
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.333 → 0.313
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.197 → 0.172
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.464 → 0.448
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · mensajes_trabajo › articulo_1a › si_menos_no[1] :: 0.13 → 0.131
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · mensajes_trabajo › articulo_1a › si_menos_no[2] :: 0.486 → 0.484
+  prueba1_acierta_ley_segun_articulo › las dos rondas · todos · mensajes_trabajo › articulo_alguna › si_menos_no[1] :: 0.206 → 0.207
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.222 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_1a › asistente_no_lo_cito[1] :: 9 → 6
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.667 → 0.833
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_1a › asistente_si_lo_cito[1] :: 3 → 6
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_1a › si_menos_no[0] :: 0.444 → 0.167
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_1a › si_menos_no[1] :: -0.222 → -0.333
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_1a › si_menos_no[2] :: 1.0 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.222 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 9 → 6
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.667 → 0.833
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 3 → 6
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_alguna › si_menos_no[0] :: 0.444 → 0.167
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_alguna › si_menos_no[1] :: -0.222 → -0.333
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · fotos › articulo_alguna › si_menos_no[2] :: 1.0 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.4 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 15 → 12
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.667 → 0.75
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 9 → 12
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.267 → 0.083
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_1a › si_menos_no[1] :: -0.125 → -0.317
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.639 → 0.455
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.4 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 15 → 12
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.667 → 0.75
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 9 → 12
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.267 → 0.083
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_alguna › si_menos_no[1] :: -0.125 → -0.311
+  prueba1_acierta_ley_segun_articulo › ronda 1 · con · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.633 → 0.455
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.2 → 0.5
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_1a › asistente_no_lo_cito[1] :: 15 → 14
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.286 → 0.375
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_1a › asistente_si_lo_cito[1] :: 7 → 8
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_1a › si_menos_no[0] :: 0.086 → -0.125
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_1a › si_menos_no[1] :: -0.267 → -0.536
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_1a › si_menos_no[2] :: 0.505 → 0.286
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.214 → 0.538
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 14 → 13
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.25 → 0.333
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 8 → 9
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_alguna › si_menos_no[0] :: 0.036 → -0.205
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_alguna › si_menos_no[1] :: -0.304 → -0.615
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · fotos › articulo_alguna › si_menos_no[2] :: 0.429 → 0.214
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.308 → 0.48
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 26 → 25
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.588 → 0.611
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 17 → 18
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.281 → 0.131
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_1a › si_menos_no[1] :: 0.023 → -0.15
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.559 → 0.415
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.25 → 0.474
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 20 → 19
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.565 → 0.583
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 23 → 24
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.315 → 0.11
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.046 → -0.167
+  prueba1_acierta_ley_segun_articulo › ronda 1 · sin · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.571 → 0.382
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.208 → 0.55
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_1a › asistente_no_lo_cito[1] :: 24 → 20
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.4 → 0.571
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_1a › asistente_si_lo_cito[1] :: 10 → 14
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_1a › si_menos_no[0] :: 0.192 → 0.021
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_1a › si_menos_no[1] :: -0.15 → -0.314
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_1a › si_menos_no[2] :: 0.533 → 0.357
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.217 → 0.579
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 23 → 19
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.364 → 0.533
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 11 → 15
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_alguna › si_menos_no[0] :: 0.146 → -0.046
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_alguna › si_menos_no[1] :: -0.174 → -0.365
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · fotos › articulo_alguna › si_menos_no[2] :: 0.506 → 0.274
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.341 → 0.541
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 41 → 37
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.615 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 26 → 30
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.274 → 0.126
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_1a › si_menos_no[1] :: 0.046 → -0.103
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.492 → 0.343
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.314 → 0.548
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 35 → 31
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.594 → 0.639
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 32 → 36
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.279 → 0.091
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.062 → -0.142
+  prueba1_acierta_ley_segun_articulo › ronda 1 · todos · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.5 → 0.329
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.5 → 0.75
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_1a › asistente_no_lo_cito[1] :: 6 → 4
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.6 → 0.833
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_1a › asistente_si_lo_cito[1] :: 10 → 12
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_1a › si_menos_no[0] :: 0.1 → 0.083
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_1a › si_menos_no[1] :: -0.4 → -0.333
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_1a › si_menos_no[2] :: 0.633 → 0.583
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.25 → 0.667
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 4 → 3
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.667 → 0.846
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 12 → 13
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_alguna › si_menos_no[0] :: 0.417 → 0.179
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_alguna › si_menos_no[1] :: -0.083 → -0.308
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · fotos › articulo_alguna › si_menos_no[2] :: 0.833 → 0.769
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.385 → 0.455
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 13 → 11
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.737 → 0.857
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 19 → 21
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.352 → 0.403
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_1a › si_menos_no[1] :: 0.017 → 0.082
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.667 → 0.717
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.273 → 0.4
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 11 → 10
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.762 → 0.864
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 21 → 22
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.489 → 0.464
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.166 → 0.143
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.78 → 0.774
+  prueba1_acierta_ley_segun_articulo › ronda 2 · con · mensajes_trabajo › articulo_1a › si_menos_no[1] :: 0.175 → 0.206
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.24 → 0.524
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_1a › asistente_no_lo_cito[1] :: 25 → 21
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.455 → 0.885
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_1a › asistente_si_lo_cito[1] :: 22 → 26
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_1a › si_menos_no[0] :: 0.215 → 0.361
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_1a › si_menos_no[1] :: -0.047 → 0.112
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_1a › si_menos_no[2] :: 0.476 → 0.599
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.25 → 0.467
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 20 → 15
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.407 → 0.844
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 27 → 32
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_alguna › si_menos_no[0] :: 0.157 → 0.377
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_alguna › si_menos_no[1] :: -0.117 → 0.088
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · fotos › articulo_alguna › si_menos_no[2] :: 0.419 → 0.644
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.414 → 0.537
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 58 → 54
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.611 → 0.875
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 36 → 40
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.197 → 0.338
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_1a › si_menos_no[1] :: -0.013 → 0.148
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.4 → 0.513
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.308 → 0.412
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 39 → 34
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.618 → 0.833
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 55 → 60
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.31 → 0.422
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.109 → 0.196
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.491 → 0.625
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · mensajes_trabajo › articulo_1a › si_menos_no[1] :: 0.048 → 0.037
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · mensajes_trabajo › articulo_alguna › si_menos_no[1] :: 0.188 → 0.19
+  prueba1_acierta_ley_segun_articulo › ronda 2 · sin · mensajes_trabajo › articulo_alguna › si_menos_no[2] :: 0.699 → 0.701
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_1a › asistente_no_lo_cito[0] :: 0.29 → 0.56
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_1a › asistente_no_lo_cito[1] :: 31 → 25
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_1a › asistente_si_lo_cito[0] :: 0.5 → 0.868
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_1a › asistente_si_lo_cito[1] :: 32 → 38
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_1a › si_menos_no[0] :: 0.21 → 0.308
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_1a › si_menos_no[1] :: -0.014 → 0.082
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_1a › si_menos_no[2] :: 0.432 → 0.522
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_alguna › asistente_no_lo_cito[0] :: 0.25 → 0.5
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_alguna › asistente_no_lo_cito[1] :: 24 → 18
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_alguna › asistente_si_lo_cito[0] :: 0.487 → 0.844
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_alguna › asistente_si_lo_cito[1] :: 39 → 45
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_alguna › si_menos_no[0] :: 0.237 → 0.344
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_alguna › si_menos_no[1] :: -0.006 → 0.089
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · fotos › articulo_alguna › si_menos_no[2] :: 0.468 → 0.589
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_1a › asistente_no_lo_cito[0] :: 0.408 → 0.523
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_1a › asistente_no_lo_cito[1] :: 71 → 65
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_1a › asistente_si_lo_cito[0] :: 0.655 → 0.869
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_1a › asistente_si_lo_cito[1] :: 55 → 61
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_1a › si_menos_no[0] :: 0.246 → 0.346
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_1a › si_menos_no[1] :: 0.078 → 0.185
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_1a › si_menos_no[2] :: 0.405 → 0.494
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_alguna › asistente_no_lo_cito[0] :: 0.3 → 0.409
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_alguna › asistente_no_lo_cito[1] :: 50 → 44
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_alguna › asistente_si_lo_cito[0] :: 0.658 → 0.841
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_alguna › asistente_si_lo_cito[1] :: 76 → 82
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_alguna › si_menos_no[0] :: 0.358 → 0.432
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_alguna › si_menos_no[1] :: 0.187 → 0.25
+  prueba1_acierta_ley_segun_articulo › ronda 2 · todos · las dos situaciones › articulo_alguna › si_menos_no[2] :: 0.512 → 0.597
+  prueba2_misma_epoca › antes (solo original y nuevo) · sin › diferencias › comprension › nuevo − original[0] :: -0.278 → -0.306
+  prueba2_misma_epoca › antes (solo original y nuevo) · sin › diferencias › comprension › nuevo − original[1] :: -0.611 → -0.5
+  prueba2_misma_epoca › antes (solo original y nuevo) · sin › diferencias › comprension › nuevo − original[2] :: 0.056 → -0.083
+  prueba2_misma_epoca › antes (solo original y nuevo) · sin › tabla › nuevo › comprension[0] :: 0.5 → 0.583
+  prueba2_misma_epoca › antes (solo original y nuevo) · sin › tabla › original › comprension[0] :: 0.778 → 0.889
+  prueba2_misma_epoca › antes (solo original y nuevo) · todos › diferencias › comprension › nuevo − original[0] :: 0.0 → -0.028
+  prueba2_misma_epoca › antes (solo original y nuevo) · todos › diferencias › comprension › nuevo − original[1] :: -0.389 → -0.361
+  prueba2_misma_epoca › antes (solo original y nuevo) · todos › diferencias › comprension › nuevo − original[2] :: 0.403 → 0.333
+  prueba2_misma_epoca › antes (solo original y nuevo) · todos › tabla › nuevo › comprension[0] :: 0.667 → 0.722
+  prueba2_misma_epoca › antes (solo original y nuevo) · todos › tabla › original › comprension[0] :: 0.667 → 0.75
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › actuaria › intermedio − nuevo[2] :: 0.279 → 0.318
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › intermedio − nuevo[0] :: -0.218 → -0.228
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › intermedio − nuevo[1] :: -0.4 → -0.367
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › intermedio − nuevo[2] :: -0.067 → -0.1
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › intermedio − original[0] :: -0.1 → -0.033
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › intermedio − original[1] :: -0.333 → -0.2
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › intermedio − original[2] :: 0.1 → 0.167
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › nuevo − original[0] :: 0.118 → 0.195
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › nuevo − original[1] :: -0.036 → 0.033
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › comprension › nuevo − original[2] :: 0.295 → 0.367
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › confianza_1a5 › intermedio − nuevo[1] :: -1.333 → -1.345
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › confianza_1a5 › nuevo − original[1] :: -0.8 → -0.79
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › confianza_1a5 › nuevo − original[2] :: 0.005 → 0.012
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › escala_confianza_asistente › intermedio − nuevo[1] :: -1.39 → -1.379
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › escala_confianza_asistente › intermedio − nuevo[2] :: 0.388 → 0.333
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › escala_confianza_asistente › intermedio − original[1] :: -1.6 → -1.667
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › escala_confianza_asistente › nuevo − original[1] :: -0.855 → -0.844
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › escala_confianza_asistente › nuevo − original[2] :: 0.509 → 0.477
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › noto_problema › intermedio − nuevo[1] :: -0.318 → -0.308
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › noto_problema › intermedio − nuevo[2] :: 0.356 → 0.376
+  prueba2_misma_epoca › desde que existe intermedio · con › diferencias › noto_problema › nuevo − original[1] :: -0.109 → -0.123
+  prueba2_misma_epoca › desde que existe intermedio · con › tabla › intermedio › comprension[0] :: 0.667 → 0.733
+  prueba2_misma_epoca › desde que existe intermedio · con › tabla › nuevo › comprension[0] :: 0.885 → 0.962
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › actuaria › intermedio − nuevo[1] :: 0.054 → 0.055
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › actuaria › intermedio − nuevo[2] :: 0.56 → 0.558
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › actuaria › intermedio − original[1] :: 0.146 → 0.145
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › actuaria › intermedio − original[2] :: 0.576 → 0.574
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › actuaria › nuevo − original[1] :: -0.243 → -0.242
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › intermedio − nuevo[0] :: -0.015 → -0.006
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › intermedio − nuevo[1] :: -0.175 → -0.188
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › intermedio − nuevo[2] :: 0.163 → 0.197
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › intermedio − original[0] :: 0.085 → 0.115
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › intermedio − original[1] :: -0.104 → -0.079
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › intermedio − original[2] :: 0.275 → 0.312
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › nuevo − original[0] :: 0.101 → 0.121
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › nuevo − original[1] :: -0.109 → -0.103
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › comprension › nuevo − original[2] :: 0.308 → 0.34
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › confianza_1a5 › intermedio − nuevo[2] :: 0.808 → 0.796
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › confianza_1a5 › intermedio − original[1] :: -0.226 → -0.224
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › confianza_1a5 › intermedio − original[2] :: 0.617 → 0.614
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › confianza_1a5 › nuevo − original[1] :: -0.593 → -0.594
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › escala_confianza_asistente › intermedio − nuevo[1] :: 0.065 → 0.062
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › escala_confianza_asistente › intermedio − nuevo[2] :: 1.025 → 1.02
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › escala_confianza_asistente › intermedio − original[1] :: 0.249 → 0.25
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › escala_confianza_asistente › intermedio − original[2] :: 1.357 → 1.359
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › escala_confianza_asistente › nuevo − original[1] :: -0.34 → -0.333
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › escala_confianza_asistente › nuevo − original[2] :: 0.827 → 0.838
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › noto_problema › intermedio − original[1] :: -0.23 → -0.231
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › noto_problema › intermedio − original[2] :: 0.066 → 0.067
+  prueba2_misma_epoca › desde que existe intermedio · sin › diferencias › noto_problema › nuevo − original[2] :: 0.117 → 0.116
+  prueba2_misma_epoca › desde que existe intermedio · sin › tabla › intermedio › comprension[0] :: 0.68 → 0.75
+  prueba2_misma_epoca › desde que existe intermedio · sin › tabla › nuevo › comprension[0] :: 0.695 → 0.756
+  prueba2_misma_epoca › desde que existe intermedio · sin › tabla › original › comprension[0] :: 0.595 → 0.635
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › actuaria › intermedio − nuevo[1] :: -0.037 → -0.034
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › actuaria › intermedio − nuevo[2] :: 0.431 → 0.428
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › actuaria › intermedio − original[1] :: 0.0 → -0.001
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › actuaria › intermedio − original[2] :: 0.436 → 0.435
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › actuaria › nuevo − original[1] :: -0.251 → -0.247
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › actuaria › nuevo − original[2] :: 0.274 → 0.275
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › intermedio − nuevo[0] :: -0.064 → -0.059
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › intermedio − nuevo[1] :: -0.192 → -0.203
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › intermedio − nuevo[2] :: 0.079 → 0.099
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › intermedio − original[0] :: 0.033 → 0.073
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › intermedio − original[1] :: -0.124 → -0.077
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › intermedio − original[2] :: 0.191 → 0.231
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › nuevo − original[0] :: 0.097 → 0.132
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › nuevo − original[1] :: -0.063 → -0.04
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › comprension › nuevo − original[2] :: 0.267 → 0.306
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › confianza_1a5 › intermedio − nuevo[1] :: -0.361 → -0.352
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › confianza_1a5 › intermedio − nuevo[2] :: 0.585 → 0.592
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › confianza_1a5 › intermedio − original[1] :: -0.494 → -0.488
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › confianza_1a5 › intermedio − original[2] :: 0.358 → 0.355
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › confianza_1a5 › nuevo − original[1] :: -0.632 → -0.635
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › confianza_1a5 › nuevo − original[2] :: 0.279 → 0.278
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › escala_confianza_asistente › intermedio − nuevo[1] :: -0.138 → -0.143
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › escala_confianza_asistente › intermedio − nuevo[2] :: 0.74 → 0.738
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › escala_confianza_asistente › intermedio − original[1] :: -0.091 → -0.078
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › escala_confianza_asistente › intermedio − original[2] :: 0.955 → 0.952
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › escala_confianza_asistente › nuevo − original[1] :: -0.361 → -0.369
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › escala_confianza_asistente › nuevo − original[2] :: 0.631 → 0.636
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › noto_problema › intermedio − nuevo[1] :: -0.165 → -0.163
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › noto_problema › intermedio − nuevo[2] :: 0.112 → 0.113
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › noto_problema › intermedio − original[1] :: -0.145 → -0.144
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › noto_problema › intermedio − original[2] :: 0.117 → 0.119
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › noto_problema › nuevo − original[1] :: -0.122 → -0.121
+  prueba2_misma_epoca › desde que existe intermedio · todos › diferencias › noto_problema › nuevo − original[2] :: 0.158 → 0.157
+  prueba2_misma_epoca › desde que existe intermedio · todos › tabla › intermedio › comprension[0] :: 0.677 → 0.746
+  prueba2_misma_epoca › desde que existe intermedio · todos › tabla › nuevo › comprension[0] :: 0.741 → 0.806
+  prueba2_misma_epoca › desde que existe intermedio · todos › tabla › original › comprension[0] :: 0.644 → 0.673
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › actuaria › intermedio − nuevo[1] :: -0.556 → -0.554
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › actuaria › intermedio − nuevo[2] :: 0.283 → 0.267
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › actuaria › intermedio − original[1] :: -0.578 → -0.567
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › actuaria › intermedio − original[2] :: 0.333 → 0.344
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › actuaria › nuevo − original[2] :: 0.438 → 0.444
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › intermedio − nuevo[0] :: -0.24 → -0.235
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › intermedio − nuevo[1] :: -0.429 → -0.367
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › intermedio − nuevo[2] :: -0.077 → -0.111
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › intermedio − original[0] :: -0.028 → 0.039
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › intermedio − original[1] :: -0.272 → -0.172
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › intermedio − original[2] :: 0.206 → 0.25
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › nuevo − original[0] :: 0.212 → 0.274
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › nuevo − original[1] :: 0.028 → 0.103
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › comprension › nuevo − original[2] :: 0.406 → 0.469
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › confianza_1a5 › intermedio − nuevo[1] :: -1.452 → -1.467
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › confianza_1a5 › intermedio − original[2] :: 0.322 → 0.356
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › confianza_1a5 › nuevo − original[1] :: -0.611 → -0.59
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › confianza_1a5 › nuevo − original[2] :: 0.431 → 0.444
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › escala_confianza_asistente › intermedio − nuevo[1] :: -1.411 → -1.4
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › escala_confianza_asistente › intermedio − original[2] :: 0.3 → 0.317
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › escala_confianza_asistente › nuevo − original[1] :: -0.85 → -0.881
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › noto_problema › intermedio − nuevo[1] :: -0.237 → -0.233
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › noto_problema › intermedio − nuevo[2] :: 0.4 → 0.395
+  prueba2_misma_epoca › toda la ronda 2 · con › diferencias › noto_problema › nuevo − original[1] :: -0.095 → -0.111
+  prueba2_misma_epoca › toda la ronda 2 · con › tabla › intermedio › comprension[0] :: 0.667 → 0.733
+  prueba2_misma_epoca › toda la ronda 2 · con › tabla › nuevo › comprension[0] :: 0.906 → 0.969
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › actuaria › intermedio − nuevo[1] :: 0.0 → 0.001
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › actuaria › intermedio − nuevo[2] :: 0.491 → 0.489
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › actuaria › intermedio − original[1] :: 0.216 → 0.217
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › actuaria › intermedio − original[2] :: 0.633 → 0.634
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › actuaria › nuevo − original[1] :: -0.078 → -0.083
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › intermedio − nuevo[0] :: 0.01 → 0.016
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › intermedio − nuevo[1] :: -0.146 → -0.155
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › intermedio − nuevo[2] :: 0.174 → 0.193
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › intermedio − original[0] :: 0.05 → 0.065
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › intermedio − original[1] :: -0.122 → -0.116
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › intermedio − original[2] :: 0.222 → 0.246
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › nuevo − original[0] :: 0.04 → 0.049
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › comprension › nuevo − original[2] :: 0.229 → 0.248
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › confianza_1a5 › intermedio − nuevo[2] :: 0.705 → 0.701
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › confianza_1a5 › nuevo − original[1] :: -0.46 → -0.472
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › confianza_1a5 › nuevo − original[2] :: 0.521 → 0.525
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › escala_confianza_asistente › intermedio − nuevo[2] :: 1.009 → 1.008
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › escala_confianza_asistente › intermedio − original[2] :: 1.35 → 1.351
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › escala_confianza_asistente › nuevo − original[1] :: -0.342 → -0.344
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › escala_confianza_asistente › nuevo − original[2] :: 0.855 → 0.87
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › noto_problema › intermedio − nuevo[1] :: -0.156 → -0.154
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › noto_problema › intermedio − nuevo[2] :: 0.103 → 0.104
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › noto_problema › intermedio − original[2] :: 0.082 → 0.083
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › noto_problema › nuevo − original[1] :: -0.155 → -0.165
+  prueba2_misma_epoca › toda la ronda 2 · sin › diferencias › noto_problema › nuevo − original[2] :: 0.118 → 0.122
+  prueba2_misma_epoca › toda la ronda 2 · sin › tabla › intermedio › comprension[0] :: 0.68 → 0.75
+  prueba2_misma_epoca › toda la ronda 2 · sin › tabla › nuevo › comprension[0] :: 0.67 → 0.734
+  prueba2_misma_epoca › toda la ronda 2 · sin › tabla › original › comprension[0] :: 0.63 → 0.685
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › actuaria › intermedio − nuevo[2] :: 0.364 → 0.363
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › actuaria › intermedio − original[1] :: 0.082 → 0.079
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › actuaria › nuevo − original[1] :: -0.094 → -0.096
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › actuaria › nuevo − original[2] :: 0.359 → 0.36
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › intermedio − nuevo[0] :: -0.053 → -0.047
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › intermedio − nuevo[2] :: 0.082 → 0.101
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › intermedio − original[0] :: 0.028 → 0.059
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › intermedio − original[1] :: -0.111 → -0.088
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › intermedio − original[2] :: 0.167 → 0.201
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › nuevo − original[0] :: 0.082 → 0.106
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › nuevo − original[1] :: -0.078 → -0.053
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › comprension › nuevo − original[2] :: 0.231 → 0.261
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › confianza_1a5 › intermedio − nuevo[2] :: 0.479 → 0.481
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › confianza_1a5 › intermedio − original[1] :: -0.41 → -0.415
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › confianza_1a5 › intermedio − original[2] :: 0.39 → 0.4
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › confianza_1a5 › nuevo − original[1] :: -0.465 → -0.455
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › confianza_1a5 › nuevo − original[2] :: 0.37 → 0.393
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › escala_confianza_asistente › intermedio − nuevo[2] :: 0.728 → 0.737
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › escala_confianza_asistente › intermedio − original[2] :: 0.927 → 0.929
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › escala_confianza_asistente › nuevo − original[1] :: -0.366 → -0.36
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › escala_confianza_asistente › nuevo − original[2] :: 0.611 → 0.608
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › noto_problema › intermedio − original[1] :: -0.107 → -0.108
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › noto_problema › nuevo − original[1] :: -0.103 → -0.105
+  prueba2_misma_epoca › toda la ronda 2 · todos › diferencias › noto_problema › nuevo − original[2] :: 0.141 → 0.139
+  prueba2_misma_epoca › toda la ronda 2 · todos › tabla › intermedio › comprension[0] :: 0.677 → 0.746
+  prueba2_misma_epoca › toda la ronda 2 · todos › tabla › nuevo › comprension[0] :: 0.73 → 0.794
+  prueba2_misma_epoca › toda la ronda 2 · todos › tabla › original › comprension[0] :: 0.648 → 0.688
+=== puente_ronda1_ronda2.txt: 96 valores cambian de 425
+  puente_formal_r2_menos_r1_con › 1a_cita_articulo_correcto[0] :: 0.397 → 0.302
+  puente_formal_r2_menos_r1_con › 1a_cita_articulo_correcto[1] :: 0.111 → 0.016
+  puente_formal_r2_menos_r1_con › 1a_cita_articulo_correcto[2] :: 0.651 → 0.587
+  puente_formal_r2_menos_r1_con › 1a_cita_ley_correcta[0] :: 0.31 → 0.222
+  puente_formal_r2_menos_r1_con › 1a_cita_ley_correcta[1] :: 0.056 → -0.063
+  puente_formal_r2_menos_r1_con › 1a_cita_ley_correcta[2] :: 0.563 → 0.524
+  puente_formal_r2_menos_r1_con › comprension[0] :: -0.091 → -0.163
+  puente_formal_r2_menos_r1_con › comprension[1] :: -0.306 → -0.373
+  puente_formal_r2_menos_r1_con › comprension[2] :: 0.115 → 0.04
+  puente_formal_r2_menos_r1_con › recall10_1er_mensaje[0] :: 0.218 → 0.198
+  puente_formal_r2_menos_r1_con › recall10_1er_mensaje[1] :: 0.0 → -0.032
+  puente_formal_r2_menos_r1_con › recall10_1er_mensaje[2] :: 0.405 → 0.409
+  puente_formal_r2_menos_r1_sin › 1a_cita_articulo_correcto[0] :: 0.1 → 0.121
+  puente_formal_r2_menos_r1_sin › 1a_cita_articulo_correcto[1] :: -0.135 → -0.103
+  puente_formal_r2_menos_r1_sin › 1a_cita_articulo_correcto[2] :: 0.357 → 0.366
+  puente_formal_r2_menos_r1_sin › 1a_cita_ley_correcta[0] :: 0.014 → -0.07
+  puente_formal_r2_menos_r1_sin › 1a_cita_ley_correcta[1] :: -0.198 → -0.274
+  puente_formal_r2_menos_r1_sin › 1a_cita_ley_correcta[2] :: 0.235 → 0.141
+  puente_formal_r2_menos_r1_sin › comprension[0] :: 0.019 → 0.046
+  puente_formal_r2_menos_r1_sin › comprension[1] :: -0.184 → -0.163
+  puente_formal_r2_menos_r1_sin › comprension[2] :: 0.223 → 0.258
+  puente_formal_r2_menos_r1_sin › recall10_1er_mensaje[0] :: 0.013 → 0.034
+  puente_formal_r2_menos_r1_sin › recall10_1er_mensaje[1] :: -0.219 → -0.198
+  puente_formal_r2_menos_r1_sin › recall10_1er_mensaje[2] :: 0.234 → 0.251
+  puente_formal_r2_menos_r1_todos › 1a_cita_articulo_correcto[0] :: 0.191 → 0.156
+  puente_formal_r2_menos_r1_todos › 1a_cita_articulo_correcto[1] :: -0.015 → -0.04
+  puente_formal_r2_menos_r1_todos › 1a_cita_articulo_correcto[2] :: 0.394 → 0.365
+  puente_formal_r2_menos_r1_todos › 1a_cita_ley_correcta[0] :: 0.122 → 0.027
+  puente_formal_r2_menos_r1_todos › 1a_cita_ley_correcta[1] :: -0.057 → -0.159
+  puente_formal_r2_menos_r1_todos › 1a_cita_ley_correcta[2] :: 0.305 → 0.231
+  puente_formal_r2_menos_r1_todos › comprension[0] :: -0.057 → -0.069
+  puente_formal_r2_menos_r1_todos › comprension[1] :: -0.207 → -0.224
+  puente_formal_r2_menos_r1_todos › comprension[2] :: 0.104 → 0.096
+  puente_formal_r2_menos_r1_todos › recall10_1er_mensaje[0] :: 0.093 → 0.091
+  puente_formal_r2_menos_r1_todos › recall10_1er_mensaje[1] :: -0.06 → -0.056
+  puente_formal_r2_menos_r1_todos › recall10_1er_mensaje[2] :: 0.237 → 0.233
+  tabla_con › ronda1 formal (actual) › 1a_cita_articulo_correcto[0] :: 0.381 → 0.476
+  tabla_con › ronda1 formal (actual) › 1a_cita_ley_correcta[0] :: 0.524 → 0.667
+  tabla_con › ronda1 formal (actual) › comprension[0] :: 0.786 → 0.857
+  tabla_con › ronda1 formal (actual) › recall10_1er_mensaje[0] :: 0.143 → 0.19
+  tabla_con › ronda1 sencillo › 1a_cita_articulo_correcto[0] :: 0.667 → 0.733
+  tabla_con › ronda1 sencillo › 1a_cita_ley_correcta[0] :: 0.8 → 0.867
+  tabla_con › ronda1 sencillo › comprension[0] :: 0.7 → 0.767
+  tabla_con › ronda1 sencillo › recall10_1er_mensaje[0] :: 0.281 → 0.375
+  tabla_con › ronda2 formal (original) › 1a_cita_ley_correcta[0] :: 0.833 → 0.889
+  tabla_con › ronda2 formal (original) › recall10_1er_mensaje[0] :: 0.361 → 0.389
+  tabla_con › ronda2 intermedio › comprension[0] :: 0.667 → 0.733
+  tabla_con › ronda2 intermedio › recall10_1er_mensaje[0] :: 0.333 → 0.367
+  tabla_con › ronda2 nuevo › 1a_cita_articulo_correcto[0] :: 0.688 → 0.812
+  tabla_con › ronda2 nuevo › 1a_cita_ley_correcta[0] :: 0.75 → 0.875
+  tabla_con › ronda2 nuevo › comprension[0] :: 0.906 → 0.969
+  tabla_con › ronda2 nuevo › recall10_1er_mensaje[0] :: 0.625 → 0.688
+  tabla_sin › ronda1 formal (actual) › 1a_cita_ley_correcta[0] :: 0.632 → 0.737
+  tabla_sin › ronda1 formal (actual) › comprension[0] :: 0.611 → 0.639
+  tabla_sin › ronda1 piloto › 1a_cita_ley_correcta[0] :: 0.6 → 0.72
+  tabla_sin › ronda1 piloto › comprension[0] :: 0.659 → 0.705
+  tabla_sin › ronda1 piloto › recall10_1er_mensaje[0] :: 0.26 → 0.28
+  tabla_sin › ronda1 sencillo › 1a_cita_articulo_correcto[0] :: 0.583 → 0.625
+  tabla_sin › ronda1 sencillo › 1a_cita_ley_correcta[0] :: 0.667 → 0.792
+  tabla_sin › ronda1 sencillo › comprension[0] :: 0.667 → 0.708
+  tabla_sin › ronda1 sencillo › recall10_1er_mensaje[0] :: 0.229 → 0.271
+  tabla_sin › ronda2 formal (original) › 1a_cita_articulo_correcto[0] :: 0.521 → 0.542
+  tabla_sin › ronda2 formal (original) › 1a_cita_ley_correcta[0] :: 0.646 → 0.667
+  tabla_sin › ronda2 formal (original) › comprension[0] :: 0.63 → 0.685
+  tabla_sin › ronda2 formal (original) › recall10_1er_mensaje[0] :: 0.25 → 0.271
+  tabla_sin › ronda2 intermedio › 1a_cita_articulo_correcto[0] :: 0.569 → 0.588
+  tabla_sin › ronda2 intermedio › 1a_cita_ley_correcta[0] :: 0.686 → 0.706
+  tabla_sin › ronda2 intermedio › comprension[0] :: 0.68 → 0.75
+  tabla_sin › ronda2 intermedio › recall10_1er_mensaje[0] :: 0.353 → 0.363
+  tabla_sin › ronda2 nuevo › 1a_cita_articulo_correcto[0] :: 0.521 → 0.562
+  tabla_sin › ronda2 nuevo › 1a_cita_ley_correcta[0] :: 0.667 → 0.688
+  tabla_sin › ronda2 nuevo › comprension[0] :: 0.67 → 0.734
+  tabla_sin › ronda2 nuevo › recall10_1er_mensaje[0] :: 0.296 → 0.327
+  tabla_todos › ronda1 formal (actual) › 1a_cita_articulo_correcto[0] :: 0.4 → 0.45
+  tabla_todos › ronda1 formal (actual) › 1a_cita_ley_correcta[0] :: 0.575 → 0.7
+  tabla_todos › ronda1 formal (actual) › comprension[0] :: 0.705 → 0.756
+  tabla_todos › ronda1 formal (actual) › recall10_1er_mensaje[0] :: 0.188 → 0.212
+  tabla_todos › ronda1 piloto › 1a_cita_ley_correcta[0] :: 0.615 → 0.731
+  tabla_todos › ronda1 piloto › comprension[0] :: 0.659 → 0.705
+  tabla_todos › ronda1 piloto › recall10_1er_mensaje[0] :: 0.25 → 0.269
+  tabla_todos › ronda1 sencillo › 1a_cita_articulo_correcto[0] :: 0.615 → 0.667
+  tabla_todos › ronda1 sencillo › 1a_cita_ley_correcta[0] :: 0.718 → 0.821
+  tabla_todos › ronda1 sencillo › comprension[0] :: 0.679 → 0.731
+  tabla_todos › ronda1 sencillo › recall10_1er_mensaje[0] :: 0.25 → 0.312
+  tabla_todos › ronda2 formal (original) › 1a_cita_articulo_correcto[0] :: 0.591 → 0.606
+  tabla_todos › ronda2 formal (original) › 1a_cita_ley_correcta[0] :: 0.697 → 0.727
+  tabla_todos › ronda2 formal (original) › comprension[0] :: 0.648 → 0.688
+  tabla_todos › ronda2 formal (original) › recall10_1er_mensaje[0] :: 0.28 → 0.303
+  tabla_todos › ronda2 intermedio › 1a_cita_articulo_correcto[0] :: 0.576 → 0.591
+  tabla_todos › ronda2 intermedio › 1a_cita_ley_correcta[0] :: 0.682 → 0.697
+  tabla_todos › ronda2 intermedio › comprension[0] :: 0.677 → 0.746
+  tabla_todos › ronda2 intermedio › recall10_1er_mensaje[0] :: 0.348 → 0.364
+  tabla_todos › ronda2 nuevo › 1a_cita_articulo_correcto[0] :: 0.562 → 0.625
+  tabla_todos › ronda2 nuevo › 1a_cita_ley_correcta[0] :: 0.688 → 0.734
+  tabla_todos › ronda2 nuevo › comprension[0] :: 0.73 → 0.794
+  tabla_todos › ronda2 nuevo › recall10_1er_mensaje[0] :: 0.377 → 0.415
+=== recall_primer_mensaje.txt: 22 valores cambian de 108
+  con intermedio › r10 :: 0.333 → 0.367
+  con intermedio › r10_por_situacion › fotos[0] :: 0.4 → 0.5
+  con nuevo › r10 :: 0.625 → 0.688
+  con nuevo › r10_por_situacion › fotos[0] :: 0.3 → 0.5
+  con nuevo: recall por persona[0] :: 0.17 → 0.33
+  con nuevo: recall por persona[3] :: 0.67 → 0.83
+  con original › r10 :: 0.361 → 0.389
+  con original › r10_por_situacion › fotos[0] :: 0.25 → 0.333
+  con original: recall por persona[5] :: 0.5 → 0.67
+  r10 por situación (todos) › fotos[0] :: 0.289 → 0.367
+  r10 si el 1er mensaje delito › no[0] :: 0.288 → 0.318
+  r10 si el 1er mensaje delito › sí[0] :: 0.442 → 0.458
+  r10 si el 1er mensaje estado › no[0] :: 0.153 → 0.157
+  r10 si el 1er mensaje estado › sí[0] :: 0.556 → 0.607
+  r10 si el 1er mensaje ley › no[0] :: 0.335 → 0.359
+  r10 si el 1er mensaje ley › sí[0] :: 0.333 → 0.375
+  sin intermedio › r10 :: 0.353 → 0.363
+  sin intermedio › r10_por_situacion › fotos[0] :: 0.353 → 0.382
+  sin nuevo › r10 :: 0.296 → 0.327
+  sin nuevo › r10_por_situacion › fotos[0] :: 0.25 → 0.344
+  sin original › r10 :: 0.25 → 0.271
+  sin original › r10_por_situacion › fotos[0] :: 0.233 → 0.3
+=== resultados_ronda1.txt: 55 valores cambian de 653
+  con_menos_sin_formacion_ic95 › comprension[0] :: 0.102 → 0.132
+  con_menos_sin_formacion_ic95 › comprension[1] :: -0.013 → -0.0
+  con_menos_sin_formacion_ic95 › comprension[2] :: 0.219 → 0.256
+  por_condicion › con formación › formal › 1a_cita_articulo_correcto[0] :: 0.381 → 0.476
+  por_condicion › con formación › formal › 1a_cita_ley_correcta[0] :: 0.524 → 0.667
+  por_condicion › con formación › formal › comprension[0] :: 0.786 → 0.857
+  por_condicion › con formación › formal › recall10_1er_mensaje[0] :: 0.143 → 0.19
+  por_condicion › con formación › sencillo › 1a_cita_articulo_correcto[0] :: 0.667 → 0.733
+  por_condicion › con formación › sencillo › 1a_cita_ley_correcta[0] :: 0.8 → 0.867
+  por_condicion › con formación › sencillo › comprension[0] :: 0.7 → 0.767
+  por_condicion › con formación › sencillo › recall10_1er_mensaje[0] :: 0.281 → 0.375
+  por_condicion › con formación › todas › 1a_cita_articulo_correcto[0] :: 0.514 → 0.595
+  por_condicion › con formación › todas › 1a_cita_ley_correcta[0] :: 0.649 → 0.757
+  por_condicion › con formación › todas › comprension[0] :: 0.75 → 0.819
+  por_condicion › con formación › todas › recall10_1er_mensaje[0] :: 0.197 → 0.263
+  por_condicion › sin formación › formal › 1a_cita_ley_correcta[0] :: 0.632 → 0.737
+  por_condicion › sin formación › formal › comprension[0] :: 0.611 → 0.639
+  por_condicion › sin formación › piloto › 1a_cita_ley_correcta[0] :: 0.6 → 0.72
+  por_condicion › sin formación › piloto › comprension[0] :: 0.659 → 0.705
+  por_condicion › sin formación › piloto › recall10_1er_mensaje[0] :: 0.26 → 0.28
+  por_condicion › sin formación › sencillo › 1a_cita_articulo_correcto[0] :: 0.583 → 0.625
+  por_condicion › sin formación › sencillo › 1a_cita_ley_correcta[0] :: 0.667 → 0.792
+  por_condicion › sin formación › sencillo › comprension[0] :: 0.667 → 0.708
+  por_condicion › sin formación › sencillo › recall10_1er_mensaje[0] :: 0.229 → 0.271
+  por_condicion › sin formación › todas › 1a_cita_articulo_correcto[0] :: 0.471 → 0.485
+  por_condicion › sin formación › todas › 1a_cita_ley_correcta[0] :: 0.632 → 0.75
+  por_condicion › sin formación › todas › comprension[0] :: 0.648 → 0.688
+  por_condicion › sin formación › todas › recall10_1er_mensaje[0] :: 0.243 → 0.265
+  por_condicion › todos › formal › 1a_cita_articulo_correcto[0] :: 0.4 → 0.45
+  por_condicion › todos › formal › 1a_cita_ley_correcta[0] :: 0.575 → 0.7
+  por_condicion › todos › formal › comprension[0] :: 0.705 → 0.756
+  por_condicion › todos › formal › recall10_1er_mensaje[0] :: 0.188 → 0.212
+  por_condicion › todos › piloto › 1a_cita_ley_correcta[0] :: 0.615 → 0.731
+  por_condicion › todos › piloto › comprension[0] :: 0.659 → 0.705
+  por_condicion › todos › piloto › recall10_1er_mensaje[0] :: 0.25 → 0.269
+  por_condicion › todos › sencillo › 1a_cita_articulo_correcto[0] :: 0.615 → 0.667
+  por_condicion › todos › sencillo › 1a_cita_ley_correcta[0] :: 0.718 → 0.821
+  por_condicion › todos › sencillo › comprension[0] :: 0.679 → 0.731
+  por_condicion › todos › sencillo › recall10_1er_mensaje[0] :: 0.25 → 0.312
+  por_condicion › todos › todas › 1a_cita_articulo_correcto[0] :: 0.486 → 0.524
+  por_condicion › todos › todas › 1a_cita_ley_correcta[0] :: 0.638 → 0.752
+  por_condicion › todos › todas › comprension[0] :: 0.685 → 0.735
+  por_condicion › todos › todas › recall10_1er_mensaje[0] :: 0.226 → 0.264
+  por_situacion › con formación › fotos › 1a_cita_articulo_correcto[0] :: 0.25 → 0.5
+  por_situacion › con formación › fotos › 1a_cita_ley_correcta[0] :: 0.333 → 0.667
+  por_situacion › con formación › fotos › comprension[0] :: 0.583 → 0.792
+  por_situacion › con formación › fotos › recall10_1er_mensaje[0] :: 0.077 → 0.269
+  por_situacion › sin formación › fotos › 1a_cita_articulo_correcto[0] :: 0.292 → 0.333
+  por_situacion › sin formación › fotos › 1a_cita_ley_correcta[0] :: 0.5 → 0.833
+  por_situacion › sin formación › fotos › comprension[0] :: 0.5 → 0.614
+  por_situacion › sin formación › fotos › recall10_1er_mensaje[0] :: 0.083 → 0.146
+  por_situacion › todos › fotos › 1a_cita_articulo_correcto[0] :: 0.278 → 0.389
+  por_situacion › todos › fotos › 1a_cita_ley_correcta[0] :: 0.444 → 0.778
+  por_situacion › todos › fotos › comprension[0] :: 0.529 → 0.676
+  por_situacion › todos › fotos › recall10_1er_mensaje[0] :: 0.081 → 0.189

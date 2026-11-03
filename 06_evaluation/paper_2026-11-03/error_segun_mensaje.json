@@ -1,0 +1,96 @@
+{
+ "piloto_penal": {
+  "todos": {
+   "no nombra el estado": [
+    0.698,
+    53
+   ],
+   "nombra el estado": [
+    0.365,
+    52
+   ],
+   "no − sí": [
+    0.333,
+    0.167,
+    0.485
+   ]
+  },
+  "sin": {
+   "no nombra el estado": [
+    0.846,
+    39
+   ],
+   "nombra el estado": [
+    0.448,
+    29
+   ],
+   "no − sí": [
+    0.398,
+    0.237,
+    0.562
+   ]
+  },
+  "con": {
+   "no nombra el estado": [
+    0.286,
+    14
+   ],
+   "nombra el estado": [
+    0.261,
+    23
+   ],
+   "no − sí": [
+    0.025,
+    -0.209,
+    0.288
+   ]
+  }
+ },
+ "ronda2_penal": {
+  "todos": {
+   "no nombra el estado": [
+    0.037,
+    107
+   ],
+   "nombra el estado": [
+    0.045,
+    89
+   ],
+   "no − sí": [
+    -0.008,
+    -0.071,
+    0.051
+   ]
+  },
+  "sin": {
+   "no nombra el estado": [
+    0.023,
+    88
+   ],
+   "nombra el estado": [
+    0.034,
+    59
+   ],
+   "no − sí": [
+    -0.011,
+    -0.075,
+    0.041
+   ]
+  },
+  "con": {
+   "no nombra el estado": [
+    0.105,
+    19
+   ],
+   "nombra el estado": [
+    0.067,
+    30
+   ],
+   "no − sí": [
+    0.039,
+    -0.147,
+    0.25
+   ]
+  }
+ }
+}
