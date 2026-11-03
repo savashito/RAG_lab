@@ -16,7 +16,7 @@ only the authors have. Aggregates only; no participant text.*
 | 4 | §4.1, l. 304 | Retrieval-origin count after the exclusions | Answered: 117 of 118 |
 | 5 | §4.2, l. 340 | Replay artifacts and answer key | Answered; raw outputs archived on 3 Nov |
 | 6 | §6, l. 568 | Independent legal validation; human validation of automatic metrics | Partly done (gate coding); the rest is pending **[authors]** |
-| 7 | Ethics, l. 598 | Ethics body, protocol, retention, access | Committee named; protocol number **[authors]**; retention text supplied |
+| 7 | Ethics, l. 598 | Ethics body, protocol, retention, access | Answered: anonymized for submission; retention text supplied |
 | 8 | GenAI statement, l. 613 | Model versions; other tools | **[authors]** for versions; the statement must also be corrected (C1) |
 
 Corrections not flagged in the draft: C1–C5 below.
@@ -120,8 +120,8 @@ Nacional Autónoma de México. Replace the AUTHOR CHECK with:
 > Engineering, Universidad Nacional Autónoma de México (Comité de Ética en Investigación y Docencia de la Facultad de
 > Ingeniería, CEID-FI) [protocol number, approval date].
 
-**[authors]** Insert the protocol number and approval date; the committee's page does not list them. For the
-anonymous submission, consider "[anonymized institution] ethics committee" and add the name in the camera-ready version.
+For the anonymous submission, write "[anonymized institution] ethics committee" and add the committee's name, protocol
+number and approval date in the camera-ready version (authors' decision, 3 November 2026).
 
 For retention and access, the consent text supports:
 
@@ -207,8 +207,9 @@ mentioned both." with:
 
 ### C4. Title
 
-The draft title differs from the title submitted with the abstract ("The Right Law from the Wrong State: Auditing and
-Repairing Jurisdiction Errors in a Legal RAG Assistant"). **[authors]** Check whether FAccT 2027 allows the change.
+Restore the title submitted with the abstract (authors' decision, 3 November 2026):
+
+> The Right Law from the Wrong State: Auditing and Repairing Jurisdiction Errors in a Legal RAG Assistant
 
 ### C5. Numbers verified against the data package
 
