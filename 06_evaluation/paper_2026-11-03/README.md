@@ -21,6 +21,7 @@ no participant codes or text.*
 | `resultados_ronda1.md` | Round-1 results (Tables 1R, 2R); legally trained participants hesitated but did not report the wrong-state error; replacement text for Contribution 1 and Section 5.2 |
 | `recalificacion_fotos.md` | Scoring rule for "the photos", what changes with it (Table R1) and required edits |
 | `evaluacion_filtro_estado.md` | Independent evaluation of the jurisdiction gate (Tables G1–G4), response to Major concern 2 |
+| `respuestas_author_check.md` | Answers to every AUTHOR CHECK in the 3 November draft, plus corrections C1–C5 (AI-use statement, gate coding, Appendix E) |
 | `que_hace_cada_prompt.md` | What each system prompt changed in the answers (Tables P1, P2), response to Major concern 4 |
 
 ## Data files
