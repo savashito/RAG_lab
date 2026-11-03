@@ -32,6 +32,10 @@
 | Would act on the answer ("yes") | 54% | 62% | 59% | 58% |
 | Noticed a problem ("yes") | 8% | 18% | 9% | 12% |
 
+Origin of the wrong-state codes (all round-1 answers, not only first answers): 117 of the 118 other-state penal codes
+named, in 74 answers, belonged to a passage in the context the assistant received; the model did not invent them. With
+the 2 excluded test participants the count was 120 of 121, in 76 answers.
+
 Wrong-state first answers, 95% CI: all 53% [42, 65]; without legal training 68% [57, 79]; with legal training 27%
 [12, 45]. Difference, with − without legal training: −41 points [−60, −19].
 

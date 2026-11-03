@@ -96,9 +96,11 @@ one author read every message where the two disagreed (98 of 375) and coded the 
 
 The gate never let through the code of a state other than the one where the participant placed the facts (0 of 375).
 It followed what participants wrote, not the scenario: when participants placed a situation in Mexico City or the State
-of Mexico, it retrieved that state's code. In 74 messages participants mentioned both the place of the facts (Querétaro)
-and where they live (Mexico City). In all 74, the gate retrieved only Querétaro's code, which is the distinction a
-reviewer might worry it confuses (victim's or suspect's residence vs. place of the facts). When a participant mentioned only where they live, the code
+of Mexico, it retrieved that state's code. In 76 messages of the summons situation, the conversation up to that message mentioned both Querétaro
+and Mexico City. In 74, the gate retrieved only Querétaro's code. In one, the participant placed the fight in Mexico
+City and said they were from Querétaro, and the gate retrieved only Mexico City's code, following the participant's
+account. The remaining one is one of the two follow-ups that did not inherit the place (no state code). This is the
+distinction a reviewer might worry it confuses (residence vs. place of the facts). When a participant mentioned only where they live, the code
 of that state is retrieved by design as a hypothesis (see above); Table G4 counts those messages under that state.
 
 The gate missed in two ways. First, two follow-up messages that did not mention a place (a closing remark and a detail about the summons) did not
