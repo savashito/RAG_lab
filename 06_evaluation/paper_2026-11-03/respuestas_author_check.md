@@ -10,13 +10,13 @@ only the authors have. Aggregates only; no participant text.*
 
 | # | Location | AUTHOR CHECK | Status |
 |---|---|---|---|
-| 1 | §3.1, l. 132 | Model checkpoint, parameters, quantization, decoding | Answered (confirm it was the same in October) |
+| 1 | §3.1, l. 132 | Model checkpoint, parameters, quantization, decoding | Answered; authors confirmed the same model in both rounds |
 | 2 | §3.1, l. 176 | BM25, HyDE/rewrite, gate, index, seeds, failure handling | Answered; prompts go to supplementary material |
-| 3 | §3.2, l. 203 | Archived conversation without an answer; eligibility; compensation | Answered (round-1 eligibility: confirm) |
+| 3 | §3.2, l. 203 | Archived conversation without an answer; eligibility; compensation | Answered; authors confirmed both rounds |
 | 4 | §4.1, l. 304 | Retrieval-origin count after the exclusions | Answered: 117 of 118 |
-| 5 | §4.2, l. 340 | Replay artifacts and answer key | Answer key answered; archiving the raw outputs is pending |
+| 5 | §4.2, l. 340 | Replay artifacts and answer key | Answered; raw outputs archived on 3 Nov |
 | 6 | §6, l. 568 | Independent legal validation; human validation of automatic metrics | Partly done (gate coding); the rest is pending **[authors]** |
-| 7 | Ethics, l. 598 | Ethics body, protocol, retention, access | **[authors]**; retention text supplied |
+| 7 | Ethics, l. 598 | Ethics body, protocol, retention, access | Committee named; protocol number **[authors]**; retention text supplied |
 | 8 | GenAI statement, l. 613 | Model versions; other tools | **[authors]** for versions; the statement must also be corrected (C1) |
 
 Corrections not flagged in the draft: C1–C5 below.
@@ -33,8 +33,8 @@ Replace the AUTHOR CHECK with:
 > the model's thinking mode disabled; other sampling parameters were the server defaults (top-k 64, top-p 0.95,
 > min-p 0.05), with no fixed seed.
 
-**[authors]** These settings were read from the inference server on 3 November 2026. Confirm that the same checkpoint
-was served during rounds 1 and 2 (9 October–2 November).
+These settings were read from the inference server on 3 November 2026; the authors confirmed that the same model was
+served throughout rounds 1 and 2.
 
 ## 2. Retrieval, gate and failure handling (§3.1, line 176)
 
@@ -62,9 +62,8 @@ Replace the AUTHOR CHECK with:
 > the participant did not complete that situation. Participants had to be at least 18 years old. Participation was
 > voluntary and uncompensated.
 
-Source: round-2 consent text (section 7, "Compensation": none; eligibility: at least 18 years old).
-**[authors]** The short notice shown in round 1 did not state an age requirement, although the age options started at
-18. Confirm that round-1 participants were adults and that no compensation was offered.
+Source: round-2 consent text (section 7, "Compensation": none; eligibility: at least 18 years old). The authors
+confirmed that round-1 participants were also adults and were not compensated.
 
 ## 4. Retrieval-origin count (§4.1, line 304)
 
@@ -98,7 +97,8 @@ server outside the repository. Replace the AUTHOR CHECK with:
 > The replay scripts and aggregate outputs are archived with the study code; raw replay outputs contain participant
 > messages and are retained on the study server under the same access conditions as the study data.
 
-**[authors]** Pending: move the raw outputs from the server's temporary directory to permanent storage.
+The raw outputs were copied to permanent storage on the study server on 3 November 2026 (checksums verified). The
+gate-plus-reranker replay is stored in the study database.
 
 ## 6. Legal and human validation (§6, line 568)
 
@@ -113,8 +113,17 @@ replace the AUTHOR CHECK with:
 
 ## 7. Ethics (line 598)
 
-**[authors]** Insert the ethics approval body and protocol number. For retention and access, the consent text
-supports:
+The committee is the Comité de Ética en Investigación y Docencia de la Facultad de Ingeniería (CEID-FI), Universidad
+Nacional Autónoma de México. Replace the AUTHOR CHECK with:
+
+> The study protocol was reviewed and approved by the Research and Teaching Ethics Committee of the Faculty of
+> Engineering, Universidad Nacional Autónoma de México (Comité de Ética en Investigación y Docencia de la Facultad de
+> Ingeniería, CEID-FI) [protocol number, approval date].
+
+**[authors]** Insert the protocol number and approval date; the committee's page does not list them. For the
+anonymous submission, consider "[anonymized institution] ethics committee" and add the name in the camera-ready version.
+
+For retention and access, the consent text supports:
 
 > Study data are stored in a database on a contracted server accessible only to the research team. Participants can
 > withdraw during the session, which deletes everything they wrote, and can later request deletion by sending their
