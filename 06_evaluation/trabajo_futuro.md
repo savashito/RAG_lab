@@ -72,6 +72,44 @@ quien califica).
 - **Qué:** agregar más de los 32 códigos estatales y medir si cambia el error de estado.
 - **Por qué:** con 4 estados no sabemos cómo se comporta el error ni el filtro a escala nacional.
 
+**C6. Máquina de estados con expediente de la consulta (diseño decidido el 9 de noviembre).**
+
+Términos:
+- **Estado:** uno de una lista finita y fija de situaciones de la conversación; siempre hay exactamente uno, y el siguiente depende solo del estado actual y del evento.
+- **Evento:** cada mensaje de la persona o botón que presiona.
+- **Expediente de la consulta:** los datos del caso que el programa del asistente (en Python) va anotando. No es un estado; los tres estados lo leen y lo escriben, y las transiciones lo consultan.
+- **Dato decisivo:** un dato del expediente del que depende qué ley aplica (por ejemplo, el lugar de los hechos, la edad de la víctima, si hubo dinero de por medio, si quien manda los mensajes es su superior). Karen los define por tipo de caso en un catálogo, igual que los formularios de trámites.
+
+Estados:
+
+| Estado | Objetivo | Qué hace el asistente |
+|---|---|---|
+| **LLENAR_EXPEDIENTE** (inicial) | Tener todos los datos decisivos | Pregunta los datos decisivos que faltan, con el texto del catálogo de Karen. **No da leyes ni orientación legal** |
+| **ORIENTACIÓN** | Dar la orientación legal que aplica | El buscador recupera solo artículos de las leyes que permite el expediente; el LLM escribe la respuesta; otra llamada al LLM revisa que cada ley citada aplique a los datos del expediente; contesta preguntas de seguimiento |
+| **REDACTAR_DOCUMENTO** | Redactar un escrito (denuncia, querella) | Corre la máquina de trámites como submáquina, sin TRIAJE; el expediente llena por adelantado los campos; el documento sale de la plantilla de Karen, sin LLM |
+
+Transiciones:
+
+| De | Evento | A |
+|---|---|---|
+| LLENAR_EXPEDIENTE | Falta un dato decisivo | LLENAR_EXPEDIENTE |
+| LLENAR_EXPEDIENTE | Ya están todos los datos decisivos | ORIENTACIÓN |
+| ORIENTACIÓN | Pregunta de seguimiento | ORIENTACIÓN |
+| ORIENTACIÓN | Un mensaje cambia o agrega un dato decisivo | LLENAR_EXPEDIENTE |
+| ORIENTACIÓN | La persona acepta redactar (botón) | REDACTAR_DOCUMENTO |
+| REDACTAR_DOCUMENTO | Se genera el documento o la persona cancela | ORIENTACIÓN |
+
+Decisiones:
+- **Si la persona no da un dato decisivo, sigue en LLENAR_EXPEDIENTE.** Es mejor no orientar que orientar con la ley equivocada.
+- **El programa en Python decide las transiciones; el LLM no.** El LLM solo extrae datos de los mensajes, escribe la orientación y revisa la aplicabilidad.
+- **Las preguntas a la persona salen del catálogo de Karen,** no las redacta el LLM.
+
+Qué resuelve, según los datos: las 7 fallas del filtro en la ronda 2 (2 continuaciones sin el lugar heredado y 5 «estoy en Querétaro»); el 40 % que dio el lugar cuando se le pidió después de la respuesta; los 22 de 24 errores de aplicabilidad de la auditoría de Karen; la ley de mujeres apagada (se filtra por a quién protege); y el filtro que no guardaba su decisión (el expediente se registra en cada mensaje).
+
+Lo que falta: el catálogo de datos decisivos por tipo de caso y las plantillas de los escritos por estado (hoy solo existe la del divorcio unilateral en la CDMX). Se reutilizan `extraer_lugares` de `jurisdiction_gate.py`, el filtro de la búsqueda por jurisdicción y el patrón de `forms/asistente.py`.
+
+**Experimento (ronda 3):** comparar, con asignación aleatoria, el sistema actual contra LLENAR_EXPEDIENTE + ORIENTACIÓN. **Sin REDACTAR_DOCUMENTO**, que agrega otra variable; probarlo después, por separado. Medidas: corrección jurídica calificada a ciegas por un abogado; cuántas personas abandonan antes de recibir orientación (el costo de no orientar sin los datos); recall del artículo esperado; comprensión; y si la confianza corresponde a respuestas correctas.
+
 ## D. Lecciones de proceso (para no repetir)
 
 - Fijar la clave de respuesta en la definición del estudio **antes** de recolectar, y comparar contra la versión de prod antes de copiar una definición.
