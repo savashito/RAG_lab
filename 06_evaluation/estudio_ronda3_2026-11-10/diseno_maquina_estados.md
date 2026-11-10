@@ -91,7 +91,7 @@ def turno(estado, expediente, evento, catalogo, ia, buscar) -> tuple[str, dict, 
     """Devuelve (estado nuevo, expediente nuevo, salida para la persona, registro del mensaje)."""
 ```
 
-- `ia` es el objeto de `consulta/ia.py`; en las pruebas se usa uno falso.
+- `ia` es el objeto de `apps/rewrite_lab/consulta/ia.py`; en las pruebas se usa uno falso.
 - `buscar(expediente, mensajes)` es el puente de `busqueda.py` hacia el chat actual; en las pruebas también es falso.
 
 ## 3. Conexión con el código actual
@@ -106,7 +106,7 @@ def turno(estado, expediente, evento, catalogo, ia, buscar) -> tuple[str, dict, 
 - `chat_event_dicts` ya acepta `jurisdicciones`. `busqueda.py` se lo pasa desde el expediente (lugar de los hechos) y apaga el filtro por estado actual (`gate=False`), porque el expediente ya decidió el lugar.
 - Hay que agregar un parámetro para excluir leyes según la persona, usando las etiquetas que ya existen en `documento_categorias` (por ejemplo, la ley de violencia contra las mujeres solo si la víctima es mujer). Es la fase 2 que `categorias.py` ya anticipa.
 
-**Con el filtro por estado (`jurisdiction_gate.py`).** `extraer_lugares` ya separa el lugar de los hechos de otros lugares. `consulta/ia.py` lo reutiliza dentro de `extraer_hechos` en vez de reescribirlo.
+**Con el filtro por estado (`jurisdiction_gate.py`).** `extraer_lugares` ya separa el lugar de los hechos de otros lugares. `apps/rewrite_lab/consulta/ia.py` lo reutiliza dentro de `extraer_hechos` en vez de reescribirlo.
 
 **Con trámites (`forms/`), para REDACTAR_DOCUMENTO.**
 - Se reutiliza `forms/asistente.turno()` como submáquina, empezando en ENTREVISTA, con el expediente copiado a `borrador['respuestas']`.
@@ -145,11 +145,11 @@ El estado y el expediente actuales viven en `estudio_intentos`, en el servidor. 
 | Qué | Dónde | Por qué |
 |---|---|---|
 | Prompt de la orientación legal de cada condición | Base: definición del estudio (YAML), como hoy, congelada al abrir | Lo edita Karen; cambia entre condiciones |
-| Catálogo de casos: tipos de caso, datos del expediente, por qué importan y texto de cada pregunta | Repo: `consulta/catalogo_casos.yaml` | Lo escribe Karen; git guarda la historia |
+| Catálogo de casos: tipos de caso, datos del expediente, por qué importan y texto de cada pregunta | Repo: `apps/rewrite_lab/consulta/catalogo_casos.yaml` | Lo escribe Karen; git guarda la historia |
 | Plantillas de los escritos | Base: `formularios`, como hoy | Las escribe Karen |
 | A quién protege cada ley | Base: `documento_categorias`, como hoy | Lo etiquetan las expertas |
-| Prompts de las tareas internas (`extraer_hechos`, `clasificar_caso`, `revisar_aplicabilidad`) | Código: `consulta/ia.py` | El programa lee su JSON; si cambian, cambian las pruebas |
-| Estados, transiciones y reglas para decidir el evento | Código: `consulta/maquina.py` | Es la lógica del programa |
+| Prompts de las tareas internas (`extraer_hechos`, `clasificar_caso`, `revisar_aplicabilidad`) | Código: `apps/rewrite_lab/consulta/ia.py` | El programa lee su JSON; si cambian, cambian las pruebas |
+| Estados, transiciones y reglas para decidir el evento | Código: `apps/rewrite_lab/consulta/maquina.py` | Es la lógica del programa |
 | Configuración de la búsqueda (k, reranker, HyDE) | Base: definición del estudio, como hoy | Se fija por estudio |
 | Texto exacto de cada prompt usado | Base: `estudio_prompts`, por md5, como hoy | Para saber después qué prompt respondió cada mensaje |
 
@@ -163,7 +163,7 @@ El estado y el expediente actuales viven en `estudio_intentos`, en el servidor. 
 6. Repetición de las conversaciones de la ronda 1 con el modo `expediente`, igual que se hizo con el filtro, antes de abrir la ronda 3.
 7. Bloquear la edición de un estudio abierto en `study/store.py`.
 
-## 7. Ejemplo del catálogo de casos (`consulta/catalogo_casos.yaml`)
+## 7. Ejemplo del catálogo de casos (`apps/rewrite_lab/consulta/catalogo_casos.yaml`)
 
 Karen debe revisar y completar los datos y las preguntas.
 
