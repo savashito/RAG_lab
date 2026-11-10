@@ -81,7 +81,7 @@ El LLM clasifica el mensaje como tipo 6. El programa en Python pregunta los dato
 | `edad_victima` < 18 | Pornografía de personas menores de edad; corrupción de menores (además de lo que siga) |
 | `pide_dinero` = sí | Extorsión |
 | `pide_dinero` = no, y amenaza con publicarlas | Amenazas |
-| `ya_difundido` = sí, o se tomaron sin `consentimiento` | Contra la intimidad sexual (Ley Olimpia) |
+| `ya_difundido` = sí, o se tomaron sin `consentimiento` | Contra la intimidad sexual (Ley Olimpia; aplica a víctimas de cualquier sexo) |
 | `victima_mujer` = sí | Además: Ley General de Acceso de las Mujeres (violencia digital, medidas de protección) |
 
 «Las fotos» del estudio (Cris, 24 años, le piden 5,000 pesos, todavía no las publican) daría: extorsión, y además Ley General de Acceso de las Mujeres solo si Cris es mujer. Con `pide_dinero` y `ya_difundido`, el sistema distingue extorsión de Ley Olimpia sin que el LLM lo adivine.
@@ -91,8 +91,8 @@ El LLM clasifica el mensaje como tipo 6. El programa en Python pregunta los dato
 | Fuente apagada | ¿Da un tipo de caso? | Propuesta |
 |---|---|---|
 | Ley General de Acceso de las Mujeres a una Vida Libre de Violencias | No es un delito; define modalidades (familiar, laboral y docente, comunidad, institucional, política, digital y mediática, feminicida) y medidas de protección | Prenderla solo cuando `victima_mujer` = sí, en los tipos 1–7 y 16 |
-| Violencia Digital (micrositio) | No; explica la violencia digital y la Ley Olimpia | Igual que la anterior, en los tipos 5 y 6 |
-| LEY OLIMPIA ficha técnica | No; tabla de artículos y penas por estado | Igual, en el tipo 6. Sirve para que Karen encuentre el artículo de cada estado |
+| Violencia Digital (micrositio) | No; explica las reformas de la Ley Olimpia al Código Penal Federal y a la Ley General de Acceso de las Mujeres | Prenderla en los tipos 5 y 6 para cualquier persona: los delitos contra la intimidad sexual protegen a cualquier persona, no solo a mujeres |
+| LEY OLIMPIA ficha técnica | No; tabla de artículos y penas por estado | Prenderla en el tipo 6 para cualquier persona. Sirve también para que Karen encuentre el artículo de cada estado |
 | LGEEPA, Manual de Derecho Ambiental, Nexos energético-ambiental, Temas selectos de derecho ambiental | Sí: tipo 19 (la parte ambiental) | Prenderlas solo en el tipo 19 |
 | Tesis: herramientas legales para psicólogas en violencia contra las mujeres | No; guía para profesionales | Dejarla apagada |
 | V-19-2025 (acuerdo del Consejo de la Judicatura de la CDMX) | No; fechas de juicios civiles y familiares, no penales | Dejarla apagada |
