@@ -18,15 +18,19 @@ CAT, MD5 = C.cargar()
 
 
 class IAFalsa:
-    """Clasifica con `tipos`/`opciones` fijos y extrae, por cada mensaje, lo que diga `respuestas[texto del mensaje]`."""
+    """Clasifica pidiendo agregar `tipos` (y quitar `quitar`) y extrae, por cada mensaje, lo que diga
+    `respuestas[texto del mensaje]`."""
 
-    def __init__(self, tipos=('imagenes_intimas',), opciones=(), respuestas=None):
+    def __init__(self, tipos=('imagenes_intimas',), opciones=(), respuestas=None, quitar=()):
         self.tipos, self.opciones, self.respuestas = list(tipos), list(opciones), respuestas or {}
+        self.quitar, self.conversaciones = list(quitar), []
         self.clasificaciones = 0
 
-    def clasificar_caso(self, texto, catalogo):
+    def clasificar_caso(self, conversacion, actuales, catalogo):
         self.clasificaciones += 1
-        return {'tipos': self.tipos, 'opciones': self.opciones, '_llamada': {'tarea': 'clasificar_caso'}}
+        self.conversaciones.append(conversacion)
+        return {'agregar': [t for t in self.tipos if t not in actuales], 'quitar': self.quitar, 'por_que': 'prueba',
+                'opciones': self.opciones, '_llamada': {'tarea': 'clasificar_caso'}}
 
     def extraer_expediente(self, texto, pregunta, datos):
         ultimo = texto.split('\n')[-1]
@@ -177,9 +181,10 @@ def test_clasifica_en_cada_mensaje():
 class IACambia(IAFalsa):
     """Primero dice `otro`; cuando la persona cuenta lo de las fotos, `imagenes_intimas`."""
 
-    def clasificar_caso(self, texto, catalogo):
+    def clasificar_caso(self, conversacion, actuales, catalogo):
         self.clasificaciones += 1
-        return {'tipos': ['imagenes_intimas'] if 'fotos' in texto else ['otro'], 'opciones': [], '_llamada': {}}
+        return {'agregar': ['imagenes_intimas'] if 'fotos' in conversacion else ['otro'], 'quitar': [],
+                'opciones': [], '_llamada': {}}
 
 
 def test_el_tipo_de_caso_cambia_con_informacion_nueva_y_conserva_los_datos():
@@ -201,6 +206,38 @@ def test_la_duda_no_quita_un_tipo_ya_elegido():
     assert exp['tipos_caso'] == ['imagenes_intimas'] and salida['tipo'] != 'elegir_tipo'
 
 
+@pytest.mark.parametrize('antes,agregar,quitar,despues', [
+    (['amenazas_extorsion'], ['imagenes_intimas'], [], ['amenazas_extorsion', 'imagenes_intimas']),
+    (['amenazas_extorsion'], [], ['amenazas_extorsion'], ['amenazas_extorsion']),       # no deja el expediente sin tipo
+    (['amenazas_extorsion'], ['imagenes_intimas'], ['amenazas_extorsion'], ['imagenes_intimas']),
+    (['imagenes_intimas'], ['otro'], [], ['imagenes_intimas']),                          # otro no reemplaza un tipo real
+    (['otro'], ['imagenes_intimas'], [], ['imagenes_intimas']),                          # un tipo real saca a otro
+    ([], ['otro'], [], ['otro']),
+    (['imagenes_intimas'], [], [], ['imagenes_intimas']),
+])
+def test_aplicar_clasificacion(antes, agregar, quitar, despues):
+    assert M._aplicar_clasificacion(antes, {'agregar': agregar, 'quitar': quitar}) == despues
+
+
+def test_clasificar_ve_las_preguntas_del_asistente():
+    ia = IAFalsa(respuestas=FOTOS)
+    conversar(ia, list(FOTOS)[:2])
+    assert ia.conversaciones[1].startswith('Persona: ') and '\nAsistente: ' in ia.conversaciones[1]
+
+
+def test_quitar_un_tipo_ya_orientado_lo_avisa_en_la_orientacion():
+    ia = IAFalsa(respuestas=FOTOS)
+    estado, exp, salida, _ = conversar(ia, list(FOTOS))[-1]
+    assert salida['tipo'] == 'orientar' and salida['tipos_quitados'] == []
+    ia.tipos, ia.quitar = ['otro'], ['imagenes_intimas']          # «perdón, no hay fotos; es otra cosa»
+    estado, exp, salida, reg = M.turno(estado, exp, {'tipo': 'mensaje', 'texto': 'no hay fotos', 'historial': []},
+                                       CAT, ia)
+    assert exp['tipos_caso'] == ['otro'] and reg['tipos_quitados'] == ['imagenes_intimas'] and reg['por_que']
+    assert salida['tipo'] == 'orientar' and salida['tipos_quitados'] == ['imagenes_intimas']
+    _, _, salida, _ = M.turno(estado, exp, {'tipo': 'mensaje', 'texto': 'gracias', 'historial': []}, CAT, IAFalsa(tipos=()))
+    assert salida['tipos_quitados'] == []                          # se avisa una sola vez
+
+
 def test_reiniciar():
     estado, exp, _, _ = conversar(IAFalsa(respuestas=FOTOS), list(FOTOS))[-1]
     estado, exp, salida, reg = M.turno(estado, exp, {'tipo': 'reiniciar'}, CAT, IAFalsa())
@@ -215,23 +252,32 @@ def test_transicion_invalida():
 # ── ia.py con un LLM falso ────────────────────────────────────────────────────────
 class LLMFalso:
     def __init__(self, respuestas):
-        self.respuestas, self.sistemas = list(respuestas), []
+        self.respuestas, self.sistemas, self.usuarios = list(respuestas), [], []
 
     def chat(self, system, user, **kw):
         self.sistemas.append(system)
+        self.usuarios.append(user)
         return self.respuestas.pop(0)
 
 
 def test_ia_clasificar_descarta_ids_inventados():
-    ia = IA.ConsultaIA(LLMFalso(['{"tipos": ["imagenes_intimas", "inventado"], "dudoso": false, "opciones": []}']))
-    r = ia.clasificar_caso('me piden dinero por mis fotos', CAT)
-    assert r['tipos'] == ['imagenes_intimas'] and r['_llamada']['prompt_md5']
+    ia = IA.ConsultaIA(LLMFalso(['{"agregar": ["imagenes_intimas", "inventado"], "quitar": ["amenazas_extorsion"]}']))
+    r = ia.clasificar_caso('Persona: me piden dinero por mis fotos', [], CAT)
+    assert r['agregar'] == ['imagenes_intimas'] and r['quitar'] == [] and r['_llamada']['prompt_md5']
+
+
+def test_ia_clasificar_recibe_los_tipos_actuales_y_la_conversacion():
+    llm = LLMFalso(['{"agregar": [], "quitar": ["imagenes_intimas"], "por_que": "dijo que no hay fotos"}'])
+    r = IA.ConsultaIA(llm).clasificar_caso('Asistente: ¿Tiene fotos tuyas?\nPersona: no, nunca hubo fotos',
+                                           ['imagenes_intimas'], CAT)
+    assert r['quitar'] == ['imagenes_intimas'] and r['por_que'] == 'dijo que no hay fotos'
+    assert 'ACTUALES: imagenes_intimas' in llm.usuarios[0] and 'Asistente: ¿Tiene fotos' in llm.usuarios[0]
 
 
 def test_ia_clasificar_dudoso():
-    ia = IA.ConsultaIA(LLMFalso(['{"tipos": [], "dudoso": true, "opciones": ["imagenes_intimas", "amenazas_extorsion"]}']))
-    r = ia.clasificar_caso('me chantajean', CAT)
-    assert r['tipos'] == [] and r['opciones'] == ['imagenes_intimas', 'amenazas_extorsion']
+    ia = IA.ConsultaIA(LLMFalso(['{"agregar": [], "dudoso": true, "opciones": ["imagenes_intimas", "amenazas_extorsion"]}']))
+    r = ia.clasificar_caso('Persona: me chantajean', [], CAT)
+    assert r['agregar'] == [] and r['opciones'] == ['imagenes_intimas', 'amenazas_extorsion']
 
 
 def test_ia_extraer_usa_el_filtro_de_lugares_y_el_json(monkeypatch):
@@ -249,5 +295,5 @@ def test_ia_llm_caido_no_tumba():
     class Caido:
         def chat(self, *a, **k):
             raise TimeoutError('sin GPU')
-    r = IA.ConsultaIA(Caido()).clasificar_caso('hola', CAT)
-    assert r['tipos'] == [] and r['opciones'] == [] and '__error__' in r['_llamada']['raw']
+    r = IA.ConsultaIA(Caido()).clasificar_caso('Persona: hola', ['imagenes_intimas'], CAT)
+    assert r['agregar'] == r['quitar'] == r['opciones'] == [] and '__error__' in r['_llamada']['raw']

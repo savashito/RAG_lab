@@ -11,7 +11,9 @@ qué ley aplica.
 Reglas de diseño (06_evaluation/estudio_ronda3_2026-11-10/diseno_maquina_estados.md):
   · El ESTADO lo decide este código, nunca el LLM. Las transiciones válidas están en TRANSICIONES.
   · El LLM (consulta/ia.py) solo clasifica el tipo de caso y extrae datos de lo que escribe la persona. Clasifica en
-    cada mensaje, con toda la conversación: el tipo de caso puede cambiar si la persona cuenta algo nuevo.
+    cada mensaje, con toda la conversación y los tipos de caso actuales, y responde qué agregar o quitar. Este código
+    aplica el cambio con sus reglas (_aplicar_clasificacion): `otro` no reemplaza a un tipo real y un quitar que deja
+    el expediente sin tipo no se aplica.
   · `turno()` es pura: no toca la base ni el buscador. Devuelve qué hacer; quien la llama (el estudio) ejecuta la
     orientación con el buscador y el LLM, y guarda el registro.
   · REDACTAR_DOCUMENTO no está aquí: no entra en la ronda 3 (trabajo_futuro.md, C6).
@@ -25,7 +27,8 @@ Salida (qué le toca hacer al asistente):
     {'tipo': 'pregunta', 'dato': 'lugar_hechos', 'texto': '¿En qué estado pasó?'}
     {'tipo': 'elegir_tipo', 'texto': '...', 'opciones': [{'id', 'titulo'}]}
     {'tipo': 'orientar', 'reglas': [...], 'inciertas': [...], 'codigos': ['queretaro'], 'articulos': {...},
-     'fuera_de_corpus': bool, 'sin_reglas': bool}
+     'fuera_de_corpus': bool, 'sin_reglas': bool,
+     'tipos_quitados': [...]}   # tipos de los que ya se orientó y ya no aplican: la orientación debe decirlo
 """
 from __future__ import annotations
 
@@ -61,6 +64,27 @@ def _texto_usuario(evento: dict) -> str:
     return '\n'.join(previos + [evento.get('texto', '')])
 
 
+def _conversacion(evento: dict) -> str:
+    """Toda la conversación con su actor, para clasificar: un «sí» suelto se entiende con la pregunta del asistente."""
+    lineas = [f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
+              for m in evento.get('historial', [])]
+    return '\n'.join(lineas + [f'Persona: {evento.get("texto", "")}'])
+
+
+def _aplicar_clasificacion(tipos: list[str], c: dict) -> list[str]:
+    """Tipos de caso del expediente + respuesta de clasificar_caso → tipos nuevos.
+      · Se quita lo que el LLM pide quitar y se agrega lo que pide agregar.
+      · `otro` solo entra si no hay ningún tipo real; un tipo real que entra saca a `otro`.
+      · Si el resultado queda vacío, se conservan los tipos que había (quitar no deja el expediente sin tipo)."""
+    reales = [t for t in c.get('agregar', []) if t != OTRO]
+    nuevos = [t for t in tipos if t not in c.get('quitar', [])] + [t for t in reales if t not in tipos]
+    if reales:
+        nuevos = [t for t in nuevos if t != OTRO]
+    elif OTRO in c.get('agregar', []) and not [t for t in nuevos if t != OTRO]:
+        nuevos = [OTRO]
+    return nuevos or list(tipos)
+
+
 def _ultima_pregunta(evento: dict) -> str:
     """Lo último que preguntó el asistente: para entender respuestas cortas («sí», «24»)."""
     for m in reversed(evento.get('historial', [])):
@@ -85,16 +109,19 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
             registro['cambios'].append('tipos_caso')
     elif evento.get('tipo') == 'mensaje':
         texto, pregunta = _texto_usuario(evento), _ultima_pregunta(evento)
-        # Se clasifica en CADA mensaje con toda la conversación: si la persona cuenta algo nuevo, el tipo de caso se
-        # corrige. Los datos ya dados se conservan (no dependen del tipo); lo que el tipo nuevo pida se pregunta.
+        # Se clasifica en CADA mensaje con toda la conversación: el LLM dice qué tipos de caso agregar o quitar. Los
+        # datos ya dados se conservan (no dependen del tipo); lo que el tipo nuevo pida se pregunta.
         dudoso = None
-        c = ia.clasificar_caso(texto, catalogo)
+        antes = exp.get('tipos_caso', [])
+        c = ia.clasificar_caso(_conversacion(evento), antes, catalogo)
         registro['llamadas'].append(c.get('_llamada'))
-        if c.get('tipos') and c['tipos'] != exp.get('tipos_caso'):
-            registro['tipos_antes'] = exp.get('tipos_caso', [])
-            exp = {**exp, 'tipos_caso': c['tipos']}
+        nuevos = _aplicar_clasificacion(antes, c)
+        if nuevos != antes:
+            registro.update({'tipos_antes': antes, 'tipos_agregados': [t for t in nuevos if t not in antes],
+                             'tipos_quitados': [t for t in antes if t not in nuevos], 'por_que': c.get('por_que', '')})
+            exp = {**exp, 'tipos_caso': nuevos}
             registro['cambios'].append('tipos_caso')
-        elif c.get('opciones') and not exp.get('tipos_caso'):
+        elif c.get('opciones') and not antes:
             dudoso = c['opciones']        # con un tipo ya elegido, la duda no cambia nada: no se muestran botones
         # Se extrae aunque el tipo de caso sea dudoso, para no perder lo que la persona ya contó.
         buscar = E.datos_necesarios(exp, catalogo) if exp.get('tipos_caso') else list(catalogo.get('datos', []))
@@ -132,7 +159,9 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
               'inciertas': [r['id'] for r in reglas if r['incierta']],
               'codigos': codigos, 'articulos': E.articulos_del_caso(exp, reglas),
               'fuera_de_corpus': exp['datos'].get('lugar_hechos') not in E.CODIGO_DE_ESTADO and 'federal' not in codigos,
-              'sin_reglas': not reglas}
+              'sin_reglas': not reglas,
+              'tipos_quitados': [t for t in exp.get('orientados', []) if t not in exp['tipos_caso']]}
+    exp = {**exp, 'orientados': list(exp['tipos_caso'])}
     evento_interno = 'expediente_completo' if estado == LLENAR_EXPEDIENTE else 'seguimiento'
     return _cerrar(registro['estado_antes'], _siguiente(estado, evento_interno), exp, salida, registro)
 

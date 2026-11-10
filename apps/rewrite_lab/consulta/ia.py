@@ -2,7 +2,8 @@
 Tareas del LLM para la máquina de estados de la consulta. Cada una tiene su prompt fijo y responde JSON; el programa
 valida la respuesta y la descarta si no sirve. El LLM nunca decide el estado.
 
-  · clasificar_caso: el mensaje de la persona → tipos de caso de la lista cerrada del catálogo (o dudoso entre 2–3).
+  · clasificar_caso: la conversación y los tipos de caso del expediente → qué tipos agregar o quitar (o dudoso
+    entre 2–3 si todavía no hay ninguno). Solo la lista cerrada del catálogo.
   · extraer_expediente: los mensajes de la persona → valores de los datos del expediente que se le piden.
     El lugar de los hechos lo extrae jurisdiction_gate.extraer_lugares (el mismo filtro de las rondas 1 y 2).
 
@@ -17,15 +18,22 @@ import time
 
 import jurisdiction_gate as jgate
 
-CLASIFICAR_CASO_SYSTEM = """Clasificas consultas legales de personas en México. Recibes lo que escribió la persona y una
-lista cerrada de TIPOS DE CASO (id: nombre, y a veces — descripción). Elige el tipo o los tipos de caso que describen lo que le
-pasó. Puede haber más de uno (por ejemplo, fotos íntimas y amenazas).
+CLASIFICAR_CASO_SYSTEM = """Clasificas consultas legales de personas en México. Recibes una lista cerrada de TIPOS DE
+CASO (id: nombre, y a veces — descripción), los TIPOS DE CASO ACTUALES del expediente (puede estar vacía) y la
+CONVERSACIÓN entre la persona y el asistente. Dices qué tipos de caso hay que agregar o quitar para que los actuales
+describan lo que le pasó a la persona. Puede haber más de uno (por ejemplo, fotos íntimas y amenazas).
 
 Responde SOLO un JSON:
-{"tipos": ["id", ...], "dudoso": false, "opciones": []}
+{"agregar": [], "quitar": [], "por_que": "", "dudoso": false, "opciones": []}
 
-- "tipos": los ids que corresponden, solo de la lista. Si no corresponde ninguno, ["otro"].
-- Si no puedes decidir entre 2 o 3 tipos, deja "tipos" vacío, pon "dudoso": true y en "opciones" esos 2 o 3 ids.
+- "agregar": ids de la lista que describen algo que contó la persona y que no están en los actuales.
+- "quitar": ids de los actuales que ya no corresponden. Quita solo si la persona corrigió o contradijo lo que había
+  dicho. Que no lo repita en su último mensaje no es motivo para quitar.
+- "por_que": en una frase, qué dijo la persona que justifica agregar o quitar. Vacío si no cambias nada.
+- Si nada de lo que dijo cambia el tipo de caso, deja "agregar" y "quitar" vacíos.
+- Si los actuales están vacíos y no corresponde ningún tipo, "agregar": ["otro"].
+- Si los actuales están vacíos y no puedes decidir entre 2 o 3 tipos, deja "agregar" vacío, pon "dudoso": true y en
+  "opciones" esos 2 o 3 ids.
 - No inventes ids. No expliques nada fuera del JSON."""
 
 EXTRAER_EXPEDIENTE_SYSTEM = """Extraes datos de una consulta legal en México. Recibes los mensajes de la persona, la última
@@ -70,22 +78,29 @@ class ConsultaIA:
             raw = f'__error__: {e}'
         return raw, {'tarea': tarea, 'prompt_md5': _md5(system), 'raw': raw, 'segundos': round(time.time() - t0, 2)}
 
-    def clasificar_caso(self, texto: str, catalogo: dict) -> dict:
+    def clasificar_caso(self, conversacion: str, actuales: list[str], catalogo: dict) -> dict:
+        """La conversación (persona y asistente) y los tipos de caso del expediente → qué agregar y qué quitar.
+        Descarta ids que no están en la lista, agregar lo que ya está y quitar lo que no está."""
         tipos = catalogo.get('tipos_caso', [])
         # La descripción solo se manda si dice algo más que el nombre (mientras Karen no la escriba, es una copia).
         lista = '\n'.join(f'- {t["id"]}: {t["titulo"]}'
                           + (f' — {t["descripcion"]}' if t.get('descripcion') and t['descripcion'] != t['titulo'] else '')
                           for t in tipos if t.get('estado') != 'descartada')
         raw, llamada = self._llamar('clasificar_caso', CLASIFICAR_CASO_SYSTEM,
-                                    f'TIPOS DE CASO:\n{lista}\n- otro: ninguno de los anteriores\n\nCONSULTA:\n{texto}', 120)
+                                    f'TIPOS DE CASO:\n{lista}\n- otro: ninguno de los anteriores\n\n'
+                                    f'TIPOS DE CASO ACTUALES: {", ".join(actuales) or "(ninguno)"}\n\n'
+                                    f'CONVERSACIÓN:\n{conversacion}', 200)
         d = _json(raw) or {}
         ids = {t['id'] for t in tipos} | {'otro'}
-        elegidos = [t for t in d.get('tipos') or [] if t in ids]
+        agregar = [t for t in d.get('agregar') or [] if t in ids and t not in actuales]
+        quitar = [t for t in d.get('quitar') or [] if t in actuales]
         opciones = [t for t in d.get('opciones') or [] if t in ids and t != 'otro'][:3]
-        if not elegidos and len(opciones) < 2:
-            elegidos = opciones or []   # «dudoso» con una sola opción = esa opción
-            opciones = []
-        return {'tipos': list(dict.fromkeys(elegidos)), 'opciones': opciones if not elegidos else [], '_llamada': llamada}
+        if actuales or agregar:
+            opciones = []                 # la duda solo cuenta si todavía no hay tipo de caso
+        elif len(opciones) < 2:
+            agregar, opciones = opciones, []   # «dudoso» con una sola opción = esa opción
+        return {'agregar': list(dict.fromkeys(agregar)), 'quitar': list(dict.fromkeys(quitar)),
+                'por_que': str(d.get('por_que') or '').strip(), 'opciones': opciones, '_llamada': llamada}
 
     def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict]) -> dict:
         out: dict = {}

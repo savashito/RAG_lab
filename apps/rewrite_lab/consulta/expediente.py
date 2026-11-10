@@ -8,7 +8,8 @@ El expediente es un dict:
     {'tipos_caso': ['imagenes_intimas'],          # ids del catálogo; [] = todavía no se sabe
      'datos': {'lugar_hechos': 'Querétaro', 'pide_dinero': 'si', 'edad_victima': 24},
      'no_sabe': ['monto'],                         # la persona dijo que no sabe: cuenta como contestado
-     'preguntas': {'lugar_hechos': 2}}             # cuántas veces se preguntó cada dato
+     'preguntas': {'lugar_hechos': 2},             # cuántas veces se preguntó cada dato
+     'orientados': ['imagenes_intimas']}           # tipos de caso de la última orientación
 
 Valores de cada dato, según su `tipo` en el catálogo:
     si_no → 'si' | 'no' · numero → int/float · opcion → uno de `opciones` · estado → nombre oficial de la entidad.
@@ -32,7 +33,7 @@ def _sin_acentos(s: str) -> str:
 
 
 def nuevo() -> dict:
-    return {'tipos_caso': [], 'datos': {}, 'no_sabe': [], 'preguntas': {}}
+    return {'tipos_caso': [], 'datos': {}, 'no_sabe': [], 'preguntas': {}, 'orientados': []}
 
 
 def normalizar_valor(dato: dict, valor):
