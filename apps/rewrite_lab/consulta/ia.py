@@ -3,7 +3,7 @@ Tareas del LLM para la máquina de estados de la consulta. Cada una tiene su pro
 valida la respuesta y la descarta si no sirve. El LLM nunca decide el estado.
 
   · clasificar_caso: el mensaje de la persona → tipos de caso de la lista cerrada del catálogo (o dudoso entre 2–3).
-  · extraer_hechos: los mensajes de la persona → valores de los datos del expediente que se le piden.
+  · extraer_expediente: los mensajes de la persona → valores de los datos del expediente que se le piden.
     El lugar de los hechos lo extrae jurisdiction_gate.extraer_lugares (el mismo filtro de las rondas 1 y 2).
 
 Cada respuesta trae `_llamada` = {tarea, md5 del prompt, respuesta cruda, segundos} para el registro del mensaje.
@@ -85,7 +85,7 @@ class ConsultaIA:
             opciones = []
         return {'tipos': list(dict.fromkeys(elegidos)), 'opciones': opciones if not elegidos else [], '_llamada': llamada}
 
-    def extraer_hechos(self, texto: str, ultima_pregunta: str, datos: list[dict]) -> dict:
+    def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict]) -> dict:
         out: dict = {}
         llamadas = []
         if any(d['id'] == 'lugar_hechos' for d in datos):
@@ -101,11 +101,11 @@ class ConsultaIA:
             lista = '\n'.join(f'- {d["id"]} ({d.get("tipo", "si_no")}'
                               + (f': {", ".join(d["opciones"])}' if d.get('opciones') else '')
                               + f'): {d.get("para_que") or d.get("pregunta")}' for d in resto)
-            raw, llamada = self._llamar('extraer_hechos', EXTRAER_EXPEDIENTE_SYSTEM,
+            raw, llamada = self._llamar('extraer_expediente', EXTRAER_EXPEDIENTE_SYSTEM,
                                         f'DATOS:\n{lista}\n\nÚLTIMA PREGUNTA DEL ASISTENTE:\n{ultima_pregunta or "(ninguna)"}'
                                         f'\n\nMENSAJES DE LA PERSONA:\n{texto}', 300)
             llamadas.append(llamada)
             d = _json(raw) or {}
             ids = {x['id'] for x in resto}
             out.update({k: v for k, v in d.items() if k in ids and v is not None})
-        return {'datos': out, '_llamada': {'tarea': 'extraer_hechos', 'partes': llamadas}}
+        return {'datos': out, '_llamada': {'tarea': 'extraer_expediente', 'partes': llamadas}}

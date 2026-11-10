@@ -66,7 +66,7 @@ Una carpeta nueva, `apps/rewrite_lab/consulta/`, con la misma forma que `forms/`
 | `expediente.py` | La forma del expediente, cómo se combinan datos nuevos y la función `datos_faltantes()` | No |
 | `catalogo.py` | Cargar y validar el catálogo de casos (`catalogo_casos.yaml`) y calcular su md5 | No |
 | `catalogo_casos.yaml` | El catálogo de casos (lo escribe Karen; ejemplo en la sección 7) | — |
-| `ia.py` | Las tareas del LLM: `clasificar_caso`, `extraer_hechos`, `revisar_aplicabilidad`. Cada una con su prompt fijo y salida JSON | Sí, el LLM |
+| `ia.py` | Las tareas del LLM: `clasificar_caso`, `extraer_expediente`, `revisar_aplicabilidad`. Cada una con su prompt fijo y salida JSON | Sí, el LLM |
 | `busqueda.py` | Convierte el expediente en filtros para el buscador (código penal del lugar de los hechos, leyes nacionales, leyes según a quién protegen) y llama al chat existente | Sí, el buscador y el LLM |
 
 (Rediseño: se quitaron `store.py` y `api.py`. Para la ronda 3 el catálogo es un archivo del repo, sin tablas ni página de edición.)
@@ -106,7 +106,7 @@ def turno(estado, expediente, evento, catalogo, ia, buscar) -> tuple[str, dict, 
 - `chat_event_dicts` ya acepta `jurisdicciones`. `busqueda.py` se lo pasa desde el expediente (lugar de los hechos) y apaga el filtro por estado actual (`gate=False`), porque el expediente ya decidió el lugar.
 - Hay que agregar un parámetro para excluir leyes según la persona, usando las etiquetas que ya existen en `documento_categorias` (por ejemplo, la ley de violencia contra las mujeres solo si la víctima es mujer). Es la fase 2 que `categorias.py` ya anticipa.
 
-**Con el filtro por estado (`jurisdiction_gate.py`).** `extraer_lugares` ya separa el lugar de los hechos de otros lugares. `apps/rewrite_lab/consulta/ia.py` lo reutiliza dentro de `extraer_hechos` en vez de reescribirlo.
+**Con el filtro por estado (`jurisdiction_gate.py`).** `extraer_lugares` ya separa el lugar de los hechos de otros lugares. `apps/rewrite_lab/consulta/ia.py` lo reutiliza dentro de `extraer_expediente` en vez de reescribirlo.
 
 **Con trámites (`forms/`), para REDACTAR_DOCUMENTO.**
 - Se reutiliza `forms/asistente.turno()` como submáquina, empezando en ENTREVISTA, con el expediente copiado a `borrador['respuestas']`.
@@ -148,7 +148,7 @@ El estado y el expediente actuales viven en `estudio_intentos`, en el servidor. 
 | Catálogo de casos: tipos de caso, datos del expediente, por qué importan y texto de cada pregunta | Repo: `apps/rewrite_lab/consulta/catalogo_casos.yaml` | Lo escribe Karen; git guarda la historia |
 | Plantillas de los escritos | Base: `formularios`, como hoy | Las escribe Karen |
 | A quién protege cada ley | Base: `documento_categorias`, como hoy | Lo etiquetan las expertas |
-| Prompts de las tareas internas (`extraer_hechos`, `clasificar_caso`, `revisar_aplicabilidad`) | Código: `apps/rewrite_lab/consulta/ia.py` | El programa lee su JSON; si cambian, cambian las pruebas |
+| Prompts de las tareas internas (`extraer_expediente`, `clasificar_caso`, `revisar_aplicabilidad`) | Código: `apps/rewrite_lab/consulta/ia.py` | El programa lee su JSON; si cambian, cambian las pruebas |
 | Estados, transiciones y reglas para decidir el evento | Código: `apps/rewrite_lab/consulta/maquina.py` | Es la lógica del programa |
 | Configuración de la búsqueda (k, reranker, HyDE) | Base: definición del estudio, como hoy | Se fija por estudio |
 | Texto exacto de cada prompt usado | Base: `estudio_prompts`, por md5, como hoy | Para saber después qué prompt respondió cada mensaje |

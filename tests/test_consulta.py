@@ -28,11 +28,11 @@ class IAFalsa:
         self.clasificaciones += 1
         return {'tipos': self.tipos, 'opciones': self.opciones, '_llamada': {'tarea': 'clasificar_caso'}}
 
-    def extraer_hechos(self, texto, pregunta, datos):
+    def extraer_expediente(self, texto, pregunta, datos):
         ultimo = texto.split('\n')[-1]
         pedidos = {d['id'] for d in datos}
         return {'datos': {k: v for k, v in self.respuestas.get(ultimo, {}).items() if k in pedidos},
-                '_llamada': {'tarea': 'extraer_hechos'}}
+                '_llamada': {'tarea': 'extraer_expediente'}}
 
 
 def conversar(ia, mensajes, estado=None, exp=None):
@@ -241,7 +241,7 @@ def test_ia_extraer_usa_el_filtro_de_lugares_y_el_json(monkeypatch):
                                             'raw': '', 'fuente': 'llm'})
     ia = IA.ConsultaIA(LLMFalso(['{"pide_dinero": "si", "edad_victima": null, "inventado": 3}']))
     datos = [d for d in CAT['datos'] if d['id'] in ('lugar_hechos', 'pide_dinero', 'edad_victima')]
-    r = ia.extraer_hechos('vivo en CDMX, me pasó en Querétaro, me piden dinero', '', datos)
+    r = ia.extraer_expediente('vivo en CDMX, me pasó en Querétaro, me piden dinero', '', datos)
     assert r['datos'] == {'lugar_hechos': 'Querétaro', 'pide_dinero': 'si'}
 
 
