@@ -44,6 +44,10 @@ PARTES = {'datos': 'id', 'tipos_caso': 'id', 'reglas': 'id'}
 ESTADOS = {'borrador', 'sugerida', 'confirmada', 'descartada'}
 
 
+class ConflictoError(Exception):
+    pass
+
+
 def _norm(s: str) -> str:
     s = unicodedata.normalize('NFD', str(s).upper())
     return ' '.join(''.join(c for c in s if unicodedata.category(c) != 'Mn').replace('.', ' ').split())
@@ -135,12 +139,24 @@ class Catalogo:
             c.commit()
         return e
 
-    def reemplazar(self, doc: dict, email: str) -> str:
-        """Reemplaza el catálogo completo (importar YAML). Valida que las referencias existan."""
-        for parte in ('tipos_caso', 'reglas'):
-            for e in doc.get(parte, []):
-                validar_entrada(parte, e, doc)
+    def reemplazar(self, doc: dict, email: str, base_md5: str | None = None) -> str:
+        """Reemplaza el catálogo completo (editor YAML). Valida ids y referencias. Si `base_md5` no es el de la versión
+        actual, alguien más guardó mientras tanto: se rechaza para no pisar sus cambios."""
+        if not isinstance(doc, dict):
+            raise ValueError('El YAML debe ser un documento con datos, tipos_caso y reglas.')
+        for parte in PARTES:
+            if not isinstance(doc.get(parte), list):
+                raise ValueError(f'Falta la lista «{parte}».')
+            ids = [e.get('id') if isinstance(e, dict) else None for e in doc[parte]]
+            repetidos = sorted({i for i in ids if ids.count(i) > 1}, key=str)
+            if repetidos:
+                raise ValueError(f'ids repetidos en {parte}: {", ".join(map(str, repetidos))}')
+            doc[parte] = [validar_entrada(parte, e, doc) for e in doc[parte]]
         with self.connect() as c, c.cursor() as cur:
+            cur.execute("SELECT doc FROM consulta_catalogo WHERE id = 1 FOR UPDATE")
+            if base_md5 and md5_de(cur.fetchone()[0]) != base_md5:
+                raise ConflictoError('Alguien más guardó el catálogo mientras editabas. Recarga la página; tus cambios '
+                                     'no se guardaron (cópialos antes de recargar).')
             cur.execute("UPDATE consulta_catalogo SET doc = %s::jsonb, actualizado_por = %s, updated_at = now() WHERE id = 1",
                         (json.dumps(doc, ensure_ascii=False), email))
             self._log(cur, 'importar', {'md5': md5_de(doc)}, email)
@@ -181,7 +197,7 @@ class Catalogo:
         def obtener(request: Request):
             doc, por, at = self.leer()
             email = self.current_email(request)
-            return {'catalogo': doc, 'md5': md5_de(doc), 'actualizado_por': por, 'updated_at': at,
+            return {'catalogo': doc, 'yaml': a_yaml(doc), 'md5': md5_de(doc), 'actualizado_por': por, 'updated_at': at,
                     'puede_editar': bool(self.can_edit(email)), 'codigos': list(CODIGOS)}
 
         @r.put('/api/catalogo/{parte}')
@@ -209,14 +225,21 @@ class Catalogo:
                             headers={'Content-Disposition': f'attachment; filename="catalogo_casos_{md5_de(doc)[:8]}.yaml"'})
 
         @r.put('/api/catalogo')
-        async def importar(request: Request):
+        async def guardar_yaml(request: Request):
             email = self.current_email(request)
-            if not self.is_superadmin(email):
-                return bad('Solo el superadmin puede reemplazar el catálogo completo.', 403)
+            if not self.can_edit(email):
+                return bad('No tienes permiso para editar el catálogo.', 403)
             try:
                 doc = yaml.safe_load(await request.body())
-                return {'md5': self.reemplazar(doc, email)}
-            except (ValueError, yaml.YAMLError) as e:
+            except yaml.YAMLError as e:
+                m = getattr(e, 'problem_mark', None)
+                return JSONResponse({'error': f'YAML inválido: {getattr(e, "problem", e)}',
+                                     'linea': m.line if m else None}, status_code=400)
+            try:
+                return {'md5': self.reemplazar(doc, email, request.headers.get('X-Base-MD5'))}
+            except ConflictoError as e:
+                return bad(str(e), 409)
+            except ValueError as e:
                 return bad(str(e))
 
         return r
