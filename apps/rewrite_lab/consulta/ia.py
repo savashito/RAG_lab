@@ -17,7 +17,7 @@ import time
 
 import jurisdiction_gate as jgate
 
-CLASIFICAR_SYSTEM = """Clasificas consultas legales de personas en México. Recibes lo que escribió la persona y una
+CLASIFICAR_CASO_SYSTEM = """Clasificas consultas legales de personas en México. Recibes lo que escribió la persona y una
 lista cerrada de TIPOS DE CASO (id: nombre — descripción). Elige el tipo o los tipos de caso que describen lo que le
 pasó. Puede haber más de uno (por ejemplo, fotos íntimas y amenazas).
 
@@ -28,7 +28,7 @@ Responde SOLO un JSON:
 - Si no puedes decidir entre 2 o 3 tipos, deja "tipos" vacío, pon "dudoso": true y en "opciones" esos 2 o 3 ids.
 - No inventes ids. No expliques nada fuera del JSON."""
 
-EXTRAER_SYSTEM = """Extraes datos de una consulta legal en México. Recibes los mensajes de la persona, la última
+EXTRAER_EXPEDIENTE_SYSTEM = """Extraes datos de una consulta legal en México. Recibes los mensajes de la persona, la última
 pregunta que le hizo el asistente y una lista de DATOS con su id, su tipo y qué significa.
 
 Responde SOLO un JSON con los ids de la lista como llaves:
@@ -74,7 +74,7 @@ class ConsultaIA:
         tipos = catalogo.get('tipos_caso', [])
         lista = '\n'.join(f'- {t["id"]}: {t["titulo"]} — {t.get("descripcion") or t["titulo"]}'
                           for t in tipos if t.get('estado') != 'descartada')
-        raw, llamada = self._llamar('clasificar_caso', CLASIFICAR_SYSTEM,
+        raw, llamada = self._llamar('clasificar_caso', CLASIFICAR_CASO_SYSTEM,
                                     f'TIPOS DE CASO:\n{lista}\n- otro: ninguno de los anteriores\n\nCONSULTA:\n{texto}', 120)
         d = _json(raw) or {}
         ids = {t['id'] for t in tipos} | {'otro'}
@@ -101,7 +101,7 @@ class ConsultaIA:
             lista = '\n'.join(f'- {d["id"]} ({d.get("tipo", "si_no")}'
                               + (f': {", ".join(d["opciones"])}' if d.get('opciones') else '')
                               + f'): {d.get("para_que") or d.get("pregunta")}' for d in resto)
-            raw, llamada = self._llamar('extraer_hechos', EXTRAER_SYSTEM,
+            raw, llamada = self._llamar('extraer_hechos', EXTRAER_EXPEDIENTE_SYSTEM,
                                         f'DATOS:\n{lista}\n\nÚLTIMA PREGUNTA DEL ASISTENTE:\n{ultima_pregunta or "(ninguna)"}'
                                         f'\n\nMENSAJES DE LA PERSONA:\n{texto}', 300)
             llamadas.append(llamada)
