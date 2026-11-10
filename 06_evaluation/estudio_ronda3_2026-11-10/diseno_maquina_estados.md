@@ -5,14 +5,45 @@ código.*
 
 ## Términos
 
-- **Estado:** uno de una lista finita y fija de situaciones de la conversación. Siempre hay exactamente uno, y el
-  siguiente depende solo del estado actual y del evento.
+- **Estado:** Siempre hay exactamente uno, y el siguiente depende solo del estado actual, la memoria (expediente de consulta) y del evento.
 - **Evento:** un mensaje de la persona o un botón que presiona.
 - **Transición:** la regla «estando en el estado X, si llega el evento E, pasa al estado Y».
-- **Expediente de la consulta:** los datos del caso que el programa va anotando. No es un estado.
+- **Expediente de la consulta:** los datos del caso que el programa va anotando. Es la memoria
 - **Dato decisivo:** un dato del expediente del que depende qué ley aplica.
 - **Catálogo de casos:** la lista, escrita por Karen, de tipos de caso con sus datos decisivos y el texto con que se
   pregunta cada uno.
+  --> pregunta a claud: las leyes aplican diferente si eres funcionario publico, servidor publico, mujer, hombre, de la tercera edad, menor de edad, donde estas, cuales otros hoy? 
+  --> respuesta: sí. En derecho penal mexicano cambian qué ley aplica, el delito o la pena, sobre todo: (1) el **lugar
+  de los hechos** (qué código penal estatal) y si la **materia es federal**; (2) la **edad**: si la víctima es menor de
+  edad cambian delitos y agravantes, y si la persona señalada es menor de 18 no se le aplica el código penal sino la Ley
+  Nacional del Sistema Integral de Justicia Penal para Adolescentes; (3) ser **mujer** (feminicidio, Ley General de
+  Acceso de las Mujeres a una Vida Libre de Violencia, agravantes por razón de género); (4) ser **persona adulta mayor**
+  o **con discapacidad** (agravantes y leyes de protección); (5) ser **servidor público** (delitos propios de servidores
+  públicos y agravantes); (6) la **relación entre las partes**: pareja, familia (violencia familiar; algunos delitos
+  entre familiares se persiguen por querella), relación de trabajo o jerárquica (hostigamiento); (7) pertenecer a un
+  **pueblo o comunidad indígena** (derechos procesales, como intérprete); (8) ser **militar** (puede aplicar el fuero
+  militar); (9) ser **persona extranjera** (aviso consular). También importa el **papel de quien consulta**: víctima,
+  persona señalada o familiar. «Servidor público» y «funcionario público» se usan casi como sinónimos; Karen debe
+  confirmar la lista y decir cuáles aplican a las tres situaciones del estudio.
+  --> pregunta a claud: Tambien en que casos necesitamos que informacion? osea por que tendriamos que identificar el tipo de caso y saber antes que datos se ocupan para ese caso especifico no?
+  --> respuesta: sí, por eso hay que identificar el tipo de caso primero: los datos decisivos dependen del caso (en
+  extorsión importa si hubo dinero de por medio; en hostigamiento, si quien manda los mensajes es superior). Rediseño:
+  hay dos niveles de datos decisivos. **Generales**, que se piden en todos los casos: lugar de los hechos, papel de
+  quien consulta y si alguna persona involucrada es menor de edad. **Del tipo de caso**, que salen del catálogo una vez
+  identificado el caso. El tipo de caso es, entonces, el primer dato decisivo.
+  --> pregunta a claud: se va identificar el tipo de caso? el LLM lo va identificar? se va guardar en la memoria que es para ese caso especifico?
+  --> respuesta: sí a las tres. El LLM elige el tipo de caso de la **lista cerrada** del catálogo (temperatura 0,
+  respuesta en JSON, con la opción «ninguno»), igual que `elegir_formulario` en trámites; Python revisa que el tipo
+  exista y lo guarda en el expediente (`tipos_caso`). Puede ser más de uno: «Las fotos» es extorsión y también amenaza
+  de difundir imágenes íntimas; entonces los datos decisivos son la unión de los dos. Si el LLM elige «ninguno», el
+  asistente le pide a la persona que cuente qué pasó con otras palabras (sigue en LLENAR_EXPEDIENTE). En el estudio,
+  además, Python conoce la situación, así que guardamos las dos cosas: lo que eligió el LLM y lo esperado por la
+  situación, para medir cuántas veces el LLM clasifica bien.
+  --> pregunta a claud: El yml va tener esa informacion de los casos?
+  --> respuesta: sí. El catálogo es un archivo YAML con una entrada por tipo de caso: cómo se describe (para que el LLM
+  lo reconozca), sus datos decisivos, por qué importa cada uno y el texto con que se pregunta. Los datos decisivos
+  generales van al inicio del mismo archivo. Ejemplo en la sección 7.
+  
 - **Programa:** el código en Python de `apps/rewrite_lab`. «Código penal» siempre se escribe completo.
 
 ## 1. Principios
@@ -21,12 +52,32 @@ código.*
    nuevo estado, el nuevo expediente, lo que se le muestra a la persona y un registro. No toca la base de datos ni
    llama al LLM directamente: recibe esos servicios como parámetros. Así se prueba sin servidor, igual que
    `forms/asistente.py` con `tests/test_asistente.py`.
-2. **El programa decide las transiciones; el LLM no.** El LLM solo extrae datos, escribe la orientación y revisa la
-   aplicabilidad.
+2. **Python decide las transiciones,** El LLM solo extrae datos, escribe la orientación y revisa la
+   aplicabilidad, python recibe los datos extraidos por la LLM, actualiza la memoria (expediente)
 3. **Todo se registra en cada mensaje:** estado antes y después, transición, expediente y el md5 de cada prompt usado.
    Así no hay que reconstruir decisiones después, como pasó con el filtro en la ronda 2.
-4. **Todo lo que edita una experta se versiona y se fija por versión.** El estudio guarda qué versión del catálogo y de
-   cada prompt usó. Es la lección de la clave de «Las fotos» (v7 contra v9).
+   --> pregunta a claud: como lo vas a implementar? osea te refieres a un historial de toda la conversacion, agregando el estado actual por mensaje, y asi haras seguimiento?
+   --> respuesta: sí. La tabla `estudio_turnos` ya guarda una fila por mensaje de la persona (su mensaje y la
+   respuesta del asistente), en orden; esa es la historia de la conversación. A cada fila se le agregan el estado
+   antes y después, una copia del expediente después del mensaje y las llamadas al LLM con el md5 de su prompt. Para
+   no recorrer toda la historia en cada mensaje, el estado y el expediente actuales también se guardan en
+   `estudio_intentos` (una fila por persona y situación). Con eso se puede reconstruir, mensaje por mensaje, qué sabía
+   el asistente y por qué preguntó o respondió.
+4. **(Rediseñado) Una sola fuente de verdad, congelada al abrir el estudio.** El catálogo de casos y los prompts viven
+   en archivos del repo (git guarda su historia). Al abrir la ronda 3, la definición del estudio queda **congelada**:
+   el programa no deja editarla mientras el estudio esté abierto; un cambio exige un estudio nuevo con otro id. Cada
+   mensaje registra el md5 del catálogo y de cada prompt, y la página de administración del estudio muestra en grande
+   el commit y los md5 en uso.
+  --> pregunta a claud: a que te refieres con catalogo? catalogo de que? sigues siendo ambigo, te refieres a lo que se define como crrecto? por que tener versiones, por que no mejor solo fijar una cosa.
+  lo de los promps concuerdo, y que sea muy evidente que version se usa para el estudio
+  --> respuesta: el **catálogo de casos** es la lista de tipos de caso (por ejemplo «extorsión con imágenes íntimas»,
+  «hostigamiento sexual en el trabajo», «lesiones en una riña») con, para cada uno, sus datos decisivos y cómo se
+  pregunta cada dato. **No es la clave de respuestas** (lo que se califica como correcto en el cuestionario), que sigue
+  en la definición del estudio. Sobre las versiones: tienes razón, no hacen falta. El problema de la ronda 2 no fue
+  que faltaran versiones, sino que la definición se podía editar con el estudio abierto y que copié una copia vieja.
+  Con un solo archivo como fuente de verdad, congelado al abrir el estudio y con su md5 en cada mensaje, se resuelve
+  más simple. Quité las tablas de versiones (sección 4).
+
 
 ## 2. Módulos nuevos
 
@@ -35,12 +86,28 @@ Una carpeta nueva, `apps/rewrite_lab/consulta/`, con la misma forma que `forms/`
 | Archivo | Qué contiene | ¿Llama al LLM o a la base? |
 |---|---|---|
 | `maquina.py` | Los estados, la tabla `TRANSICIONES` y la función `turno()` | No |
-| `expediente.py` | La forma del expediente, cómo se combinan datos nuevos y la función `faltan_decisivos()` | No |
-| `catalogo.py` | Cargar y validar el catálogo de casos (YAML) | No |
-| `ia.py` | Las tareas del LLM: `extraer_hechos`, `clasificar_caso`, `revisar_aplicabilidad`. Cada una con su prompt fijo y salida JSON | Sí, el LLM |
+| `expediente.py` | La forma del expediente, cómo se combinan datos nuevos y la función `datos_faltantes()` | No |
+| `catalogo.py` | Cargar y validar el catálogo de casos (`catalogo_casos.yaml`) y calcular su md5 | No |
+| `catalogo_casos.yaml` | El catálogo de casos (lo escribe Karen; ejemplo en la sección 7) | — |
+| `ia.py` | Las tareas del LLM: `clasificar_caso`, `extraer_hechos`, `revisar_aplicabilidad`. Cada una con su prompt fijo y salida JSON | Sí, el LLM |
 | `busqueda.py` | Convierte el expediente en filtros para el buscador (código penal del lugar de los hechos, leyes nacionales, leyes según a quién protegen) y llama al chat existente | Sí, el buscador y el LLM |
-| `store.py` | Leer y guardar el catálogo y sus versiones | Sí, la base |
-| `api.py` | Las rutas para editar el catálogo desde una página de administración | Sí |
+
+(Rediseño: se quitaron `store.py` y `api.py`. Para la ronda 3 el catálogo es un archivo del repo, sin tablas ni página
+de edición.)
+
+--> pregunta a claud: que es faltan_decisivos? es como requiero_mas_informacion? que regresa? que recibe? 
+--> respuesta: es parecida, pero no regresa sí o no: regresa **cuáles** datos faltan, en orden, para que Python sepa
+qué preguntar primero. La renombro a `datos_faltantes()`:
+
+```python
+def datos_faltantes(expediente: dict, catalogo: dict) -> list[dict]:
+    """Los datos decisivos sin valor en el expediente, en el orden en que se preguntan: primero los generales,
+    luego los de cada tipo de caso del expediente. Cada elemento trae el id del dato, por qué importa y la pregunta.
+    Lista vacía = ya están todos → transición a ORIENTACIÓN."""
+```
+
+Recibe el expediente y el catálogo; no llama al LLM ni a la base. Mientras el tipo de caso no esté identificado,
+regresa solo los generales más «tipo de caso».
 
 `turno()` quedaría así:
 
@@ -94,46 +161,33 @@ lugares. `consulta/ia.py` lo reutiliza dentro de `extraer_hechos` en vez de rees
 | `estudio_turnos` | `estado_antes text`, `estado_despues text` | La transición de cada mensaje |
 | `estudio_turnos` | `expediente jsonb` | Copia del expediente después del mensaje; no se modifica después |
 | `estudio_turnos` | `llamadas jsonb` | Cada llamada al LLM: tarea, md5 del prompt, respuesta cruda y segundos |
-| `estudio_turnos` | `catalogo_version int` | Qué versión del catálogo se usó |
+| `estudio_turnos` | `catalogo_md5 text` | Qué catálogo se usó (md5 del archivo) |
 
 El estado y el expediente actuales viven en `estudio_intentos`, en el servidor. En trámites viajan con el navegador; en
 el estudio no conviene, porque son datos de medición y el navegador los podría alterar.
 
-**Tablas nuevas:**
+**Tablas nuevas:** ninguna (rediseño).
+--> pregunta a claud:porque versionar los casos de consulta? por que no simplificarlo y solo tener un source of truth? que ganamos con versionarlo? vale la pena?
+--> respuesta: no vale la pena para la ronda 3. Una tabla de versiones solo ganaría poder editar el catálogo desde
+una página y ver cada versión en la base; git ya da la historia del archivo. Lo que sí hace falta es una sola fuente
+de verdad que no cambie durante el estudio: el archivo `catalogo_casos.yaml`, congelado al abrir el estudio, con su
+md5 guardado en cada mensaje. Quité `consulta_casos` y `consulta_casos_versiones`. Si más adelante Karen necesita
+editar el catálogo seguido desde una página, se agregan.
 
-```sql
--- El catálogo de casos que edita Karen (una fila por tipo de caso).
-CREATE TABLE consulta_casos (
-    id text PRIMARY KEY,               -- p. ej. 'extorsion_imagenes'
-    titulo text NOT NULL,
-    version int NOT NULL DEFAULT 1,
-    spec_yaml text NOT NULL,           -- datos decisivos, por qué importan, texto de cada pregunta
-    estado text NOT NULL DEFAULT 'borrador' CHECK (estado IN ('borrador', 'revisado', 'publicado')),
-    updated_by text, updated_at timestamptz DEFAULT now());
-
--- Cada versión guardada, sin borrar nunca: así se sabe qué vio cada participante.
-CREATE TABLE consulta_casos_versiones (
-    caso_id text NOT NULL REFERENCES consulta_casos(id),
-    version int NOT NULL,
-    spec_yaml text NOT NULL,
-    guardado_por text, guardado_at timestamptz DEFAULT now(),
-    PRIMARY KEY (caso_id, version));
-```
-
-**Una tabla de versiones también para la definición del estudio** (`estudio_estudios_versiones`, con la misma forma).
-Hoy `estudio_estudios` guarda solo la última versión; por eso no pudimos ver la v7 en la base y yo copié la versión
-equivocada al armar la ronda 2.
+**Cambio en el estudio, en vez de una tabla de versiones:** que `estudio_estudios` no permita editar la definición
+mientras el estado sea `abierto` (hoy sí lo permite; así se editó la ronda 1 a la v9). Para cambiar algo, se cierra el
+estudio y se abre uno nuevo con otro id.
 
 ## 5. ¿Qué va en la base y qué en el código?
 
-**Criterio:** lo que edita una experta va en la base, con versiones. Lo que depende de la forma del código (cómo se lee
-el JSON, qué campos existen) va en el código, en git y con pruebas. En los dos casos, cada mensaje registra el md5 del
-prompt usado.
+**Criterio (rediseñado):** lo que define el estudio y no debe cambiar mientras está abierto va en archivos del repo o
+en la definición del estudio congelada. En la base van los datos que produce el estudio (mensajes, expedientes,
+respuestas de las personas). Cada mensaje registra el md5 de cada prompt y del catálogo usados.
 
 | Qué | Dónde | Por qué |
 |---|---|---|
-| Prompt de la orientación legal de cada condición | Base: definición del estudio (YAML), como hoy | Lo edita Karen; cambia entre condiciones |
-| Catálogo de casos: datos decisivos, por qué importan y texto de cada pregunta | Base: `consulta_casos`, con versiones | Lo escribe Karen |
+| Prompt de la orientación legal de cada condición | Base: definición del estudio (YAML), como hoy, congelada al abrir | Lo edita Karen; cambia entre condiciones |
+| Catálogo de casos: tipos de caso, datos decisivos, por qué importan y texto de cada pregunta | Repo: `consulta/catalogo_casos.yaml` | Lo escribe Karen; git guarda la historia |
 | Plantillas de los escritos | Base: `formularios`, como hoy | Las escribe Karen |
 | A quién protege cada ley | Base: `documento_categorias`, como hoy | Lo etiquetan las expertas |
 | Prompts de las tareas internas (`extraer_hechos`, `clasificar_caso`, `revisar_aplicabilidad`) | Código: `consulta/ia.py` | El programa lee su JSON; si cambian, cambian las pruebas |
@@ -151,11 +205,51 @@ prompt usado.
 5. Conexión con `study/api.py` (modo `expediente`) y las columnas nuevas.
 6. Repetición de las conversaciones de la ronda 1 con el modo `expediente`, igual que se hizo con el filtro, antes de
    abrir la ronda 3.
-7. Página para que Karen edite el catálogo, con versiones.
+7. Bloquear la edición de un estudio abierto en `study/store.py`.
+
+## 7. Ejemplo del catálogo de casos (`consulta/catalogo_casos.yaml`)
+
+Karen debe revisar y completar los datos y las preguntas.
+
+```yaml
+# Datos decisivos que se piden en todos los casos, antes que los del tipo de caso.
+generales:
+  - id: lugar_hechos
+    por_que: Cada estado tiene su propio código penal.
+    pregunta: ¿En qué estado pasó? Lo necesito porque cada estado tiene su propio código penal.
+  - id: papel
+    valores: [victima, persona_senalada, familiar_o_tercero]
+    por_que: Los derechos y los pasos cambian si eres la víctima o la persona señalada.
+    pregunta: ¿Esto te pasó a ti, te acusan a ti, o le pasó a otra persona?
+  - id: menor_de_edad
+    por_que: Si alguna persona involucrada es menor de 18 años cambian el delito, las penas o la ley.
+    pregunta: ¿Alguna de las personas involucradas es menor de 18 años?
+
+casos:
+  - id: extorsion_imagenes
+    titulo: Te piden dinero a cambio de no publicar fotos o videos íntimos
+    descripcion: Alguien amenaza con difundir imágenes íntimas si no se le paga.   # la usa el LLM para clasificar
+    datos:
+      - id: pide_dinero
+        por_que: Si hay dinero de por medio es extorsión (Ley General en materia de Extorsión).
+        pregunta: ¿Te pidieron dinero o algo a cambio?
+  - id: hostigamiento_laboral
+    titulo: Mensajes sexuales de alguien del trabajo
+    descripcion: Insinuaciones o propuestas sexuales de alguien del trabajo.
+    datos:
+      - id: es_superior
+        por_que: Si es tu superior es hostigamiento sexual y la pena es mayor.
+        pregunta: ¿Esa persona es tu jefe o supervisa tu trabajo?
+  - id: lesiones_rina
+    titulo: Una pelea y un citatorio
+    descripcion: Pelea o golpes, y un citatorio de la Fiscalía.
+    datos: []     # basta con los generales
+```
 
 ## Decisiones pendientes
 
-- **Página del catálogo:** ¿Karen lo edita desde una página (como trámites) o basta con un YAML en el repo para la
-  ronda 3? El YAML es más rápido de construir; la página es necesaria si lo va a cambiar seguido.
-- **Clasificar el caso:** ¿el LLM elige el tipo de caso del catálogo (como `elegir_formulario` en trámites) o en el
-  estudio se fija por situación? En el estudio se puede fijar por situación, lo que quita una fuente de error.
+- **Clasificar el caso en el estudio:** propongo que lo clasifique el LLM, como lo haría con cualquier persona, y que
+  Python guarde también el tipo esperado por la situación, para medir cuántas veces acierta. La alternativa es fijarlo
+  por situación, que quita esa fuente de error pero ya no prueba lo que pasaría fuera del estudio.
+- **Lista de características de la persona:** Karen debe confirmar cuáles de las de la sección «Términos» entran en
+  los datos generales y cuáles solo en ciertos tipos de caso.
