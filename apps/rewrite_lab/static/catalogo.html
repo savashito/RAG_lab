@@ -188,7 +188,9 @@ function pintarLista(){
   } else if (p === 'tipos_caso') {
     $('lista').innerHTML = `<table><tr><th>Tipo de caso</th><th>Datos del expediente</th><th>Reglas</th><th>Estado</th></tr>${filas.map(e=>`
       <tr class="row ${S.sel===e.id?'sel':''}" onclick="abrir('${e.id}')"><td>${esc(e.titulo)}<div class="muted small">${esc(e.id)}</div></td>
-      <td class="small">${esc((e.datos||[]).join(', '))}</td><td class="small"><a href="#" title="Ver en el YAML las reglas de este tipo de caso" onclick="event.stopPropagation();verReglas('${e.id}');return false">${(S.cat.reglas||[]).filter(r=>r.tipo_caso===e.id).length} reglas →</a></td>
+      <td class="small">${esc((e.datos||[]).join(', '))}</td><td class="small" style="white-space:nowrap">${(S.cat.reglas||[]).filter(r=>r.tipo_caso===e.id).length} reglas:
+        <a href="#" title="Resaltar en el YAML las reglas de este tipo de caso" onclick="event.stopPropagation();verReglas('${e.id}');return false">YAML</a> ·
+        <a href="#" title="Abrir la pestaña Reglas filtrada por este tipo de caso" onclick="event.stopPropagation();irAReglas('${e.id}');return false">pestaña →</a></td>
       <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
   } else {
     $('lista').innerHTML = `<table><tr><th>Dato</th><th>Pregunta</th><th>Estado</th></tr>${filas.map(e=>`
@@ -196,6 +198,8 @@ function pintarLista(){
       <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
   }
 }
+// Cambia a la pestaña Reglas, filtrada por ese tipo de caso.
+function irAReglas(tipo){ S.parte='reglas'; S.f = {tipo, estado:'', q:''}; S.sel=null; pintar(); panelVacio(); }
 // Sin cambiar de pestaña: el YAML salta a las reglas de ese tipo de caso y las resalta.
 function verReglas(tipo){
   S.sel = tipo; pintarLista(); if (S.vista !== 'yaml') vista('yaml');
