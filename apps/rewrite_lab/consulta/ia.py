@@ -18,7 +18,7 @@ import time
 import jurisdiction_gate as jgate
 
 CLASIFICAR_CASO_SYSTEM = """Clasificas consultas legales de personas en México. Recibes lo que escribió la persona y una
-lista cerrada de TIPOS DE CASO (id: nombre — descripción). Elige el tipo o los tipos de caso que describen lo que le
+lista cerrada de TIPOS DE CASO (id: nombre, y a veces — descripción). Elige el tipo o los tipos de caso que describen lo que le
 pasó. Puede haber más de uno (por ejemplo, fotos íntimas y amenazas).
 
 Responde SOLO un JSON:
@@ -29,7 +29,7 @@ Responde SOLO un JSON:
 - No inventes ids. No expliques nada fuera del JSON."""
 
 EXTRAER_EXPEDIENTE_SYSTEM = """Extraes datos de una consulta legal en México. Recibes los mensajes de la persona, la última
-pregunta que le hizo el asistente y una lista de DATOS con su id, su tipo y qué significa.
+pregunta que le hizo el asistente y una lista de DATOS con su id, su tipo y la pregunta que lo obtiene.
 
 Responde SOLO un JSON con los ids de la lista como llaves:
 {"id_del_dato": valor, ...}
@@ -72,7 +72,9 @@ class ConsultaIA:
 
     def clasificar_caso(self, texto: str, catalogo: dict) -> dict:
         tipos = catalogo.get('tipos_caso', [])
-        lista = '\n'.join(f'- {t["id"]}: {t["titulo"]} — {t.get("descripcion") or t["titulo"]}'
+        # La descripción solo se manda si dice algo más que el nombre (mientras Karen no la escriba, es una copia).
+        lista = '\n'.join(f'- {t["id"]}: {t["titulo"]}'
+                          + (f' — {t["descripcion"]}' if t.get('descripcion') and t['descripcion'] != t['titulo'] else '')
                           for t in tipos if t.get('estado') != 'descartada')
         raw, llamada = self._llamar('clasificar_caso', CLASIFICAR_CASO_SYSTEM,
                                     f'TIPOS DE CASO:\n{lista}\n- otro: ninguno de los anteriores\n\nCONSULTA:\n{texto}', 120)
@@ -100,7 +102,7 @@ class ConsultaIA:
         if resto:
             lista = '\n'.join(f'- {d["id"]} ({d.get("tipo", "si_no")}'
                               + (f': {", ".join(d["opciones"])}' if d.get('opciones') else '')
-                              + f'): {d.get("para_que") or d.get("pregunta")}' for d in resto)
+                              + f'): {d.get("pregunta") or d.get("para_que")}' for d in resto)   # la pregunta dice qué buscar
             raw, llamada = self._llamar('extraer_expediente', EXTRAER_EXPEDIENTE_SYSTEM,
                                         f'DATOS:\n{lista}\n\nÚLTIMA PREGUNTA DEL ASISTENTE:\n{ultima_pregunta or "(ninguna)"}'
                                         f'\n\nMENSAJES DE LA PERSONA:\n{texto}', 300)
