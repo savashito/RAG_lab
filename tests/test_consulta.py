@@ -168,10 +168,37 @@ def test_solo_confirmadas_deja_sin_reglas_un_catalogo_sin_revisar():
     assert E.reglas_aplicables(exp, CAT, solo_confirmadas=True) == []
 
 
-def test_clasifica_una_sola_vez():
+def test_clasifica_en_cada_mensaje():
     ia = IAFalsa(respuestas=FOTOS)
     conversar(ia, list(FOTOS))
-    assert ia.clasificaciones == 1
+    assert ia.clasificaciones == len(FOTOS)
+
+
+class IACambia(IAFalsa):
+    """Primero dice `otro`; cuando la persona cuenta lo de las fotos, `imagenes_intimas`."""
+
+    def clasificar_caso(self, texto, catalogo):
+        self.clasificaciones += 1
+        return {'tipos': ['imagenes_intimas'] if 'fotos' in texto else ['otro'], 'opciones': [], '_llamada': {}}
+
+
+def test_el_tipo_de_caso_cambia_con_informacion_nueva_y_conserva_los_datos():
+    resp = {'Hola, tengo una duda': {}, 'Fue en Querétaro': {'lugar_hechos': 'Querétaro'}, 'A mí': {'papel': 'victima'},
+            'Me piden dinero por unas fotos': {'pide_dinero': 'si'}}
+    pasos = conversar(IACambia(respuestas=resp), list(resp))
+    assert pasos[2][0] == M.ORIENTACION and pasos[2][1]['tipos_caso'] == ['otro']   # «otro»: solo lugar y papel
+    estado, exp, salida, reg = pasos[3]
+    assert exp['tipos_caso'] == ['imagenes_intimas'] and reg['tipos_antes'] == ['otro']
+    assert estado == M.LLENAR_EXPEDIENTE and reg['estado_antes'] == M.ORIENTACION    # el tipo nuevo pide más datos
+    assert exp['datos']['lugar_hechos'] == 'Querétaro' and salida['dato'] != 'lugar_hechos'
+
+
+def test_la_duda_no_quita_un_tipo_ya_elegido():
+    ia = IAFalsa(respuestas=FOTOS)
+    estado, exp, _, _ = conversar(ia, list(FOTOS)[:2])[-1]
+    ia.tipos, ia.opciones = [], ['imagenes_intimas', 'amenazas_extorsion']
+    _, exp, salida, _ = M.turno(estado, exp, {'tipo': 'mensaje', 'texto': 'A mí', 'historial': []}, CAT, ia)
+    assert exp['tipos_caso'] == ['imagenes_intimas'] and salida['tipo'] != 'elegir_tipo'
 
 
 def test_reiniciar():

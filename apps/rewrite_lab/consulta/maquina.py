@@ -10,7 +10,8 @@ qué ley aplica.
 
 Reglas de diseño (06_evaluation/estudio_ronda3_2026-11-10/diseno_maquina_estados.md):
   · El ESTADO lo decide este código, nunca el LLM. Las transiciones válidas están en TRANSICIONES.
-  · El LLM (consulta/ia.py) solo clasifica el tipo de caso y extrae datos de lo que escribe la persona.
+  · El LLM (consulta/ia.py) solo clasifica el tipo de caso y extrae datos de lo que escribe la persona. Clasifica en
+    cada mensaje, con toda la conversación: el tipo de caso puede cambiar si la persona cuenta algo nuevo.
   · `turno()` es pura: no toca la base ni el buscador. Devuelve qué hacer; quien la llama (el estudio) ejecuta la
     orientación con el buscador y el LLM, y guarda el registro.
   · REDACTAR_DOCUMENTO no está aquí: no entra en la ronda 3 (trabajo_futuro.md, C6).
@@ -84,15 +85,17 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
             registro['cambios'].append('tipos_caso')
     elif evento.get('tipo') == 'mensaje':
         texto, pregunta = _texto_usuario(evento), _ultima_pregunta(evento)
+        # Se clasifica en CADA mensaje con toda la conversación: si la persona cuenta algo nuevo, el tipo de caso se
+        # corrige. Los datos ya dados se conservan (no dependen del tipo); lo que el tipo nuevo pida se pregunta.
         dudoso = None
-        if not exp.get('tipos_caso'):
-            c = ia.clasificar_caso(texto, catalogo)
-            registro['llamadas'].append(c.get('_llamada'))
-            if c.get('tipos'):
-                exp = {**exp, 'tipos_caso': c['tipos']}
-                registro['cambios'].append('tipos_caso')
-            elif c.get('opciones'):
-                dudoso = c['opciones']
+        c = ia.clasificar_caso(texto, catalogo)
+        registro['llamadas'].append(c.get('_llamada'))
+        if c.get('tipos') and c['tipos'] != exp.get('tipos_caso'):
+            registro['tipos_antes'] = exp.get('tipos_caso', [])
+            exp = {**exp, 'tipos_caso': c['tipos']}
+            registro['cambios'].append('tipos_caso')
+        elif c.get('opciones') and not exp.get('tipos_caso'):
+            dudoso = c['opciones']        # con un tipo ya elegido, la duda no cambia nada: no se muestran botones
         # Se extrae aunque el tipo de caso sea dudoso, para no perder lo que la persona ya contó.
         buscar = E.datos_necesarios(exp, catalogo) if exp.get('tipos_caso') else list(catalogo.get('datos', []))
         x = ia.extraer_hechos(texto, pregunta, [d for d in buscar if d.get('preguntar', True)])
