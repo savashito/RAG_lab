@@ -15,10 +15,10 @@ Si cada delito fuera un tipo de caso, el LLM tendría que elegir entre unos 120.
 
 Propuesta, en dos niveles:
 
-1. **Tipo de caso:** lo que le pasó a la persona, con palabras de todos los días. Son 21. **El LLM clasifica** el mensaje en uno o más tipos de caso de esta lista cerrada.
+1. **Tipo de caso:** lo que le pasó a la persona, con palabras de todos los días. Son 25. **El LLM clasifica** el mensaje en uno o más tipos de caso de esta lista cerrada.
 2. **Delitos posibles:** cada tipo de caso tiene su lista de delitos posibles y los datos del expediente que los distinguen. **El programa en Python** pregunta esos datos (con el texto de Karen) y, con las respuestas, decide qué delitos aplican. El LLM no elige el delito.
 
-Así el LLM elige entre unos 21 tipos de caso, no entre 120 delitos. Y la distinción difícil (extorsión o Ley Olimpia) queda en una regla que Karen escribe y que se puede revisar.
+Así el LLM elige entre 25 tipos de caso, no entre 120 delitos. Y la distinción difícil (extorsión o Ley Olimpia) queda en una regla que Karen escribe y que se puede revisar.
 
 ## Datos del expediente
 
@@ -50,27 +50,42 @@ Lista única; cada tipo de caso dice cuáles usa. `lugar_hechos` aplica a todos.
 | 1 | Golpes, peleas o lesiones | Lesiones; lesiones con ácido; reglas de riña; disparo de arma | `papel`, `gravedad_lesion`, `violencia_o_arma`, `relacion_partes` |
 | 2 | Murió una persona | Homicidio; feminicidio; transfeminicidio; ayuda o inducción al suicidio | `intencional`, `victima_mujer`, `relacion_partes` |
 | 3 | Violencia en la familia o la pareja | Violencia familiar; violencia vicaria; incumplimiento de la obligación alimentaria | `relacion_partes`, `edad_victima` (`victima_mujer` solo agrega la Ley de Acceso de las Mujeres) |
-| 4 | Agresión sexual | Violación; abuso sexual; estupro; incesto; delitos contra menores de 12 años | `edad_victima`, `relacion_partes`, `consentimiento` |
+| 4 | Agresión sexual | Violación; abuso sexual; estupro; incesto; delitos contra menores de 12 años; privación de la libertad con fines sexuales | `edad_victima`, `relacion_partes`, `consentimiento` |
 | 5 | Acoso u hostigamiento sexual | Acoso sexual; hostigamiento sexual | `superior_o_docente`, `medio_digital` (`victima_mujer` solo agrega la Ley de Acceso de las Mujeres) |
-| 6 | Fotos, videos o mensajes íntimos | Contra la intimidad sexual (Ley Olimpia); extorsión; amenazas; pornografía de personas menores de edad; corrupción de menores | `pide_dinero`, `ya_difundido`, `edad_victima`, `consentimiento`, `victima_mujer` |
+| 6 | Fotos, videos o mensajes íntimos | Contra la intimidad sexual (Ley Olimpia); extorsión; amenazas; pornografía de personas menores de edad; corrupción de menores; federal: delitos contra la indemnidad de privacidad de la información sexual (CPF, título séptimo bis) | `pide_dinero`, `ya_difundido`, `edad_victima`, `consentimiento`, `victima_mujer` |
 | 7 | Amenazas, extorsión o cobros | Amenazas; extorsión (Ley General en materia de Extorsión; en la CDMX el art. 236 está derogado desde el 12-dic-2024 y queda el 148 Quáter; revisar cada estado); cobranza ilegítima | `pide_dinero`, `medio_digital`, `violencia_o_arma` |
-| 8 | Se llevaron a una persona o no aparece | Privación de la libertad; secuestro (Ley General en materia de Secuestro); desaparición de personas (ley general, **no está en el corpus**); sustracción o retención de menores; tráfico de menores | `pide_dinero`, `relacion_partes`, `edad_victima` |
+| 8 | Se llevaron a una persona o no aparece | Privación de la libertad; secuestro (Ley General en materia de Secuestro); desaparición de personas (ley general, **no está en el corpus**); sustracción o retención de menores; tráfico de menores; desaparición forzada por un servidor público (CDMX, art. 168) | `pide_dinero`, `relacion_partes`, `edad_victima` |
 | 9 | Me robaron | Robo (y sus agravantes); abuso de confianza; encubrimiento por receptación | `violencia_o_arma`, `monto`, `relacion_partes` |
-| 10 | Me estafaron o usaron mis datos | Fraude; administración fraudulenta; insolvencia fraudulenta; usurpación de identidad; falsificación de documentos | `monto`, `medio_digital` |
-| 11 | Mi casa, terreno o propiedad | Despojo; daño a la propiedad; allanamiento de morada | `violencia_o_arma`, `intencional` |
-| 12 | Accidente o choque de tránsito | Lesiones u homicidio culposo; daño culposo; delitos contra la seguridad del tránsito | `intencional`, `gravedad_lesion`, `papel` |
+| 10 | Me estafaron o usaron mis datos | Fraude; administración fraudulenta; insolvencia fraudulenta; usurpación de identidad; falsificación de documentos; falsificación de sellos, llaves o contraseñas; falsificación de tarjetas o títulos de crédito; acceso ilícito a sistemas o equipos de informática (CPF, título noveno; Querétaro, título séptimo) | `monto`, `medio_digital` |
+| 11 | Mi casa, terreno o propiedad | Despojo; daño a la propiedad; allanamiento de morada; responsabilidad de directores responsables de obra (construcción) | `violencia_o_arma`, `intencional` |
+| 12 | Accidente o choque de tránsito | Lesiones u homicidio culposo; daño culposo; delitos contra la seguridad del tránsito; ataques a las vías de comunicación y a los medios de transporte | `intencional`, `gravedad_lesion`, `papel` |
 | 13 | Me difamaron o revelaron algo privado | Violación de la intimidad personal; revelación de secretos; violación de correspondencia o comunicación privada. Difamación y calumnia: **derogadas en la CDMX** (arts. 214–218); revisar cada estado; en la CDMX la vía es civil | `medio_digital`, `servidor_publico` |
 | 14 | Abuso de la policía o de una autoridad | Abuso de autoridad; uso ilegal de la fuerza pública; tortura (ley general, **no está en el corpus**; el código de la CDMX tiene los arts. 206 Bis y siguientes); intimidación; cohecho; concusión; negación del servicio público | `servidor_publico` |
-| 15 | Discriminación | Discriminación | `servidor_publico` |
-| 16 | Atención médica o de salud | Responsabilidad profesional; abandono o práctica indebida del servicio médico; aborto; esterilización forzada; peligro de contagio; sustancias modelantes; administración subrepticia de sustancias | `consentimiento`, `intencional`, `victima_mujer` |
-| 17 | Niñas, niños o personas vulnerables | Corrupción de menores; trata de personas (ley general, **no está en el corpus**; el código de la CDMX tiene el art. 188 Bis); lenocinio; explotación laboral de menores; omisión de cuidado | `edad_victima`, `relacion_partes` |
+| 15 | Discriminación | Discriminación; delitos contra el libre desarrollo de la personalidad y la identidad sexual (terapias de conversión) | `servidor_publico` |
+| 16 | Atención médica o de salud | Responsabilidad profesional; abandono o práctica indebida del servicio médico; aborto; esterilización forzada; peligro de contagio; sustancias modelantes; administración subrepticia de sustancias; suministro de medicinas nocivas o inapropiadas; usurpación de profesión | `consentimiento`, `intencional`, `victima_mujer` |
+| 17 | Niñas, niños o personas vulnerables | Corrupción de menores; trata de personas (ley general, **no está en el corpus**; el código de la CDMX tiene el art. 188 Bis); lenocinio; explotación laboral de menores; omisión de cuidado; turismo sexual; omisión de auxilio | `edad_victima`, `relacion_partes` |
 | 18 | Me acusan, me citaron o me detuvieron | (procedimiento: Código Nacional de Procedimientos Penales) más el delito del que se acusa, que se clasifica con los tipos 1–17 | `papel` |
-| 19 | Animales o medio ambiente | Maltrato o crueldad contra animales; delitos contra el ambiente | `intencional` |
+| 19 | Animales o medio ambiente | Maltrato o crueldad contra animales; delitos contra el ambiente; delitos contra la gestión ambiental | `intencional` |
 | 20 | Armas, pandillas o crimen organizado | Portación de objetos para agredir; armas de fuego (Ley Federal de Armas de Fuego, **no está en el corpus**; federal); pandilla; asociación delictuosa; delincuencia organizada (ley federal); operaciones con recursos de procedencia ilícita | `violencia_o_arma` |
 | 21 | Drogas | Delitos contra la salud (Código Penal Federal, título séptimo; narcomenudeo: Ley General de Salud, **no está en el corpus**) | `federal` |
-| — | `otro` | Lo que no encaja; solo pide el lugar | — |
+| 22 | Corrupción en el gobierno (la persona la denuncia) | Peculado; enriquecimiento ilícito; tráfico de influencia; ejercicio abusivo de funciones; ejercicio ilegal y abandono del servicio público; coalición de servidores públicos; usurpación de funciones públicas; remuneración ilícita; corrupción inmobiliaria; distracción de recursos públicos | `servidor_publico` |
+| 23 | Problemas con una autoridad por algo que hizo la persona | Desobediencia y resistencia de particulares; ultrajes a la autoridad; quebrantamiento de sellos; oposición a una obra pública; ejercicio ilegal del propio derecho (hacerse justicia por su mano); uso indebido de insignias y uniformes; uso indebido de las llamadas de emergencia; cohecho cometido por particulares (ofrecer «mordida») | `papel` |
+| 24 | Problemas con la Fiscalía, un juzgado o un abogado | Denegación o retardo de justicia; delitos en la procuración de justicia; delitos en la administración de justicia; omisión de informes médico forenses; delitos en la ejecución penal; evasión de presos; fraude procesal; falsedad ante autoridades (falso testimonio); simulación de pruebas; variación del nombre o domicilio; delitos de abogados, patronos y asesores jurídicos; encubrimiento por favorecimiento | `papel`, `servidor_publico` |
+| 25 | Piratería o derechos de autor | Delitos en materia de derechos de autor (CPF, título vigésimo sexto; federal) | `federal` |
+| — | `otro` | Lo que no encaja en 1–25, incluidos los delitos poco probables de la lista de abajo; solo pide el lugar | — |
 
-Quedan fuera, por ser muy poco probables en una consulta de una persona: delitos electorales, rebelión, sabotaje, motín, delitos en la administración de justicia cometidos por jueces, inhumación y exhumación, bigamia y estado civil, manipulación genética. Si aparecen, van a `otro`.
+Van a `otro` (muy poco probables en una consulta de una persona), con su artículo en la CDMX:
+
+- Delitos electorales (arts. 351–360).
+- Rebelión (361); ataques con sustancias tóxicas, incendio o explosivos contra las instituciones (362); sabotaje (363); motín (364).
+- Manipulación genética (154–155).
+- Inhumación, exhumación y respeto a los cadáveres (207–208).
+- Estado civil y bigamia (203–205).
+- Solo federales (CPF): delitos contra la seguridad de la Nación (traición, espionaje, terrorismo), contra el derecho internacional, contra la humanidad (genocidio), falsificación de moneda.
+
+No son delitos y no van en ningún tipo de caso: las reglas comunes y disposiciones comunes de cada título (por ejemplo, arts. 136–140, 182, 191–192, 219, 246–249, 256–258, 289, 348–350 de la CDMX) y los transitorios. El programa las usa al aplicar el delito, no al clasificar.
+
+Comparé los delitos contra los capítulos del código de la CDMX y los títulos del Código Penal Federal. Los códigos de Querétaro, Estado de México y Morelos los comparé solo por título; Karen debe revisar si tienen delitos que no estén en la CDMX (por ejemplo, Querétaro: «delitos contra la seguridad y el orden en el desarrollo urbano»; Estado de México: «delitos contra la libertad de expresión»).
 
 Un mensaje puede tener más de un tipo de caso (por ejemplo, 6 y 7: fotos y amenazas). El expediente de la consulta ya guarda `tipos_caso` como lista.
 
