@@ -16,11 +16,11 @@ Si cada delito fuera un tipo de caso, el LLM tendría que elegir entre unos 120.
 Propuesta, en dos niveles:
 
 1. **Tipo de caso:** lo que le pasó a la persona, con palabras de todos los días. Son 21. **El LLM clasifica** el mensaje en uno o más tipos de caso de esta lista cerrada.
-2. **Delitos posibles:** cada tipo de caso tiene su lista de delitos posibles y los datos decisivos que los distinguen. **El programa en Python** pregunta esos datos (con el texto de Karen) y, con las respuestas, decide qué delitos aplican. El LLM no elige el delito.
+2. **Delitos posibles:** cada tipo de caso tiene su lista de delitos posibles y los datos del expediente que los distinguen. **El programa en Python** pregunta esos datos (con el texto de Karen) y, con las respuestas, decide qué delitos aplican. El LLM no elige el delito.
 
 Así el LLM elige entre unos 21 tipos de caso, no entre 120 delitos. Y la distinción difícil (extorsión o Ley Olimpia) queda en una regla que Karen escribe y que se puede revisar.
 
-## Datos decisivos
+## Datos del expediente
 
 Lista única; cada tipo de caso dice cuáles usa. `lugar_hechos` aplica a todos.
 
@@ -45,7 +45,7 @@ Lista única; cada tipo de caso dice cuáles usa. `lugar_hechos` aplica a todos.
 
 ## Tipos de caso
 
-| # | Tipo de caso (palabras de la persona) | Delitos posibles (nombre en el Código Penal CDMX) | Datos decisivos además del lugar |
+| # | Tipo de caso (palabras de la persona) | Delitos posibles (nombre en el Código Penal CDMX) | Datos del expediente además del lugar |
 |---|---|---|---|
 | 1 | Golpes, peleas o lesiones | Lesiones; lesiones con ácido; reglas de riña; disparo de arma | `papel`, `gravedad_lesion`, `violencia_o_arma`, `relacion_partes` |
 | 2 | Murió una persona | Homicidio; feminicidio; transfeminicidio; ayuda o inducción al suicidio | `intencional`, `victima_mujer`, `relacion_partes` |
@@ -106,6 +106,6 @@ Esto cambia la razón de apagar: hoy están apagadas para todos; con el expedien
 
 0. Cada regla de este borrador la escribí sin leer todos los artículos; ya corregí los errores que encontré al leerlos (Querétaro 167 Quinquies, difamación y extorsión derogadas en la CDMX, `victima_mujer`). Cada regla debe citar el artículo de cada código antes de usarse.
 1. Confirmar o cambiar la lista de tipos de caso y sus nombres.
-2. Confirmar los datos decisivos de cada tipo y redactar cada pregunta.
+2. Confirmar los datos del expediente de cada tipo y redactar cada pregunta.
 3. Escribir las reglas de cada tipo (datos → delitos posibles), con el artículo de cada uno de los 4 códigos estatales y el federal.
 4. Decidir qué hacer con lo que hoy queda en `otro`.

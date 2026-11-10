@@ -8,8 +8,8 @@
 - **Evento:** un mensaje de la persona o un botón que presiona.
 - **Transición:** la regla «estando en el estado X, si llega el evento E, pasa al estado Y».
 - **Expediente de la consulta:** los datos del caso que el programa va anotando. Es la memoria
-- **Dato decisivo:** un dato del expediente del que depende qué ley aplica.
-- **Catálogo de casos:** la lista, escrita por Karen, de tipos de caso con sus datos decisivos y el texto con que se pregunta cada uno.
+- **Dato del expediente:** cada dato que el programa anota en el expediente de la consulta, porque de él depende qué ley aplica (por ejemplo, el lugar de los hechos, la edad de la víctima, si piden dinero). La lista completa está en el catálogo de casos.
+- **Catálogo de casos:** el archivo, escrito por Karen, con tres partes: (1) los datos del expediente, con el texto con que se pregunta cada uno; (2) los tipos de caso, cada uno con los datos del expediente que necesita; (3) las reglas: qué valores de los datos llevan a qué delito, con el artículo de cada código.
 
   --> pregunta a claud: las leyes aplican diferente si eres funcionario publico, servidor publico, mujer, hombre, de la tercera edad, menor de edad, donde estas, cuales otros hoy? 
   
@@ -28,15 +28,15 @@
 
   --> pregunta a claud: Tambien en que casos necesitamos que informacion? osea por que tendriamos que identificar el tipo de caso y saber antes que datos se ocupan para ese caso especifico no?
   
-  --> respuesta: sí, por eso hay que identificar el tipo de caso primero: los datos decisivos dependen del caso (en extorsión importa si hubo dinero de por medio; en hostigamiento, si quien manda los mensajes es superior). Rediseño: hay dos niveles de datos decisivos. **Generales**, que se piden en todos los casos: lugar de los hechos, papel de quien consulta y si alguna persona involucrada es menor de edad. **Del tipo de caso**, que salen del catálogo una vez identificado el caso. El tipo de caso es, entonces, el primer dato decisivo.
+  --> respuesta: sí, por eso hay que identificar el tipo de caso primero: los datos del expediente dependen del caso (en extorsión importa si hubo dinero de por medio; en hostigamiento, si quien manda los mensajes es superior). Rediseño: hay dos niveles de datos del expediente. **Generales**, que se piden en todos los casos: lugar de los hechos, papel de quien consulta y si alguna persona involucrada es menor de edad. **Del tipo de caso**, que salen del catálogo una vez identificado el caso. El tipo de caso es, entonces, el primer dato del expediente.
 
   --> pregunta a claud: se va identificar el tipo de caso? el LLM lo va identificar? se va guardar en la memoria que es para ese caso especifico?
   
-  --> respuesta: sí a las tres. El LLM elige el tipo de caso de la **lista cerrada** del catálogo (temperatura 0, respuesta en JSON, con la opción «ninguno»), igual que `elegir_formulario` en trámites; Python revisa que el tipo exista y lo guarda en el expediente (`tipos_caso`). Puede ser más de uno: «Las fotos» es extorsión y también amenaza de difundir imágenes íntimas; entonces los datos decisivos son la unión de los dos. Si el LLM elige «ninguno», el asistente le pide a la persona que cuente qué pasó con otras palabras (sigue en LLENAR_EXPEDIENTE). En el estudio, además, Python conoce la situación, así que guardamos las dos cosas: lo que eligió el LLM y lo esperado por la situación, para medir cuántas veces el LLM clasifica bien.
+  --> respuesta: sí a las tres. El LLM elige el tipo de caso de la **lista cerrada** del catálogo (temperatura 0, respuesta en JSON, con la opción «ninguno»), igual que `elegir_formulario` en trámites; Python revisa que el tipo exista y lo guarda en el expediente (`tipos_caso`). Puede ser más de uno: «Las fotos» es extorsión y también amenaza de difundir imágenes íntimas; entonces los datos del expediente son la unión de los dos. Si el LLM elige «ninguno», el asistente le pide a la persona que cuente qué pasó con otras palabras (sigue en LLENAR_EXPEDIENTE). En el estudio, además, Python conoce la situación, así que guardamos las dos cosas: lo que eligió el LLM y lo esperado por la situación, para medir cuántas veces el LLM clasifica bien.
 
   --> pregunta a claud: El yml va tener esa informacion de los casos?
   
-  --> respuesta: sí. El catálogo es un archivo YAML con una entrada por tipo de caso: cómo se describe (para que el LLM lo reconozca), sus datos decisivos, por qué importa cada uno y el texto con que se pregunta. Los datos decisivos generales van al inicio del mismo archivo. Ejemplo en la sección 7.
+  --> respuesta: sí. El catálogo es un archivo YAML con una entrada por tipo de caso: cómo se describe (para que el LLM lo reconozca), sus datos del expediente, por qué importa cada uno y el texto con que se pregunta. Los datos del expediente generales van al inicio del mismo archivo. Ejemplo en la sección 7.
   
 - **Programa:** el código en Python de `apps/rewrite_lab`. «Código penal» siempre se escribe completo.
 
@@ -53,7 +53,7 @@
 
   --> pregunta a claud: a que te refieres con catalogo? catalogo de que? sigues siendo ambigo, te refieres a lo que se define como crrecto? por que tener versiones, por que no mejor solo fijar una cosa. lo de los promps concuerdo, y que sea muy evidente que version se usa para el estudio
   
-  --> respuesta: el **catálogo de casos** es la lista de tipos de caso (por ejemplo «extorsión con imágenes íntimas», «hostigamiento sexual en el trabajo», «lesiones en una riña») con, para cada uno, sus datos decisivos y cómo se pregunta cada dato. **No es la clave de respuestas** (lo que se califica como correcto en el cuestionario), que sigue en la definición del estudio. Sobre las versiones: tienes razón, no hacen falta. El problema de la ronda 2 no fue que faltaran versiones, sino que la definición se podía editar con el estudio abierto y que copié una copia vieja. Con un solo archivo como fuente de verdad, congelado al abrir el estudio y con su md5 en cada mensaje, se resuelve más simple. Quité las tablas de versiones (sección 4).
+  --> respuesta: el **catálogo de casos** es la lista de tipos de caso (por ejemplo «extorsión con imágenes íntimas», «hostigamiento sexual en el trabajo», «lesiones en una riña») con, para cada uno, sus datos del expediente y cómo se pregunta cada dato. **No es la clave de respuestas** (lo que se califica como correcto en el cuestionario), que sigue en la definición del estudio. Sobre las versiones: tienes razón, no hacen falta. El problema de la ronda 2 no fue que faltaran versiones, sino que la definición se podía editar con el estudio abierto y que copié una copia vieja. Con un solo archivo como fuente de verdad, congelado al abrir el estudio y con su md5 en cada mensaje, se resuelve más simple. Quité las tablas de versiones (sección 4).
 
 
 ## 2. Módulos nuevos
@@ -77,7 +77,7 @@ Una carpeta nueva, `apps/rewrite_lab/consulta/`, con la misma forma que `forms/`
 
 ```python
 def datos_faltantes(expediente: dict, catalogo: dict) -> list[dict]:
-    """Los datos decisivos sin valor en el expediente, en el orden en que se preguntan: primero los generales,
+    """Los datos del expediente sin valor en el expediente, en el orden en que se preguntan: primero los generales,
     luego los de cada tipo de caso del expediente. Cada elemento trae el id del dato, por qué importa y la pregunta.
     Lista vacía = ya están todos → transición a ORIENTACIÓN."""
 ```
@@ -145,7 +145,7 @@ El estado y el expediente actuales viven en `estudio_intentos`, en el servidor. 
 | Qué | Dónde | Por qué |
 |---|---|---|
 | Prompt de la orientación legal de cada condición | Base: definición del estudio (YAML), como hoy, congelada al abrir | Lo edita Karen; cambia entre condiciones |
-| Catálogo de casos: tipos de caso, datos decisivos, por qué importan y texto de cada pregunta | Repo: `consulta/catalogo_casos.yaml` | Lo escribe Karen; git guarda la historia |
+| Catálogo de casos: tipos de caso, datos del expediente, por qué importan y texto de cada pregunta | Repo: `consulta/catalogo_casos.yaml` | Lo escribe Karen; git guarda la historia |
 | Plantillas de los escritos | Base: `formularios`, como hoy | Las escribe Karen |
 | A quién protege cada ley | Base: `documento_categorias`, como hoy | Lo etiquetan las expertas |
 | Prompts de las tareas internas (`extraer_hechos`, `clasificar_caso`, `revisar_aplicabilidad`) | Código: `consulta/ia.py` | El programa lee su JSON; si cambian, cambian las pruebas |
@@ -157,7 +157,7 @@ El estado y el expediente actuales viven en `estudio_intentos`, en el servidor. 
 
 1. `expediente.py` y `maquina.py` con sus pruebas (sin LLM ni base).
 2. `catalogo.py` y el catálogo de las tres situaciones del estudio, validado con Karen.
-3. `ia.py`, probado con las conversaciones reales de las rondas 1 y 2: ¿extrae bien el lugar y los datos decisivos? Ahí se miden las 7 fallas que tuvo el filtro.
+3. `ia.py`, probado con las conversaciones reales de las rondas 1 y 2: ¿extrae bien el lugar y los datos del expediente? Ahí se miden las 7 fallas que tuvo el filtro.
 4. `busqueda.py` y el parámetro para excluir leyes por persona en `main.py`.
 5. Conexión con `study/api.py` (modo `expediente`) y las columnas nuevas.
 6. Repetición de las conversaciones de la ronda 1 con el modo `expediente`, igual que se hizo con el filtro, antes de abrir la ronda 3.
@@ -168,7 +168,7 @@ El estado y el expediente actuales viven en `estudio_intentos`, en el servidor. 
 Karen debe revisar y completar los datos y las preguntas.
 
 ```yaml
-# Datos decisivos que se piden en todos los casos, antes que los del tipo de caso.
+# Datos del expediente que se piden en todos los casos, antes que los del tipo de caso.
 generales:
   - id: lugar_hechos
     por_que: Cada estado tiene su propio código penal.
