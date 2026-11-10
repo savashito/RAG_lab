@@ -22,6 +22,8 @@ import yaml
 from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 
+from consulta import expediente as E
+
 HERE = Path(__file__).resolve().parent
 YAML_INICIAL = HERE / 'catalogo_casos.yaml'
 
@@ -42,6 +44,7 @@ CODIGOS = {
 }
 PARTES = {'datos': 'id', 'tipos_caso': 'id', 'reglas': 'id'}
 ESTADOS = {'borrador', 'sugerida', 'confirmada', 'descartada'}
+TIPOS_DATO = ('si_no', 'numero', 'opcion', 'estado')
 
 
 class ConflictoError(Exception):
@@ -55,6 +58,16 @@ def _norm(s: str) -> str:
 
 def md5_de(doc: dict) -> str:
     return hashlib.md5(json.dumps(doc, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+
+
+def cargar(path: Path = YAML_INICIAL) -> tuple[dict, str]:
+    """El catálogo que usa la máquina de estados: el archivo del repo (no la versión de trabajo de la base), validado.
+    Devuelve (catálogo, md5 del archivo) para registrarlo en cada mensaje."""
+    texto = Path(path).read_text()
+    doc = yaml.safe_load(texto)
+    for parte in PARTES:
+        doc[parte] = [validar_entrada(parte, e, doc) for e in doc.get(parte, [])]
+    return doc, hashlib.md5(texto.encode()).hexdigest()
 
 
 def a_yaml(doc: dict) -> str:
@@ -74,6 +87,11 @@ def validar_entrada(parte: str, e: dict, doc: dict) -> dict:
         raise ValueError(f'Estado inválido: {e.get("estado")}')
     ids_datos = {d['id'] for d in doc.get('datos', [])}
     ids_tipos = {t['id'] for t in doc.get('tipos_caso', [])}
+    if parte == 'datos':
+        if e.get('tipo', 'si_no') not in TIPOS_DATO:
+            raise ValueError(f'Tipo de dato inválido en {e["id"]}: {e.get("tipo")} (usa {", ".join(TIPOS_DATO)})')
+        if e.get('tipo') == 'opcion' and not e.get('opciones'):
+            raise ValueError(f'El dato {e["id"]} es de tipo opcion y no tiene opciones.')
     if parte == 'tipos_caso':
         faltan = [d for d in e.get('datos', []) if d not in ids_datos]
         if faltan:
@@ -81,6 +99,12 @@ def validar_entrada(parte: str, e: dict, doc: dict) -> dict:
     if parte == 'reglas':
         if e.get('tipo_caso') not in ids_tipos:
             raise ValueError(f'Tipo de caso que no existe: {e.get("tipo_caso")}')
+        for c in e.get('cuando') or []:
+            m = E._COND.match(str(c))
+            if not m:
+                raise ValueError(f'Condición que no entiendo en {e["id"]}: «{c}»')
+            if (m.group('id') or m.group('solo')) not in ids_datos:
+                raise ValueError(f'Condición de {e["id"]} usa un dato que no existe: «{c}»')
         arts = e.get('articulos') or {}
         e['articulos'] = {k: [str(a).strip() for a in (arts.get(k) or []) if str(a).strip()] for k in CODIGOS}
     return e

@@ -220,7 +220,9 @@ function abrir(id, nuevaEntrada){
     h = `<b>${esc(e.delito || 'Nueva regla')}</b> <span class="muted small">${esc(e.id)}</span>
       <label>Tipo de caso</label><select id="e-tipo" ${dis}>${(S.cat.tipos_caso||[]).map(t=>`<option value="${t.id}" ${t.id===e.tipo_caso?'selected':''}>${esc(t.titulo)}</option>`).join('')}</select>
       <label>Delito</label><input id="e-delito" value="${esc(e.delito)}" ${dis}>
-      <label>Condición: qué datos del expediente y qué valores llevan a este delito</label><textarea id="e-cond" ${dis} placeholder="Ej.: pide_dinero = sí">${esc(e.condicion)}</textarea>
+      <label>Condición en palabras (para quien revisa)</label><textarea id="e-cond" ${dis} placeholder="Ej.: si le piden dinero">${esc(e.condicion)}</textarea>
+      <label>Condiciones que evalúa el programa, una por línea (todas deben cumplirse; vacío = aplica siempre en su tipo de caso)</label>
+      <textarea id="e-cuando" ${dis} placeholder="pide_dinero = si&#10;edad_victima < 18&#10;NO ya_difundido">${esc((e.cuando||[]).join('\n'))}</textarea>
       <label>Artículos por código (separados por coma; clic en un número para leer el artículo)</label>
       ${S.codigos.map(k=>`<div class="cod"><span>${NOMBRES[k]}</span><input id="e-a-${k}" value="${esc((e.articulos?.[k]||[]).join(', '))}" ${dis}></div>
         <div class="chips">${(e.articulos?.[k]||[]).map(a=>`<span class="chip" onclick="leer('${k}','${esc(a)}')">${esc(a)}</span>`).join('')}</div>`).join('')}
@@ -259,19 +261,22 @@ function nueva(){
     abrir(null, {id:'r'+String(n).padStart(3,'0'), tipo_caso:S.f.tipo || (S.cat.tipos_caso[0]||{}).id, delito:'', condicion:'', articulos:{}, estado:'borrador'});
   } else abrir(null, {id:'', estado:'borrador', datos:['lugar_hechos']});
 }
+// La entrada como está guardada: el formulario no muestra todos los campos (tipo de un dato, opciones…) y no debe borrarlos.
+function orig(){ return S.orig ? {...((S.cat[S.parte]||[]).find(x => x.id === S.orig) || {})} : {}; }
 async function guardar(){
   const p = S.parte, v = id => $(id).value, lista = s => s.split(',').map(x=>x.trim()).filter(Boolean);
   let e;
   if (p === 'reglas') {
-    e = {id: S.orig || (S.sel ?? '') , tipo_caso:v('e-tipo'), delito:v('e-delito').trim(), condicion:v('e-cond').trim(), articulos:{}, estado:v('e-estado')};
+    e = {...orig(), id: S.orig || (S.sel ?? '') , tipo_caso:v('e-tipo'), delito:v('e-delito').trim(), condicion:v('e-cond').trim(),
+         cuando:v('e-cuando').split('\n').map(x=>x.trim()).filter(Boolean), articulos:{}, estado:v('e-estado')};
     if (!e.id) { const n = Math.max(0, ...(S.cat.reglas||[]).map(r => +String(r.id).slice(1) || 0)) + 1; e.id = 'r'+String(n).padStart(3,'0'); }
     S.codigos.forEach(k => e.articulos[k] = lista(v('e-a-'+k)));
-    const nota = v('e-nota').trim(); if (nota) e.nota = nota;
+    const nota = v('e-nota').trim(); if (nota) e.nota = nota; else delete e.nota;
   } else if (p === 'tipos_caso') {
-    e = {id:v('e-id').trim(), titulo:v('e-titulo').trim(), descripcion:v('e-desc').trim(),
+    e = {...orig(), id:v('e-id').trim(), titulo:v('e-titulo').trim(), descripcion:v('e-desc').trim(),
          datos:[...document.querySelectorAll('.e-dato:checked')].map(x=>x.value), estado:v('e-estado')};
   } else {
-    e = {id:v('e-id').trim(), pregunta:v('e-preg').trim(), para_que:v('e-para').trim(), estado:v('e-estado')};
+    e = {...orig(), id:v('e-id').trim(), pregunta:v('e-preg').trim(), para_que:v('e-para').trim(), estado:v('e-estado')};
   }
   const r = await fetch('/api/catalogo/'+p, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({entrada:e, original_id:S.orig})});
   const j = await r.json();

@@ -1,69 +1,107 @@
 version: borrador-2026-11-10
 nota: 'Borrador generado por Claude a partir del corpus. estado: borrador/sugerida = sin revisar por Karen; confirmada = revisada.
-  Los artículos de cdmx los sugirió un script desde el índice de capítulos del corpus.'
+  Los artículos de cdmx los sugirió un script desde el índice de capítulos del corpus. generales: datos que se piden en todo
+  caso. cuando: condiciones que evalúa Python (todas deben cumplirse; vacía = aplica siempre en su tipo de caso); condicion:
+  explicación en palabras para Karen.'
+generales:
+- lugar_hechos
+- papel
 datos:
 - id: lugar_hechos
+  tipo: estado
+  obligatorio: true
   pregunta: ¿En qué estado pasó?
   para_que: Qué código penal aplica (solo en delitos del fuero común; ver federal)
   estado: borrador
 - id: papel
+  tipo: opcion
+  opciones:
+  - victima
+  - persona_senalada
+  - familiar_o_tercero
   pregunta: ¿Te pasó a ti, te acusan a ti, o le pasó a otra persona?
   para_que: Derechos de víctima o de imputado
   estado: borrador
 - id: edad_victima
+  tipo: numero
   pregunta: ¿Qué edad tiene la víctima?
   para_que: Menor de edad o adulta; los umbrales (por ejemplo, 12 años en la CDMX) cambian por estado
   estado: borrador
 - id: victima_mujer
+  tipo: si_no
   pregunta: ¿La víctima es mujer (incluida mujer trans)?
   para_que: Feminicidio y transfeminicidio; Ley General de Acceso de las Mujeres. No cambia los delitos que protegen a cualquier
     persona (violencia familiar, acoso, Ley Olimpia), ni las medidas de protección del CNPP, que son para cualquier víctima
   estado: borrador
 - id: relacion_partes
+  tipo: opcion
+  opciones:
+  - pareja_o_expareja
+  - familiar
+  - trabajo
+  - escuela
+  - ninguna
   pregunta: ¿Qué relación tienen? (pareja o expareja, familiar, trabajo, escuela, ninguna)
   para_que: Violencia familiar, hostigamiento, agravantes
   estado: borrador
 - id: superior_o_docente
+  tipo: si_no
   pregunta: ¿Esa persona es tu jefe, maestro o supervisa tu trabajo?
   para_que: Hostigamiento sexual frente a acoso sexual
   estado: borrador
 - id: servidor_publico
+  tipo: si_no
   pregunta: ¿Quien lo hizo es policía o trabaja en el gobierno?
   para_que: Abuso de autoridad, tortura, cohecho
   estado: borrador
 - id: pide_dinero
+  tipo: si_no
   pregunta: ¿Te pidieron dinero o algo a cambio?
   para_que: Extorsión frente a amenazas o difusión
   estado: borrador
 - id: ya_difundido
+  tipo: si_no
   pregunta: ¿Ya publicaron o mandaron las imágenes a alguien?
   para_que: Intimidad sexual consumada o amenaza
   estado: borrador
 - id: violencia_o_arma
+  tipo: si_no
   pregunta: ¿Hubo golpes, amenazas con arma o fuerza?
   para_que: Robo con violencia, agravantes
   estado: borrador
 - id: medio_digital
+  tipo: si_no
   pregunta: ¿Pasó por internet, redes o teléfono?
   para_que: Violencia digital; delitos a distancia
   estado: borrador
 - id: intencional
+  tipo: si_no
   pregunta: ¿Fue a propósito o fue un accidente?
   para_que: Doloso frente a culposo (tránsito, médico)
   estado: borrador
 - id: gravedad_lesion
+  tipo: opcion
+  opciones:
+  - menos_15_dias
+  - 15_a_60_dias
+  - mas_60_dias
+  - riesgo_vida
   pregunta: ¿Cuánto tarda en sanar la lesión? ¿Puso en riesgo la vida?
   para_que: Grado de lesiones; los plazos (15 y 60 días en la CDMX) cambian por estado
   estado: borrador
 - id: monto
+  tipo: numero
   pregunta: ¿Cuánto dinero o de qué valor?
   para_que: Pena del robo y del fraude
   estado: borrador
 - id: consentimiento
+  tipo: si_no
   pregunta: ¿La persona estuvo de acuerdo? (tomar las imágenes, el procedimiento médico)
   para_que: Intimidad sexual (en algunos estados), responsabilidad médica
   estado: borrador
 - id: federal
+  tipo: si_no
+  preguntar: false
   pregunta: (no se pregunta; lo decide el tipo de caso o el delito)
   para_que: 'Drogas, armas de fuego, delincuencia organizada y otros delitos federales: aplica el Código Penal Federal o la
     ley federal sin importar el estado'
@@ -279,6 +317,7 @@ reglas:
   tipo_caso: golpes_lesiones
   delito: Lesiones
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '130'
@@ -296,6 +335,7 @@ reglas:
   tipo_caso: golpes_lesiones
   delito: lesiones con ácido
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -307,6 +347,7 @@ reglas:
   tipo_caso: golpes_lesiones
   delito: reglas de riña
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -318,6 +359,7 @@ reglas:
   tipo_caso: golpes_lesiones
   delito: disparo de arma
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -329,6 +371,7 @@ reglas:
   tipo_caso: muerte
   delito: Homicidio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '123'
@@ -347,6 +390,7 @@ reglas:
   tipo_caso: muerte
   delito: feminicidio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 148 BIS
@@ -359,6 +403,7 @@ reglas:
   tipo_caso: muerte
   delito: transfeminicidio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 148 Ter
@@ -371,6 +416,7 @@ reglas:
   tipo_caso: muerte
   delito: ayuda o inducción al suicidio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '142'
@@ -385,6 +431,7 @@ reglas:
   tipo_caso: violencia_familiar
   delito: Violencia familiar
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '200'
@@ -400,6 +447,7 @@ reglas:
   tipo_caso: violencia_familiar
   delito: violencia vicaria
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 201 TER
@@ -413,6 +461,7 @@ reglas:
   tipo_caso: violencia_familiar
   delito: incumplimiento de la obligación alimentaria
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -424,6 +473,7 @@ reglas:
   tipo_caso: agresion_sexual
   delito: Violación
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '174'
@@ -437,6 +487,7 @@ reglas:
   tipo_caso: agresion_sexual
   delito: abuso sexual
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '176'
@@ -452,6 +503,7 @@ reglas:
   tipo_caso: agresion_sexual
   delito: estupro
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '180'
@@ -464,6 +516,7 @@ reglas:
   tipo_caso: agresion_sexual
   delito: incesto
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '181'
@@ -476,6 +529,7 @@ reglas:
   tipo_caso: agresion_sexual
   delito: delitos contra menores de 12 años
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -487,6 +541,7 @@ reglas:
   tipo_caso: agresion_sexual
   delito: privación de la libertad con fines sexuales
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '162'
@@ -499,6 +554,7 @@ reglas:
   tipo_caso: acoso_hostigamiento
   delito: Acoso sexual
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '179'
@@ -512,6 +568,7 @@ reglas:
   tipo_caso: acoso_hostigamiento
   delito: hostigamiento sexual
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -523,6 +580,7 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: Contra la intimidad sexual (Ley Olimpia)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 181 Quintus
@@ -536,6 +594,8 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: extorsión
   condicion: ''
+  cuando:
+  - pide_dinero = si
   articulos:
     cdmx:
     - 148 Quáter
@@ -549,6 +609,8 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: amenazas
   condicion: ''
+  cuando:
+  - NO pide_dinero
   articulos:
     cdmx:
     - '209'
@@ -561,6 +623,8 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: pornografía de personas menores de edad
   condicion: ''
+  cuando:
+  - edad_victima < 18
   articulos:
     cdmx: []
     queretaro: []
@@ -572,6 +636,8 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: corrupción de menores
   condicion: ''
+  cuando:
+  - edad_victima < 18
   articulos:
     cdmx: []
     queretaro: []
@@ -583,6 +649,7 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: 'federal: delitos contra la indemnidad de privacidad de la información sexual (CPF, título séptimo bis)'
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -594,6 +661,7 @@ reglas:
   tipo_caso: amenazas_extorsion
   delito: Amenazas
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '209'
@@ -607,6 +675,7 @@ reglas:
   delito: extorsión (Ley General en materia de Extorsión; en la CDMX el art. 236 está derogado desde el 12-dic-2024 y queda
     el 148 Quáter; revisar cada estado)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 148 Quáter
@@ -620,6 +689,7 @@ reglas:
   tipo_caso: amenazas_extorsion
   delito: cobranza ilegítima
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 148 Quinquies
@@ -632,6 +702,7 @@ reglas:
   tipo_caso: privacion_libertad
   delito: Privación de la libertad
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -643,6 +714,7 @@ reglas:
   tipo_caso: privacion_libertad
   delito: secuestro (Ley General en materia de Secuestro)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '163'
@@ -661,6 +733,7 @@ reglas:
   tipo_caso: privacion_libertad
   delito: desaparición de personas (ley general, no está en el corpus)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -672,6 +745,7 @@ reglas:
   tipo_caso: privacion_libertad
   delito: sustracción o retención de menores
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -683,6 +757,7 @@ reglas:
   tipo_caso: privacion_libertad
   delito: tráfico de menores
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '169'
@@ -696,6 +771,7 @@ reglas:
   tipo_caso: privacion_libertad
   delito: desaparición forzada por un servidor público (CDMX, art. 168)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -707,6 +783,7 @@ reglas:
   tipo_caso: robo
   delito: Robo (y sus agravantes)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '220'
@@ -727,6 +804,7 @@ reglas:
   tipo_caso: robo
   delito: abuso de confianza
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '227'
@@ -741,6 +819,7 @@ reglas:
   tipo_caso: robo
   delito: encubrimiento por receptación
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '243'
@@ -755,6 +834,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: Fraude
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '230'
@@ -772,6 +852,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: administración fraudulenta
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '234'
@@ -784,6 +865,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: insolvencia fraudulenta
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '235'
@@ -796,6 +878,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: usurpación de identidad
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 211 BIS
@@ -808,6 +891,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: falsificación de documentos
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -819,6 +903,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: falsificación de sellos, llaves o contraseñas
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -830,6 +915,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: falsificación de tarjetas o títulos de crédito
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -841,6 +927,7 @@ reglas:
   tipo_caso: fraude_datos
   delito: acceso ilícito a sistemas o equipos de informática (CPF, título noveno; Querétaro, título séptimo)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -852,6 +939,7 @@ reglas:
   tipo_caso: propiedad
   delito: Despojo
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '237'
@@ -865,6 +953,7 @@ reglas:
   tipo_caso: propiedad
   delito: daño a la propiedad
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '239'
@@ -881,6 +970,7 @@ reglas:
   tipo_caso: propiedad
   delito: allanamiento de morada
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '210'
@@ -894,6 +984,7 @@ reglas:
   tipo_caso: propiedad
   delito: responsabilidad de directores responsables de obra (construcción)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -905,6 +996,7 @@ reglas:
   tipo_caso: transito
   delito: Lesiones u homicidio culposo
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -916,6 +1008,7 @@ reglas:
   tipo_caso: transito
   delito: daño culposo
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -927,6 +1020,7 @@ reglas:
   tipo_caso: transito
   delito: delitos contra la seguridad del tránsito
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '332'
@@ -939,6 +1033,7 @@ reglas:
   tipo_caso: transito
   delito: ataques a las vías de comunicación y a los medios de transporte
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '330'
@@ -952,6 +1047,7 @@ reglas:
   tipo_caso: intimidad_honor
   delito: Violación de la intimidad personal
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '212'
@@ -964,6 +1060,7 @@ reglas:
   tipo_caso: intimidad_honor
   delito: revelación de secretos
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '213'
@@ -976,6 +1073,7 @@ reglas:
   tipo_caso: intimidad_honor
   delito: Violación de correspondencia o comunicación privada
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -987,6 +1085,7 @@ reglas:
   tipo_caso: intimidad_honor
   delito: Difamación y calumnia (derogadas en la CDMX, arts. 214–218; la vía es civil; revisar cada estado)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -999,6 +1098,7 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: Abuso de autoridad
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '262'
@@ -1014,6 +1114,7 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: uso ilegal de la fuerza pública
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '262'
@@ -1029,6 +1130,7 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: tortura (ley general, no está en el corpus; el código de la CDMX tiene los arts. 206 Bis y siguientes)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 206 BIS
@@ -1044,6 +1146,7 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: intimidación
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '269'
@@ -1056,6 +1159,7 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: cohecho
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '272'
@@ -1068,6 +1172,7 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: concusión
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '274'
@@ -1080,6 +1185,7 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: negación del servicio público
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '270'
@@ -1092,6 +1198,7 @@ reglas:
   tipo_caso: discriminacion
   delito: Discriminación
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '206'
@@ -1104,6 +1211,7 @@ reglas:
   tipo_caso: discriminacion
   delito: delitos contra el libre desarrollo de la personalidad y la identidad sexual (terapias de conversión)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 190 QUATER
@@ -1116,6 +1224,7 @@ reglas:
   tipo_caso: salud
   delito: Responsabilidad profesional
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '322'
@@ -1128,6 +1237,7 @@ reglas:
   tipo_caso: salud
   delito: abandono o práctica indebida del servicio médico
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1139,6 +1249,7 @@ reglas:
   tipo_caso: salud
   delito: aborto
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '144'
@@ -1155,6 +1266,7 @@ reglas:
   tipo_caso: salud
   delito: esterilización forzada
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '149'
@@ -1173,6 +1285,7 @@ reglas:
   tipo_caso: salud
   delito: peligro de contagio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '159'
@@ -1185,6 +1298,7 @@ reglas:
   tipo_caso: salud
   delito: sustancias modelantes
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 141 BIS
@@ -1198,6 +1312,7 @@ reglas:
   tipo_caso: salud
   delito: administración subrepticia de sustancias
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 141 QUÁTER
@@ -1210,6 +1325,7 @@ reglas:
   tipo_caso: salud
   delito: suministro de medicinas nocivas o inapropiadas
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '328'
@@ -1223,6 +1339,7 @@ reglas:
   tipo_caso: salud
   delito: usurpación de profesión
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '323'
@@ -1235,6 +1352,7 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: Corrupción de menores
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1246,6 +1364,7 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: trata de personas (ley general, no está en el corpus; el código de la CDMX tiene el art. 188 Bis)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 188 BIS
@@ -1258,6 +1377,7 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: lenocinio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '189'
@@ -1272,6 +1392,7 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: explotación laboral de menores
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 190 BIS
@@ -1285,6 +1406,7 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: omisión de cuidado
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1296,6 +1418,7 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: turismo sexual
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '186'
@@ -1308,6 +1431,7 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: omisión de auxilio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '156'
@@ -1325,6 +1449,7 @@ reglas:
   delito: '(procedimiento: Código Nacional de Procedimientos Penales) más el delito del que se acusa, que se clasifica con
     los tipos 1–17'
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1336,6 +1461,7 @@ reglas:
   tipo_caso: animales_ambiente
   delito: Maltrato o crueldad contra animales
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1347,6 +1473,7 @@ reglas:
   tipo_caso: animales_ambiente
   delito: delitos contra el ambiente
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '343'
@@ -1367,6 +1494,7 @@ reglas:
   tipo_caso: animales_ambiente
   delito: delitos contra la gestión ambiental
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '347'
@@ -1383,6 +1511,7 @@ reglas:
   tipo_caso: armas_crimen_organizado
   delito: Portación de objetos para agredir
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1394,6 +1523,7 @@ reglas:
   tipo_caso: armas_crimen_organizado
   delito: armas de fuego (Ley Federal de Armas de Fuego, no está en el corpus; federal)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1405,6 +1535,7 @@ reglas:
   tipo_caso: armas_crimen_organizado
   delito: pandilla
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '252'
@@ -1420,6 +1551,7 @@ reglas:
   tipo_caso: armas_crimen_organizado
   delito: asociación delictuosa
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '252'
@@ -1435,6 +1567,7 @@ reglas:
   tipo_caso: armas_crimen_organizado
   delito: delincuencia organizada (ley federal)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '252'
@@ -1450,6 +1583,7 @@ reglas:
   tipo_caso: armas_crimen_organizado
   delito: operaciones con recursos de procedencia ilícita
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '250'
@@ -1463,6 +1597,7 @@ reglas:
   delito: 'Delitos contra la salud (Código Penal Federal, título séptimo; narcomenudeo: Ley General de Salud, no está en el
     corpus)'
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1474,6 +1609,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: Peculado
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '273'
@@ -1486,6 +1622,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: enriquecimiento ilícito
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '275'
@@ -1498,6 +1635,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: tráfico de influencia
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '271'
@@ -1510,6 +1648,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: ejercicio abusivo de funciones
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '267'
@@ -1523,6 +1662,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: ejercicio ilegal y abandono del servicio público
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '259'
@@ -1537,6 +1677,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: coalición de servidores públicos
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '266'
@@ -1549,6 +1690,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: usurpación de funciones públicas
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '276'
@@ -1561,6 +1703,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: remuneración ilícita
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 276 BIS
@@ -1574,6 +1717,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: corrupción inmobiliaria
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 276 Quater
@@ -1586,6 +1730,7 @@ reglas:
   tipo_caso: corrupcion_gobierno
   delito: distracción de recursos públicos
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '277'
@@ -1601,6 +1746,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: Desobediencia y resistencia de particulares
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '281'
@@ -1616,6 +1762,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: ultrajes a la autoridad
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '287'
@@ -1628,6 +1775,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: quebrantamiento de sellos
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '286'
@@ -1641,6 +1789,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: oposición a una obra pública
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1652,6 +1801,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: ejercicio ilegal del propio derecho (hacerse justicia por su mano)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '288'
@@ -1664,6 +1814,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: uso indebido de insignias y uniformes
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - 289 BIS
@@ -1677,6 +1828,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: uso indebido de las llamadas de emergencia
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1688,6 +1840,7 @@ reglas:
   tipo_caso: conflicto_con_autoridad
   delito: cohecho cometido por particulares (ofrecer «mordida»)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1699,6 +1852,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: Denegación o retardo de justicia
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '290'
@@ -1714,6 +1868,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: delitos en la procuración de justicia
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1725,6 +1880,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: delitos en la administración de justicia
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1736,6 +1892,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: omisión de informes médico forenses
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '301'
@@ -1749,6 +1906,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: delitos en la ejecución penal
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1760,6 +1918,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: evasión de presos
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '304'
@@ -1778,6 +1937,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: fraude procesal
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '310'
@@ -1791,6 +1951,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: falsedad ante autoridades (falso testimonio)
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '311'
@@ -1808,6 +1969,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: simulación de pruebas
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1819,6 +1981,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: variación del nombre o domicilio
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '317'
@@ -1831,6 +1994,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: delitos de abogados, patronos y asesores jurídicos
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
@@ -1842,6 +2006,7 @@ reglas:
   tipo_caso: justicia_abogados
   delito: encubrimiento por favorecimiento
   condicion: ''
+  cuando: []
   articulos:
     cdmx:
     - '320'
@@ -1856,6 +2021,7 @@ reglas:
   tipo_caso: derechos_autor
   delito: Delitos en materia de derechos de autor (CPF, título vigésimo sexto; federal)
   condicion: ''
+  cuando: []
   articulos:
     cdmx: []
     queretaro: []
