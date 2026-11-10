@@ -125,7 +125,7 @@ def test_no_orienta_hasta_tener_los_datos_y_luego_orienta():
     delitos = {r['delito'] for r in CAT['reglas'] if r['id'] in salida['reglas']}
     assert 'extorsión' in delitos and 'amenazas' not in delitos                       # pide dinero
     assert 'pornografía de personas menores de edad' not in delitos                  # tiene 24
-    assert salida['codigos'] == ['queretaro'] and '167 Quinquies' in salida['articulos']['queretaro']
+    assert salida['codigos'] == ['queretaro', 'federal'] and '167 Quinquies' in salida['articulos']['queretaro']
     assert not salida['fuera_de_corpus']
 
 
@@ -157,14 +157,15 @@ def test_en_orientacion_cambiar_el_lugar_reorienta_con_otro_codigo():
     pasos = conversar(IAFalsa(respuestas={**FOTOS, 'Perdón, fue en la CDMX': {'lugar_hechos': 'Ciudad de México'}}),
                       list(FOTOS) + ['Perdón, fue en la CDMX'])
     estado, exp, salida, reg = pasos[-1]
-    assert estado == M.ORIENTACION and reg['cambios'] == ['lugar_hechos'] and salida['codigos'] == ['cdmx']
+    assert estado == M.ORIENTACION and reg['cambios'] == ['lugar_hechos'] and salida['codigos'] == ['cdmx', 'federal']
     assert '181 Quintus' in salida['articulos']['cdmx']
 
 
 def test_estado_fuera_del_corpus():
     resp = {**FOTOS, 'En Querétaro': {'lugar_hechos': 'Jalisco'}}
     salida = conversar(IAFalsa(respuestas=resp), list(FOTOS))[-1][2]
-    assert salida['tipo'] == 'orientar' and salida['fuera_de_corpus'] and salida['codigos'] == []
+    # Jalisco no está en el corpus, pero r025 (solo CPF) sí aplica: se orienta con el federal y no cuenta como fuera.
+    assert salida['tipo'] == 'orientar' and not salida['fuera_de_corpus'] and salida['codigos'] == ['federal']
 
 
 def test_solo_confirmadas_deja_sin_reglas_un_catalogo_sin_revisar():

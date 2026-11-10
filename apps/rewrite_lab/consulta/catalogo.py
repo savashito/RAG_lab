@@ -70,7 +70,25 @@ def cargar(path: Path = YAML_INICIAL) -> tuple[dict, str]:
     return doc, hashlib.md5(texto.encode()).hexdigest()
 
 
+# Orden de las llaves al escribir el YAML: la base (jsonb) no guarda el orden y el YAML se lee mejor siempre igual.
+ORDEN = {None: ['version', 'nota', 'generales', 'datos', 'tipos_caso', 'reglas', 'otro'],
+         'datos': ['id', 'tipo', 'opciones', 'obligatorio', 'preguntar', 'pregunta', 'para_que', 'estado', 'nota'],
+         'tipos_caso': ['id', 'titulo', 'descripcion', 'datos', 'estado', 'nota'],
+         'reglas': ['id', 'tipo_caso', 'delito', 'condicion', 'cuando', 'articulos', 'estado', 'nota'],
+         'articulos': list(CODIGOS)}
+
+
+def _ordenar(d: dict, orden: list[str]) -> dict:
+    return {**{k: d[k] for k in orden if k in d}, **{k: v for k, v in d.items() if k not in orden}}
+
+
 def a_yaml(doc: dict) -> str:
+    doc = _ordenar(doc, ORDEN[None])
+    for parte in PARTES:
+        if isinstance(doc.get(parte), list):
+            doc[parte] = [_ordenar(e, ORDEN[parte]) if isinstance(e, dict) else e for e in doc[parte]]
+    doc['reglas'] = [{**r, 'articulos': _ordenar(r['articulos'], ORDEN['articulos'])}
+                     if isinstance(r, dict) and isinstance(r.get('articulos'), dict) else r for r in doc.get('reglas', [])]
     return yaml.safe_dump(doc, allow_unicode=True, sort_keys=False, width=120)
 
 

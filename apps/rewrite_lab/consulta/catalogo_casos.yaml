@@ -323,13 +323,56 @@ reglas:
     - '130'
     - '131'
     - '132'
-    - '133'
     - '134'
     - '135'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - 138 BIS
+    - '138'
+    - '141'
+    - '139'
+    queretaro:
+    - '127'
+    - '129'
+    - '130'
+    - '134'
+    - '131'
+    edomex:
+    - '111'
+    - '69'
+    - '236'
+    - '239'
+    - '237'
+    - '240'
+    - 245 Bis
+    - '238'
+    - '245'
+    morelos:
+    - '121'
+    - '123'
+    - '131'
+    - '126'
+    - '125'
+    - '129'
+    - 131 QUATER
+    - '260'
+    federal:
+    - '293'
+    - '288'
+    - '298'
+    - '290'
+    - '292'
+    - '289'
+    - '291'
+    - '300'
+    - '301'
+    - '295'
+    - '305'
+    - '315'
+    - '313'
+    - '319'
+    - '318'
+    - '317'
+    - 321 Bis
+    - '316'
   estado: sugerida
 - id: r002
   tipo_caso: golpes_lesiones
@@ -337,10 +380,17 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
+    cdmx:
+    - 135 BIS
+    - 135 TER
+    queretaro:
+    - '131'
+    edomex:
+    - '238'
+    morelos:
+    - 131 TER
+    - 125 Bis
+    - 125 Ter
     federal: []
   estado: sugerida
 - id: r003
@@ -349,11 +399,20 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '133'
+    - '137'
+    queretaro:
+    - '132'
+    edomex:
+    - '244'
+    - '239'
+    morelos:
+    - '127'
+    - '124'
+    federal:
+    - '297'
+    - '314'
   estado: sugerida
 - id: r004
   tipo_caso: golpes_lesiones
@@ -361,10 +420,15 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
+    cdmx:
+    - 211 TER
+    queretaro:
+    - '131'
+    edomex:
+    - '238'
+    - '253'
+    morelos:
+    - 245 BIS
     federal: []
   estado: sugerida
 - id: r005
@@ -381,10 +445,53 @@ reglas:
     - '127'
     - '128'
     - '129'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - 138 BIS
+    - '138'
+    - '141'
+    - '139'
+    queretaro:
+    - '125'
+    - '126'
+    - '132'
+    - '134'
+    - '131'
+    edomex:
+    - '111'
+    - '69'
+    - '241'
+    - '242'
+    - '243'
+    - 245 Bis
+    - '245'
+    morelos:
+    - '106'
+    - '108'
+    - 111 BIS
+    - '109'
+    - '111'
+    - '110'
+    - '131'
+    - '126'
+    - '107'
+    - '129'
+    - '260'
+    federal:
+    - '302'
+    - '304'
+    - '303'
+    - '307'
+    - '305'
+    - '320'
+    - '308'
+    - '315'
+    - '313'
+    - '319'
+    - '318'
+    - '317'
+    - 315 Bis
+    - '323'
+    - 321 Bis
+    - '316'
   estado: sugerida
 - id: r006
   tipo_caso: muerte
@@ -394,10 +501,22 @@ reglas:
   articulos:
     cdmx:
     - 148 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - 321 Bis
+    queretaro:
+    - 126 BIS
+    - '131'
+    edomex:
+    - '69'
+    - '281'
+    - '283'
+    - '284'
+    morelos:
+    - 125 Ter
+    - '107'
+    - 213 QUINTUS
+    - '312'
+    federal:
+    - '325'
   estado: sugerida
 - id: r007
   tipo_caso: muerte
@@ -407,8 +526,12 @@ reglas:
   articulos:
     cdmx:
     - 148 Ter
-    queretaro: []
-    edomex: []
+    - 321 Bis
+    queretaro:
+    - '131'
+    edomex:
+    - 281 Bis
+    - '284'
     morelos: []
     federal: []
   estado: sugerida
@@ -421,11 +544,17 @@ reglas:
     cdmx:
     - '142'
     - '143'
-    - 143 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '135'
+    edomex:
+    - '246'
+    - '247'
+    morelos:
+    - '112'
+    - '113'
+    - '114'
+    federal:
+    - '312'
   estado: sugerida
 - id: r009
   tipo_caso: violencia_familiar
@@ -438,10 +567,34 @@ reglas:
     - 200 BIS
     - '201'
     - 201 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '131'
+    queretaro:
+    - '130'
+    - 142 BIS
+    - 217 QUINTUS
+    - 217 TER
+    - 217 BIS
+    edomex:
+    - '69'
+    - '218'
+    - '240'
+    - '238'
+    - '280'
+    - '283'
+    - '282'
+    - '284'
+    morelos:
+    - '125'
+    - 202 QUINTUS
+    - 202 BIS
+    - 202 TER
+    federal:
+    - 265 bis
+    - '295'
+    - 343 Ter 2
+    - 343 Ter
+    - 343 Bis
+    - '316'
   estado: sugerida
 - id: r010
   tipo_caso: violencia_familiar
@@ -451,10 +604,14 @@ reglas:
   articulos:
     cdmx:
     - 201 TER
-    - '202'
     queretaro: []
-    edomex: []
-    morelos: []
+    edomex:
+    - 218 Bis
+    - '282'
+    - '284'
+    morelos:
+    - 213 Octies
+    - 213 Nonies
     federal: []
   estado: sugerida
 - id: r011
@@ -463,11 +620,29 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '193'
+    - '194'
+    - '196'
+    - '197'
+    - '195'
+    queretaro:
+    - '210'
+    - 211 BIS
+    - 211 TER
+    - 210 TER
+    - '211'
+    edomex:
+    - '217'
+    morelos:
+    - 132 Bis
+    - '202'
+    - '201'
+    - 213 Nonies
+    federal:
+    - 336 Bis
+    - '338'
+    - '337'
   estado: sugerida
 - id: r012
   tipo_caso: agresion_sexual
@@ -478,10 +653,37 @@ reglas:
     cdmx:
     - '174'
     - '175'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '178'
+    - '182'
+    queretaro:
+    - '163'
+    - '162'
+    - '160'
+    - '161'
+    - '169'
+    - '168'
+    edomex:
+    - '69'
+    - '274'
+    - '273'
+    - '283'
+    - '282'
+    - '284'
+    morelos:
+    - 131 QUATER
+    - '155'
+    - '152'
+    - '156'
+    - '153'
+    - '154'
+    federal:
+    - '265'
+    - 265 bis
+    - '266'
+    - 266 Bis
+    - 266 Ter
+    - 276 Bis
+    - 315 Bis
   estado: sugerida
 - id: r013
   tipo_caso: agresion_sexual
@@ -494,10 +696,30 @@ reglas:
     - '177'
     - '178'
     - 178 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '182'
+    queretaro:
+    - '165'
+    - '166'
+    - 166 BIS
+    - '169'
+    - '168'
+    edomex:
+    - '69'
+    - '270'
+    - '283'
+    - 270 Bis
+    - '282'
+    - '284'
+    morelos:
+    - 131 QUATER
+    - '161'
+    - '162'
+    federal:
+    - '263'
+    - '260'
+    - '261'
+    - 266 Ter
+    - 276 Bis
   estado: sugerida
 - id: r014
   tipo_caso: agresion_sexual
@@ -507,10 +729,23 @@ reglas:
   articulos:
     cdmx:
     - '180'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '182'
+    queretaro:
+    - '167'
+    - '169'
+    - '168'
+    edomex:
+    - '272'
+    - '271'
+    - '282'
+    - '284'
+    morelos:
+    - '160'
+    - '159'
+    federal:
+    - '262'
+    - 266 Ter
+    - 276 Bis
   estado: sugerida
 - id: r015
   tipo_caso: agresion_sexual
@@ -520,10 +755,21 @@ reglas:
   articulos:
     cdmx:
     - '181'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '182'
+    queretaro:
+    - '169'
+    - '168'
+    - '217'
+    edomex:
+    - '221'
+    - '282'
+    - '284'
+    morelos:
+    - '208'
+    federal:
+    - '271'
+    - '272'
+    - 276 Bis
   estado: sugerida
 - id: r016
   tipo_caso: agresion_sexual
@@ -531,11 +777,31 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - 181 BIS
+    - 181 TER
+    - 181 QUÁTER
+    - '182'
+    - '192'
+    - '191'
+    queretaro:
+    - '161'
+    - '166'
+    - '169'
+    - '168'
+    edomex:
+    - '208'
+    - '207'
+    - 205 Bis
+    - '282'
+    - '284'
+    morelos:
+    - '154'
+    - '162'
+    federal:
+    - 209 Bis
+    - '261'
+    - 276 Bis
   estado: sugerida
 - id: r017
   tipo_caso: agresion_sexual
@@ -545,10 +811,17 @@ reglas:
   articulos:
     cdmx:
     - '162'
-    queretaro: []
-    edomex: []
+    - '182'
+    queretaro:
+    - '148'
+    - '169'
+    - '168'
+    edomex:
+    - '282'
+    - '284'
     morelos: []
-    federal: []
+    federal:
+    - 276 Bis
   estado: sugerida
 - id: r018
   tipo_caso: acoso_hostigamiento
@@ -559,10 +832,19 @@ reglas:
     cdmx:
     - '179'
     - 179 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '182'
+    queretaro:
+    - 167 BIS
+    - '168'
+    edomex:
+    - 269 Bis
+    - '282'
+    - '284'
+    morelos:
+    - '158'
+    - 158 BIS
+    federal:
+    - 266 Ter
   estado: sugerida
 - id: r019
   tipo_caso: acoso_hostigamiento
@@ -570,11 +852,21 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '182'
+    queretaro:
+    - 167 TER
+    - '168'
+    edomex:
+    - '269'
+    - '282'
+    - '284'
+    morelos:
+    - '158'
+    - 158 BIS
+    federal:
+    - 259 Bis
+    - 266 Ter
   estado: sugerida
 - id: r020
   tipo_caso: imagenes_intimas
@@ -584,11 +876,21 @@ reglas:
   articulos:
     cdmx:
     - 181 Quintus
+    - '182'
     queretaro:
     - 167 Quinquies
-    edomex: []
-    morelos: []
-    federal: []
+    - 167 QUÁTER
+    edomex:
+    - 211 Quinquies
+    - 211 Ter
+    - 211 Quinquies 1
+    - 211 Quater
+    - '282'
+    - '284'
+    morelos:
+    - 150 BIS
+    federal:
+    - 199 Octies
   estado: sugerida
 - id: r021
   tipo_caso: imagenes_intimas
@@ -599,8 +901,10 @@ reglas:
   articulos:
     cdmx:
     - 148 Quáter
+    - '182'
     queretaro: []
-    edomex: []
+    edomex:
+    - 211 Quater
     morelos: []
     federal: []
   estado: sugerida
@@ -614,8 +918,11 @@ reglas:
   articulos:
     cdmx:
     - '209'
-    queretaro: []
-    edomex: []
+    - '182'
+    queretaro:
+    - '155'
+    edomex:
+    - 211 Quater
     morelos: []
     federal: []
   estado: sugerida
@@ -626,11 +933,22 @@ reglas:
   cuando:
   - edad_victima < 18
   articulos:
-    cdmx: []
+    cdmx:
+    - '182'
+    - '188'
+    - '187'
+    - '191'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - '69'
+    - '206'
+    - '284'
+    morelos:
+    - '212'
+    federal:
+    - '200'
+    - 202 BIS
+    - '202'
   estado: sugerida
 - id: r024
   tipo_caso: imagenes_intimas
@@ -639,11 +957,16 @@ reglas:
   cuando:
   - edad_victima < 18
   articulos:
-    cdmx: []
+    cdmx:
+    - '182'
+    - '191'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - '284'
+    morelos:
+    - 211 ter
+    federal:
+    - '201'
   estado: sugerida
 - id: r025
   tipo_caso: imagenes_intimas
@@ -655,7 +978,11 @@ reglas:
     queretaro: []
     edomex: []
     morelos: []
-    federal: []
+    federal:
+    - 199 Septies
+    - 199 Octies
+    - 199 Nonies
+    - 199 Decies
   estado: sugerida
 - id: r026
   tipo_caso: amenazas_extorsion
@@ -665,10 +992,16 @@ reglas:
   articulos:
     cdmx:
     - '209'
-    queretaro: []
+    queretaro:
+    - '155'
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '147'
+    - 147 TER
+    federal:
+    - '283'
+    - '284'
+    - '282'
   estado: sugerida
 - id: r027
   tipo_caso: amenazas_extorsion
@@ -694,9 +1027,12 @@ reglas:
     cdmx:
     - 148 Quinquies
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - 268 Ter
+    morelos:
+    - 147 Bis
+    federal:
+    - 284 Bis
   estado: sugerida
 - id: r029
   tipo_caso: privacion_libertad
@@ -704,11 +1040,22 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '160'
+    - 293 TER
+    queretaro:
+    - '147'
+    - '149'
+    - '148'
+    edomex:
+    - '258'
+    morelos:
+    - '137'
+    - '139'
+    - '138'
+    - '270'
+    federal:
+    - '348'
   estado: sugerida
 - id: r030
   tipo_caso: privacion_libertad
@@ -747,11 +1094,22 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '172'
+    - '171'
+    - '173'
+    queretaro:
+    - 212 BIS
+    - '212'
+    edomex:
+    - '262'
+    - '263'
+    morelos:
+    - '203'
+    - 203 Bis
+    - 213 Nonies
+    federal:
+    - 366 quáter
   estado: sugerida
 - id: r033
   tipo_caso: privacion_libertad
@@ -763,9 +1121,12 @@ reglas:
     - '169'
     - '170'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - '219'
+    morelos:
+    - '204'
+    federal:
+    - 366 Ter
   estado: sugerida
 - id: r034
   tipo_caso: privacion_libertad
@@ -773,7 +1134,8 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
+    cdmx:
+    - '168'
     queretaro: []
     edomex: []
     morelos: []
@@ -795,10 +1157,67 @@ reglas:
     - '226'
     - 226 BIS
     - 226 TER
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '248'
+    queretaro:
+    - '157'
+    - '188'
+    - '182'
+    - '184'
+    - 183 QUINQUIES
+    - '185'
+    - 183 TER
+    - 183 QUÁTER
+    - '186'
+    - 183 BIS
+    - 190 TER
+    - '187'
+    - '183'
+    - 190 BIS
+    edomex:
+    - '69'
+    - '287'
+    - '289'
+    - '288'
+    - '295'
+    - '294'
+    - '290'
+    - '291'
+    - '292'
+    - '293'
+    - '297'
+    - '298'
+    morelos:
+    - 131 QUATER
+    - '174'
+    - 176 BIS
+    - '175'
+    - '177'
+    - '178'
+    - 174 BIS
+    - '176'
+    - '181'
+    - '182'
+    federal:
+    - 315 Bis
+    - '369'
+    - '367'
+    - '370'
+    - '368'
+    - '371'
+    - '372'
+    - '373'
+    - 368 Quinquies
+    - '376'
+    - 381 Bis
+    - '374'
+    - 376 bis
+    - 376 Quáter
+    - 376 Ter
+    - '375'
+    - '379'
+    - '380'
+    - '381'
+    - '377'
   estado: sugerida
 - id: r036
   tipo_caso: robo
@@ -810,10 +1229,22 @@ reglas:
     - '227'
     - '228'
     - '229'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '248'
+    queretaro:
+    - '191'
+    - '192'
+    edomex:
+    - '304'
+    - '303'
+    - '302'
+    morelos:
+    - '186'
+    - '187'
+    federal:
+    - '382'
+    - '383'
+    - '384'
+    - '385'
   estado: sugerida
 - id: r037
   tipo_caso: robo
@@ -825,10 +1256,21 @@ reglas:
     - '243'
     - '244'
     - '245'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - 183 BIS
+    - '209'
+    - '204'
+    - '205'
+    - '208'
+    - 205 BIS
+    - '206'
+    edomex:
+    - '152'
+    morelos:
+    - '197'
+    federal:
+    - 368 Bis
+    - 368 Ter
   estado: sugerida
 - id: r038
   tipo_caso: fraude_datos
@@ -843,10 +1285,23 @@ reglas:
     - 232 BIS
     - '233'
     - 233 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '248'
+    queretaro:
+    - '193'
+    - '194'
+    - '195'
+    edomex:
+    - '307'
+    - '305'
+    - '306'
+    morelos:
+    - '188'
+    - '189'
+    federal:
+    - '386'
+    - '387'
+    - 389 Bis
+    - '389'
   estado: sugerida
 - id: r039
   tipo_caso: fraude_datos
@@ -856,10 +1311,14 @@ reglas:
   articulos:
     cdmx:
     - '234'
-    queretaro: []
+    - '248'
+    queretaro:
+    - '197'
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '190'
+    federal:
+    - '388'
   estado: sugerida
 - id: r040
   tipo_caso: fraude_datos
@@ -871,8 +1330,10 @@ reglas:
     - '235'
     queretaro: []
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '191'
+    federal:
+    - 388 Bis
   estado: sugerida
 - id: r041
   tipo_caso: fraude_datos
@@ -882,9 +1343,15 @@ reglas:
   articulos:
     cdmx:
     - 211 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
+    queretaro:
+    - 159 QUINTUS
+    - 159 SEXTUS
+    edomex:
+    - '264'
+    - '265'
+    - 265 bis
+    morelos:
+    - 189 Bis
     federal: []
   estado: sugerida
 - id: r042
@@ -893,11 +1360,36 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '339'
+    - '340'
+    - '341'
+    queretaro:
+    - '231'
+    - '232'
+    - '234'
+    - '233'
+    edomex:
+    - '167'
+    - '173'
+    - '170'
+    - '169'
+    - '168'
+    - 170 Bis
+    morelos:
+    - '215'
+    - '214'
+    - '217'
+    - '216'
+    - '219'
+    federal:
+    - '244'
+    - '245'
+    - '240'
+    - '243'
+    - '246'
+    - '251'
+    - '378'
   estado: sugerida
 - id: r043
   tipo_caso: fraude_datos
@@ -905,11 +1397,23 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '337'
+    - '338'
+    queretaro:
+    - '230'
+    - '233'
+    - 232 BIS
+    edomex:
+    - '172'
+    - '171'
+    morelos:
+    - '218'
+    - '219'
+    federal:
+    - '242'
+    - '241'
+    - '251'
   estado: sugerida
 - id: r044
   tipo_caso: fraude_datos
@@ -917,11 +1421,18 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '336'
+    queretaro:
+    - '233'
+    - 232 BIS
+    edomex:
+    - '174'
+    morelos:
+    - 220 Bis
+    federal:
+    - '239'
+    - '251'
   estado: sugerida
 - id: r045
   tipo_caso: fraude_datos
@@ -930,10 +1441,24 @@ reglas:
   cuando: []
   articulos:
     cdmx: []
-    queretaro: []
+    queretaro:
+    - 159 TER
+    - 159 QUATER
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - 148 quarter
+    - 267 TER 4
+    - 267 TER 2
+    - 267 TER 3
+    - 267 TER 1
+    federal:
+    - 211 bis 1
+    - 211 bis 6
+    - 211 bis 3
+    - 211 bis 2
+    - 211 bis 7
+    - 211 bis 5
+    - 211 bis 4
   estado: sugerida
 - id: r046
   tipo_caso: propiedad
@@ -944,10 +1469,22 @@ reglas:
     cdmx:
     - '237'
     - '238'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '248'
+    queretaro:
+    - '201'
+    - '199'
+    - '200'
+    edomex:
+    - '308'
+    - 314 Bis
+    - 308 Bis
+    morelos:
+    - '184'
+    - '185'
+    federal:
+    - '396'
+    - '395'
+    - 389 Bis
   estado: sugerida
 - id: r047
   tipo_caso: propiedad
@@ -960,11 +1497,22 @@ reglas:
     - '240'
     - '241'
     - 241 BIS
-    - '242'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '248'
+    queretaro:
+    - '202'
+    - '203'
+    edomex:
+    - '310'
+    - '311'
+    - '309'
+    morelos:
+    - '193'
+    - '195'
+    - '194'
+    federal:
+    - '399'
+    - '397'
+    - 399 Bis
   estado: sugerida
 - id: r048
   tipo_caso: propiedad
@@ -975,10 +1523,16 @@ reglas:
     cdmx:
     - '210'
     - '211'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '158'
+    edomex:
+    - '268'
+    - '314'
+    morelos:
+    - '149'
+    federal:
+    - '285'
+    - 315 Bis
   estado: sugerida
 - id: r049
   tipo_caso: propiedad
@@ -986,7 +1540,8 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
+    cdmx:
+    - 329 BIS
     queretaro: []
     edomex: []
     morelos: []
@@ -998,11 +1553,20 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
+    cdmx:
+    - '135'
+    - '141'
+    - '140'
+    queretaro:
+    - '145'
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '125'
+    - '128'
+    - '129'
+    federal:
+    - '341'
+    - 321 Bis
   estado: sugerida
 - id: r051
   tipo_caso: transito
@@ -1010,11 +1574,15 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
+    cdmx:
+    - '240'
+    - '242'
     queretaro: []
-    edomex: []
+    edomex:
+    - '309'
     morelos: []
-    federal: []
+    federal:
+    - '172'
   estado: sugerida
 - id: r052
   tipo_caso: transito
@@ -1024,10 +1592,15 @@ reglas:
   articulos:
     cdmx:
     - '332'
-    queretaro: []
+    queretaro:
+    - '228'
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '240'
+    - '238'
+    federal:
+    - '172'
+    - '171'
   estado: sugerida
 - id: r053
   tipo_caso: transito
@@ -1038,10 +1611,34 @@ reglas:
     cdmx:
     - '330'
     - '331'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '225'
+    - '224'
+    - '227'
+    - '223'
+    - '226'
+    edomex:
+    - '194'
+    - '192'
+    - '195'
+    - '193'
+    morelos:
+    - '226'
+    - '230'
+    - '227'
+    - '231'
+    - '232'
+    - '233'
+    - '234'
+    - '229'
+    - '235'
+    - '236'
+    federal:
+    - '166'
+    - '168'
+    - '170'
+    - '169'
+    - '167'
   estado: sugerida
 - id: r054
   tipo_caso: intimidad_honor
@@ -1049,11 +1646,12 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx:
-    - '212'
-    queretaro: []
+    cdmx: []
+    queretaro:
+    - 159 BIS
     edomex: []
-    morelos: []
+    morelos:
+    - '150'
     federal: []
   estado: sugerida
 - id: r055
@@ -1064,10 +1662,18 @@ reglas:
   articulos:
     cdmx:
     - '213'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '159'
+    - 159 BIS
+    edomex:
+    - '186'
+    morelos:
+    - '151'
+    federal:
+    - 166 Bis
+    - '211'
+    - 211 Bis
+    - '210'
   estado: sugerida
 - id: r056
   tipo_caso: intimidad_honor
@@ -1075,11 +1681,20 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '333'
+    - '334'
+    queretaro:
+    - 159 BIS
+    - '229'
+    edomex:
+    - '197'
+    - '198'
+    morelos:
+    - '241'
+    federal:
+    - '177'
+    - '173'
   estado: sugerida
 - id: r057
   tipo_caso: intimidad_honor
@@ -1105,10 +1720,27 @@ reglas:
     - '263'
     - '264'
     - '265'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - 257 BIS
+    - '257'
+    - '258'
+    - 293 TER
+    queretaro:
+    - '264'
+    edomex:
+    - '335'
+    - '338'
+    - '336'
+    - '337'
+    - '339'
+    - '355'
+    morelos:
+    - '272'
+    - 272 Bis
+    - '270'
+    federal:
+    - '145'
+    - '215'
+    - '402'
   estado: sugerida
 - id: r059
   tipo_caso: abuso_autoridad
@@ -1118,13 +1750,15 @@ reglas:
   articulos:
     cdmx:
     - '262'
-    - '263'
-    - '264'
-    - '265'
+    - '257'
+    - '258'
     queretaro: []
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '272'
+    federal:
+    - '145'
+    - '402'
   estado: sugerida
 - id: r060
   tipo_caso: abuso_autoridad
@@ -1137,10 +1771,14 @@ reglas:
     - 206 QUÁTER
     - 206 QUINQUIES
     - 206 TER
+    - '257'
+    - '258'
     queretaro: []
     edomex: []
     morelos: []
-    federal: []
+    federal:
+    - '145'
+    - '402'
   estado: sugerida
 - id: r061
   tipo_caso: abuso_autoridad
@@ -1150,10 +1788,19 @@ reglas:
   articulos:
     cdmx:
     - '269'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - 257 BIS
+    - '257'
+    - '258'
+    queretaro:
+    - '265'
+    edomex:
+    - '343'
+    morelos:
+    - '275'
+    federal:
+    - '145'
+    - '219'
+    - '402'
   estado: sugerida
 - id: r062
   tipo_caso: abuso_autoridad
@@ -1162,11 +1809,24 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '272'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - 257 BIS
+    - '257'
+    - '258'
+    queretaro:
+    - '268'
+    edomex:
+    - '349'
+    - '348'
+    - '350'
+    - '355'
+    - '347'
+    - '354'
+    morelos:
+    - '278'
+    federal:
+    - '145'
+    - '222'
+    - '402'
   estado: sugerida
 - id: r063
   tipo_caso: abuso_autoridad
@@ -1176,10 +1836,20 @@ reglas:
   articulos:
     cdmx:
     - '274'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '269'
+    edomex:
+    - '342'
+    - '355'
+    - '354'
+    morelos:
+    - '274'
+    federal:
+    - '145'
+    - '218'
+    - '402'
   estado: sugerida
 - id: r064
   tipo_caso: abuso_autoridad
@@ -1188,11 +1858,15 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '270'
+    - '257'
+    - '258'
     queretaro: []
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '272'
+    federal:
+    - '145'
+    - '402'
   estado: sugerida
 - id: r065
   tipo_caso: discriminacion
@@ -1202,10 +1876,15 @@ reglas:
   articulos:
     cdmx:
     - '206'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '170'
+    edomex:
+    - '211'
+    - '282'
+    morelos:
+    - 212 Quater
+    federal:
+    - 149 Ter
   estado: sugerida
 - id: r066
   tipo_caso: discriminacion
@@ -1215,10 +1894,14 @@ reglas:
   articulos:
     cdmx:
     - 190 QUATER
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - 142 TER
+    edomex:
+    - 211 Sexies
+    morelos:
+    - 212 Septies
+    federal:
+    - 209 Quintus
   estado: sugerida
 - id: r067
   tipo_caso: salud
@@ -1228,10 +1911,19 @@ reglas:
   articulos:
     cdmx:
     - '322'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '242'
+    - '243'
+    - '246'
+    - '244'
+    - '245'
+    edomex:
+    - '182'
+    morelos:
+    - '248'
+    federal:
+    - '228'
+    - '230'
   estado: sugerida
 - id: r068
   tipo_caso: salud
@@ -1239,11 +1931,22 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
+    cdmx:
+    - '325'
+    - '324'
+    - '326'
+    - '327'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - '182'
+    - '277'
+    morelos:
+    - '249'
+    - '251'
+    - '250'
+    federal:
+    - '229'
+    - '230'
   estado: sugerida
 - id: r069
   tipo_caso: salud
@@ -1257,10 +1960,29 @@ reglas:
     - '146'
     - '147'
     - '148'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '136'
+    - '137'
+    - '142'
+    - '138'
+    - '140'
+    - '139'
+    edomex:
+    - '248'
+    - '251'
+    morelos:
+    - '118'
+    - '115'
+    - '116'
+    - '117'
+    - '119'
+    federal:
+    - '329'
+    - '330'
+    - '334'
+    - '331'
+    - '333'
+    - '332'
   estado: sugerida
 - id: r070
   tipo_caso: salud
@@ -1269,17 +1991,18 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '149'
-    - '150'
     - '151'
     - 151 BIS
     - 151 TER
     - '152'
     - '153'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - '278'
+    morelos:
+    - 157 Ter
+    federal:
+    - 199 Quintus
   estado: sugerida
 - id: r071
   tipo_caso: salud
@@ -1287,12 +2010,15 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx:
-    - '159'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx: []
+    queretaro:
+    - 127 BIS 1
+    edomex:
+    - '252'
+    morelos:
+    - '136'
+    federal:
+    - 199 Bis
   estado: sugerida
 - id: r072
   tipo_caso: salud
@@ -1343,10 +2069,14 @@ reglas:
   articulos:
     cdmx:
     - '323'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '235'
+    edomex:
+    - '176'
+    morelos:
+    - '224'
+    federal:
+    - '250'
   estado: sugerida
 - id: r076
   tipo_caso: menores_vulnerables
@@ -1354,11 +2084,26 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
+    cdmx:
+    - '183'
+    - '184'
+    - '185'
+    - '192'
+    - '191'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - '69'
+    - '208'
+    - '207'
+    - '205'
+    - '204'
+    morelos:
+    - '211'
+    - 211 ter
+    federal:
+    - '200'
+    - '201'
+    - 201 BIS
   estado: sugerida
 - id: r077
   tipo_caso: menores_vulnerables
@@ -1369,9 +2114,13 @@ reglas:
     cdmx:
     - 188 BIS
     queretaro: []
-    edomex: []
+    edomex:
+    - '204'
+    - 268 bis 1
+    - 268 BIS
     morelos: []
-    federal: []
+    federal:
+    - 205 Bis
   estado: sugerida
 - id: r078
   tipo_caso: menores_vulnerables
@@ -1384,9 +2133,16 @@ reglas:
     - 189 BIS
     - '190'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - 209 bis
+    - '209'
+    - '210'
+    morelos:
+    - 212 ter
+    federal:
+    - '206'
+    - 206 BIS
+    - '204'
   estado: sugerida
 - id: r079
   tipo_caso: menores_vulnerables
@@ -1398,8 +2154,10 @@ reglas:
     - 190 BIS
     - 190 TER
     queretaro: []
-    edomex: []
-    morelos: []
+    edomex:
+    - '204'
+    morelos:
+    - 211 bis
     federal: []
   estado: sugerida
 - id: r080
@@ -1409,9 +2167,14 @@ reglas:
   cuando: []
   articulos:
     cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
+    queretaro:
+    - '144'
+    edomex:
+    - '69'
+    - '204'
+    morelos:
+    - '132'
+    - 132 Bis
     federal: []
   estado: sugerida
 - id: r081
@@ -1424,8 +2187,11 @@ reglas:
     - '186'
     queretaro: []
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - 162 Bis
+    federal:
+    - 203 BIS
+    - '203'
   estado: sugerida
 - id: r082
   tipo_caso: menores_vulnerables
@@ -1439,10 +2205,18 @@ reglas:
     - 157 BIS
     - '158'
     - 158 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '143'
+    edomex:
+    - '256'
+    - '255'
+    - '257'
+    morelos:
+    - '135'
+    - '134'
+    federal:
+    - '341'
+    - '340'
   estado: sugerida
 - id: r083
   tipo_caso: proceso_penal
@@ -1463,11 +2237,28 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - 350 QUINQUIES
+    - 350 QUÁTER
+    - 350 BIS
+    - 350 TER
+    queretaro:
+    - 246 D QUINTUS
+    - 246 D BIS
+    - 246 D QUATER
+    - 246 D SEXTUS
+    edomex:
+    - 235 Bis
+    - 235 Ter
+    - 235 Quáter
+    - 235 Quinquies
+    morelos:
+    - '329'
+    - 327 BIS
+    - '327'
+    - '328'
+    federal:
+    - 419 Bis
   estado: sugerida
 - id: r085
   tipo_caso: animales_ambiente
@@ -1485,10 +2276,38 @@ reglas:
     - 345 TER
     - '346'
     - 346 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '349'
+    - '348'
+    queretaro:
+    - 246 D
+    - 246 C
+    - 246 A
+    edomex:
+    - '231'
+    - 228 Bis
+    - '229'
+    - '232'
+    - '228'
+    - '233'
+    - '230'
+    - '235'
+    morelos:
+    - 242 BIS
+    - 242 Ter
+    federal:
+    - '397'
+    - '416'
+    - '415'
+    - '421'
+    - '418'
+    - 420 Ter
+    - '420'
+    - '414'
+    - '417'
+    - '422'
+    - 420 Bis
+    - '423'
+    - '419'
   estado: sugerida
 - id: r086
   tipo_caso: animales_ambiente
@@ -1502,10 +2321,15 @@ reglas:
     - 347 QUATER
     - 347 QUINTUS
     - 347 TER
+    - '349'
+    - '348'
     queretaro: []
     edomex: []
     morelos: []
-    federal: []
+    federal:
+    - '421'
+    - 420 Quáter
+    - '422'
   estado: sugerida
 - id: r087
   tipo_caso: armas_crimen_organizado
@@ -1513,11 +2337,18 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '251'
+    queretaro:
+    - '219'
+    - 221 BIS C
+    edomex:
+    - '179'
+    - '180'
+    morelos:
+    - '245'
+    federal:
+    - '160'
   estado: sugerida
 - id: r088
   tipo_caso: armas_crimen_organizado
@@ -1529,7 +2360,9 @@ reglas:
     queretaro: []
     edomex: []
     morelos: []
-    federal: []
+    federal:
+    - '161'
+    - '162'
   estado: sugerida
 - id: r089
   tipo_caso: armas_crimen_organizado
@@ -1539,13 +2372,14 @@ reglas:
   articulos:
     cdmx:
     - '252'
-    - '253'
     - '254'
     - '255'
     queretaro: []
-    edomex: []
+    edomex:
+    - 178 Quáter
     morelos: []
-    federal: []
+    federal:
+    - 164 Bis
   estado: sugerida
 - id: r090
   tipo_caso: armas_crimen_organizado
@@ -1554,14 +2388,18 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '252'
     - '253'
     - '254'
     - '255'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '220'
+    edomex:
+    - 178 Bis
+    - 178 Ter
+    morelos:
+    - '244'
+    federal:
+    - '164'
   estado: sugerida
 - id: r091
   tipo_caso: armas_crimen_organizado
@@ -1570,12 +2408,11 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '252'
-    - '253'
     - '254'
     - '255'
     queretaro: []
-    edomex: []
+    edomex:
+    - '178'
     morelos: []
     federal: []
   estado: sugerida
@@ -1587,10 +2424,23 @@ reglas:
   articulos:
     cdmx:
     - '250'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - 246 H
+    - '273'
+    edomex:
+    - '318'
+    - '320'
+    - '319'
+    - '316'
+    - '323'
+    - '322'
+    - '321'
+    morelos:
+    - '198'
+    - 198 Bis
+    federal:
+    - 400 Bis
+    - 400 Bis 1
   estado: sugerida
 - id: r093
   tipo_caso: drogas
@@ -1600,10 +2450,19 @@ reglas:
   cuando: []
   articulos:
     cdmx: []
-    queretaro: []
+    queretaro:
+    - 221 BIS B
     edomex: []
     morelos: []
-    federal: []
+    federal:
+    - '193'
+    - '197'
+    - '194'
+    - 195 bis
+    - 196 Ter
+    - '195'
+    - '198'
+    - '196'
   estado: sugerida
 - id: r094
   tipo_caso: corrupcion_gobierno
@@ -1612,11 +2471,29 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '273'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '267'
+    - '260'
+    edomex:
+    - '329'
+    - '328'
+    - '351'
+    - '355'
+    - '330'
+    morelos:
+    - '269'
+    - 269 BIS
+    - '279'
+    - 269 TER
+    federal:
+    - '145'
+    - 213 Bis
+    - '212'
+    - '213'
+    - '223'
+    - '402'
   estado: sugerida
 - id: r095
   tipo_caso: corrupcion_gobierno
@@ -1625,11 +2502,28 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '275'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - 256 BIS
+    - '257'
+    - '258'
+    queretaro:
+    - '270'
+    - '260'
+    edomex:
+    - '329'
+    - '328'
+    - '352'
+    - '355'
+    - '330'
+    morelos:
+    - '269'
+    - '280'
+    - 269 TER
+    federal:
+    - '145'
+    - '212'
+    - '213'
+    - '224'
+    - '402'
   estado: sugerida
 - id: r096
   tipo_caso: corrupcion_gobierno
@@ -1639,10 +2533,30 @@ reglas:
   articulos:
     cdmx:
     - '271'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '272'
+    - '260'
+    edomex:
+    - '329'
+    - '328'
+    - '345'
+    - '355'
+    - '330'
+    - '354'
+    morelos:
+    - '269'
+    - 269 BIS
+    - '277'
+    - 269 TER
+    federal:
+    - '145'
+    - 213 Bis
+    - '212'
+    - '221'
+    - '213'
+    - '402'
   estado: sugerida
 - id: r097
   tipo_caso: corrupcion_gobierno
@@ -1653,10 +2567,30 @@ reglas:
     cdmx:
     - '267'
     - '268'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '263'
+    - '260'
+    - '271'
+    edomex:
+    - '332'
+    - '331'
+    - '329'
+    - '328'
+    - '344'
+    - '330'
+    morelos:
+    - '269'
+    - '276'
+    - 276 BIS
+    - 269 TER
+    federal:
+    - '145'
+    - '212'
+    - '213'
+    - '220'
+    - '402'
   estado: sugerida
 - id: r098
   tipo_caso: corrupcion_gobierno
@@ -1668,10 +2602,27 @@ reglas:
     - '259'
     - '260'
     - '261'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '262'
+    - '261'
+    - '260'
+    edomex:
+    - '333'
+    - '329'
+    - '328'
+    - '330'
+    morelos:
+    - '271'
+    - '269'
+    - 269 TER
+    federal:
+    - '145'
+    - '214'
+    - '212'
+    - '213'
+    - '402'
   estado: sugerida
 - id: r099
   tipo_caso: corrupcion_gobierno
@@ -1681,10 +2632,26 @@ reglas:
   articulos:
     cdmx:
     - '266'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '266'
+    - '260'
+    edomex:
+    - '334'
+    - '329'
+    - '328'
+    - '330'
+    morelos:
+    - '273'
+    - '269'
+    - 269 TER
+    federal:
+    - '145'
+    - '216'
+    - '212'
+    - '213'
+    - '402'
   estado: sugerida
 - id: r100
   tipo_caso: corrupcion_gobierno
@@ -1694,10 +2661,26 @@ reglas:
   articulos:
     cdmx:
     - '276'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '260'
+    - '294'
+    edomex:
+    - '176'
+    - '329'
+    - '328'
+    - '330'
+    morelos:
+    - '269'
+    - 269 TER
+    - '295'
+    federal:
+    - '145'
+    - '212'
+    - '213'
+    - '250'
+    - '402'
   estado: sugerida
 - id: r101
   tipo_caso: corrupcion_gobierno
@@ -1708,10 +2691,26 @@ reglas:
     cdmx:
     - 276 BIS
     - 276 TER
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '260'
+    edomex:
+    - '329'
+    - '328'
+    - '330'
+    morelos:
+    - '269'
+    - 269 BIS
+    - 269 TER
+    federal:
+    - '145'
+    - 217 Quáter
+    - 213 Bis
+    - 217 Ter
+    - '212'
+    - '213'
+    - '402'
   estado: sugerida
 - id: r102
   tipo_caso: corrupcion_gobierno
@@ -1721,10 +2720,22 @@ reglas:
   articulos:
     cdmx:
     - 276 Quater
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '260'
+    edomex:
+    - '329'
+    - '328'
+    - '330'
+    morelos:
+    - '269'
+    - 269 TER
+    federal:
+    - '145'
+    - '212'
+    - '213'
+    - '402'
   estado: sugerida
 - id: r103
   tipo_caso: corrupcion_gobierno
@@ -1733,14 +2744,25 @@ reglas:
   cuando: []
   articulos:
     cdmx:
-    - '277'
-    - '278'
     - '279'
     - '280'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    - '257'
+    - '258'
+    queretaro:
+    - '260'
+    edomex:
+    - '329'
+    - '328'
+    - '330'
+    morelos:
+    - '269'
+    - '285'
+    - 269 TER
+    federal:
+    - '145'
+    - '212'
+    - '213'
+    - '402'
   estado: sugerida
 - id: r104
   tipo_caso: conflicto_con_autoridad
@@ -1753,10 +2775,30 @@ reglas:
     - '282'
     - '283'
     - '284'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '286'
+    - '290'
+    - '288'
+    - '287'
+    edomex:
+    - '117'
+    - '118'
+    - '120'
+    - '119'
+    morelos:
+    - '290'
+    - '288'
+    - '292'
+    - '289'
+    federal:
+    - '178'
+    - '183'
+    - '180'
+    - 180 Bis
+    - '182'
+    - '181'
+    - 178 Bis
+    - '179'
   estado: sugerida
 - id: r105
   tipo_caso: conflicto_con_autoridad
@@ -1764,11 +2806,11 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx:
-    - '287'
+    cdmx: []
     queretaro: []
     edomex: []
-    morelos: []
+    morelos:
+    - '296'
     federal: []
   estado: sugerida
 - id: r106
@@ -1780,10 +2822,17 @@ reglas:
     cdmx:
     - '286'
     - 286 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '291'
+    edomex:
+    - '124'
+    - 124 Bis
+    - '125'
+    morelos:
+    - '293'
+    federal:
+    - '187'
+    - '188'
   estado: sugerida
 - id: r107
   tipo_caso: conflicto_con_autoridad
@@ -1791,11 +2840,17 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '285'
+    queretaro:
+    - '289'
+    edomex:
+    - '122'
+    - '123'
+    morelos:
+    - '291'
+    federal:
+    - '185'
   estado: sugerida
 - id: r108
   tipo_caso: conflicto_con_autoridad
@@ -1805,10 +2860,14 @@ reglas:
   articulos:
     cdmx:
     - '288'
-    queretaro: []
+    queretaro:
+    - '308'
     edomex: []
-    morelos: []
-    federal: []
+    morelos:
+    - '303'
+    federal:
+    - '227'
+    - '226'
   estado: sugerida
 - id: r109
   tipo_caso: conflicto_con_autoridad
@@ -1819,10 +2878,19 @@ reglas:
     cdmx:
     - 289 BIS
     - 289 TER
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - 235 TER
+    - '295'
+    edomex:
+    - '177'
+    morelos:
+    - '296'
+    - '295'
+    federal:
+    - '192'
+    - 250 bis
+    - 250 bis 1
+    - '250'
   estado: sugerida
 - id: r110
   tipo_caso: conflicto_con_autoridad
@@ -1830,10 +2898,16 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
+    cdmx:
+    - 211 QUÁTER
+    queretaro:
+    - 229 QUÁTER
+    - 229 TER
+    edomex:
+    - 116 Bis
+    morelos:
+    - 267 BIS
+    - 291 BIS
     federal: []
   estado: sugerida
 - id: r111
@@ -1842,11 +2916,20 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '277'
+    - '278'
+    queretaro:
+    - '268'
+    edomex:
+    - '346'
+    morelos:
+    - '281'
+    - '278'
+    - '283'
+    - '282'
+    federal:
+    - '222'
   estado: sugerida
 - id: r112
   tipo_caso: justicia_abogados
@@ -1859,9 +2942,13 @@ reglas:
     - '291'
     - '292'
     - 292 BIS
+    - 299 BIS
     queretaro: []
-    edomex: []
-    morelos: []
+    edomex:
+    - '331'
+    - '353'
+    morelos:
+    - 213 Nonies
     federal: []
   estado: sugerida
 - id: r113
@@ -1870,11 +2957,25 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '293'
+    - 293 BIS
+    - 293 QUÁTER
+    - 293 TER
+    queretaro:
+    - '274'
+    - 298 BIS
+    edomex:
+    - '331'
+    - '353'
+    morelos:
+    - 213 Nonies
+    - '270'
+    - '298'
+    - '297'
+    - '299'
+    federal:
+    - '225'
   estado: sugerida
 - id: r114
   tipo_caso: justicia_abogados
@@ -1882,11 +2983,25 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '299'
+    - 299 TER
+    - '300'
+    queretaro:
+    - '275'
+    - '274'
+    - '298'
+    edomex:
+    - 166 Ter
+    - '353'
+    morelos:
+    - 213 Nonies
+    - '298'
+    - '297'
+    - '299'
+    - '309'
+    federal:
+    - '225'
   estado: sugerida
 - id: r115
   tipo_caso: justicia_abogados
@@ -1908,10 +3023,17 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
+    cdmx:
+    - '303'
     queretaro: []
-    edomex: []
-    morelos: []
+    edomex:
+    - '163'
+    - '164'
+    - '165'
+    - '353'
+    morelos:
+    - '297'
+    - '309'
     federal: []
   estado: sugerida
 - id: r117
@@ -1928,10 +3050,24 @@ reglas:
     - '307'
     - '308'
     - '309'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '278'
+    - '276'
+    - '277'
+    - '279'
+    edomex:
+    - '162'
+    - '158'
+    - '160'
+    - '159'
+    - '161'
+    morelos:
+    - 278 BIS
+    federal:
+    - '154'
+    - '152'
+    - '153'
+    - '150'
   estado: sugerida
 - id: r118
   tipo_caso: justicia_abogados
@@ -1942,9 +3078,12 @@ reglas:
     cdmx:
     - '310'
     - 310 BIS
-    queretaro: []
-    edomex: []
-    morelos: []
+    queretaro:
+    - '296'
+    edomex:
+    - 165 bis
+    morelos:
+    - '300'
     federal: []
   estado: sugerida
 - id: r119
@@ -1960,10 +3099,25 @@ reglas:
     - '314'
     - '315'
     - '316'
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '284'
+    - 285 BIS
+    - '285'
+    - '297'
+    edomex:
+    - '154'
+    - '157'
+    - '156'
+    morelos:
+    - 221 BIS
+    - '221'
+    - '222'
+    - 291 BIS
+    - '301'
+    federal:
+    - '247'
+    - 247 Bis
+    - '248'
   estado: sugerida
 - id: r120
   tipo_caso: justicia_abogados
@@ -1971,11 +3125,16 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '318'
+    queretaro:
+    - '297'
+    edomex:
+    - '155'
+    morelos:
+    - '302'
+    federal:
+    - 248 Bis
   estado: sugerida
 - id: r121
   tipo_caso: justicia_abogados
@@ -1986,9 +3145,12 @@ reglas:
     cdmx:
     - '317'
     queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    edomex:
+    - '175'
+    morelos:
+    - '223'
+    federal:
+    - '249'
   estado: sugerida
 - id: r122
   tipo_caso: justicia_abogados
@@ -1996,11 +3158,21 @@ reglas:
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    cdmx:
+    - '319'
+    queretaro:
+    - '309'
+    - 309 BIS
+    - '310'
+    edomex:
+    - '181'
+    - '306'
+    morelos:
+    - '310'
+    federal:
+    - '232'
+    - '231'
+    - '387'
   estado: sugerida
 - id: r123
   tipo_caso: justicia_abogados
@@ -2012,10 +3184,20 @@ reglas:
     - '320'
     - '321'
     - 321 Bis
-    queretaro: []
-    edomex: []
-    morelos: []
-    federal: []
+    queretaro:
+    - '306'
+    - '305'
+    - '307'
+    edomex:
+    - '149'
+    - '153'
+    - '150'
+    morelos:
+    - '312'
+    - '311'
+    federal:
+    - 400 Bis 1
+    - '400'
   estado: sugerida
 - id: r124
   tipo_caso: derechos_autor
@@ -2027,7 +3209,18 @@ reglas:
     queretaro: []
     edomex: []
     morelos: []
-    federal: []
+    federal:
+    - '425'
+    - 424 bis
+    - '424'
+    - '427'
+    - '428'
+    - '426'
+    - 427 Bis
+    - 424 ter
+    - 427 Quinquies
+    - 427 Ter
+    - 427 Quáter
   estado: sugerida
 otro:
 - Delitos electorales (arts. 351–360).
