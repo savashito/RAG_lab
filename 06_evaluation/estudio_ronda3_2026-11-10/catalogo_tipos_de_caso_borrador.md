@@ -15,7 +15,7 @@ Si cada delito fuera un tipo de caso, el LLM tendría que elegir entre unos 120.
 
 Propuesta, en dos niveles:
 
-1. **Tipo de caso:** lo que le pasó a la persona, con palabras de todos los días. Son unos 20. **El LLM clasifica** el mensaje en uno o más tipos de caso de esta lista cerrada.
+1. **Tipo de caso:** lo que le pasó a la persona, con palabras de todos los días. Son 21. **El LLM clasifica** el mensaje en uno o más tipos de caso de esta lista cerrada.
 2. **Delitos posibles:** cada tipo de caso tiene su lista de delitos posibles y los datos decisivos que los distinguen. **El programa en Python** pregunta esos datos (con el texto de Karen) y, con las respuestas, decide qué delitos aplican. El LLM no elige el delito.
 
 Así el LLM elige entre unos 21 tipos de caso, no entre 120 delitos. Y la distinción difícil (extorsión o Ley Olimpia) queda en una regla que Karen escribe y que se puede revisar.
