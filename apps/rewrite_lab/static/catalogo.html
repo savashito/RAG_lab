@@ -188,7 +188,7 @@ function pintarLista(){
   } else if (p === 'tipos_caso') {
     $('lista').innerHTML = `<table><tr><th>Tipo de caso</th><th>Datos del expediente</th><th>Reglas</th><th>Estado</th></tr>${filas.map(e=>`
       <tr class="row ${S.sel===e.id?'sel':''}" onclick="abrir('${e.id}')"><td>${esc(e.titulo)}<div class="muted small">${esc(e.id)}</div></td>
-      <td class="small">${esc((e.datos||[]).join(', '))}</td><td class="small">${(S.cat.reglas||[]).filter(r=>r.tipo_caso===e.id).length}</td>
+      <td class="small">${esc((e.datos||[]).join(', '))}</td><td class="small"><a href="#" title="Ver las reglas de este tipo de caso" onclick="event.stopPropagation();verReglas('${e.id}');return false">${(S.cat.reglas||[]).filter(r=>r.tipo_caso===e.id).length} reglas →</a></td>
       <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
   } else {
     $('lista').innerHTML = `<table><tr><th>Dato</th><th>Pregunta</th><th>Estado</th></tr>${filas.map(e=>`
@@ -196,6 +196,7 @@ function pintarLista(){
       <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
   }
 }
+function verReglas(tipo){ S.parte='reglas'; S.f = {tipo, estado:'', q:''}; S.sel=null; pintar(); panelVacio(); }
 function panelVacio(){ $('panel').innerHTML = '<span class="muted">Elige una fila para verla o editarla.</span>'; S.marcas.forEach(l => cm.removeLineClass(l, 'background', 'sel-line')); S.marcas = []; }
 function estadoSel(v){ return `<select id="e-estado">${['borrador','sugerida','confirmada','descartada'].map(e=>`<option ${v===e?'selected':''}>${e}</option>`).join('')}</select>`; }
 function abrir(id, nuevaEntrada){
