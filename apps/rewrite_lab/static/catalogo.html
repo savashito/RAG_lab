@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catálogo de casos</title>
+<style>
+  :root{ --bg:#f6f7f9; --card:#fff; --ink:#1a1d24; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --warn:#b45309; --bad:#b91c1c; --ok:#15803d; }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b0d12; --card:#12151c; --ink:#e8eaed; --muted:#9aa0ac; --line:#232833; --accent:#3b82f6; --warn:#f59e0b; --bad:#f87171; --ok:#22c55e; } }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  header{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  h1{font-size:17px;margin:0;flex:1}
+  a{color:var(--accent)}
+  button,select,input,textarea{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 10px}
+  button{cursor:pointer} button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  button:disabled,input:disabled,select:disabled,textarea:disabled{opacity:.6;cursor:default}
+  .wrap{padding:16px;max-width:1600px;margin:0 auto}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px} .tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+  @media (max-width:1000px){ .grid{grid-template-columns:1fr} }
+  .lista{background:var(--card);border:1px solid var(--line);border-radius:8px;max-height:75vh;overflow:auto}
+  table{border-collapse:collapse;width:100%}
+  th,td{text-align:left;padding:7px 10px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:top}
+  th{border-top:0;color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--card)}
+  tr.row{cursor:pointer} tr.row:hover td{background:var(--bg)} tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+  .est{font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid;white-space:nowrap}
+  .est.borrador,.est.sugerida{color:var(--warn)} .est.confirmada{color:var(--ok)} .est.descartada{color:var(--muted)}
+  .muted{color:var(--muted)} .small{font-size:13px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;position:sticky;top:10px;max-height:90vh;overflow:auto}
+  .panel label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
+  .panel input,.panel textarea,.panel select{width:100%}
+  .panel textarea{min-height:70px;resize:vertical}
+  .cod{display:grid;grid-template-columns:90px 1fr;gap:6px;align-items:center;margin:4px 0}
+  .chips{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 6px 96px}
+  .chip{font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+  .chip:hover{border-color:var(--accent)}
+  .texto{white-space:pre-wrap;font:13px/1.55 Georgia,serif;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;max-height:40vh;overflow:auto;margin-top:8px}
+  .msg{font-size:13px;margin-left:8px} .msg.err{color:var(--bad)} .msg.ok{color:var(--ok)}
+  .checks{display:flex;flex-wrap:wrap;gap:4px 14px} .checks label{display:flex;gap:4px;align-items:center;color:var(--ink);margin:0;font-size:13px}
+  .checks input{width:auto}
+  .ayuda{font-size:13px;color:var(--muted);margin:0 0 12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 Catálogo de casos <span class="muted" style="font-weight:400;font-size:14px">— ronda 3: qué datos se piden, en qué tipo de caso y a qué delito llevan</span></h1>
+  <span class="muted small" id="meta"></span>
+  <a href="/api/catalogo/yaml">Descargar YAML</a>
+  <a href="/">← App</a>
+</header>
+<div class="wrap">
+  <p class="ayuda">Todo lo que dice <b>borrador</b> o <b>sugerida</b> lo escribió Claude o un script y nadie lo ha revisado. Revisa cada entrada contra el texto del artículo (botón con el número) y márcala <b>confirmada</b> o <b>descartada</b>. Solo las reglas confirmadas se usarán en el estudio.</p>
+  <div class="tabs" id="tabs"></div>
+  <div class="grid">
+    <div>
+      <div class="filtros" id="filtros"></div>
+      <div class="lista" id="lista"></div>
+    </div>
+    <div class="panel" id="panel"><span class="muted">Elige una fila para verla o editarla.</span></div>
+  </div>
+</div>
+<script>
+const NOMBRES = {cdmx:'CDMX', queretaro:'Querétaro', edomex:'Edomex', morelos:'Morelos', federal:'Federal'};
+const PARTES = [['reglas','Reglas'],['tipos_caso','Tipos de caso'],['datos','Datos del expediente'],['otro','Van a «otro»']];
+let S = {cat:null, puede:false, codigos:[], parte:'reglas', sel:null, f:{tipo:'', estado:'', q:''}};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = id => document.getElementById(id);
+
+async function cargar(){
+  const r = await fetch('/api/catalogo'); const j = await r.json();
+  S.cat = j.catalogo; S.puede = j.puede_editar; S.codigos = j.codigos;
+  $('meta').textContent = `md5 ${j.md5.slice(0,8)} · ${j.actualizado_por || ''} · ${(j.updated_at||'').slice(0,16)}` + (S.puede ? '' : ' · solo lectura');
+  pintar();
+}
+function progreso(p){
+  const l = S.cat[p] || []; const c = l.filter(e => e.estado === 'confirmada').length;
+  return Array.isArray(l) && typeof l[0] === 'object' ? ` (${c}/${l.length})` : ` (${l.length})`;
+}
+function pintar(){
+  $('tabs').innerHTML = PARTES.map(([p,n]) => `<button class="${p===S.parte?'on':''}" onclick="S.parte='${p}';S.sel=null;pintar();panelVacio()">${n}${progreso(p)}</button>`).join('');
+  const tipos = S.cat.tipos_caso || [];
+  if (S.parte === 'reglas') {
+    $('filtros').innerHTML = `<select onchange="S.f.tipo=this.value;pintar()"><option value="">Todos los tipos de caso</option>${tipos.map(t=>`<option value="${t.id}" ${S.f.tipo===t.id?'selected':''}>${esc(t.titulo)}</option>`).join('')}</select>
+      ${selEstado()} <input placeholder="Buscar delito…" value="${esc(S.f.q)}" oninput="S.f.q=this.value;pintarLista()">
+      ${S.puede?'<button onclick="nueva()">+ Nueva regla</button>':''}`;
+  } else if (S.parte === 'otro') {
+    $('filtros').innerHTML = '<span class="muted small">Delitos que van a «otro»: el asistente solo pide el lugar y usa el buscador. Para cambiar esta lista, díselo a Rodrigo o a Claude.</span>';
+  } else {
+    $('filtros').innerHTML = `${selEstado()} ${S.puede?'<button onclick="nueva()">+ Agregar</button>':''}`;
+  }
+  pintarLista();
+}
+function selEstado(){
+  return `<select onchange="S.f.estado=this.value;pintar()"><option value="">Todos los estados</option>${['borrador','sugerida','confirmada','descartada'].map(e=>`<option ${S.f.estado===e?'selected':''}>${e}</option>`).join('')}</select>`;
+}
+function titulo(id){ return ((S.cat.tipos_caso||[]).find(t=>t.id===id)||{}).titulo || id; }
+function pintarLista(){
+  const p = S.parte, l = S.cat[p] || [];
+  if (p === 'otro') { $('lista').innerHTML = `<table><tr><th>Delito</th></tr>${l.map(x=>`<tr><td>${esc(x)}</td></tr>`).join('')}</table>`; return; }
+  let filas = l.filter(e => (!S.f.estado || e.estado === S.f.estado));
+  if (p === 'reglas') {
+    const q = S.f.q.toLowerCase();
+    filas = filas.filter(e => (!S.f.tipo || e.tipo_caso === S.f.tipo) && (!q || (e.delito||'').toLowerCase().includes(q)));
+    $('lista').innerHTML = `<table><tr><th>Tipo de caso</th><th>Delito</th><th>Artículos</th><th>Estado</th></tr>${filas.map(e=>`
+      <tr class="row ${S.sel===e.id?'sel':''}" onclick="abrir('${e.id}')"><td class="small">${esc(titulo(e.tipo_caso))}</td><td>${esc(e.delito)}</td>
+      <td class="small muted">${S.codigos.map(k=>(e.articulos?.[k]||[]).length?`${NOMBRES[k]}: ${(e.articulos[k]).length}`:'').filter(Boolean).join(' · ')}</td>
+      <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
+  } else if (p === 'tipos_caso') {
+    $('lista').innerHTML = `<table><tr><th>Tipo de caso</th><th>Datos del expediente</th><th>Reglas</th><th>Estado</th></tr>${filas.map(e=>`
+      <tr class="row ${S.sel===e.id?'sel':''}" onclick="abrir('${e.id}')"><td>${esc(e.titulo)}<div class="muted small">${esc(e.id)}</div></td>
+      <td class="small">${esc((e.datos||[]).join(', '))}</td><td class="small">${(S.cat.reglas||[]).filter(r=>r.tipo_caso===e.id).length}</td>
+      <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
+  } else {
+    $('lista').innerHTML = `<table><tr><th>Dato</th><th>Pregunta</th><th>Estado</th></tr>${filas.map(e=>`
+      <tr class="row ${S.sel===e.id?'sel':''}" onclick="abrir('${e.id}')"><td>${esc(e.id)}</td><td>${esc(e.pregunta)}</td>
+      <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
+  }
+}
+function panelVacio(){ $('panel').innerHTML = '<span class="muted">Elige una fila para verla o editarla.</span>'; }
+function estadoSel(v){ return `<select id="e-estado">${['borrador','sugerida','confirmada','descartada'].map(e=>`<option ${v===e?'selected':''}>${e}</option>`).join('')}</select>`; }
+function abrir(id, nuevaEntrada){
+  S.sel = id; pintarLista();
+  const p = S.parte, e = nuevaEntrada || (S.cat[p]||[]).find(x => x.id === id); S.orig = nuevaEntrada ? null : id;
+  const dis = S.puede ? '' : 'disabled';
+  let h = '';
+  if (p === 'reglas') {
+    h = `<b>${esc(e.delito || 'Nueva regla')}</b> <span class="muted small">${esc(e.id)}</span>
+      <label>Tipo de caso</label><select id="e-tipo" ${dis}>${(S.cat.tipos_caso||[]).map(t=>`<option value="${t.id}" ${t.id===e.tipo_caso?'selected':''}>${esc(t.titulo)}</option>`).join('')}</select>
+      <label>Delito</label><input id="e-delito" value="${esc(e.delito)}" ${dis}>
+      <label>Condición: qué datos del expediente y qué valores llevan a este delito</label><textarea id="e-cond" ${dis} placeholder="Ej.: pide_dinero = sí">${esc(e.condicion)}</textarea>
+      <label>Artículos por código (separados por coma; clic en un número para leer el artículo)</label>
+      ${S.codigos.map(k=>`<div class="cod"><span>${NOMBRES[k]}</span><input id="e-a-${k}" value="${esc((e.articulos?.[k]||[]).join(', '))}" ${dis}></div>
+        <div class="chips">${(e.articulos?.[k]||[]).map(a=>`<span class="chip" onclick="leer('${k}','${esc(a)}')">${esc(a)}</span>`).join('')}</div>`).join('')}
+      <div id="texto"></div>
+      <label>Nota</label><textarea id="e-nota" ${dis}>${esc(e.nota)}</textarea>
+      <label>Estado</label>${estadoSel(e.estado)}`;
+  } else if (p === 'tipos_caso') {
+    const ids = new Set(e.datos || []);
+    h = `<label>id</label><input id="e-id" value="${esc(e.id)}" ${dis}>
+      <label>Nombre (como lo diría la persona)</label><input id="e-titulo" value="${esc(e.titulo)}" ${dis}>
+      <label>Descripción (la lee el LLM para clasificar)</label><textarea id="e-desc" ${dis}>${esc(e.descripcion)}</textarea>
+      <label>Datos del expediente que necesita</label><div class="checks">${(S.cat.datos||[]).map(d=>`<label><input type="checkbox" class="e-dato" value="${d.id}" ${ids.has(d.id)?'checked':''} ${dis}>${esc(d.id)}</label>`).join('')}</div>
+      <label>Estado</label>${estadoSel(e.estado)}`;
+  } else {
+    h = `<label>id</label><input id="e-id" value="${esc(e.id)}" ${dis}>
+      <label>Pregunta que se le hace a la persona</label><textarea id="e-preg" ${dis}>${esc(e.pregunta)}</textarea>
+      <label>Para qué distingue</label><textarea id="e-para" ${dis}>${esc(e.para_que)}</textarea>
+      <label>Estado</label>${estadoSel(e.estado)}`;
+  }
+  if (S.puede) h += `<div style="margin-top:12px"><button class="primary" onclick="guardar()">Guardar</button><span class="msg" id="msg"></span></div>`;
+  $('panel').innerHTML = h;
+  if (!S.puede) $('e-estado').disabled = true;
+}
+async function leer(codigo, num){
+  $('texto').innerHTML = '<div class="texto muted">Cargando…</div>';
+  const j = await (await fetch(`/api/catalogo/articulo?codigo=${encodeURIComponent(codigo)}&num=${encodeURIComponent(num)}`)).json();
+  $('texto').innerHTML = j.encontrado ? `<div class="texto"><b>${esc(NOMBRES[codigo])} · ${esc(j.ruta)}</b>\n\n${esc(j.texto)}</div>`
+    : `<div class="texto" style="color:var(--bad)">No encontré el artículo ${esc(num)} en ${esc(NOMBRES[codigo])}. Revisa el número.</div>`;
+}
+function nueva(){
+  const p = S.parte;
+  if (p === 'reglas') {
+    const n = Math.max(0, ...(S.cat.reglas||[]).map(r => +String(r.id).slice(1) || 0)) + 1;
+    abrir(null, {id:'r'+String(n).padStart(3,'0'), tipo_caso:S.f.tipo || (S.cat.tipos_caso[0]||{}).id, delito:'', condicion:'', articulos:{}, estado:'borrador'});
+  } else abrir(null, {id:'', estado:'borrador', datos:['lugar_hechos']});
+}
+async function guardar(){
+  const p = S.parte, v = id => $(id).value, lista = s => s.split(',').map(x=>x.trim()).filter(Boolean);
+  let e;
+  if (p === 'reglas') {
+    e = {id: S.orig || (S.sel ?? '') , tipo_caso:v('e-tipo'), delito:v('e-delito').trim(), condicion:v('e-cond').trim(), articulos:{}, estado:v('e-estado')};
+    if (!e.id) { const n = Math.max(0, ...(S.cat.reglas||[]).map(r => +String(r.id).slice(1) || 0)) + 1; e.id = 'r'+String(n).padStart(3,'0'); }
+    S.codigos.forEach(k => e.articulos[k] = lista(v('e-a-'+k)));
+    const nota = v('e-nota').trim(); if (nota) e.nota = nota;
+  } else if (p === 'tipos_caso') {
+    e = {id:v('e-id').trim(), titulo:v('e-titulo').trim(), descripcion:v('e-desc').trim(),
+         datos:[...document.querySelectorAll('.e-dato:checked')].map(x=>x.value), estado:v('e-estado')};
+  } else {
+    e = {id:v('e-id').trim(), pregunta:v('e-preg').trim(), para_que:v('e-para').trim(), estado:v('e-estado')};
+  }
+  const r = await fetch('/api/catalogo/'+p, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({entrada:e, original_id:S.orig})});
+  const j = await r.json();
+  if (!r.ok) { $('msg').className='msg err'; $('msg').textContent = j.error || 'Error'; return; }
+  const sel = j.entrada.id; await cargar(); abrir(sel);
+  $('msg').className='msg ok'; $('msg').textContent = 'Guardado ✓';
+}
+cargar();
+</script>
+</body>
+</html>

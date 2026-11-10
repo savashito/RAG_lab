@@ -1686,6 +1686,12 @@ categorias = Categorias(connect=connect, current_email=current_email, can_edit=c
                         and can_upload_topic(email, ingest_mgr.topic_of(source)))
 app.include_router(categorias.router)
 
+# 📚 Catálogo de casos (ronda 3): datos del expediente, tipos de caso y reglas; Karen lo revisa en /catalogo.
+from consulta.catalogo import Catalogo  # noqa: E402
+catalogo = Catalogo(connect=connect, current_email=current_email, can_edit=can_ingest, is_superadmin=is_superadmin,
+                    table=TABLE, static_dir=STATIC)
+app.include_router(catalogo.router)
+
 
 @app.get('/healthz')
 def healthz():

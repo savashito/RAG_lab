@@ -275,7 +275,8 @@ tipos_caso:
   - federal
   estado: borrador
 reglas:
-- tipo_caso: golpes_lesiones
+- id: r001
+  tipo_caso: golpes_lesiones
   delito: Lesiones
   condicion: ''
   articulos:
@@ -291,7 +292,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: golpes_lesiones
+- id: r002
+  tipo_caso: golpes_lesiones
   delito: lesiones con ácido
   condicion: ''
   articulos:
@@ -301,7 +303,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: golpes_lesiones
+- id: r003
+  tipo_caso: golpes_lesiones
   delito: reglas de riña
   condicion: ''
   articulos:
@@ -311,7 +314,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: golpes_lesiones
+- id: r004
+  tipo_caso: golpes_lesiones
   delito: disparo de arma
   condicion: ''
   articulos:
@@ -321,7 +325,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: muerte
+- id: r005
+  tipo_caso: muerte
   delito: Homicidio
   condicion: ''
   articulos:
@@ -338,7 +343,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: muerte
+- id: r006
+  tipo_caso: muerte
   delito: feminicidio
   condicion: ''
   articulos:
@@ -349,7 +355,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: muerte
+- id: r007
+  tipo_caso: muerte
   delito: transfeminicidio
   condicion: ''
   articulos:
@@ -360,7 +367,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: muerte
+- id: r008
+  tipo_caso: muerte
   delito: ayuda o inducción al suicidio
   condicion: ''
   articulos:
@@ -373,7 +381,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: violencia_familiar
+- id: r009
+  tipo_caso: violencia_familiar
   delito: Violencia familiar
   condicion: ''
   articulos:
@@ -387,7 +396,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: violencia_familiar
+- id: r010
+  tipo_caso: violencia_familiar
   delito: violencia vicaria
   condicion: ''
   articulos:
@@ -399,7 +409,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: violencia_familiar
+- id: r011
+  tipo_caso: violencia_familiar
   delito: incumplimiento de la obligación alimentaria
   condicion: ''
   articulos:
@@ -409,7 +420,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: agresion_sexual
+- id: r012
+  tipo_caso: agresion_sexual
   delito: Violación
   condicion: ''
   articulos:
@@ -421,7 +433,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: agresion_sexual
+- id: r013
+  tipo_caso: agresion_sexual
   delito: abuso sexual
   condicion: ''
   articulos:
@@ -435,7 +448,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: agresion_sexual
+- id: r014
+  tipo_caso: agresion_sexual
   delito: estupro
   condicion: ''
   articulos:
@@ -446,7 +460,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: agresion_sexual
+- id: r015
+  tipo_caso: agresion_sexual
   delito: incesto
   condicion: ''
   articulos:
@@ -457,7 +472,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: agresion_sexual
+- id: r016
+  tipo_caso: agresion_sexual
   delito: delitos contra menores de 12 años
   condicion: ''
   articulos:
@@ -467,7 +483,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: agresion_sexual
+- id: r017
+  tipo_caso: agresion_sexual
   delito: privación de la libertad con fines sexuales
   condicion: ''
   articulos:
@@ -478,7 +495,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: acoso_hostigamiento
+- id: r018
+  tipo_caso: acoso_hostigamiento
   delito: Acoso sexual
   condicion: ''
   articulos:
@@ -490,7 +508,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: acoso_hostigamiento
+- id: r019
+  tipo_caso: acoso_hostigamiento
   delito: hostigamiento sexual
   condicion: ''
   articulos:
@@ -500,7 +519,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: imagenes_intimas
+- id: r020
+  tipo_caso: imagenes_intimas
   delito: Contra la intimidad sexual (Ley Olimpia)
   condicion: ''
   articulos:
@@ -512,7 +532,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: imagenes_intimas
+- id: r021
+  tipo_caso: imagenes_intimas
   delito: extorsión
   condicion: ''
   articulos:
@@ -524,7 +545,8 @@ reglas:
     federal: []
   estado: sugerida
   nota: 236 derogado
-- tipo_caso: imagenes_intimas
+- id: r022
+  tipo_caso: imagenes_intimas
   delito: amenazas
   condicion: ''
   articulos:
@@ -535,7 +557,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: imagenes_intimas
+- id: r023
+  tipo_caso: imagenes_intimas
   delito: pornografía de personas menores de edad
   condicion: ''
   articulos:
@@ -545,7 +568,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: imagenes_intimas
+- id: r024
+  tipo_caso: imagenes_intimas
   delito: corrupción de menores
   condicion: ''
   articulos:
@@ -555,7 +579,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: imagenes_intimas
+- id: r025
+  tipo_caso: imagenes_intimas
   delito: 'federal: delitos contra la indemnidad de privacidad de la información sexual (CPF, título séptimo bis)'
   condicion: ''
   articulos:
@@ -565,7 +590,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: amenazas_extorsion
+- id: r026
+  tipo_caso: amenazas_extorsion
   delito: Amenazas
   condicion: ''
   articulos:
@@ -576,7 +602,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: amenazas_extorsion
+- id: r027
+  tipo_caso: amenazas_extorsion
   delito: extorsión (Ley General en materia de Extorsión; en la CDMX el art. 236 está derogado desde el 12-dic-2024 y queda
     el 148 Quáter; revisar cada estado)
   condicion: ''
@@ -589,7 +616,8 @@ reglas:
     federal: []
   estado: sugerida
   nota: 236 derogado
-- tipo_caso: amenazas_extorsion
+- id: r028
+  tipo_caso: amenazas_extorsion
   delito: cobranza ilegítima
   condicion: ''
   articulos:
@@ -600,7 +628,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: privacion_libertad
+- id: r029
+  tipo_caso: privacion_libertad
   delito: Privación de la libertad
   condicion: ''
   articulos:
@@ -610,7 +639,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: privacion_libertad
+- id: r030
+  tipo_caso: privacion_libertad
   delito: secuestro (Ley General en materia de Secuestro)
   condicion: ''
   articulos:
@@ -627,7 +657,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: privacion_libertad
+- id: r031
+  tipo_caso: privacion_libertad
   delito: desaparición de personas (ley general, no está en el corpus)
   condicion: ''
   articulos:
@@ -637,7 +668,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: privacion_libertad
+- id: r032
+  tipo_caso: privacion_libertad
   delito: sustracción o retención de menores
   condicion: ''
   articulos:
@@ -647,7 +679,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: privacion_libertad
+- id: r033
+  tipo_caso: privacion_libertad
   delito: tráfico de menores
   condicion: ''
   articulos:
@@ -659,7 +692,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: privacion_libertad
+- id: r034
+  tipo_caso: privacion_libertad
   delito: desaparición forzada por un servidor público (CDMX, art. 168)
   condicion: ''
   articulos:
@@ -669,7 +703,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: robo
+- id: r035
+  tipo_caso: robo
   delito: Robo (y sus agravantes)
   condicion: ''
   articulos:
@@ -688,7 +723,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: robo
+- id: r036
+  tipo_caso: robo
   delito: abuso de confianza
   condicion: ''
   articulos:
@@ -701,7 +737,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: robo
+- id: r037
+  tipo_caso: robo
   delito: encubrimiento por receptación
   condicion: ''
   articulos:
@@ -714,7 +751,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r038
+  tipo_caso: fraude_datos
   delito: Fraude
   condicion: ''
   articulos:
@@ -730,7 +768,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r039
+  tipo_caso: fraude_datos
   delito: administración fraudulenta
   condicion: ''
   articulos:
@@ -741,7 +780,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r040
+  tipo_caso: fraude_datos
   delito: insolvencia fraudulenta
   condicion: ''
   articulos:
@@ -752,7 +792,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r041
+  tipo_caso: fraude_datos
   delito: usurpación de identidad
   condicion: ''
   articulos:
@@ -763,7 +804,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r042
+  tipo_caso: fraude_datos
   delito: falsificación de documentos
   condicion: ''
   articulos:
@@ -773,7 +815,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r043
+  tipo_caso: fraude_datos
   delito: falsificación de sellos, llaves o contraseñas
   condicion: ''
   articulos:
@@ -783,7 +826,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r044
+  tipo_caso: fraude_datos
   delito: falsificación de tarjetas o títulos de crédito
   condicion: ''
   articulos:
@@ -793,7 +837,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: fraude_datos
+- id: r045
+  tipo_caso: fraude_datos
   delito: acceso ilícito a sistemas o equipos de informática (CPF, título noveno; Querétaro, título séptimo)
   condicion: ''
   articulos:
@@ -803,7 +848,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: propiedad
+- id: r046
+  tipo_caso: propiedad
   delito: Despojo
   condicion: ''
   articulos:
@@ -815,7 +861,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: propiedad
+- id: r047
+  tipo_caso: propiedad
   delito: daño a la propiedad
   condicion: ''
   articulos:
@@ -830,7 +877,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: propiedad
+- id: r048
+  tipo_caso: propiedad
   delito: allanamiento de morada
   condicion: ''
   articulos:
@@ -842,7 +890,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: propiedad
+- id: r049
+  tipo_caso: propiedad
   delito: responsabilidad de directores responsables de obra (construcción)
   condicion: ''
   articulos:
@@ -852,7 +901,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: transito
+- id: r050
+  tipo_caso: transito
   delito: Lesiones u homicidio culposo
   condicion: ''
   articulos:
@@ -862,7 +912,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: transito
+- id: r051
+  tipo_caso: transito
   delito: daño culposo
   condicion: ''
   articulos:
@@ -872,7 +923,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: transito
+- id: r052
+  tipo_caso: transito
   delito: delitos contra la seguridad del tránsito
   condicion: ''
   articulos:
@@ -883,7 +935,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: transito
+- id: r053
+  tipo_caso: transito
   delito: ataques a las vías de comunicación y a los medios de transporte
   condicion: ''
   articulos:
@@ -895,7 +948,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: intimidad_honor
+- id: r054
+  tipo_caso: intimidad_honor
   delito: Violación de la intimidad personal
   condicion: ''
   articulos:
@@ -906,7 +960,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: intimidad_honor
+- id: r055
+  tipo_caso: intimidad_honor
   delito: revelación de secretos
   condicion: ''
   articulos:
@@ -917,7 +972,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: intimidad_honor
+- id: r056
+  tipo_caso: intimidad_honor
   delito: Violación de correspondencia o comunicación privada
   condicion: ''
   articulos:
@@ -927,7 +983,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: intimidad_honor
+- id: r057
+  tipo_caso: intimidad_honor
   delito: Difamación y calumnia (derogadas en la CDMX, arts. 214–218; la vía es civil; revisar cada estado)
   condicion: ''
   articulos:
@@ -938,7 +995,8 @@ reglas:
     federal: []
   estado: sugerida
   nota: derogados 214–218
-- tipo_caso: abuso_autoridad
+- id: r058
+  tipo_caso: abuso_autoridad
   delito: Abuso de autoridad
   condicion: ''
   articulos:
@@ -952,7 +1010,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: abuso_autoridad
+- id: r059
+  tipo_caso: abuso_autoridad
   delito: uso ilegal de la fuerza pública
   condicion: ''
   articulos:
@@ -966,7 +1025,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: abuso_autoridad
+- id: r060
+  tipo_caso: abuso_autoridad
   delito: tortura (ley general, no está en el corpus; el código de la CDMX tiene los arts. 206 Bis y siguientes)
   condicion: ''
   articulos:
@@ -980,7 +1040,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: abuso_autoridad
+- id: r061
+  tipo_caso: abuso_autoridad
   delito: intimidación
   condicion: ''
   articulos:
@@ -991,7 +1052,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: abuso_autoridad
+- id: r062
+  tipo_caso: abuso_autoridad
   delito: cohecho
   condicion: ''
   articulos:
@@ -1002,7 +1064,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: abuso_autoridad
+- id: r063
+  tipo_caso: abuso_autoridad
   delito: concusión
   condicion: ''
   articulos:
@@ -1013,7 +1076,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: abuso_autoridad
+- id: r064
+  tipo_caso: abuso_autoridad
   delito: negación del servicio público
   condicion: ''
   articulos:
@@ -1024,7 +1088,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: discriminacion
+- id: r065
+  tipo_caso: discriminacion
   delito: Discriminación
   condicion: ''
   articulos:
@@ -1035,7 +1100,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: discriminacion
+- id: r066
+  tipo_caso: discriminacion
   delito: delitos contra el libre desarrollo de la personalidad y la identidad sexual (terapias de conversión)
   condicion: ''
   articulos:
@@ -1046,7 +1112,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r067
+  tipo_caso: salud
   delito: Responsabilidad profesional
   condicion: ''
   articulos:
@@ -1057,7 +1124,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r068
+  tipo_caso: salud
   delito: abandono o práctica indebida del servicio médico
   condicion: ''
   articulos:
@@ -1067,7 +1135,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r069
+  tipo_caso: salud
   delito: aborto
   condicion: ''
   articulos:
@@ -1082,7 +1151,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r070
+  tipo_caso: salud
   delito: esterilización forzada
   condicion: ''
   articulos:
@@ -1099,7 +1169,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r071
+  tipo_caso: salud
   delito: peligro de contagio
   condicion: ''
   articulos:
@@ -1110,7 +1181,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r072
+  tipo_caso: salud
   delito: sustancias modelantes
   condicion: ''
   articulos:
@@ -1122,7 +1194,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r073
+  tipo_caso: salud
   delito: administración subrepticia de sustancias
   condicion: ''
   articulos:
@@ -1133,7 +1206,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r074
+  tipo_caso: salud
   delito: suministro de medicinas nocivas o inapropiadas
   condicion: ''
   articulos:
@@ -1145,7 +1219,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: salud
+- id: r075
+  tipo_caso: salud
   delito: usurpación de profesión
   condicion: ''
   articulos:
@@ -1156,7 +1231,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: menores_vulnerables
+- id: r076
+  tipo_caso: menores_vulnerables
   delito: Corrupción de menores
   condicion: ''
   articulos:
@@ -1166,7 +1242,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: menores_vulnerables
+- id: r077
+  tipo_caso: menores_vulnerables
   delito: trata de personas (ley general, no está en el corpus; el código de la CDMX tiene el art. 188 Bis)
   condicion: ''
   articulos:
@@ -1177,7 +1254,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: menores_vulnerables
+- id: r078
+  tipo_caso: menores_vulnerables
   delito: lenocinio
   condicion: ''
   articulos:
@@ -1190,7 +1268,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: menores_vulnerables
+- id: r079
+  tipo_caso: menores_vulnerables
   delito: explotación laboral de menores
   condicion: ''
   articulos:
@@ -1202,7 +1281,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: menores_vulnerables
+- id: r080
+  tipo_caso: menores_vulnerables
   delito: omisión de cuidado
   condicion: ''
   articulos:
@@ -1212,7 +1292,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: menores_vulnerables
+- id: r081
+  tipo_caso: menores_vulnerables
   delito: turismo sexual
   condicion: ''
   articulos:
@@ -1223,7 +1304,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: menores_vulnerables
+- id: r082
+  tipo_caso: menores_vulnerables
   delito: omisión de auxilio
   condicion: ''
   articulos:
@@ -1238,7 +1320,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: proceso_penal
+- id: r083
+  tipo_caso: proceso_penal
   delito: '(procedimiento: Código Nacional de Procedimientos Penales) más el delito del que se acusa, que se clasifica con
     los tipos 1–17'
   condicion: ''
@@ -1249,7 +1332,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: animales_ambiente
+- id: r084
+  tipo_caso: animales_ambiente
   delito: Maltrato o crueldad contra animales
   condicion: ''
   articulos:
@@ -1259,7 +1343,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: animales_ambiente
+- id: r085
+  tipo_caso: animales_ambiente
   delito: delitos contra el ambiente
   condicion: ''
   articulos:
@@ -1278,7 +1363,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: animales_ambiente
+- id: r086
+  tipo_caso: animales_ambiente
   delito: delitos contra la gestión ambiental
   condicion: ''
   articulos:
@@ -1293,7 +1379,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: armas_crimen_organizado
+- id: r087
+  tipo_caso: armas_crimen_organizado
   delito: Portación de objetos para agredir
   condicion: ''
   articulos:
@@ -1303,7 +1390,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: armas_crimen_organizado
+- id: r088
+  tipo_caso: armas_crimen_organizado
   delito: armas de fuego (Ley Federal de Armas de Fuego, no está en el corpus; federal)
   condicion: ''
   articulos:
@@ -1313,7 +1401,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: armas_crimen_organizado
+- id: r089
+  tipo_caso: armas_crimen_organizado
   delito: pandilla
   condicion: ''
   articulos:
@@ -1327,7 +1416,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: armas_crimen_organizado
+- id: r090
+  tipo_caso: armas_crimen_organizado
   delito: asociación delictuosa
   condicion: ''
   articulos:
@@ -1341,7 +1431,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: armas_crimen_organizado
+- id: r091
+  tipo_caso: armas_crimen_organizado
   delito: delincuencia organizada (ley federal)
   condicion: ''
   articulos:
@@ -1355,7 +1446,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: armas_crimen_organizado
+- id: r092
+  tipo_caso: armas_crimen_organizado
   delito: operaciones con recursos de procedencia ilícita
   condicion: ''
   articulos:
@@ -1366,7 +1458,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: drogas
+- id: r093
+  tipo_caso: drogas
   delito: 'Delitos contra la salud (Código Penal Federal, título séptimo; narcomenudeo: Ley General de Salud, no está en el
     corpus)'
   condicion: ''
@@ -1377,7 +1470,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r094
+  tipo_caso: corrupcion_gobierno
   delito: Peculado
   condicion: ''
   articulos:
@@ -1388,7 +1482,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r095
+  tipo_caso: corrupcion_gobierno
   delito: enriquecimiento ilícito
   condicion: ''
   articulos:
@@ -1399,7 +1494,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r096
+  tipo_caso: corrupcion_gobierno
   delito: tráfico de influencia
   condicion: ''
   articulos:
@@ -1410,7 +1506,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r097
+  tipo_caso: corrupcion_gobierno
   delito: ejercicio abusivo de funciones
   condicion: ''
   articulos:
@@ -1422,7 +1519,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r098
+  tipo_caso: corrupcion_gobierno
   delito: ejercicio ilegal y abandono del servicio público
   condicion: ''
   articulos:
@@ -1435,7 +1533,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r099
+  tipo_caso: corrupcion_gobierno
   delito: coalición de servidores públicos
   condicion: ''
   articulos:
@@ -1446,7 +1545,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r100
+  tipo_caso: corrupcion_gobierno
   delito: usurpación de funciones públicas
   condicion: ''
   articulos:
@@ -1457,7 +1557,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r101
+  tipo_caso: corrupcion_gobierno
   delito: remuneración ilícita
   condicion: ''
   articulos:
@@ -1469,7 +1570,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r102
+  tipo_caso: corrupcion_gobierno
   delito: corrupción inmobiliaria
   condicion: ''
   articulos:
@@ -1480,7 +1582,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: corrupcion_gobierno
+- id: r103
+  tipo_caso: corrupcion_gobierno
   delito: distracción de recursos públicos
   condicion: ''
   articulos:
@@ -1494,7 +1597,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r104
+  tipo_caso: conflicto_con_autoridad
   delito: Desobediencia y resistencia de particulares
   condicion: ''
   articulos:
@@ -1508,7 +1612,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r105
+  tipo_caso: conflicto_con_autoridad
   delito: ultrajes a la autoridad
   condicion: ''
   articulos:
@@ -1519,7 +1624,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r106
+  tipo_caso: conflicto_con_autoridad
   delito: quebrantamiento de sellos
   condicion: ''
   articulos:
@@ -1531,7 +1637,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r107
+  tipo_caso: conflicto_con_autoridad
   delito: oposición a una obra pública
   condicion: ''
   articulos:
@@ -1541,7 +1648,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r108
+  tipo_caso: conflicto_con_autoridad
   delito: ejercicio ilegal del propio derecho (hacerse justicia por su mano)
   condicion: ''
   articulos:
@@ -1552,7 +1660,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r109
+  tipo_caso: conflicto_con_autoridad
   delito: uso indebido de insignias y uniformes
   condicion: ''
   articulos:
@@ -1564,7 +1673,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r110
+  tipo_caso: conflicto_con_autoridad
   delito: uso indebido de las llamadas de emergencia
   condicion: ''
   articulos:
@@ -1574,7 +1684,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: conflicto_con_autoridad
+- id: r111
+  tipo_caso: conflicto_con_autoridad
   delito: cohecho cometido por particulares (ofrecer «mordida»)
   condicion: ''
   articulos:
@@ -1584,7 +1695,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r112
+  tipo_caso: justicia_abogados
   delito: Denegación o retardo de justicia
   condicion: ''
   articulos:
@@ -1598,7 +1710,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r113
+  tipo_caso: justicia_abogados
   delito: delitos en la procuración de justicia
   condicion: ''
   articulos:
@@ -1608,7 +1721,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r114
+  tipo_caso: justicia_abogados
   delito: delitos en la administración de justicia
   condicion: ''
   articulos:
@@ -1618,7 +1732,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r115
+  tipo_caso: justicia_abogados
   delito: omisión de informes médico forenses
   condicion: ''
   articulos:
@@ -1630,7 +1745,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r116
+  tipo_caso: justicia_abogados
   delito: delitos en la ejecución penal
   condicion: ''
   articulos:
@@ -1640,7 +1756,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r117
+  tipo_caso: justicia_abogados
   delito: evasión de presos
   condicion: ''
   articulos:
@@ -1657,7 +1774,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r118
+  tipo_caso: justicia_abogados
   delito: fraude procesal
   condicion: ''
   articulos:
@@ -1669,7 +1787,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r119
+  tipo_caso: justicia_abogados
   delito: falsedad ante autoridades (falso testimonio)
   condicion: ''
   articulos:
@@ -1685,7 +1804,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r120
+  tipo_caso: justicia_abogados
   delito: simulación de pruebas
   condicion: ''
   articulos:
@@ -1695,7 +1815,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r121
+  tipo_caso: justicia_abogados
   delito: variación del nombre o domicilio
   condicion: ''
   articulos:
@@ -1706,7 +1827,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r122
+  tipo_caso: justicia_abogados
   delito: delitos de abogados, patronos y asesores jurídicos
   condicion: ''
   articulos:
@@ -1716,7 +1838,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: justicia_abogados
+- id: r123
+  tipo_caso: justicia_abogados
   delito: encubrimiento por favorecimiento
   condicion: ''
   articulos:
@@ -1729,7 +1852,8 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
-- tipo_caso: derechos_autor
+- id: r124
+  tipo_caso: derechos_autor
   delito: Delitos en materia de derechos de autor (CPF, título vigésimo sexto; federal)
   condicion: ''
   articulos:
