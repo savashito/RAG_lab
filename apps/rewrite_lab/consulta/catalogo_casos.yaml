@@ -1,0 +1,1750 @@
+version: borrador-2026-11-10
+nota: 'Borrador generado por Claude a partir del corpus. estado: borrador/sugerida = sin revisar por Karen; confirmada = revisada.
+  Los artículos de cdmx los sugirió un script desde el índice de capítulos del corpus.'
+datos:
+- id: lugar_hechos
+  pregunta: ¿En qué estado pasó?
+  para_que: Qué código penal aplica (solo en delitos del fuero común; ver federal)
+  estado: borrador
+- id: papel
+  pregunta: ¿Te pasó a ti, te acusan a ti, o le pasó a otra persona?
+  para_que: Derechos de víctima o de imputado
+  estado: borrador
+- id: edad_victima
+  pregunta: ¿Qué edad tiene la víctima?
+  para_que: Menor de edad o adulta; los umbrales (por ejemplo, 12 años en la CDMX) cambian por estado
+  estado: borrador
+- id: victima_mujer
+  pregunta: ¿La víctima es mujer (incluida mujer trans)?
+  para_que: Feminicidio y transfeminicidio; Ley General de Acceso de las Mujeres. No cambia los delitos que protegen a cualquier
+    persona (violencia familiar, acoso, Ley Olimpia), ni las medidas de protección del CNPP, que son para cualquier víctima
+  estado: borrador
+- id: relacion_partes
+  pregunta: ¿Qué relación tienen? (pareja o expareja, familiar, trabajo, escuela, ninguna)
+  para_que: Violencia familiar, hostigamiento, agravantes
+  estado: borrador
+- id: superior_o_docente
+  pregunta: ¿Esa persona es tu jefe, maestro o supervisa tu trabajo?
+  para_que: Hostigamiento sexual frente a acoso sexual
+  estado: borrador
+- id: servidor_publico
+  pregunta: ¿Quien lo hizo es policía o trabaja en el gobierno?
+  para_que: Abuso de autoridad, tortura, cohecho
+  estado: borrador
+- id: pide_dinero
+  pregunta: ¿Te pidieron dinero o algo a cambio?
+  para_que: Extorsión frente a amenazas o difusión
+  estado: borrador
+- id: ya_difundido
+  pregunta: ¿Ya publicaron o mandaron las imágenes a alguien?
+  para_que: Intimidad sexual consumada o amenaza
+  estado: borrador
+- id: violencia_o_arma
+  pregunta: ¿Hubo golpes, amenazas con arma o fuerza?
+  para_que: Robo con violencia, agravantes
+  estado: borrador
+- id: medio_digital
+  pregunta: ¿Pasó por internet, redes o teléfono?
+  para_que: Violencia digital; delitos a distancia
+  estado: borrador
+- id: intencional
+  pregunta: ¿Fue a propósito o fue un accidente?
+  para_que: Doloso frente a culposo (tránsito, médico)
+  estado: borrador
+- id: gravedad_lesion
+  pregunta: ¿Cuánto tarda en sanar la lesión? ¿Puso en riesgo la vida?
+  para_que: Grado de lesiones; los plazos (15 y 60 días en la CDMX) cambian por estado
+  estado: borrador
+- id: monto
+  pregunta: ¿Cuánto dinero o de qué valor?
+  para_que: Pena del robo y del fraude
+  estado: borrador
+- id: consentimiento
+  pregunta: ¿La persona estuvo de acuerdo? (tomar las imágenes, el procedimiento médico)
+  para_que: Intimidad sexual (en algunos estados), responsabilidad médica
+  estado: borrador
+- id: federal
+  pregunta: (no se pregunta; lo decide el tipo de caso o el delito)
+  para_que: 'Drogas, armas de fuego, delincuencia organizada y otros delitos federales: aplica el Código Penal Federal o la
+    ley federal sin importar el estado'
+  estado: borrador
+tipos_caso:
+- id: golpes_lesiones
+  titulo: Golpes, peleas o lesiones
+  descripcion: Golpes, peleas o lesiones
+  datos:
+  - lugar_hechos
+  - papel
+  - gravedad_lesion
+  - violencia_o_arma
+  - relacion_partes
+  estado: borrador
+- id: muerte
+  titulo: Murió una persona
+  descripcion: Murió una persona
+  datos:
+  - lugar_hechos
+  - intencional
+  - victima_mujer
+  - relacion_partes
+  estado: borrador
+- id: violencia_familiar
+  titulo: Violencia en la familia o la pareja
+  descripcion: Violencia en la familia o la pareja
+  datos:
+  - lugar_hechos
+  - relacion_partes
+  - edad_victima
+  - victima_mujer
+  estado: borrador
+- id: agresion_sexual
+  titulo: Agresión sexual
+  descripcion: Agresión sexual
+  datos:
+  - lugar_hechos
+  - edad_victima
+  - relacion_partes
+  - consentimiento
+  estado: borrador
+- id: acoso_hostigamiento
+  titulo: Acoso u hostigamiento sexual
+  descripcion: Acoso u hostigamiento sexual
+  datos:
+  - lugar_hechos
+  - superior_o_docente
+  - medio_digital
+  - victima_mujer
+  estado: borrador
+- id: imagenes_intimas
+  titulo: Fotos, videos o mensajes íntimos
+  descripcion: Fotos, videos o mensajes íntimos
+  datos:
+  - lugar_hechos
+  - pide_dinero
+  - ya_difundido
+  - edad_victima
+  - consentimiento
+  - victima_mujer
+  estado: borrador
+- id: amenazas_extorsion
+  titulo: Amenazas, extorsión o cobros
+  descripcion: Amenazas, extorsión o cobros
+  datos:
+  - lugar_hechos
+  - pide_dinero
+  - medio_digital
+  - violencia_o_arma
+  estado: borrador
+- id: privacion_libertad
+  titulo: Se llevaron a una persona o no aparece
+  descripcion: Se llevaron a una persona o no aparece
+  datos:
+  - lugar_hechos
+  - pide_dinero
+  - relacion_partes
+  - edad_victima
+  estado: borrador
+- id: robo
+  titulo: Me robaron
+  descripcion: Me robaron
+  datos:
+  - lugar_hechos
+  - violencia_o_arma
+  - monto
+  - relacion_partes
+  estado: borrador
+- id: fraude_datos
+  titulo: Me estafaron o usaron mis datos
+  descripcion: Me estafaron o usaron mis datos
+  datos:
+  - lugar_hechos
+  - monto
+  - medio_digital
+  estado: borrador
+- id: propiedad
+  titulo: Mi casa, terreno o propiedad
+  descripcion: Mi casa, terreno o propiedad
+  datos:
+  - lugar_hechos
+  - violencia_o_arma
+  - intencional
+  estado: borrador
+- id: transito
+  titulo: Accidente o choque de tránsito
+  descripcion: Accidente o choque de tránsito
+  datos:
+  - lugar_hechos
+  - intencional
+  - gravedad_lesion
+  - papel
+  estado: borrador
+- id: intimidad_honor
+  titulo: Me difamaron o revelaron algo privado
+  descripcion: Me difamaron o revelaron algo privado
+  datos:
+  - lugar_hechos
+  - medio_digital
+  - servidor_publico
+  estado: borrador
+- id: abuso_autoridad
+  titulo: Abuso de la policía o de una autoridad
+  descripcion: Abuso de la policía o de una autoridad
+  datos:
+  - lugar_hechos
+  - servidor_publico
+  estado: borrador
+- id: discriminacion
+  titulo: Discriminación
+  descripcion: Discriminación
+  datos:
+  - lugar_hechos
+  - servidor_publico
+  estado: borrador
+- id: salud
+  titulo: Atención médica o de salud
+  descripcion: Atención médica o de salud
+  datos:
+  - lugar_hechos
+  - consentimiento
+  - intencional
+  - victima_mujer
+  estado: borrador
+- id: menores_vulnerables
+  titulo: Niñas, niños o personas vulnerables
+  descripcion: Niñas, niños o personas vulnerables
+  datos:
+  - lugar_hechos
+  - edad_victima
+  - relacion_partes
+  estado: borrador
+- id: proceso_penal
+  titulo: Me acusan, me citaron o me detuvieron
+  descripcion: Me acusan, me citaron o me detuvieron
+  datos:
+  - lugar_hechos
+  - papel
+  estado: borrador
+- id: animales_ambiente
+  titulo: Animales o medio ambiente
+  descripcion: Animales o medio ambiente
+  datos:
+  - lugar_hechos
+  - intencional
+  estado: borrador
+- id: armas_crimen_organizado
+  titulo: Armas, pandillas o crimen organizado
+  descripcion: Armas, pandillas o crimen organizado
+  datos:
+  - lugar_hechos
+  - violencia_o_arma
+  estado: borrador
+- id: drogas
+  titulo: Drogas
+  descripcion: Drogas
+  datos:
+  - lugar_hechos
+  - federal
+  estado: borrador
+- id: corrupcion_gobierno
+  titulo: Corrupción en el gobierno (la persona la denuncia)
+  descripcion: Corrupción en el gobierno (la persona la denuncia)
+  datos:
+  - lugar_hechos
+  - servidor_publico
+  estado: borrador
+- id: conflicto_con_autoridad
+  titulo: Problemas con una autoridad por algo que hizo la persona
+  descripcion: Problemas con una autoridad por algo que hizo la persona
+  datos:
+  - lugar_hechos
+  - papel
+  estado: borrador
+- id: justicia_abogados
+  titulo: Problemas con la Fiscalía, un juzgado o un abogado
+  descripcion: Problemas con la Fiscalía, un juzgado o un abogado
+  datos:
+  - lugar_hechos
+  - papel
+  - servidor_publico
+  estado: borrador
+- id: derechos_autor
+  titulo: Piratería o derechos de autor
+  descripcion: Piratería o derechos de autor
+  datos:
+  - lugar_hechos
+  - federal
+  estado: borrador
+reglas:
+- tipo_caso: golpes_lesiones
+  delito: Lesiones
+  condicion: ''
+  articulos:
+    cdmx:
+    - '130'
+    - '131'
+    - '132'
+    - '133'
+    - '134'
+    - '135'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: golpes_lesiones
+  delito: lesiones con ácido
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: golpes_lesiones
+  delito: reglas de riña
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: golpes_lesiones
+  delito: disparo de arma
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: muerte
+  delito: Homicidio
+  condicion: ''
+  articulos:
+    cdmx:
+    - '123'
+    - '124'
+    - '125'
+    - '126'
+    - '127'
+    - '128'
+    - '129'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: muerte
+  delito: feminicidio
+  condicion: ''
+  articulos:
+    cdmx:
+    - 148 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: muerte
+  delito: transfeminicidio
+  condicion: ''
+  articulos:
+    cdmx:
+    - 148 Ter
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: muerte
+  delito: ayuda o inducción al suicidio
+  condicion: ''
+  articulos:
+    cdmx:
+    - '142'
+    - '143'
+    - 143 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: violencia_familiar
+  delito: Violencia familiar
+  condicion: ''
+  articulos:
+    cdmx:
+    - '200'
+    - 200 BIS
+    - '201'
+    - 201 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: violencia_familiar
+  delito: violencia vicaria
+  condicion: ''
+  articulos:
+    cdmx:
+    - 201 TER
+    - '202'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: violencia_familiar
+  delito: incumplimiento de la obligación alimentaria
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: agresion_sexual
+  delito: Violación
+  condicion: ''
+  articulos:
+    cdmx:
+    - '174'
+    - '175'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: agresion_sexual
+  delito: abuso sexual
+  condicion: ''
+  articulos:
+    cdmx:
+    - '176'
+    - '177'
+    - '178'
+    - 178 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: agresion_sexual
+  delito: estupro
+  condicion: ''
+  articulos:
+    cdmx:
+    - '180'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: agresion_sexual
+  delito: incesto
+  condicion: ''
+  articulos:
+    cdmx:
+    - '181'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: agresion_sexual
+  delito: delitos contra menores de 12 años
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: agresion_sexual
+  delito: privación de la libertad con fines sexuales
+  condicion: ''
+  articulos:
+    cdmx:
+    - '162'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: acoso_hostigamiento
+  delito: Acoso sexual
+  condicion: ''
+  articulos:
+    cdmx:
+    - '179'
+    - 179 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: acoso_hostigamiento
+  delito: hostigamiento sexual
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: imagenes_intimas
+  delito: Contra la intimidad sexual (Ley Olimpia)
+  condicion: ''
+  articulos:
+    cdmx:
+    - 181 Quintus
+    queretaro:
+    - 167 Quinquies
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: imagenes_intimas
+  delito: extorsión
+  condicion: ''
+  articulos:
+    cdmx:
+    - 148 Quáter
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+  nota: 236 derogado
+- tipo_caso: imagenes_intimas
+  delito: amenazas
+  condicion: ''
+  articulos:
+    cdmx:
+    - '209'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: imagenes_intimas
+  delito: pornografía de personas menores de edad
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: imagenes_intimas
+  delito: corrupción de menores
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: imagenes_intimas
+  delito: 'federal: delitos contra la indemnidad de privacidad de la información sexual (CPF, título séptimo bis)'
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: amenazas_extorsion
+  delito: Amenazas
+  condicion: ''
+  articulos:
+    cdmx:
+    - '209'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: amenazas_extorsion
+  delito: extorsión (Ley General en materia de Extorsión; en la CDMX el art. 236 está derogado desde el 12-dic-2024 y queda
+    el 148 Quáter; revisar cada estado)
+  condicion: ''
+  articulos:
+    cdmx:
+    - 148 Quáter
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+  nota: 236 derogado
+- tipo_caso: amenazas_extorsion
+  delito: cobranza ilegítima
+  condicion: ''
+  articulos:
+    cdmx:
+    - 148 Quinquies
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: privacion_libertad
+  delito: Privación de la libertad
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: privacion_libertad
+  delito: secuestro (Ley General en materia de Secuestro)
+  condicion: ''
+  articulos:
+    cdmx:
+    - '163'
+    - 163 BIS
+    - '164'
+    - '165'
+    - '166'
+    - 166 BIS
+    - '167'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: privacion_libertad
+  delito: desaparición de personas (ley general, no está en el corpus)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: privacion_libertad
+  delito: sustracción o retención de menores
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: privacion_libertad
+  delito: tráfico de menores
+  condicion: ''
+  articulos:
+    cdmx:
+    - '169'
+    - '170'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: privacion_libertad
+  delito: desaparición forzada por un servidor público (CDMX, art. 168)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: robo
+  delito: Robo (y sus agravantes)
+  condicion: ''
+  articulos:
+    cdmx:
+    - '220'
+    - '221'
+    - '222'
+    - '223'
+    - '224'
+    - '225'
+    - '226'
+    - 226 BIS
+    - 226 TER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: robo
+  delito: abuso de confianza
+  condicion: ''
+  articulos:
+    cdmx:
+    - '227'
+    - '228'
+    - '229'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: robo
+  delito: encubrimiento por receptación
+  condicion: ''
+  articulos:
+    cdmx:
+    - '243'
+    - '244'
+    - '245'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: Fraude
+  condicion: ''
+  articulos:
+    cdmx:
+    - '230'
+    - '231'
+    - '232'
+    - 232 BIS
+    - '233'
+    - 233 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: administración fraudulenta
+  condicion: ''
+  articulos:
+    cdmx:
+    - '234'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: insolvencia fraudulenta
+  condicion: ''
+  articulos:
+    cdmx:
+    - '235'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: usurpación de identidad
+  condicion: ''
+  articulos:
+    cdmx:
+    - 211 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: falsificación de documentos
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: falsificación de sellos, llaves o contraseñas
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: falsificación de tarjetas o títulos de crédito
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: fraude_datos
+  delito: acceso ilícito a sistemas o equipos de informática (CPF, título noveno; Querétaro, título séptimo)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: propiedad
+  delito: Despojo
+  condicion: ''
+  articulos:
+    cdmx:
+    - '237'
+    - '238'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: propiedad
+  delito: daño a la propiedad
+  condicion: ''
+  articulos:
+    cdmx:
+    - '239'
+    - '240'
+    - '241'
+    - 241 BIS
+    - '242'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: propiedad
+  delito: allanamiento de morada
+  condicion: ''
+  articulos:
+    cdmx:
+    - '210'
+    - '211'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: propiedad
+  delito: responsabilidad de directores responsables de obra (construcción)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: transito
+  delito: Lesiones u homicidio culposo
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: transito
+  delito: daño culposo
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: transito
+  delito: delitos contra la seguridad del tránsito
+  condicion: ''
+  articulos:
+    cdmx:
+    - '332'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: transito
+  delito: ataques a las vías de comunicación y a los medios de transporte
+  condicion: ''
+  articulos:
+    cdmx:
+    - '330'
+    - '331'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: intimidad_honor
+  delito: Violación de la intimidad personal
+  condicion: ''
+  articulos:
+    cdmx:
+    - '212'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: intimidad_honor
+  delito: revelación de secretos
+  condicion: ''
+  articulos:
+    cdmx:
+    - '213'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: intimidad_honor
+  delito: Violación de correspondencia o comunicación privada
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: intimidad_honor
+  delito: Difamación y calumnia (derogadas en la CDMX, arts. 214–218; la vía es civil; revisar cada estado)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+  nota: derogados 214–218
+- tipo_caso: abuso_autoridad
+  delito: Abuso de autoridad
+  condicion: ''
+  articulos:
+    cdmx:
+    - '262'
+    - '263'
+    - '264'
+    - '265'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: abuso_autoridad
+  delito: uso ilegal de la fuerza pública
+  condicion: ''
+  articulos:
+    cdmx:
+    - '262'
+    - '263'
+    - '264'
+    - '265'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: abuso_autoridad
+  delito: tortura (ley general, no está en el corpus; el código de la CDMX tiene los arts. 206 Bis y siguientes)
+  condicion: ''
+  articulos:
+    cdmx:
+    - 206 BIS
+    - 206 QUÁTER
+    - 206 QUINQUIES
+    - 206 TER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: abuso_autoridad
+  delito: intimidación
+  condicion: ''
+  articulos:
+    cdmx:
+    - '269'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: abuso_autoridad
+  delito: cohecho
+  condicion: ''
+  articulos:
+    cdmx:
+    - '272'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: abuso_autoridad
+  delito: concusión
+  condicion: ''
+  articulos:
+    cdmx:
+    - '274'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: abuso_autoridad
+  delito: negación del servicio público
+  condicion: ''
+  articulos:
+    cdmx:
+    - '270'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: discriminacion
+  delito: Discriminación
+  condicion: ''
+  articulos:
+    cdmx:
+    - '206'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: discriminacion
+  delito: delitos contra el libre desarrollo de la personalidad y la identidad sexual (terapias de conversión)
+  condicion: ''
+  articulos:
+    cdmx:
+    - 190 QUATER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: Responsabilidad profesional
+  condicion: ''
+  articulos:
+    cdmx:
+    - '322'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: abandono o práctica indebida del servicio médico
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: aborto
+  condicion: ''
+  articulos:
+    cdmx:
+    - '144'
+    - '145'
+    - '146'
+    - '147'
+    - '148'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: esterilización forzada
+  condicion: ''
+  articulos:
+    cdmx:
+    - '149'
+    - '150'
+    - '151'
+    - 151 BIS
+    - 151 TER
+    - '152'
+    - '153'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: peligro de contagio
+  condicion: ''
+  articulos:
+    cdmx:
+    - '159'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: sustancias modelantes
+  condicion: ''
+  articulos:
+    cdmx:
+    - 141 BIS
+    - 141 TER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: administración subrepticia de sustancias
+  condicion: ''
+  articulos:
+    cdmx:
+    - 141 QUÁTER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: suministro de medicinas nocivas o inapropiadas
+  condicion: ''
+  articulos:
+    cdmx:
+    - '328'
+    - '329'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: salud
+  delito: usurpación de profesión
+  condicion: ''
+  articulos:
+    cdmx:
+    - '323'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: menores_vulnerables
+  delito: Corrupción de menores
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: menores_vulnerables
+  delito: trata de personas (ley general, no está en el corpus; el código de la CDMX tiene el art. 188 Bis)
+  condicion: ''
+  articulos:
+    cdmx:
+    - 188 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: menores_vulnerables
+  delito: lenocinio
+  condicion: ''
+  articulos:
+    cdmx:
+    - '189'
+    - 189 BIS
+    - '190'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: menores_vulnerables
+  delito: explotación laboral de menores
+  condicion: ''
+  articulos:
+    cdmx:
+    - 190 BIS
+    - 190 TER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: menores_vulnerables
+  delito: omisión de cuidado
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: menores_vulnerables
+  delito: turismo sexual
+  condicion: ''
+  articulos:
+    cdmx:
+    - '186'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: menores_vulnerables
+  delito: omisión de auxilio
+  condicion: ''
+  articulos:
+    cdmx:
+    - '156'
+    - '157'
+    - 157 BIS
+    - '158'
+    - 158 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: proceso_penal
+  delito: '(procedimiento: Código Nacional de Procedimientos Penales) más el delito del que se acusa, que se clasifica con
+    los tipos 1–17'
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: animales_ambiente
+  delito: Maltrato o crueldad contra animales
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: animales_ambiente
+  delito: delitos contra el ambiente
+  condicion: ''
+  articulos:
+    cdmx:
+    - '343'
+    - 343 BIS
+    - '344'
+    - 344 BIS
+    - '345'
+    - 345 BIS
+    - 345 TER
+    - '346'
+    - 346 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: animales_ambiente
+  delito: delitos contra la gestión ambiental
+  condicion: ''
+  articulos:
+    cdmx:
+    - '347'
+    - 347 BIS
+    - 347 QUATER
+    - 347 QUINTUS
+    - 347 TER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: armas_crimen_organizado
+  delito: Portación de objetos para agredir
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: armas_crimen_organizado
+  delito: armas de fuego (Ley Federal de Armas de Fuego, no está en el corpus; federal)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: armas_crimen_organizado
+  delito: pandilla
+  condicion: ''
+  articulos:
+    cdmx:
+    - '252'
+    - '253'
+    - '254'
+    - '255'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: armas_crimen_organizado
+  delito: asociación delictuosa
+  condicion: ''
+  articulos:
+    cdmx:
+    - '252'
+    - '253'
+    - '254'
+    - '255'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: armas_crimen_organizado
+  delito: delincuencia organizada (ley federal)
+  condicion: ''
+  articulos:
+    cdmx:
+    - '252'
+    - '253'
+    - '254'
+    - '255'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: armas_crimen_organizado
+  delito: operaciones con recursos de procedencia ilícita
+  condicion: ''
+  articulos:
+    cdmx:
+    - '250'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: drogas
+  delito: 'Delitos contra la salud (Código Penal Federal, título séptimo; narcomenudeo: Ley General de Salud, no está en el
+    corpus)'
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: Peculado
+  condicion: ''
+  articulos:
+    cdmx:
+    - '273'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: enriquecimiento ilícito
+  condicion: ''
+  articulos:
+    cdmx:
+    - '275'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: tráfico de influencia
+  condicion: ''
+  articulos:
+    cdmx:
+    - '271'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: ejercicio abusivo de funciones
+  condicion: ''
+  articulos:
+    cdmx:
+    - '267'
+    - '268'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: ejercicio ilegal y abandono del servicio público
+  condicion: ''
+  articulos:
+    cdmx:
+    - '259'
+    - '260'
+    - '261'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: coalición de servidores públicos
+  condicion: ''
+  articulos:
+    cdmx:
+    - '266'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: usurpación de funciones públicas
+  condicion: ''
+  articulos:
+    cdmx:
+    - '276'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: remuneración ilícita
+  condicion: ''
+  articulos:
+    cdmx:
+    - 276 BIS
+    - 276 TER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: corrupción inmobiliaria
+  condicion: ''
+  articulos:
+    cdmx:
+    - 276 Quater
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: corrupcion_gobierno
+  delito: distracción de recursos públicos
+  condicion: ''
+  articulos:
+    cdmx:
+    - '277'
+    - '278'
+    - '279'
+    - '280'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: Desobediencia y resistencia de particulares
+  condicion: ''
+  articulos:
+    cdmx:
+    - '281'
+    - '282'
+    - '283'
+    - '284'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: ultrajes a la autoridad
+  condicion: ''
+  articulos:
+    cdmx:
+    - '287'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: quebrantamiento de sellos
+  condicion: ''
+  articulos:
+    cdmx:
+    - '286'
+    - 286 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: oposición a una obra pública
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: ejercicio ilegal del propio derecho (hacerse justicia por su mano)
+  condicion: ''
+  articulos:
+    cdmx:
+    - '288'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: uso indebido de insignias y uniformes
+  condicion: ''
+  articulos:
+    cdmx:
+    - 289 BIS
+    - 289 TER
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: uso indebido de las llamadas de emergencia
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: conflicto_con_autoridad
+  delito: cohecho cometido por particulares (ofrecer «mordida»)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: Denegación o retardo de justicia
+  condicion: ''
+  articulos:
+    cdmx:
+    - '290'
+    - '291'
+    - '292'
+    - 292 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: delitos en la procuración de justicia
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: delitos en la administración de justicia
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: omisión de informes médico forenses
+  condicion: ''
+  articulos:
+    cdmx:
+    - '301'
+    - '302'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: delitos en la ejecución penal
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: evasión de presos
+  condicion: ''
+  articulos:
+    cdmx:
+    - '304'
+    - '305'
+    - 305 BIS
+    - '306'
+    - '307'
+    - '308'
+    - '309'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: fraude procesal
+  condicion: ''
+  articulos:
+    cdmx:
+    - '310'
+    - 310 BIS
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: falsedad ante autoridades (falso testimonio)
+  condicion: ''
+  articulos:
+    cdmx:
+    - '311'
+    - '312'
+    - '313'
+    - '314'
+    - '315'
+    - '316'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: simulación de pruebas
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: variación del nombre o domicilio
+  condicion: ''
+  articulos:
+    cdmx:
+    - '317'
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: delitos de abogados, patronos y asesores jurídicos
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: justicia_abogados
+  delito: encubrimiento por favorecimiento
+  condicion: ''
+  articulos:
+    cdmx:
+    - '320'
+    - '321'
+    - 321 Bis
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+- tipo_caso: derechos_autor
+  delito: Delitos en materia de derechos de autor (CPF, título vigésimo sexto; federal)
+  condicion: ''
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+  estado: sugerida
+otro:
+- Delitos electorales (arts. 351–360).
+- Rebelión (361); ataques con sustancias tóxicas, incendio o explosivos contra las instituciones (362); sabotaje (363); motín
+  (364).
+- Manipulación genética (154–155).
+- Inhumación, exhumación y respeto a los cadáveres (207–208).
+- Estado civil y bigamia (203–205).
+- 'Solo federales (CPF): delitos contra la seguridad de la Nación (traición, espionaje, terrorismo), contra el derecho internacional,
+  contra la humanidad (genocidio), falsificación de moneda.'
