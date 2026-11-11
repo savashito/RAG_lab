@@ -2,8 +2,10 @@
 Aplica a una copia del catálogo lo que salió de la revisión de artículos (sugerencias.json de comparar.py):
 
   · quita de cada regla los artículos en los que el LLM no está de acuerdo (derogados, no son delito, otra regla);
-  · agrega a cada regla los artículos que el LLM le asigna (incluye los que movió desde otra regla), solo de la parte
-    especial (LIBRO SEGUNDO): los de la parte general (penas, culpa, reparación) valen para todos los delitos;
+  · agrega a cada regla los artículos que el LLM le asigna (incluye los que movió desde otra regla). De los 5 códigos
+    penales, solo los de la parte especial (LIBRO SEGUNDO): los de la parte general (penas, culpa, reparación) valen
+    para todos los delitos. De las leyes de familia, ninguno a una regla penal: van a las reglas de familia
+    (reglas_familia.py);
   · las reglas que cambian y estaban en `borrador` pasan a `sugerida`. Una `confirmada` no se toca.
 
 No aplica las condiciones `cuando` ni las reglas nuevas: eso lo revisa Karen.
@@ -14,10 +16,12 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 from comparar import norm
+
+CODIGOS_PENALES = {'cdmx', 'queretaro', 'edomex', 'morelos', 'federal'}
 
 
 def main() -> None:
@@ -29,10 +33,14 @@ def main() -> None:
     sug = json.loads((args.carpeta / 'sugerencias.json').read_text())
     assert sug['catalogo_md5'] == cat['md5'], 'sugerencias.json es de otra versión del catálogo'
     excluir = {(c, norm(n)) for c, n in (x.split(':', 1) for x in args.excluir)}
-    ruta = {}
+    # rutas de cada artículo que el LLM puso en cada regla: un número puede estar dos veces en un código (p. ej. Edomex 69:
+    # reincidencia en el Libro Primero y una lista de reformas al final del Libro Segundo); cuenta la del que lo propuso
+    rutas, materia = defaultdict(list), {}
     for l in open(args.carpeta / 'resultados.jsonl'):
         r = json.loads(l)
-        ruta[(r['codigo'], r['num'])] = r['ruta']
+        for rid in r['respuesta'].get('reglas') or []:
+            rutas[(r['codigo'], norm(r['num']), rid)].append(r['ruta'])
+        materia[r['codigo']] = r.get('materia', 'penal')
     doc = json.loads(json.dumps(cat['doc']))
     reglas = {r['id']: r for r in doc['reglas']}
     cuenta, cambiadas = Counter(), set()
@@ -51,8 +59,12 @@ def main() -> None:
         for x in xs:
             if (x['codigo'], norm(x['num'])) in excluir:
                 continue
-            if not ruta.get((x['codigo'], x['num']), '').startswith('LIBRO SEGUNDO'):
+            if x['codigo'] in CODIGOS_PENALES and not any(
+                    ru.startswith('LIBRO SEGUNDO') for ru in rutas[(x['codigo'], norm(x['num']), rid)]):
                 cuenta['parte general, no se agregan'] += 1
+                continue
+            if materia.get(x['codigo']) != reglas[rid].get('materia', 'penal'):
+                cuenta['otra materia, no se agregan'] += 1
                 continue
             arts = reglas[rid].setdefault('articulos', {}).setdefault(x['codigo'], [])
             if norm(x['num']) not in {norm(a) for a in arts}:
