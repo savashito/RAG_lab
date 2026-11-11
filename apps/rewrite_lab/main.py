@@ -1823,6 +1823,13 @@ def bench_js():
                         headers={'Cache-Control': 'no-store'})
 
 
+# JS del tab Preguntar (Catálogo).
+@app.get('/static/consulta_catalogo.js')
+def consulta_catalogo_js():
+    return FileResponse(STATIC / 'consulta_catalogo.js', media_type='text/javascript',
+                        headers={'Cache-Control': 'no-store'})
+
+
 @app.get('/api/me')
 def api_me(request: Request):
     """Identidad y permisos del usuario logueado. El front lo usa para decidir qué tabs
