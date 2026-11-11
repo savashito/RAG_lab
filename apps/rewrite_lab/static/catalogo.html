@@ -148,7 +148,8 @@ const $ = id => document.getElementById(id);
 
 async function cargar(forzarYaml){
   const r = await fetch('/api/catalogo'); const j = await r.json();
-  if (!S.lect) { try { S.lect = await (await fetch('/api/catalogo/lecturas')).json(); } catch(_) { S.lect = {modelos:{}, reglas:{}}; } }
+  if (!S.lect) { try { const l = await (await fetch('/api/catalogo/lecturas')).json(); S.lect = l.reglas ? l : null; } catch(_) {}
+    S.lect = S.lect || {modelos:{}, reglas:{}}; }
   S.cat = j.catalogo; S.puede = j.puede_editar; S.codigos = j.codigos; S.md5 = j.md5; NOMBRES = j.nombres || NOMBRES; MATERIA_LEY = j.materia_ley || {};
   if (forzarYaml || cm.getValue() === S.limpio) { const sc = cm.getScrollInfo(); cm.setValue(j.yaml); cm.scrollTo(sc.left, sc.top); }
   S.limpio = j.yaml; document.getElementById('sucio').textContent = cm.getValue() !== S.limpio ? '● cambios sin guardar (el catálogo cambió en el servidor)' : '';
