@@ -27,6 +27,7 @@ from consulta.leyes import CODIGOS, JURISDICCION, LEYES, MATERIAS, NOMBRES
 
 HERE = Path(__file__).resolve().parent
 YAML_INICIAL = HERE / 'catalogo_casos.yaml'
+LECTURAS = HERE / 'catalogo_lecturas.json'   # qué dijo cada LLM por regla y artículo (revision_articulos/lecturas.py)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS consulta_catalogo (
@@ -258,6 +259,12 @@ class Catalogo:
                 return self.articulo(codigo, num)
             except ValueError as e:
                 return bad(str(e))
+
+        @r.get('/api/catalogo/lecturas')
+        def lecturas():
+            if not LECTURAS.exists():
+                return {'modelos': {}, 'reglas': {}}
+            return FileResponse(LECTURAS, media_type='application/json')
 
         @r.get('/api/catalogo/yaml')
         def descargar():
