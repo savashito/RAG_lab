@@ -1,5 +1,5 @@
 """
-El LLM lee cada artículo de los 5 códigos penales y dice a qué tipo de caso y a qué regla del catálogo pertenece, con
+El LLM lee cada artículo de las leyes penales y de familia y dice a qué tipo de caso y a qué regla del catálogo pertenece, con
 qué condiciones aplica y qué parte del artículo lo justifica. Es la revisión «artículo por artículo» del catálogo: lo
 que salga son sugerencias para Karen, no cambia el catálogo (eso lo hace comparar.py como reporte).
 
@@ -27,7 +27,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-SYSTEM = """Eres abogada penalista en México. Lees UN artículo de un código penal y lo relacionas con un catálogo de casos
+SYSTEM = """Eres abogada penalista en México. Lees UN artículo de un código o ley penal y lo relacionas con un catálogo de casos
 que usa un asistente para orientar a personas. El catálogo tiene:
 - TIPOS DE CASO: lo que le pasó a la persona, en sus palabras.
 - REGLAS: cada regla une un tipo de caso con un delito y con los artículos de cada código que lo regulan.
@@ -51,6 +51,40 @@ Responde SOLO un JSON:
 - "dato_que_falta": si para saber si aplica hace falta un dato del caso que NO está en la lista, cuál. Si no, "".
 - "cita": el fragmento del artículo (máximo 40 palabras, copiado tal cual) que justifica tu respuesta.
 - Usa solo ids de las listas. No expliques nada fuera del JSON."""
+
+SYSTEM_FAMILIAR = """Eres abogada familiarista en México. Lees UN artículo de un código civil o de procedimientos y lo
+relacionas con un catálogo de casos que usa un asistente para orientar a personas. El catálogo tiene:
+- TIPOS DE CASO: lo que le pasó a la persona, en sus palabras.
+- REGLAS: cada regla une un tipo de caso con un delito o tema y con los artículos que lo regulan.
+- DATOS DEL EXPEDIENTE: lo que el asistente le pregunta a la persona para saber qué regla aplica.
+El catálogo casi no tiene casos de familia todavía: si ninguno le queda, propón uno nuevo.
+
+Responde SOLO un JSON:
+{"es_familiar": true, "tema": "", "tipos_caso": [], "tipo_caso_nuevo": "", "reglas": [], "regla_nueva": null,
+ "cuando": [], "dato_que_falta": "", "cita": ""}
+
+- "es_familiar": true si el artículo da un derecho, una obligación o un trámite de una persona en un tema de familia:
+  matrimonio, divorcio, concubinato, alimentos (pensión), patria potestad, guarda y custodia, convivencias, filiación,
+  reconocimiento de hijos, adopción, tutela, violencia familiar, nombre y registro civil, régimen de bienes del
+  matrimonio, herencia entre familiares, o el juicio en el que se piden. false si es de otra materia (contratos, bienes,
+  obligaciones en general, juicios que no son de familia), si es una regla general sin derecho concreto o si está
+  derogado.
+- "tema": nombre corto del tema (p. ej. «pensión alimenticia», «divorcio sin causa»). Vacío si es_familiar es false.
+- "tipos_caso": ids de los tipos de caso de la lista en los que una persona llegaría a este artículo. [] si ninguno.
+- "tipo_caso_nuevo": si es_familiar es true y ningún tipo de caso de la lista le queda, lo que le pasó o lo que
+  quiere la persona, en sus palabras y corto (p. ej. «me quiero divorciar», «no me da la pensión de mis hijos»).
+  Si no, "".
+- "reglas": ids de las reglas existentes a las que pertenece este artículo.
+- "regla_nueva": si es_familiar es true y ninguna regla lo cubre:
+  {"tipo_caso": "id o el tipo_caso_nuevo", "tema": "nombre", "condicion": "en palabras: cuándo aplica"}. Si no, null.
+- "cuando": condiciones con los DATOS DEL EXPEDIENTE que deben cumplirse para que este artículo aplique. Solo ids de
+  la lista. Formas: «dato» (= sí), «NO dato» (= no), «dato = valor», «dato != valor», «dato < 18» (también <=, >, >=),
+  «dato en [a, b]». Vacío si no hace falta ninguno.
+- "dato_que_falta": si para saber si aplica hace falta un dato del caso que NO está en la lista, cuál. Si no, "".
+- "cita": el fragmento del artículo (máximo 40 palabras, copiado tal cual) que justifica tu respuesta.
+- Usa solo ids de las listas. No expliques nada fuera del JSON."""
+
+PROMPTS = {'penal': SYSTEM, 'familiar': SYSTEM_FAMILIAR}
 
 MAX_TEXTO = 7000          # caracteres del artículo; el modelo tiene 8192 tokens de contexto en total
 
@@ -99,7 +133,7 @@ def clasificar(art: dict, ctx: str, args) -> dict:
                 + ('\n[…artículo recortado…]' if len(texto) > MAX_TEXTO else ''))
         t0 = time.time()
         try:
-            raw = llamar(args.url, args.modelo, SYSTEM, user)
+            raw = llamar(args.url, args.modelo, PROMPTS[art.get('materia', 'penal')], user)
         except urllib.error.HTTPError as e:
             if e.code == 400 and len(texto) > 1500:     # casi siempre: no cabe en el contexto → se recorta y reintenta
                 texto = texto[:len(texto) // 2]
@@ -124,14 +158,16 @@ def main() -> None:
     ap.add_argument('--modelo', default='gemma-4-31b')
     ap.add_argument('--hilos', type=int, default=8)
     ap.add_argument('--limite', type=int, default=0, help='solo los primeros N pendientes (prueba)')
-    ap.add_argument('--codigo', help='solo un código: cdmx, queretaro, edomex, morelos, federal')
+    ap.add_argument('--codigo', nargs='*', help='solo estas leyes: cdmx, queretaro, edomex, morelos, federal, cnpp…')
     args = ap.parse_args()
 
     cat = json.loads((args.carpeta / 'catalogo.json').read_text())
     articulos = [json.loads(l) for l in open(args.carpeta / 'articulos.jsonl')]
     if args.codigo:
-        articulos = [a for a in articulos if a['codigo'] == args.codigo]
-    firma = {'prompt_md5': md5(SYSTEM), 'catalogo_md5': cat['md5'], 'modelo': args.modelo}
+        articulos = [a for a in articulos if a['codigo'] in args.codigo]
+
+    def firma(a: dict) -> dict:
+        return {'prompt_md5': md5(PROMPTS[a.get('materia', 'penal')]), 'catalogo_md5': cat['md5'], 'modelo': args.modelo}
     salida = args.carpeta / 'resultados.jsonl'
     hechos = set()
     if salida.exists():
@@ -140,13 +176,13 @@ def main() -> None:
                 r = json.loads(l)
             except ValueError:
                 continue                                # línea cortada a la mitad por un corte: se rehace
-            if r.get('prompt_md5') == firma['prompt_md5'] and r.get('catalogo_md5') == firma['catalogo_md5']:
-                hechos.add((r['codigo'], r['ruta']))
-    pendientes = [a for a in articulos if (a['codigo'], a['ruta']) not in hechos]
+            if r.get('catalogo_md5') == cat['md5']:
+                hechos.add((r['codigo'], r['ruta'], r.get('prompt_md5')))
+    pendientes = [a for a in articulos if (a['codigo'], a['ruta'], firma(a)['prompt_md5']) not in hechos]
     if args.limite:
         pendientes = pendientes[:args.limite]
     print(f'{len(articulos)} artículos · {len(hechos)} ya hechos · {len(pendientes)} pendientes · '
-          f'prompt {firma["prompt_md5"][:8]} · catálogo {cat["md5"][:8]}', flush=True)
+          f'catálogo {cat["md5"][:8]}', flush=True)
 
     contextos = {c: contexto(cat['doc'], c) for c in {a['codigo'] for a in pendientes}}
     lock, t0, listos, fallidos = threading.Lock(), time.time(), 0, 0
@@ -161,7 +197,8 @@ def main() -> None:
                 print(f'  falló {a["codigo"]} {a["num"] or a["ruta"][-40:]}: {e}', file=sys.stderr, flush=True)
                 continue
             with lock:
-                f.write(json.dumps({'codigo': a['codigo'], 'ruta': a['ruta'], 'num': a['num'], **firma, **r},
+                f.write(json.dumps({'codigo': a['codigo'], 'materia': a.get('materia', 'penal'), 'ruta': a['ruta'],
+                                    'num': a['num'], **firma(a), **r},
                                    ensure_ascii=False) + '\n')
                 f.flush()
                 listos += 1
