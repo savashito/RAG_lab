@@ -68,6 +68,29 @@ def main(catalogo: Path, salida: Path) -> None:
                 if materia.get(rid) == ley_materia:
                     votos[(rid, *k)][m] = 1
 
+    # Reglas de familia: su única lectura es la asignación de reglas_familia.py (Gemma 4 31B sin razonar pone cada
+    # artículo en una sola regla de su tipo de caso). Va en la columna «gemma»: 1 en la regla asignada, 0 en las demás
+    # reglas de ese tipo de caso.
+    familia = {}                               # (regla, codigo, norm(num)) → 1/0
+    fam = Path('data/todo_familia')
+    temas = {t: [rg['tema'] for rg in (x['respuesta'] or {}).get('reglas') or []]
+             for t, x in json.loads((fam / 'reglas_llm.json').read_text()).items()}
+    rid_de = {(r['tipo_caso'], r['delito']): r['id'] for r in doc['reglas'] if r.get('materia') == 'familiar'}
+    num_fam = {(r['codigo'], r['ruta']): r['num'] for r in leer(fam, json.loads((fam / 'catalogo.json').read_text())['md5']).values()}
+    for l in open(fam / 'asignaciones.jsonl'):
+        x = json.loads(l)
+        n = num_fam.get((x['codigo'], x['ruta']))
+        if not n:
+            continue
+        k = (x['codigo'], norm(n))
+        num.setdefault(k, n)
+        for i, tema in enumerate(temas.get(x['tipo'], []), 1):
+            rid = rid_de.get((x['tipo'], tema))
+            if rid:
+                familia[(rid, *k)] = int(x['regla'] == i)
+                if x['regla'] == i:            # fila solo si Gemma lo pone aquí o el catálogo lo cita (más abajo)
+                    votos.setdefault((rid, *k), {})
+
     claude = {}                                # (regla, codigo, norm(num)) → 1/0
     for x in json.loads(Path('data/todo_piensa/revision_efectiva.json').read_text()):
         for rid in set(x['sin']) | set(x['con']):
@@ -91,6 +114,8 @@ def main(catalogo: Path, salida: Path) -> None:
         for m in MODELOS:                      # sin lectura del modelo (artículo que no está en el corpus): no se pone
             if (codigo, n) in leidos[m] and rid in leidas:
                 fila[m] = v.get(m, 0)
+        if (rid, codigo, n) in familia:
+            fila['gemma'] = familia[(rid, codigo, n)]
         if (rid, codigo, n) in claude:
             fila['claude'] = claude[(rid, codigo, n)]
         reglas[rid].append(fila)
