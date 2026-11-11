@@ -16,7 +16,7 @@
   header{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
   h1{font-size:17px;margin:0;flex:1 1 300px}
   a{color:var(--accent)}
-  button,input,textarea{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 10px}
+  button,input,textarea,select{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 10px}
   button{cursor:pointer} button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
   button:disabled{opacity:.6;cursor:default}
   .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:14px 16px;height:calc(100% - 58px)}
@@ -45,6 +45,8 @@
 <body>
 <header>
   <h1>📚 Preguntar (Catálogo) <span class="muted" style="font-weight:400;font-size:14px">— la consulta de la ronda 3: clasifica el caso, pide los datos y llega a reglas y artículos del catálogo</span></h1>
+  <label class="op">Contexto <select id="modo"><option value="todos">todos los artículos</option><option value="embedding">los más parecidos (embedding)</option><option value="ninguno">sin respuesta del LLM</option></select></label>
+  <label class="op">tope <input id="tope" type="number" placeholder="auto" style="width:80px"> tokens</label>
   <label class="op"><input type="checkbox" id="solo-conf"> solo reglas confirmadas</label>
   <button onclick="reiniciar()">↺ Empezar de nuevo</button>
   <a href="/catalogo">Catálogo</a> <a href="/">← App</a>
@@ -61,7 +63,7 @@
 <script>
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $ = id => document.getElementById(id);
-let C = {cat:null, nombres:{}}, S = {estado:null, expediente:null, historial:[], ultima:null, registros:[]};
+let C = {cat:null, nombres:{}}, S = {estado:null, expediente:null, historial:[], ultima:null, orientacion:null, registros:[]};
 
 async function cargarCatalogo(){
   const j = await (await fetch('/api/catalogo')).json();
@@ -81,22 +83,26 @@ async function turno(evento){
   const espera = burbuja('assistant', '…');
   try {
     const r = await fetch('/api/consulta/turno', {method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({estado:S.estado, expediente:S.expediente, evento, solo_confirmadas:$('solo-conf').checked})});
+      body: JSON.stringify({estado:S.estado, expediente:S.expediente, evento, solo_confirmadas:$('solo-conf').checked,
+        historial:S.historial, contexto:$('modo').value, tope_tokens:+$('tope').value || null})});
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     espera.remove();
-    S.estado = j.estado; S.expediente = j.expediente; S.ultima = j.salida; S.registros.push(j.registro);
-    responder(j.salida);
+    S.estado = j.estado; S.expediente = j.expediente; S.ultima = j.salida; S.orientacion = j.orientacion || null; S.registros.push(j.registro);
+    responder(j.salida, j.orientacion);
     pintarPanel();
   } catch (e) { espera.innerHTML = `<span class="bad">Error: ${esc(e.message)}</span>`; }
   $('b-env').disabled = false; $('txt').focus();
 }
 
-function responder(s){
+function responder(s, o){
   if (s.tipo === 'pregunta') { burbuja('assistant', s.texto); S.historial.push({role:'assistant', content:s.texto}); }
   else if (s.tipo === 'elegir_tipo') {
     burbuja('assistant', s.texto, `<div class="btns">${s.opciones.map(o => `<button onclick="elegir('${esc(o.id)}', this)">${esc(o.titulo)}</button>`).join('')}</div>`);
     S.historial.push({role:'assistant', content:s.texto});
+  } else if (s.tipo === 'orientar' && o) {
+    burbuja('assistant', o.respuesta || '(el LLM no respondió)');
+    S.historial.push({role:'assistant', content:o.respuesta || ''});
   } else if (s.tipo === 'orientar') {
     const t = s.sin_reglas ? 'Con los datos que diste no encontré reglas del catálogo para tu caso.'
       : `Tengo lo necesario para orientarte: ${s.reglas.length} regla(s) del catálogo y ${Object.values(s.articulos).flat().length} artículo(s). Míralos en el panel de la derecha.`;
@@ -118,7 +124,7 @@ function elegir(id, btn){
   burbuja('user', '▸ ' + (id === 'otro' ? 'Ninguna de estas' : tipo(id)));
   turno({tipo:'elegir_tipo', valor:id});
 }
-function reiniciar(){ S = {estado:null, expediente:null, historial:[], ultima:null, registros:[]}; $('msgs').innerHTML = '';
+function reiniciar(){ S = {estado:null, expediente:null, historial:[], ultima:null, orientacion:null, registros:[]}; $('msgs').innerHTML = '';
   $('panel').innerHTML = '<span class="muted">Escribe un caso para ver qué hace la consulta.</span>'; }
 
 function pintarPanel(){
@@ -138,6 +144,15 @@ function pintarPanel(){
     h += `<h2>Artículos por ley (${Object.values(s.articulos).flat().length})</h2>` + (Object.keys(s.articulos).length ? Object.entries(s.articulos).map(([k, arts]) =>
         `<div><b class="small">${esc(C.nombres[k] || k)}</b> ${arts.map(a => `<span class="chip" onclick="leer('${esc(k)}','${esc(a)}')">${esc(a)}</span>`).join('')}</div>`).join('')
         : '<span class="muted">ninguno</span>') + '<div id="texto"></div>';
+    const o = S.orientacion;
+    if (o) {
+      const entra = o.contexto.filter(a => a.entra).length;
+      h += `<h2>Contexto de la respuesta: ${esc(o.modo_contexto)} · ${entra} de ${o.contexto.length} artículos · ~${o.tokens_contexto} tokens (tope ${o.tope_tokens}) · ${o.segundos.contexto + o.segundos.respuesta} s</h2>
+        <table><tr><th>Artículo</th><th>Entra</th><th>Orden</th>${o.modo_contexto === 'embedding' ? '<th>Distancia</th>' : ''}<th>Tokens</th></tr>
+        ${[...o.contexto].sort((a, b) => (a.orden || 999) - (b.orden || 999)).map(a => `<tr><td><span class="chip" onclick="leer('${esc(a.codigo)}','${esc(a.num)}')">${esc(C.nombres[a.codigo] || a.codigo)} ${esc(a.num)}</span></td>
+          <td>${a.entra ? '✓' : '<span class="muted">✗</span>'}</td><td>${a.orden || ''}</td>${o.modo_contexto === 'embedding' ? `<td>${a.distancia ?? ''}</td>` : ''}<td>${a.tokens}</td></tr>`).join('')}</table>
+        ${o.no_encontrados.length ? `<div class="small warn">No están en el corpus: ${esc(o.no_encontrados.join(', '))}</div>` : ''}`;
+    }
     if ((s.tipos_quitados||[]).length) h += `<div class="small warn">Tipos que ya no aplican: ${esc(s.tipos_quitados.map(tipo).join(', '))}</div>`;
   }
   h += `<h2>Llamadas al LLM en este mensaje</h2>` + ((r.llamadas||[]).length ? (r.llamadas||[]).map(l => llamada(l)).join('') : '<span class="muted small">ninguna</span>');

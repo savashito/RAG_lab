@@ -1696,6 +1696,7 @@ app.include_router(catalogo.router)
 # probar a mano cómo clasifica, qué datos pide y a qué reglas y artículos llega. El estado y el expediente viajan con
 # cada mensaje (el navegador los guarda): no se guarda nada en la base.
 from consulta import maquina as consulta_maquina  # noqa: E402
+from consulta import orientar as consulta_orientar  # noqa: E402
 from consulta.ia import ConsultaIA  # noqa: E402
 consulta_ia = ConsultaIA(llm)
 
@@ -1707,11 +1708,26 @@ def preguntar_catalogo():
 
 @app.post('/api/consulta/turno')
 def consulta_turno(body: dict):
+    """body: {estado, expediente, evento, solo_confirmadas, historial (toda la conversación, para orientar),
+    contexto: 'todos' | 'embedding' | 'ninguno' (no redacta), tope_tokens}."""
     doc, _, _ = catalogo.leer()
     estado, exp, salida, registro = consulta_maquina.turno(body.get('estado'), body.get('expediente'),
                                                            body.get('evento') or {}, doc, consulta_ia,
                                                            solo_confirmadas=bool(body.get('solo_confirmadas')))
-    return {'estado': estado, 'expediente': exp, 'salida': salida, 'registro': registro}
+    out = {'estado': estado, 'expediente': exp, 'salida': salida, 'registro': registro}
+    modo = body.get('contexto') or 'todos'
+    if salida.get('tipo') == 'orientar' and not salida.get('sin_reglas') and modo != 'ninguno':
+        conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
+                                 for m in body.get('historial') or [])
+        familia = any(r.get('materia') == 'familiar' for r in doc.get('reglas', []) if r['id'] in salida['reglas'])
+        topic = 'derecho_familiar' if familia else 'derecho_penal_mexicano'
+        with connect() as c, c.cursor() as cur:
+            out['orientacion'] = consulta_orientar.orientar(
+                cur=cur, table=TABLE, salida=salida, expediente=exp, catalogo=doc, conversacion=conversacion,
+                contexto=modo, tope=body.get('tope_tokens'), system=system_for(topic),
+                embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0],
+                chat=lambda s, u: llm.chat(s, u, max_tokens=4096, timeout=180))
+    return out
 
 
 @app.get('/healthz')

@@ -324,3 +324,36 @@ def test_ia_llm_caido_no_tumba():
 def test_codigos_del_caso_con_leyes_generales_federales_y_de_familia(lugar, articulos, esperado):
     exp = {**E.nuevo(), 'datos': {'lugar_hechos': lugar}}
     assert E.codigos_del_caso(exp, [{'id': 'r', 'articulos': articulos}]) == esperado
+
+
+# ── Orientación: qué artículos entran al contexto ────────────────────────────────────────────────────────────────
+from consulta import orientar as O  # noqa: E402
+
+
+def _art(codigo, num, chars, distancia=None):
+    a = {'codigo': codigo, 'num': num, 'ruta': f'Artículo {num}', 'texto': 'x' * chars, 'ids': []}
+    if distancia is not None:
+        a['distancia'] = distancia
+    return a
+
+
+def test_contexto_todos_sigue_el_catalogo_y_respeta_el_tope():
+    reglas = [{'id': 'r1', 'articulos': {'cdmx': ['1', '2']}, 'incierta': True},
+              {'id': 'r2', 'articulos': {'cdmx': ['3', '1']}, 'incierta': False}]
+    arts = [_art('cdmx', '1', 350), _art('cdmx', '2', 350), _art('cdmx', '3', 350)]   # ~100 tokens cada uno
+    elegidos = O.elegir(arts, reglas, 'todos', tope=250)
+    assert [a['num'] for a in elegidos] == ['3', '1']      # primero la regla que no es incierta; el 1 cuenta una vez
+    assert not next(a for a in arts if a['num'] == '2')['entra']
+
+
+def test_contexto_embedding_pone_primero_el_mejor_de_cada_regla():
+    reglas = [{'id': 'r1', 'articulos': {'cdmx': ['1', '2']}}, {'id': 'r2', 'articulos': {'federal': ['9']}}]
+    arts = [_art('cdmx', '1', 350, .10), _art('cdmx', '2', 350, .05), _art('federal', '9', 350, .40)]
+    elegidos = O.elegir(arts, reglas, 'embedding', tope=250)
+    assert [a['num'] for a in elegidos] == ['2', '9']       # el 9 está lejos, pero es el único de r2: entra
+
+
+def test_contexto_desconocido_se_rechaza():
+    with pytest.raises(ValueError):
+        O.orientar(cur=None, table='t', salida={}, expediente={}, catalogo={}, conversacion='', contexto='bm25',
+                   embed=None, chat=None, system='')
