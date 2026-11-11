@@ -89,9 +89,9 @@
   </div>
 </div>
 <script>
-const NOMBRES = {cdmx:'CDMX', queretaro:'Querétaro', edomex:'Edomex', morelos:'Morelos', federal:'Federal'};
+let NOMBRES = {cdmx:'CDMX', queretaro:'Querétaro', edomex:'Edomex', morelos:'Morelos', federal:'Federal'}, MATERIA_LEY = {};
 const PARTES = [['reglas','Reglas'],['tipos_caso','Tipos de caso'],['datos','Datos del expediente'],['otro','Van a «otro»']];
-let S = {cat:null, puede:false, codigos:[], parte:'reglas', sel:null, f:{tipo:'', estado:'', q:''}, vista:'yaml', md5:null, limpio:'', marcas:[]};
+let S = {cat:null, puede:false, codigos:[], parte:'reglas', sel:null, f:{tipo:'', estado:'', materia:'', q:''}, vista:'yaml', md5:null, limpio:'', marcas:[]};
 const cm = CodeMirror(document.getElementById('cmwrap'), {mode:'yaml', lineNumbers:true, lineWrapping:true, foldGutter:true,
   styleActiveLine:true, tabSize:2, indentUnit:2, gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
   extraKeys:{'Ctrl-S':()=>guardarYaml(), 'Cmd-S':()=>guardarYaml(), Tab:c=>c.execCommand('insertSoftTab')}});
@@ -145,7 +145,7 @@ const $ = id => document.getElementById(id);
 
 async function cargar(forzarYaml){
   const r = await fetch('/api/catalogo'); const j = await r.json();
-  S.cat = j.catalogo; S.puede = j.puede_editar; S.codigos = j.codigos; S.md5 = j.md5;
+  S.cat = j.catalogo; S.puede = j.puede_editar; S.codigos = j.codigos; S.md5 = j.md5; NOMBRES = j.nombres || NOMBRES; MATERIA_LEY = j.materia_ley || {};
   if (forzarYaml || cm.getValue() === S.limpio) { const sc = cm.getScrollInfo(); cm.setValue(j.yaml); cm.scrollTo(sc.left, sc.top); }
   S.limpio = j.yaml; document.getElementById('sucio').textContent = cm.getValue() !== S.limpio ? '● cambios sin guardar (el catálogo cambió en el servidor)' : '';
   cm.setOption('readOnly', !S.puede); vista(S.vista);
@@ -171,13 +171,13 @@ function pintar(){
   pintarLista();
 }
 function selEstado(){
-  return `<select onchange="S.f.estado=this.value;pintar()"><option value="">Todos los estados</option>${['borrador','sugerida','confirmada','descartada'].map(e=>`<option ${S.f.estado===e?'selected':''}>${e}</option>`).join('')}</select>`;
+  return `<select onchange="S.f.materia=this.value;pintar()"><option value="">Penal y familiar</option>${['penal','familiar'].map(m=>`<option ${S.f.materia===m?'selected':''}>${m}</option>`).join('')}</select> <select onchange="S.f.estado=this.value;pintar()"><option value="">Todos los estados</option>${['borrador','sugerida','confirmada','descartada'].map(e=>`<option ${S.f.estado===e?'selected':''}>${e}</option>`).join('')}</select>`;
 }
 function titulo(id){ return ((S.cat.tipos_caso||[]).find(t=>t.id===id)||{}).titulo || id; }
 function pintarLista(){
   const p = S.parte, l = S.cat[p] || [];
   if (p === 'otro') { $('lista').innerHTML = `<table><tr><th>Delito</th></tr>${l.map(x=>`<tr><td>${esc(x)}</td></tr>`).join('')}</table>`; return; }
-  let filas = l.filter(e => (!S.f.estado || e.estado === S.f.estado));
+  let filas = l.filter(e => (!S.f.estado || e.estado === S.f.estado) && (!S.f.materia || (e.materia || 'penal') === S.f.materia));
   if (p === 'reglas') {
     const q = S.f.q.toLowerCase();
     filas = filas.filter(e => (!S.f.tipo || e.tipo_caso === S.f.tipo) && (!q || (e.delito||'').toLowerCase().includes(q)));
@@ -199,7 +199,7 @@ function pintarLista(){
   }
 }
 // Cambia a la pestaña Reglas, filtrada por ese tipo de caso.
-function irAReglas(tipo){ S.parte='reglas'; S.f = {tipo, estado:'', q:''}; S.sel=null; pintar(); panelVacio(); }
+function irAReglas(tipo){ S.parte='reglas'; S.f = {tipo, estado:'', materia:'', q:''}; S.sel=null; pintar(); panelVacio(); }
 // Sin cambiar de pestaña: el YAML salta a las reglas de ese tipo de caso y las resalta.
 function verReglas(tipo){
   S.sel = tipo; pintarLista(); if (S.vista !== 'yaml') vista('yaml');
@@ -210,6 +210,9 @@ function verReglas(tipo){
   cm.setCursor({line:rs[0][0], ch:0}); cm.scrollIntoView({line:rs[0][0], ch:0}, 60);
 }
 function panelVacio(){ $('panel').innerHTML = '<span class="muted">Elige una fila para verla o editarla.</span>'; S.marcas.forEach(l => cm.removeLineClass(l, 'background', 'sel-line')); S.marcas = []; }
+function materiaSel(v){ return `<select id="e-materia" ${S.puede?'':'disabled'}>${['penal','familiar'].map(m=>`<option ${(v||'penal')===m?'selected':''}>${m}</option>`).join('')}</select>`; }
+// Leyes que el editor de una regla muestra: las de su materia y las que ya cita.
+function leyesDe(e){ return S.codigos.filter(k => (MATERIA_LEY[k] || 'penal') === (e.materia || 'penal') || (e.articulos?.[k]||[]).length); }
 function estadoSel(v){ return `<select id="e-estado">${['borrador','sugerida','confirmada','descartada'].map(e=>`<option ${v===e?'selected':''}>${e}</option>`).join('')}</select>`; }
 function abrir(id, nuevaEntrada){
   S.sel = id; pintarLista();
@@ -223,11 +226,12 @@ function abrir(id, nuevaEntrada){
       <label>Condición en palabras (para quien revisa)</label><textarea id="e-cond" ${dis} placeholder="Ej.: si le piden dinero">${esc(e.condicion)}</textarea>
       <label>Condiciones que evalúa el programa, una por línea (todas deben cumplirse; vacío = aplica siempre en su tipo de caso)</label>
       <textarea id="e-cuando" ${dis} placeholder="pide_dinero = si&#10;edad_victima < 18&#10;NO ya_difundido">${esc((e.cuando||[]).join('\n'))}</textarea>
-      <label>Artículos por código (separados por coma; clic en un número para leer el artículo)</label>
-      ${S.codigos.map(k=>`<div class="cod"><span>${NOMBRES[k]}</span><input id="e-a-${k}" value="${esc((e.articulos?.[k]||[]).join(', '))}" ${dis}></div>
+      <label>Artículos por ley (separados por coma; clic en un número para leer el artículo)</label>
+      ${leyesDe(e).map(k=>`<div class="cod"><span>${NOMBRES[k]}</span><input id="e-a-${k}" value="${esc((e.articulos?.[k]||[]).join(', '))}" ${dis}></div>
         <div class="chips">${(e.articulos?.[k]||[]).map(a=>`<span class="chip" onclick="leer('${k}','${esc(a)}')">${esc(a)}</span>`).join('')}</div>`).join('')}
       <div id="texto"></div>
       <label>Nota</label><textarea id="e-nota" ${dis}>${esc(e.nota)}</textarea>
+      <label>Materia</label>${materiaSel(e.materia)}
       <label>Estado</label>${estadoSel(e.estado)}`;
   } else if (p === 'tipos_caso') {
     const ids = new Set(e.datos || []);
@@ -235,11 +239,13 @@ function abrir(id, nuevaEntrada){
       <label>Nombre (como lo diría la persona)</label><input id="e-titulo" value="${esc(e.titulo)}" ${dis}>
       <label>Descripción (la lee el LLM para clasificar)</label><textarea id="e-desc" ${dis}>${esc(e.descripcion)}</textarea>
       <label>Datos del expediente que necesita</label><div class="checks">${(S.cat.datos||[]).map(d=>`<label><input type="checkbox" class="e-dato" value="${d.id}" ${ids.has(d.id)?'checked':''} ${dis}>${esc(d.id)}</label>`).join('')}</div>
+      <label>Materia</label>${materiaSel(e.materia)}
       <label>Estado</label>${estadoSel(e.estado)}`;
   } else {
     h = `<label>id</label><input id="e-id" value="${esc(e.id)}" ${dis}>
       <label>Pregunta que se le hace a la persona</label><textarea id="e-preg" ${dis}>${esc(e.pregunta)}</textarea>
       <label>Para qué distingue</label><textarea id="e-para" ${dis}>${esc(e.para_que)}</textarea>
+      <label>Materia</label>${materiaSel(e.materia)}
       <label>Estado</label>${estadoSel(e.estado)}`;
   }
   if (S.puede) h += `<div style="margin-top:12px"><button class="primary" onclick="guardar()">Guardar</button><span class="msg" id="msg"></span></div>`;
@@ -258,8 +264,8 @@ function nueva(){
   const p = S.parte;
   if (p === 'reglas') {
     const n = Math.max(0, ...(S.cat.reglas||[]).map(r => +String(r.id).slice(1) || 0)) + 1;
-    abrir(null, {id:'r'+String(n).padStart(3,'0'), tipo_caso:S.f.tipo || (S.cat.tipos_caso[0]||{}).id, delito:'', condicion:'', articulos:{}, estado:'borrador'});
-  } else abrir(null, {id:'', estado:'borrador', datos:['lugar_hechos']});
+    abrir(null, {id:'r'+String(n).padStart(3,'0'), tipo_caso:S.f.tipo || (S.cat.tipos_caso[0]||{}).id, delito:'', condicion:'', articulos:{}, materia:S.f.materia || 'penal', estado:'borrador'});
+  } else abrir(null, {id:'', materia:S.f.materia || 'penal', estado:'borrador', datos:['lugar_hechos']});
 }
 // La entrada como está guardada: el formulario no muestra todos los campos (tipo de un dato, opciones…) y no debe borrarlos.
 function orig(){ return S.orig ? {...((S.cat[S.parte]||[]).find(x => x.id === S.orig) || {})} : {}; }
@@ -268,15 +274,15 @@ async function guardar(){
   let e;
   if (p === 'reglas') {
     e = {...orig(), id: S.orig || (S.sel ?? '') , tipo_caso:v('e-tipo'), delito:v('e-delito').trim(), condicion:v('e-cond').trim(),
-         cuando:v('e-cuando').split('\n').map(x=>x.trim()).filter(Boolean), articulos:{}, estado:v('e-estado')};
+         cuando:v('e-cuando').split('\n').map(x=>x.trim()).filter(Boolean), articulos:{}, materia:v('e-materia'), estado:v('e-estado')};
     if (!e.id) { const n = Math.max(0, ...(S.cat.reglas||[]).map(r => +String(r.id).slice(1) || 0)) + 1; e.id = 'r'+String(n).padStart(3,'0'); }
-    S.codigos.forEach(k => e.articulos[k] = lista(v('e-a-'+k)));
+    S.codigos.forEach(k => { const a = $('e-a-'+k) ? lista(v('e-a-'+k)) : (orig().articulos?.[k] || []); if (a.length || k in (orig().articulos||{})) e.articulos[k] = a; });
     const nota = v('e-nota').trim(); if (nota) e.nota = nota; else delete e.nota;
   } else if (p === 'tipos_caso') {
     e = {...orig(), id:v('e-id').trim(), titulo:v('e-titulo').trim(), descripcion:v('e-desc').trim(),
-         datos:[...document.querySelectorAll('.e-dato:checked')].map(x=>x.value), estado:v('e-estado')};
+         datos:[...document.querySelectorAll('.e-dato:checked')].map(x=>x.value), materia:v('e-materia'), estado:v('e-estado')};
   } else {
-    e = {...orig(), id:v('e-id').trim(), pregunta:v('e-preg').trim(), para_que:v('e-para').trim(), estado:v('e-estado')};
+    e = {...orig(), id:v('e-id').trim(), pregunta:v('e-preg').trim(), para_que:v('e-para').trim(), materia:v('e-materia'), estado:v('e-estado')};
   }
   const r = await fetch('/api/catalogo/'+p, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({entrada:e, original_id:S.orig})});
   const j = await r.json();

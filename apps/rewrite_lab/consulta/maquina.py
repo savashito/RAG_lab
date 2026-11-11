@@ -158,7 +158,7 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
     salida = {'tipo': 'orientar', 'reglas': [r['id'] for r in reglas],
               'inciertas': [r['id'] for r in reglas if r['incierta']],
               'codigos': codigos, 'articulos': E.articulos_del_caso(exp, reglas),
-              'fuera_de_corpus': exp['datos'].get('lugar_hechos') not in E.CODIGO_DE_ESTADO and 'federal' not in codigos,
+              'fuera_de_corpus': exp['datos'].get('lugar_hechos') not in E.CODIGO_DE_ESTADO and not codigos,
               'sin_reglas': not reglas,
               'tipos_quitados': [t for t in exp.get('orientados', []) if t not in exp['tipos_caso']]}
     exp = {**exp, 'orientados': list(exp['tipos_caso'])}

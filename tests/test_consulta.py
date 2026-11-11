@@ -85,6 +85,17 @@ def test_catalogo_rechaza_condicion_con_dato_inexistente():
         C.validar_entrada('reglas', r, CAT)
 
 
+def test_catalogo_materia_por_omision_penal_y_rechaza_otra():
+    assert C.validar_entrada('reglas', CAT['reglas'][0], CAT)['materia'] == 'penal'
+    with pytest.raises(ValueError, match='Materia'):
+        C.validar_entrada('reglas', {**CAT['reglas'][0], 'materia': 'laboral'}, CAT)
+
+
+def test_catalogo_guarda_leyes_que_no_son_codigos_penales_solo_si_se_citan():
+    r = C.validar_entrada('reglas', {**CAT['reglas'][0], 'articulos': {'cdmx': ['236'], 'ley_extorsion': ['15']}}, CAT)
+    assert r['articulos']['ley_extorsion'] == ['15'] and 'cnpp' not in r['articulos'] and r['articulos']['morelos'] == []
+
+
 # ── expediente ────────────────────────────────────────────────────────────────────
 def test_combinar_normaliza_y_reporta_cambios():
     exp, cambios = E.combinar(E.nuevo(), {'pide_dinero': 'Sí', 'edad_victima': '24 años', 'inventado': 1}, CAT)
@@ -298,3 +309,18 @@ def test_ia_llm_caido_no_tumba():
             raise TimeoutError('sin GPU')
     r = IA.ConsultaIA(Caido()).clasificar_caso('Persona: hola', ['imagenes_intimas'], CAT)
     assert r['agregar'] == r['quitar'] == r['opciones'] == [] and '__error__' in r['_llamada']['raw']
+
+
+@pytest.mark.parametrize('lugar, articulos, esperado', [
+    # ley general: vale en cualquier estado, junto al código penal del estado
+    ('Querétaro', {'queretaro': ['1'], 'ley_extorsion': ['15']}, ['queretaro', 'ley_extorsion']),
+    # código civil de la CDMX: solo si los hechos son en la CDMX
+    ('Ciudad de México', {'cc_cdmx': ['308'], 'cnpcf': ['1']}, ['cdmx', 'cc_cdmx', 'cnpcf']),
+    ('Querétaro', {'cc_cdmx': ['308'], 'cnpcf': ['1']}, ['queretaro', 'cnpcf']),
+    # ley federal: solo si la regla no cita ninguna ley de un estado
+    ('Morelos', {'morelos': ['1'], 'lfcdo': ['2']}, ['morelos']),
+    ('Morelos', {'federal': ['1'], 'lfcdo': ['2']}, ['morelos', 'federal', 'lfcdo']),
+])
+def test_codigos_del_caso_con_leyes_generales_federales_y_de_familia(lugar, articulos, esperado):
+    exp = {**E.nuevo(), 'datos': {'lugar_hechos': lugar}}
+    assert E.codigos_del_caso(exp, [{'id': 'r', 'articulos': articulos}]) == esperado

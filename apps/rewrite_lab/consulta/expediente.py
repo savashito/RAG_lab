@@ -22,6 +22,8 @@ from __future__ import annotations
 import re
 import unicodedata
 
+from consulta.leyes import JURISDICCION, LEYES
+
 NO_SABE = 'no_sabe'
 # Entidad federativa (nombre oficial, como lo devuelve jurisdiction_gate.normalizar_estado) → código en el catálogo.
 CODIGO_DE_ESTADO = {'Ciudad de México': 'cdmx', 'Querétaro': 'queretaro', 'Estado de México': 'edomex',
@@ -152,15 +154,20 @@ def reglas_aplicables(expediente: dict, catalogo: dict, solo_confirmadas: bool =
 
 
 def codigos_del_caso(expediente: dict, reglas: list[dict]) -> list[str]:
-    """Qué códigos del catálogo usar: el del estado de los hechos (si está en el corpus) y el federal si alguna regla
-    solo tiene artículos federales o el caso es de un tipo federal."""
-    out = []
+    """Qué leyes del catálogo usar (llaves de `articulos`), de las que citan las reglas aplicables:
+      · las del estado de los hechos (su código penal, su código civil…);
+      · las generales y nacionales (valen en todos los estados);
+      · las federales, si alguna regla no cita ninguna ley de un estado (el delito es federal)."""
+    citadas = [k for r in reglas for k, arts in (r.get('articulos') or {}).items() if arts]
     est = CODIGO_DE_ESTADO.get(expediente.get('datos', {}).get('lugar_hechos'))
-    if est:
-        out.append(est)
-    if any(r.get('articulos', {}).get('federal') and not any(r['articulos'].get(k) for k in CODIGO_DE_ESTADO.values())
-           for r in reglas):
-        out.append('federal')
+    de_estado = set(CODIGO_DE_ESTADO.values())
+    sin_estado = [r for r in reglas
+                  if not any(arts and JURISDICCION.get(k) in de_estado for k, arts in (r.get('articulos') or {}).items())]
+    federales = {k for r in sin_estado for k, arts in (r.get('articulos') or {}).items() if arts}
+    out = [k for k in LEYES if JURISDICCION[k] == est and est] if est else []
+    out = [k for k in out if k == est or k in citadas]         # el código penal del estado siempre; las demás si se citan
+    out += [k for k in LEYES if JURISDICCION[k] == 'general' and k in citadas]
+    out += [k for k in LEYES if JURISDICCION[k] == 'federal' and k in federales]
     return out
 
 

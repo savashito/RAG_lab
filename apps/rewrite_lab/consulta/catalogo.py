@@ -23,6 +23,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse, JSONResponse, Response
 
 from consulta import expediente as E
+from consulta.leyes import CODIGOS, JURISDICCION, LEYES, MATERIAS, NOMBRES
 
 HERE = Path(__file__).resolve().parent
 YAML_INICIAL = HERE / 'catalogo_casos.yaml'
@@ -34,14 +35,6 @@ CREATE TABLE IF NOT EXISTS consulta_catalogo_log (
     id serial PRIMARY KEY, accion text NOT NULL, detalle jsonb, por text, at timestamptz DEFAULT now());
 """
 
-# Código → documento del corpus.
-CODIGOS = {
-    'cdmx': 'Código Penal de la Ciudad de México.md',
-    'queretaro': 'Código Penal del Estado de Querétaro.md',
-    'edomex': 'Código Penal del Estado de México.md',
-    'morelos': 'Código PENALEM.md',
-    'federal': 'Código Penal Federal.md',
-}
 PARTES = {'datos': 'id', 'tipos_caso': 'id', 'reglas': 'id'}
 ESTADOS = {'borrador', 'sugerida', 'confirmada', 'descartada'}
 TIPOS_DATO = ('si_no', 'numero', 'opcion', 'estado')
@@ -72,9 +65,9 @@ def cargar(path: Path = YAML_INICIAL) -> tuple[dict, str]:
 
 # Orden de las llaves al escribir el YAML: la base (jsonb) no guarda el orden y el YAML se lee mejor siempre igual.
 ORDEN = {None: ['version', 'nota', 'generales', 'datos', 'tipos_caso', 'reglas', 'otro'],
-         'datos': ['id', 'tipo', 'opciones', 'obligatorio', 'preguntar', 'pregunta', 'para_que', 'estado', 'nota'],
-         'tipos_caso': ['id', 'titulo', 'descripcion', 'datos', 'estado', 'nota'],
-         'reglas': ['id', 'tipo_caso', 'delito', 'condicion', 'cuando', 'articulos', 'estado', 'nota'],
+         'datos': ['id', 'materia', 'tipo', 'opciones', 'obligatorio', 'preguntar', 'pregunta', 'para_que', 'estado', 'nota'],
+         'tipos_caso': ['id', 'materia', 'titulo', 'descripcion', 'datos', 'estado', 'nota'],
+         'reglas': ['id', 'materia', 'tipo_caso', 'delito', 'condicion', 'cuando', 'articulos', 'estado', 'nota'],
          'articulos': list(CODIGOS)}
 
 
@@ -103,6 +96,9 @@ def validar_entrada(parte: str, e: dict, doc: dict) -> dict:
         raise ValueError('El id debe tener solo minúsculas, números y _ (máximo 40).')
     if e.get('estado', 'borrador') not in ESTADOS:
         raise ValueError(f'Estado inválido: {e.get("estado")}')
+    e['materia'] = e.get('materia') or 'penal'
+    if e['materia'] not in MATERIAS:
+        raise ValueError(f'Materia inválida en {e["id"]}: {e["materia"]} (usa {", ".join(MATERIAS)})')
     ids_datos = {d['id'] for d in doc.get('datos', [])}
     ids_tipos = {t['id'] for t in doc.get('tipos_caso', [])}
     if parte == 'datos':
@@ -125,6 +121,8 @@ def validar_entrada(parte: str, e: dict, doc: dict) -> dict:
                 raise ValueError(f'Condición de {e["id"]} usa un dato que no existe: «{c}»')
         arts = e.get('articulos') or {}
         e['articulos'] = {k: [str(a).strip() for a in (arts.get(k) or []) if str(a).strip()] for k in CODIGOS}
+        # los 5 códigos penales siempre aparecen (aunque vacíos); las demás leyes solo si la regla las cita
+        e['articulos'] = {k: v for k, v in e['articulos'].items() if v or JURISDICCION[k] == k}
     return e
 
 
@@ -240,7 +238,8 @@ class Catalogo:
             doc, por, at = self.leer()
             email = self.current_email(request)
             return {'catalogo': doc, 'yaml': a_yaml(doc), 'md5': md5_de(doc), 'actualizado_por': por, 'updated_at': at,
-                    'puede_editar': bool(self.can_edit(email)), 'codigos': list(CODIGOS)}
+                    'puede_editar': bool(self.can_edit(email)), 'codigos': list(CODIGOS),
+                    'nombres': NOMBRES, 'materia_ley': {k: v[1] for k, v in LEYES.items()}}
 
         @r.put('/api/catalogo/{parte}')
         async def guardar(parte: str, request: Request):

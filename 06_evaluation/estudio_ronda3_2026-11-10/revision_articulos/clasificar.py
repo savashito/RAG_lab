@@ -41,7 +41,10 @@ Responde SOLO un JSON:
   parte general (reglas de aplicación, penas en general, prescripción, etc.) o está derogado.
 - "delito": nombre corto del delito que regula. Vacío si es_delito es false.
 - "tipos_caso": ids de los tipos de caso en los que una persona llegaría a este delito. ["otro"] si es delito pero
-  no cabe en ninguno. [] si es_delito es false.
+  no cabe en ninguno. Si es_delito es false pero el artículo da a la víctima o a la persona acusada un derecho o un
+  trámite concreto (denunciar, medidas de protección, asesor jurídico, reparación del daño, defensa, detención), los
+  tipos de caso en los que le serviría. Si ese derecho o trámite vale para cualquier delito, solo ["proceso_penal"].
+  Si no, [].
 - "reglas": ids de las reglas existentes a las que pertenece este artículo (aunque la regla todavía no lo cite).
 - "regla_nueva": si el delito cabe en un tipo de caso pero ninguna regla lo cubre:
   {"tipo_caso": "id", "delito": "nombre", "condicion": "en palabras: cuándo aplica"}. Si no, null.
