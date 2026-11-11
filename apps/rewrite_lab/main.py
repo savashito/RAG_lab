@@ -1702,11 +1702,6 @@ from consulta.ia import ConsultaIA  # noqa: E402
 consulta_ia = ConsultaIA(llm)
 
 
-@app.get('/preguntar-catalogo')
-def preguntar_catalogo():
-    return FileResponse(STATIC / 'preguntar_catalogo.html', headers={'Cache-Control': 'no-store'})
-
-
 CONSULTA_ESTUDIO_PROMPTS = Path(__file__).resolve().parent / 'study' / 'estudios' / 'ronda2_penal.yaml'
 CONSULTA_PROMPT = 'ronda2:intermedio'   # por omisión: el prompt que salió mejor en la ronda 2
 
@@ -1763,7 +1758,7 @@ def healthz():
 
 # Rutas "profundas" por tab: todas sirven el MISMO SPA (index.html); el front lee
 # location.pathname y abre el tab correcto. Permite enlaces directos y compartibles:
-#   /consulta → Preguntar (RAG) · /lab → Rewrite Lab · /ingesta → Ingestar
+#   /consulta → Preguntar (RAG) · /preguntar-catalogo → Preguntar (Catálogo) · /lab → Rewrite Lab · /ingesta → Ingestar
 @app.get('/')
 @app.get('/consulta')
 @app.get('/lab')
@@ -1771,6 +1766,7 @@ def healthz():
 @app.get('/conversacional')
 @app.get('/admin')
 @app.get('/benchmark')
+@app.get('/preguntar-catalogo')
 def index():
     # no-store: el navegador no cachea el HTML, para que los cambios se vean sin hard-refresh.
     return FileResponse(STATIC / 'index.html', headers={'Cache-Control': 'no-store'})
