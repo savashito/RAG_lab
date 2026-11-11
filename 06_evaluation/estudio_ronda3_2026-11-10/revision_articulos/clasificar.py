@@ -111,8 +111,12 @@ def contexto(doc: dict, codigo: str) -> str:
     return f'TIPOS DE CASO:\n{tipos}\n- otro: ninguno de los anteriores\n\nREGLAS:\n{reglas}\n\nDATOS DEL EXPEDIENTE:\n{datos}'
 
 
-def llamar(url: str, modelo: str, system: str, user: str, timeout: int = 180, max_tokens: int = 700) -> str:
+def llamar(url: str, modelo: str, system: str, user: str, timeout: int = 180, max_tokens: int = 700,
+           pensar: bool = False) -> str:
+    # pensar: el modelo razona antes de responder (Gemma 4, Qwen3). Se pide explícito porque el servidor puede
+    # traerlo encendido por omisión, y entonces el razonamiento se come los max_tokens y la respuesta llega vacía.
     cuerpo = json.dumps({'model': modelo, 'temperature': 0, 'max_tokens': max_tokens,
+                         'chat_template_kwargs': {'enable_thinking': pensar},
                          'messages': [{'role': 'system', 'content': system}, {'role': 'user', 'content': user}]}).encode()
     req = urllib.request.Request(url.rstrip('/') + '/chat/completions', data=cuerpo,
                                  headers={'Content-Type': 'application/json'})
@@ -136,7 +140,8 @@ def clasificar(art: dict, ctx: str, args) -> dict:
                 + ('\n[…artículo recortado…]' if len(texto) > MAX_TEXTO else ''))
         t0 = time.time()
         try:
-            raw = llamar(args.url, args.modelo, PROMPTS[art.get('materia', 'penal')], user)
+            raw = llamar(args.url, args.modelo, PROMPTS[art.get('materia', 'penal')], user, max_tokens=args.max_tokens,
+                         pensar=args.pensar)
         except urllib.error.HTTPError as e:
             if e.code == 400 and len(texto) > 1500:     # casi siempre: no cabe en el contexto → se recorta y reintenta
                 texto = texto[:len(texto) // 2]
@@ -160,6 +165,8 @@ def main() -> None:
     ap.add_argument('--url', default='http://localhost:8000/v1')
     ap.add_argument('--modelo', default='gemma-4-31b')
     ap.add_argument('--hilos', type=int, default=8)
+    ap.add_argument('--max-tokens', type=int, default=700, help='más si el modelo razona antes de responder (gpt-oss)')
+    ap.add_argument('--pensar', action='store_true', help='el modelo razona antes de responder (súbele --max-tokens)')
     ap.add_argument('--limite', type=int, default=0, help='solo los primeros N pendientes (prueba)')
     ap.add_argument('--codigo', nargs='*', help='solo estas leyes: cdmx, queretaro, edomex, morelos, federal, cnpp…')
     args = ap.parse_args()
@@ -170,7 +177,8 @@ def main() -> None:
         articulos = [a for a in articulos if a['codigo'] in args.codigo]
 
     def firma(a: dict) -> dict:
-        return {'prompt_md5': md5(PROMPTS[a.get('materia', 'penal')]), 'catalogo_md5': cat['md5'], 'modelo': args.modelo}
+        return {'prompt_md5': md5(PROMPTS[a.get('materia', 'penal')]), 'catalogo_md5': cat['md5'], 'modelo': args.modelo,
+                'pensar': args.pensar}
     salida = args.carpeta / 'resultados.jsonl'
     hechos = set()
     if salida.exists():
