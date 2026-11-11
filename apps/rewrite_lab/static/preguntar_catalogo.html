@@ -46,7 +46,9 @@
 <header>
   <h1>📚 Preguntar (Catálogo) <span class="muted" style="font-weight:400;font-size:14px">— la consulta de la ronda 3: clasifica el caso, pide los datos y llega a reglas y artículos del catálogo</span></h1>
   <label class="op">Contexto <select id="modo"><option value="todos">todos los artículos</option><option value="embedding">los más parecidos (embedding)</option><option value="ninguno">sin respuesta del LLM</option></select></label>
-  <label class="op">tope <input id="tope" type="number" placeholder="auto" style="width:80px"> tokens</label>
+  <label class="op" title="Cuántos tokens de artículos caben en el contexto (no es el largo de la respuesta)">Artículos hasta
+    <select id="tope"><option value="">automático (todos 22,000 · embedding 6,000)</option><option>2000</option><option>4000</option><option>8000</option><option>16000</option><option value="24000">24000 (máximo)</option></select> tokens</label>
+  <label class="op">Prompt <select id="prompt"><option value="tema">El del tema (el de Preguntar RAG)</option></select></label>
   <label class="op"><input type="checkbox" id="solo-conf"> solo reglas confirmadas</label>
   <button onclick="reiniciar()">↺ Empezar de nuevo</button>
   <a href="/catalogo">Catálogo</a> <a href="/">← App</a>
@@ -84,7 +86,7 @@ async function turno(evento){
   try {
     const r = await fetch('/api/consulta/turno', {method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({estado:S.estado, expediente:S.expediente, evento, solo_confirmadas:$('solo-conf').checked,
-        historial:S.historial, contexto:$('modo').value, tope_tokens:+$('tope').value || null})});
+        historial:S.historial, contexto:$('modo').value, tope_tokens:+$('tope').value || null, prompt:$('prompt').value})});
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     espera.remove();
@@ -148,7 +150,7 @@ function pintarPanel(){
     const o = S.orientacion;
     if (o) {
       const entra = o.contexto.filter(a => a.entra).length;
-      h += `<h2>Contexto de la respuesta: ${esc(o.modo_contexto)} · ${entra} de ${o.contexto.length} artículos · ~${o.tokens_contexto} tokens (tope ${o.tope_tokens}) · ${o.segundos.contexto + o.segundos.respuesta} s</h2>
+      h += `<h2>Contexto de la respuesta: ${esc(o.modo_contexto)} · prompt ${esc(o.prompt || '')} · ${entra} de ${o.contexto.length} artículos · ~${o.tokens_contexto} tokens (tope ${o.tope_tokens}) · ${o.segundos.contexto + o.segundos.respuesta} s</h2>
         <table><tr><th>Artículo</th><th>Entra</th><th>Orden</th>${o.modo_contexto === 'embedding' ? '<th>Distancia</th>' : ''}<th>Tokens</th></tr>
         ${[...o.contexto].sort((a, b) => (a.orden || 999) - (b.orden || 999)).map(a => `<tr><td><span class="chip" onclick="leer('${esc(a.codigo)}','${esc(a.num)}')">${esc(C.nombres[a.codigo] || a.codigo)} ${esc(a.num)}</span></td>
           <td>${a.entra ? '✓' : '<span class="muted">✗</span>'}</td><td>${a.orden || ''}</td>${o.modo_contexto === 'embedding' ? `<td>${a.distancia ?? ''}</td>` : ''}<td>${a.tokens}</td></tr>`).join('')}</table>
@@ -170,6 +172,7 @@ async function leer(codigo, num){
     : `<div class="texto bad">No encontré el artículo ${esc(num)} en ${esc(C.nombres[codigo] || codigo)}.</div>`;
 }
 cargarCatalogo();
+fetch('/api/consulta/prompts').then(r => r.json()).then(ps => { $('prompt').innerHTML = ps.map(p => `<option value="${esc(p.id)}">${esc(p.nombre)}</option>`).join(''); }).catch(() => {});
 </script>
 </body>
 </html>

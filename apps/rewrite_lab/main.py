@@ -24,6 +24,7 @@ import time
 import uuid
 from pathlib import Path
 
+import yaml
 from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -1706,6 +1707,27 @@ def preguntar_catalogo():
     return FileResponse(STATIC / 'preguntar_catalogo.html', headers={'Cache-Control': 'no-store'})
 
 
+CONSULTA_ESTUDIO_PROMPTS = Path(__file__).resolve().parent / 'study' / 'estudios' / 'ronda2_penal.yaml'
+
+
+def consulta_prompts() -> list[dict]:
+    """System prompts para orientar: el del tema (el de «Preguntar (RAG)») y las condiciones de la ronda 2."""
+    out = [{'id': 'tema', 'nombre': 'El del tema (el de Preguntar RAG)'}]
+    try:
+        for c in yaml.safe_load(CONSULTA_ESTUDIO_PROMPTS.read_text()).get('condiciones', []):
+            if (c.get('asistente') or {}).get('sistema') or c.get('sistema'):
+                out.append({'id': f'ronda2:{c["id"]}', 'nombre': f'Ronda 2 · {c["id"]}',
+                            'texto': (c.get('asistente') or {}).get('sistema') or c.get('sistema')})
+    except Exception as e:   # sin el archivo del estudio queda solo el del tema
+        print('consulta_prompts:', e)
+    return out
+
+
+@app.get('/api/consulta/prompts')
+def consulta_prompts_route():
+    return [{'id': p['id'], 'nombre': p['nombre']} for p in consulta_prompts()]
+
+
 @app.post('/api/consulta/turno')
 def consulta_turno(body: dict):
     """body: {estado, expediente, evento, solo_confirmadas, historial (toda la conversación, para orientar),
@@ -1724,9 +1746,12 @@ def consulta_turno(body: dict):
         with connect() as c, c.cursor() as cur:
             out['orientacion'] = consulta_orientar.orientar(
                 cur=cur, table=TABLE, salida=salida, expediente=exp, catalogo=doc, conversacion=conversacion,
-                contexto=modo, tope=body.get('tope_tokens'), system=system_for(topic),
+                contexto=modo, tope=body.get('tope_tokens'),
+                system=next((p['texto'] for p in consulta_prompts() if p['id'] == body.get('prompt') and p.get('texto')),
+                            system_for(topic)),
                 embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0],
                 chat=lambda s, u: llm.chat(s, u, max_tokens=4096, timeout=180))
+            out['orientacion']['prompt'] = body.get('prompt') or 'tema'
     return out
 
 
