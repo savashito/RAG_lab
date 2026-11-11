@@ -89,7 +89,7 @@ Responde SOLO un JSON:
 
 PROMPTS = {'penal': SYSTEM, 'familiar': SYSTEM_FAMILIAR}
 
-MAX_TEXTO = 7000          # caracteres del artículo; el modelo tiene 8192 tokens de contexto en total
+MAX_TEXTO = 60000         # caracteres del artículo (~15k tokens); el modelo corre con 32768 tokens de contexto
 
 
 def md5(s: str) -> str:
@@ -111,8 +111,8 @@ def contexto(doc: dict, codigo: str) -> str:
     return f'TIPOS DE CASO:\n{tipos}\n- otro: ninguno de los anteriores\n\nREGLAS:\n{reglas}\n\nDATOS DEL EXPEDIENTE:\n{datos}'
 
 
-def llamar(url: str, modelo: str, system: str, user: str, timeout: int = 180) -> str:
-    cuerpo = json.dumps({'model': modelo, 'temperature': 0, 'max_tokens': 700,
+def llamar(url: str, modelo: str, system: str, user: str, timeout: int = 180, max_tokens: int = 700) -> str:
+    cuerpo = json.dumps({'model': modelo, 'temperature': 0, 'max_tokens': max_tokens,
                          'messages': [{'role': 'system', 'content': system}, {'role': 'user', 'content': user}]}).encode()
     req = urllib.request.Request(url.rstrip('/') + '/chat/completions', data=cuerpo,
                                  headers={'Content-Type': 'application/json'})
