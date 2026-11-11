@@ -1724,31 +1724,74 @@ def consulta_prompts_route():
     return [{'id': p['id'], 'nombre': p['nombre']} for p in consulta_prompts()]
 
 
-@app.post('/api/consulta/turno')
-def consulta_turno(body: dict):
-    """body: {estado, expediente, evento, solo_confirmadas, historial (toda la conversación, para orientar),
-    contexto: 'todos' | 'embedding' | 'ninguno' (no redacta), tope_tokens}."""
+def _consulta_turno(body: dict):
+    """La máquina de estados con el catálogo de la base → (doc, {estado, expediente, salida, registro}, preparar)
+    donde `preparar()` arma el contexto de la orientación (None si no toca orientar) → (system, prep)."""
     doc, _, _ = catalogo.leer()
     estado, exp, salida, registro = consulta_maquina.turno(body.get('estado'), body.get('expediente'),
                                                            body.get('evento') or {}, doc, consulta_ia,
                                                            solo_confirmadas=bool(body.get('solo_confirmadas')))
     out = {'estado': estado, 'expediente': exp, 'salida': salida, 'registro': registro}
     modo = body.get('contexto') or 'todos'
-    if salida.get('tipo') == 'orientar' and not salida.get('sin_reglas') and modo != 'ninguno':
+    if salida.get('tipo') != 'orientar' or salida.get('sin_reglas') or modo == 'ninguno':
+        return out, None
+
+    def preparar():
         conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
                                  for m in body.get('historial') or [])
         familia = any(r.get('materia') == 'familiar' for r in doc.get('reglas', []) if r['id'] in salida['reglas'])
         topic = 'derecho_familiar' if familia else 'derecho_penal_mexicano'
+        prompt = body.get('prompt') or CONSULTA_PROMPT
+        system = next((p['texto'] for p in consulta_prompts() if p['id'] == prompt and p.get('texto')), system_for(topic))
         with connect() as c, c.cursor() as cur:
-            out['orientacion'] = consulta_orientar.orientar(
+            prep = consulta_orientar.preparar(
                 cur=cur, table=TABLE, salida=salida, expediente=exp, catalogo=doc, conversacion=conversacion,
                 contexto=modo, tope=body.get('tope_tokens'),
-                system=next((p['texto'] for p in consulta_prompts() if p['id'] == (body.get('prompt') or CONSULTA_PROMPT) and p.get('texto')),
-                            system_for(topic)),
-                embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0],
-                chat=lambda s, u: llm.chat(s, u, max_tokens=4096, timeout=180))
-            out['orientacion']['prompt'] = body.get('prompt') or CONSULTA_PROMPT
+                embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0])
+        return system, {**prep, 'prompt': prompt}
+    return out, preparar
+
+
+@app.post('/api/consulta/turno')
+def consulta_turno(body: dict):
+    """body: {estado, expediente, evento, solo_confirmadas, historial (toda la conversación, para orientar),
+    contexto: 'todos' | 'embedding' | 'ninguno' (no redacta), tope_tokens, prompt}. Sin streaming (benchmark)."""
+    out, preparar = _consulta_turno(body)
+    if preparar:
+        system, prep = preparar()
+        t = time.time()
+        prep['respuesta'] = llm.chat(system, prep.pop('user'), max_tokens=4096, timeout=180)
+        prep['segundos']['respuesta'] = round(time.time() - t, 2)
+        out['orientacion'] = prep
     return out
+
+
+@app.post('/api/consulta/turno/stream')
+def consulta_turno_stream(body: dict):
+    """Igual que /api/consulta/turno, en streaming (SSE, como /ask/stream): 'turno' (estado, expediente, salida),
+    'contexto' (qué artículos entraron), 'token' (la orientación conforme se escribe), 'done' o 'error'."""
+    def sse(obj):
+        return f'data: {json.dumps(obj, ensure_ascii=False)}\n\n'
+
+    def gen():
+        try:
+            out, preparar = _consulta_turno(body)
+            yield sse({'stage': 'turno', **out})
+            if not preparar:
+                yield sse({'stage': 'done'})
+                return
+            system, prep = preparar()
+            user = prep.pop('user')
+            yield sse({'stage': 'contexto', 'orientacion': prep})
+            t = time.time()
+            for piece in llm.chat_stream([{'role': 'system', 'content': system}, {'role': 'user', 'content': user}],
+                                         max_tokens=4096, timeout=180):
+                yield sse({'stage': 'token', 'text': piece})
+            yield sse({'stage': 'done', 'segundos_respuesta': round(time.time() - t, 2)})
+        except Exception as e:   # noqa: BLE001 — el error viaja como evento para mostrarlo en la UI
+            yield sse({'stage': 'error', 'error': f'{type(e).__name__}: {e}'})
+    return StreamingResponse(gen(), media_type='text/event-stream',
+                             headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
 
 
 @app.get('/healthz')

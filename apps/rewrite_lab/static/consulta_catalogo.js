@@ -28,34 +28,52 @@
     g('cat-msgs').appendChild(d); g('cat-msgs').scrollTop = 1e9; return d;
   }
 
+  // Un mensaje → /api/consulta/turno/stream (SSE, lo lee readSSE de index.html): 'turno' trae el estado y la salida;
+  // si toca orientar, 'contexto' dice qué artículos entraron y 'token' va escribiendo la respuesta.
   async function turno(evento){
     g('cat-run').disabled = true;
-    const espera = burbuja('assistant', '…');
+    let espera = burbuja('assistant', '…'), viva = null, respuesta = '';
+    const quitarEspera = () => { if (espera) { espera.remove(); espera = null; } };
     try {
-      const r = await fetch('/api/consulta/turno', {method:'POST', headers:{'Content-Type':'application/json'},
+      const r = await fetch('/api/consulta/turno/stream', {method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({estado:S.estado, expediente:S.expediente, evento, solo_confirmadas:g('cat-conf').checked,
           historial:S.historial, contexto:g('cat-modo').value, tope_tokens:+g('cat-tope').value || null, prompt:g('cat-prompt').value})});
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json();
-      espera.remove();
-      Object.assign(S, {estado:j.estado, expediente:j.expediente, ultima:j.salida, orientacion:j.orientacion || null});
-      S.registros.push(j.registro);
-      responder(j.salida, j.orientacion);
-      panel();
-    } catch (err) { espera.innerHTML = `<span class="bad">Error: ${e(err.message)}</span>`; }
+      await readSSE(r, ev => {
+        if (ev.stage === 'turno') {
+          Object.assign(S, {estado:ev.estado, expediente:ev.expediente, ultima:ev.salida, orientacion:null});
+          S.registros.push(ev.registro);
+          quitarEspera(); responder(ev.salida); panel();
+          if (ev.salida.tipo === 'orientar' && !ev.salida.sin_reglas && g('cat-modo').value !== 'ninguno') espera = burbuja('assistant', 'Leyendo los artículos del catálogo…');
+        } else if (ev.stage === 'contexto') {
+          S.orientacion = ev.orientacion; panel();
+        } else if (ev.stage === 'token') {
+          quitarEspera();
+          if (!viva) { viva = burbuja('assistant', ''); viva.classList.add('md'); }
+          respuesta += ev.text || '';
+          viva.innerHTML = '<span class="quien">Asistente</span>' + marked.parse(respuesta);
+          g('cat-msgs').scrollTop = 1e9;
+        } else if (ev.stage === 'done') {
+          if (S.orientacion) { S.orientacion.respuesta = respuesta; S.orientacion.segundos.respuesta = ev.segundos_respuesta; panel(); }
+          if (respuesta) S.historial.push({role:'assistant', content:respuesta});
+        } else if (ev.stage === 'error') {     // readSSE se traga lo que lance este callback: se muestra aquí
+          quitarEspera(); burbuja('assistant', '').innerHTML = `<span class="bad">Error: ${e(ev.error)}</span>`;
+        }
+      });
+      quitarEspera();
+    } catch (err) { quitarEspera(); burbuja('assistant', '').innerHTML = `<span class="bad">Error: ${e(err.message)}</span>`; }
     g('cat-run').disabled = false; g('cat-txt').focus();
   }
 
   function decir(texto, extra){ burbuja('assistant', texto, extra); S.historial.push({role:'assistant', content:texto}); }
-  function responder(s, o){
+  function responder(s){
     if (s.aviso) decir(s.aviso);
     if (s.tipo === 'pregunta') decir(s.texto);
     else if (s.tipo === 'elegir_tipo')
       decir(s.texto, `<div class="cat-btns">${s.opciones.map(x => `<button class="ghost" onclick="catElegir('${e(x.id)}', this)">${e(x.titulo)}</button>`).join('')}</div>`);
-    else if (s.tipo === 'orientar' && o) decir(o.respuesta || '(el LLM no respondió)');
-    else if (s.tipo === 'orientar')
-      decir(s.sin_reglas ? 'Con los datos que diste no encontré reglas del catálogo para tu caso.'
-        : `Tengo lo necesario para orientarte: ${s.reglas.length} regla(s) del catálogo y ${Object.values(s.articulos).flat().length} artículo(s). Míralos en el panel.`);
+    else if (s.tipo === 'orientar' && s.sin_reglas) decir('Con los datos que diste no encontré reglas del catálogo para tu caso.');
+    else if (s.tipo === 'orientar' && g('cat-modo').value === 'ninguno')
+      decir(`Tengo lo necesario para orientarte: ${s.reglas.length} regla(s) del catálogo y ${Object.values(s.articulos).flat().length} artículo(s). Míralos en el panel.`);
   }
 
   function enviar(){
@@ -91,7 +109,7 @@
       const o = S.orientacion;
       if (o) {
         const entra = o.contexto.filter(a => a.entra).length, emb = o.modo_contexto === 'embedding';
-        h += `<h3>Contexto de la respuesta: ${e(o.modo_contexto)} · prompt ${e(o.prompt || '')} · ${entra} de ${o.contexto.length} artículos · ~${o.tokens_contexto} tokens (tope ${o.tope_tokens}) · ${(o.segundos.contexto + o.segundos.respuesta).toFixed(1)} s</h3>
+        h += `<h3>Contexto de la respuesta: ${e(o.modo_contexto)} · prompt ${e(o.prompt || '')} · ${entra} de ${o.contexto.length} artículos · ~${o.tokens_contexto} tokens (tope ${o.tope_tokens}) · contexto ${o.segundos.contexto} s${o.segundos.respuesta != null ? ` · respuesta ${o.segundos.respuesta} s` : ' · escribiendo…'}</h3>
           <table><tr><th>Artículo</th><th>Entra</th><th>Orden</th>${emb ? '<th>Distancia</th>' : ''}<th>Tokens</th></tr>
           ${[...o.contexto].sort((a, b) => (a.orden || 999) - (b.orden || 999)).map(a => `<tr><td><span class="cat-chip" onclick="catLeer('${e(a.codigo)}','${e(a.num)}')">${e(C.nombres[a.codigo] || a.codigo)} ${e(a.num)}</span></td>
             <td>${a.entra ? '✓' : '<span class="muted">✗</span>'}</td><td>${a.orden || ''}</td>${emb ? `<td>${a.distancia ?? ''}</td>` : ''}<td>${a.tokens}</td></tr>`).join('')}</table>

@@ -107,10 +107,10 @@ def elegir(arts: list[dict], reglas: list[dict], contexto: str, tope: int | None
     return sorted([a for a in arts if a['entra']], key=lambda a: a['orden'])
 
 
-def orientar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict, conversacion: str,
-             contexto: str, embed, chat, system: str, tope: int | None = None) -> dict:
-    """Salida 'orientar' de la máquina → {respuesta, contexto: [artículos con entra/distancia/tokens], ...}.
-    `embed(texto) → vector` y `chat(system, user) → str` los pone quien llama."""
+def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict, conversacion: str,
+             contexto: str, embed, tope: int | None = None) -> dict:
+    """Salida 'orientar' de la máquina → {user: el mensaje para el LLM, y qué artículos entraron al contexto}.
+    `embed(texto) → vector` lo pone quien llama. La respuesta la pide quien llama (orientar() o en streaming)."""
     if contexto not in CONTEXTOS:
         raise ValueError(f'contexto desconocido: {contexto!r} (usa {CONTEXTOS})')
     t0 = time.time()
@@ -124,7 +124,6 @@ def orientar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
         for a in arts:                                # la distancia del artículo = la de su fragmento más cercano
             a['distancia'] = round(min((dist[i] for i in a['ids'] if i in dist), default=9.0), 4)
     elegidos = elegir(arts, reglas, contexto, tope)
-    t_contexto = round(time.time() - t0, 2)
     supuestos = set(expediente.get('supuestos') or [])
     datos = '\n'.join(f'- {k}: {v}' + (' (SUPUESTO: la persona solo dijo que vive ahí; dilo en la respuesta)'
                                        if k in supuestos else '')
@@ -133,13 +132,20 @@ def orientar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
                       + (' [INCIERTA: falta un dato]' if r['incierta'] else '') for r in reglas) or '(ninguna)'
     texto = '\n\n'.join(f'[{a["orden"]}] {NOMBRES.get(a["codigo"], a["codigo"])} — {a["ruta"]}\n{a["texto"]}'
                         for a in elegidos)
-    user = ORIENTAR_USER.format(conversacion=conversacion, datos=datos, reglas=lista, contexto=texto or '(vacío)')
-    t1 = time.time()
-    respuesta = chat(system, user)
-    return {'respuesta': respuesta, 'modo_contexto': contexto, 'tope_tokens': tope or TOPE[contexto],
+    return {'user': ORIENTAR_USER.format(conversacion=conversacion, datos=datos, reglas=lista, contexto=texto or '(vacío)'),
+            'modo_contexto': contexto, 'tope_tokens': tope or TOPE[contexto],
             'tokens_contexto': sum(tokens(a['texto']) for a in elegidos),
             'contexto': [{'codigo': a['codigo'], 'num': a['num'], 'entra': a['entra'], 'orden': a.get('orden'),
                           'distancia': a.get('distancia'), 'tokens': tokens(a['texto'])} for a in arts],
             'no_encontrados': sorted({f'{k} {n}' for k, ns in (salida.get('articulos') or {}).items() for n in ns}
                                      - {f'{a["codigo"]} {a["num"]}' for a in arts}),
-            'segundos': {'contexto': t_contexto, 'respuesta': round(time.time() - t1, 2)}}
+            'segundos': {'contexto': round(time.time() - t0, 2)}}
+
+
+def orientar(*, chat, system: str, **kw) -> dict:
+    """preparar() + la respuesta completa del LLM (sin streaming). `chat(system, user) → str`."""
+    o = preparar(**kw)
+    t1 = time.time()
+    o['respuesta'] = chat(system, o.pop('user'))
+    o['segundos']['respuesta'] = round(time.time() - t1, 2)
+    return o
