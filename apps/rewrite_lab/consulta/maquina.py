@@ -129,6 +129,17 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
         registro['llamadas'].append(x.get('_llamada'))
         exp, cambios = E.combinar(exp, x.get('datos', {}), catalogo)
         registro['cambios'] += cambios
+        if x.get('residencia'):
+            exp = {**exp, 'residencia': x['residencia']}
+        # La persona solo dijo dónde vive («soy de CDMX»), ya se le preguntó dónde pasó y contestó sin nombrar otro
+        # estado («sí», «ya te dije»): se toma donde vive como lugar de los hechos y queda marcado como supuesto.
+        if ('lugar_hechos' not in exp['datos'] and exp.get('residencia')
+                and exp.get('preguntas', {}).get('lugar_hechos', 0) >= 1):
+            exp, cambios = E.combinar(exp, {'lugar_hechos': exp['residencia']}, catalogo)
+            if cambios:
+                exp = {**exp, 'supuestos': list(dict.fromkeys(exp.get('supuestos', []) + ['lugar_hechos']))}
+                registro['cambios'] += cambios
+                registro['aviso'] = f'Voy a asumir que lo que te pasó ocurrió en {exp["residencia"]}, donde vives.'
         if dudoso:
             titulos = {t['id']: t['titulo'] for t in catalogo.get('tipos_caso', [])}
             salida = {'tipo': 'elegir_tipo', 'texto': '¿Lo que te pasó se parece más a alguna de estas opciones?',
@@ -150,7 +161,10 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
     if faltan:
         d = faltan[0]
         exp = {**exp, 'preguntas': {**exp.get('preguntas', {}), d['id']: exp.get('preguntas', {}).get(d['id'], 0) + 1}}
-        salida = {'tipo': 'pregunta', 'dato': d['id'], 'texto': d['pregunta']}
+        texto = d['pregunta']
+        if d['id'] == 'lugar_hechos' and exp.get('residencia'):
+            texto = f'{exp["residencia"]} es tu lugar de residencia, ¿también ocurrieron los hechos ahí?'
+        salida = {'tipo': 'pregunta', 'dato': d['id'], 'texto': texto}
         return _cerrar(registro['estado_antes'], _siguiente(estado, 'falta_dato'), exp, salida, registro)
 
     reglas = E.reglas_aplicables(exp, catalogo, solo_confirmadas=solo_confirmadas)
@@ -159,7 +173,7 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
               'inciertas': [r['id'] for r in reglas if r['incierta']],
               'codigos': codigos, 'articulos': E.articulos_del_caso(exp, reglas),
               'fuera_de_corpus': exp['datos'].get('lugar_hechos') not in E.CODIGO_DE_ESTADO and not codigos,
-              'sin_reglas': not reglas,
+              'sin_reglas': not reglas, 'supuestos': list(exp.get('supuestos', [])),
               'tipos_quitados': [t for t in exp.get('orientados', []) if t not in exp['tipos_caso']]}
     exp = {**exp, 'orientados': list(exp['tipos_caso'])}
     evento_interno = 'expediente_completo' if estado == LLENAR_EXPEDIENTE else 'seguimiento'
@@ -168,5 +182,7 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
 
 def _cerrar(antes: str, despues: str, exp: dict, salida: dict, registro: dict):
     registro.update({'estado_antes': antes, 'estado_despues': despues, 'salida': salida.get('tipo')})
+    if registro.get('aviso'):             # algo que el asistente le dice a la persona antes de su salida
+        salida = {**salida, 'aviso': registro['aviso']}
     registro['llamadas'] = [x for x in registro['llamadas'] if x]
     return despues, exp, salida, registro

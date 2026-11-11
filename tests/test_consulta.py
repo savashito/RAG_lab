@@ -357,3 +357,29 @@ def test_contexto_desconocido_se_rechaza():
     with pytest.raises(ValueError):
         O.orientar(cur=None, table='t', salida={}, expediente={}, catalogo={}, conversacion='', contexto='bm25',
                    embed=None, chat=None, system='')
+
+
+class IAConResidencia(IAFalsa):
+    """Como IAFalsa, pero el extractor de lugares dice dónde vive la persona (rol «otro») si el texto dice «soy de»."""
+
+    def extraer_expediente(self, texto, pregunta, datos):
+        x = super().extraer_expediente(texto, pregunta, datos)
+        return {**x, 'residencia': 'Ciudad de México' if 'soy de cdmx' in texto.lower() else None}
+
+
+def test_si_solo_dice_donde_vive_lo_ofrece_y_luego_lo_supone():
+    ia = IAConResidencia(respuestas={'ya te dije': {}})
+    pasos = conversar(ia, ['Mandé fotos íntimas a un extraño y ahora me pide dinero; soy de CDMX', 'ya te dije'])
+    assert pasos[0][2]['texto'] == 'Ciudad de México es tu lugar de residencia, ¿también ocurrieron los hechos ahí?'
+    estado, exp, salida, _ = pasos[1]
+    assert exp['datos']['lugar_hechos'] == 'Ciudad de México' and exp['supuestos'] == ['lugar_hechos']
+    assert not (salida['tipo'] == 'pregunta' and salida['dato'] == 'lugar_hechos')
+    assert salida['aviso'] == 'Voy a asumir que lo que te pasó ocurrió en Ciudad de México, donde vives.'
+
+
+def test_si_nombra_otro_estado_gana_ese_y_no_hay_supuesto():
+    ia = IAConResidencia(respuestas={'No, fue en Querétaro': {'lugar_hechos': 'Querétaro'}})
+    pasos = conversar(ia, ['Me amenazan con publicar mis fotos; soy de CDMX', 'No, fue en Querétaro'])
+    exp = pasos[1][1]
+    assert exp['datos']['lugar_hechos'] == 'Querétaro' and not exp.get('supuestos')
+    assert 'aviso' not in pasos[1][2]

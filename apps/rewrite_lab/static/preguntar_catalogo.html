@@ -96,6 +96,7 @@ async function turno(evento){
 }
 
 function responder(s, o){
+  if (s.aviso) { burbuja('assistant', s.aviso); S.historial.push({role:'assistant', content:s.aviso}); }
   if (s.tipo === 'pregunta') { burbuja('assistant', s.texto); S.historial.push({role:'assistant', content:s.texto}); }
   else if (s.tipo === 'elegir_tipo') {
     burbuja('assistant', s.texto, `<div class="btns">${s.opciones.map(o => `<button onclick="elegir('${esc(o.id)}', this)">${esc(o.titulo)}</button>`).join('')}</div>`);
@@ -133,7 +134,7 @@ function pintarPanel(){
   let h = `<h2>Estado</h2><span class="est">${esc(S.estado)}</span> <span class="muted small">antes: ${esc(r.estado_antes)} · catálogo ${esc((C.md5||'').slice(0,8))}</span>
     <h2>Tipos de caso</h2>${(e.tipos_caso||[]).map(t => `<span class="chip">${esc(tipo(t))} <span class="muted">${esc(t)}</span></span>`).join('') || '<span class="muted">ninguno todavía</span>'}
     ${r.por_que ? `<div class="small muted">Por qué (LLM): ${esc(r.por_que)}</div>` : ''}
-    <h2>Expediente</h2>${datos.length ? `<table>${datos.map(([k,v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>` : '<span class="muted">sin datos</span>'}
+    <h2>Expediente</h2>${datos.length ? `<table>${datos.map(([k,v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}${(e.supuestos||[]).includes(k) ? ' <span class="warn small">(supuesto: es donde vive)</span>' : ''}</td></tr>`).join('')}</table>` : '<span class="muted">sin datos</span>'}
     ${(e.no_sabe||[]).length ? `<div class="small warn">No sabe: ${esc(e.no_sabe.join(', '))}</div>` : ''}
     ${(r.faltan||[]).length ? `<div class="small">Faltan: ${esc(r.faltan.join(', '))}</div>` : ''}`;
   if (s.tipo === 'orientar') {

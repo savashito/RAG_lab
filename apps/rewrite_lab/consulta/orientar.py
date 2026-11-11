@@ -125,7 +125,10 @@ def orientar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
             a['distancia'] = round(min((dist[i] for i in a['ids'] if i in dist), default=9.0), 4)
     elegidos = elegir(arts, reglas, contexto, tope)
     t_contexto = round(time.time() - t0, 2)
-    datos = '\n'.join(f'- {k}: {v}' for k, v in (expediente.get('datos') or {}).items()) or '(ninguno)'
+    supuestos = set(expediente.get('supuestos') or [])
+    datos = '\n'.join(f'- {k}: {v}' + (' (SUPUESTO: la persona solo dijo que vive ahí; dilo en la respuesta)'
+                                       if k in supuestos else '')
+                      for k, v in (expediente.get('datos') or {}).items()) or '(ninguno)'
     lista = '\n'.join(f'- {r["delito"]}' + (f' — {r["condicion"]}' if r.get('condicion') else '')
                       + (' [INCIERTA: falta un dato]' if r['incierta'] else '') for r in reglas) or '(ninguna)'
     texto = '\n\n'.join(f'[{a["orden"]}] {NOMBRES.get(a["codigo"], a["codigo"])} — {a["ruta"]}\n{a["texto"]}'

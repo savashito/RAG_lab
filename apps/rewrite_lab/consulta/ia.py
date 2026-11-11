@@ -105,6 +105,7 @@ class ConsultaIA:
     def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict]) -> dict:
         out: dict = {}
         llamadas = []
+        residencia = None
         if any(d['id'] == 'lugar_hechos' for d in datos):
             lug = jgate.extraer_lugares(texto, self.llm)
             llamadas.append({'tarea': 'extraer_lugares', 'prompt_md5': _md5(jgate.EXTRAER_SYSTEM), 'raw': lug.get('raw', ''),
@@ -113,6 +114,10 @@ class ConsultaIA:
                                         if x.get('estado') and x.get('rol', 'hechos') == 'hechos'))
             if len(hechos) == 1:          # dos estados distintos: no se decide; se vuelve a preguntar
                 out['lugar_hechos'] = hechos[0]
+            otros = list(dict.fromkeys(x['estado'] for x in lug.get('lugares', [])
+                                       if x.get('estado') and x.get('rol') == 'otro'))
+            if len(otros) == 1:           # «soy de CDMX»: donde vive, no donde pasó; la máquina lo ofrece al preguntar
+                residencia = otros[0]
         resto = [d for d in datos if d['id'] != 'lugar_hechos']
         if resto:
             lista = '\n'.join(f'- {d["id"]} ({d.get("tipo", "si_no")}'
@@ -125,4 +130,4 @@ class ConsultaIA:
             d = _json(raw) or {}
             ids = {x['id'] for x in resto}
             out.update({k: v for k, v in d.items() if k in ids and v is not None})
-        return {'datos': out, '_llamada': {'tarea': 'extraer_expediente', 'partes': llamadas}}
+        return {'datos': out, 'residencia': residencia, '_llamada': {'tarea': 'extraer_expediente', 'partes': llamadas}}
