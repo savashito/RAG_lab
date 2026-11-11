@@ -172,7 +172,7 @@ async function leer(codigo, num){
     : `<div class="texto bad">No encontré el artículo ${esc(num)} en ${esc(C.nombres[codigo] || codigo)}.</div>`;
 }
 cargarCatalogo();
-fetch('/api/consulta/prompts').then(r => r.json()).then(ps => { $('prompt').innerHTML = ps.map(p => `<option value="${esc(p.id)}">${esc(p.nombre)}</option>`).join(''); }).catch(() => {});
+fetch('/api/consulta/prompts').then(r => r.json()).then(ps => { $('prompt').innerHTML = ps.map(p => `<option value="${esc(p.id)}" ${p.id === 'ronda2:intermedio' ? 'selected' : ''}>${esc(p.nombre)}${p.id === 'ronda2:intermedio' ? ' (el mejor de la ronda 2)' : ''}</option>`).join(''); }).catch(() => {});
 </script>
 </body>
 </html>

@@ -1708,6 +1708,7 @@ def preguntar_catalogo():
 
 
 CONSULTA_ESTUDIO_PROMPTS = Path(__file__).resolve().parent / 'study' / 'estudios' / 'ronda2_penal.yaml'
+CONSULTA_PROMPT = 'ronda2:intermedio'   # por omisión: el prompt que salió mejor en la ronda 2
 
 
 def consulta_prompts() -> list[dict]:
@@ -1747,11 +1748,11 @@ def consulta_turno(body: dict):
             out['orientacion'] = consulta_orientar.orientar(
                 cur=cur, table=TABLE, salida=salida, expediente=exp, catalogo=doc, conversacion=conversacion,
                 contexto=modo, tope=body.get('tope_tokens'),
-                system=next((p['texto'] for p in consulta_prompts() if p['id'] == body.get('prompt') and p.get('texto')),
+                system=next((p['texto'] for p in consulta_prompts() if p['id'] == (body.get('prompt') or CONSULTA_PROMPT) and p.get('texto')),
                             system_for(topic)),
                 embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0],
                 chat=lambda s, u: llm.chat(s, u, max_tokens=4096, timeout=180))
-            out['orientacion']['prompt'] = body.get('prompt') or 'tema'
+            out['orientacion']['prompt'] = body.get('prompt') or CONSULTA_PROMPT
     return out
 
 
