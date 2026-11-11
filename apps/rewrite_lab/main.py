@@ -1692,6 +1692,27 @@ catalogo = Catalogo(connect=connect, current_email=current_email, can_edit=can_i
                     table=TABLE, static_dir=STATIC)
 app.include_router(catalogo.router)
 
+# 📚 Preguntar (Catálogo): la máquina de estados de la consulta (consulta/maquina.py) con el catálogo de la base, para
+# probar a mano cómo clasifica, qué datos pide y a qué reglas y artículos llega. El estado y el expediente viajan con
+# cada mensaje (el navegador los guarda): no se guarda nada en la base.
+from consulta import maquina as consulta_maquina  # noqa: E402
+from consulta.ia import ConsultaIA  # noqa: E402
+consulta_ia = ConsultaIA(llm)
+
+
+@app.get('/preguntar-catalogo')
+def preguntar_catalogo():
+    return FileResponse(STATIC / 'preguntar_catalogo.html', headers={'Cache-Control': 'no-store'})
+
+
+@app.post('/api/consulta/turno')
+def consulta_turno(body: dict):
+    doc, _, _ = catalogo.leer()
+    estado, exp, salida, registro = consulta_maquina.turno(body.get('estado'), body.get('expediente'),
+                                                           body.get('evento') or {}, doc, consulta_ia,
+                                                           solo_confirmadas=bool(body.get('solo_confirmadas')))
+    return {'estado': estado, 'expediente': exp, 'salida': salida, 'registro': registro}
+
 
 @app.get('/healthz')
 def healthz():
