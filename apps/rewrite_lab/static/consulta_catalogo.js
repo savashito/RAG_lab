@@ -37,13 +37,15 @@
     try {
       const r = await fetch('/api/consulta/turno/stream', {method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({estado:S.estado, expediente:S.expediente, evento, solo_confirmadas:g('cat-conf').checked,
-          historial:S.historial, contexto:g('cat-modo').value, tope_tokens:+g('cat-tope').value || null, prompt:g('cat-prompt').value})});
+          historial:S.historial, contexto:g('cat-modo').value, tope_tokens:+g('cat-tope').value || null, prompt:g('cat-prompt').value,
+          preguntas_llm:g('cat-preg-llm').checked})});
       if (!r.ok) throw new Error('HTTP ' + r.status);
       await readSSE(r, ev => {
         if (ev.stage === 'turno') {
           Object.assign(S, {estado:ev.estado, expediente:ev.expediente, ultima:ev.salida, orientacion:null});
           S.registros.push(ev.registro);
-          quitarEspera(); responder(ev.salida); panel();
+          quitarEspera(); responder(ev.salida, g('cat-preg-llm').checked); panel();
+          if (ev.salida.tipo === 'pregunta' && g('cat-preg-llm').checked) espera = burbuja('assistant', '…');
           if (ev.salida.tipo === 'orientar' && !ev.salida.sin_reglas && g('cat-modo').value !== 'ninguno') espera = burbuja('assistant', 'Leyendo los artículos del catálogo…');
         } else if (ev.stage === 'contexto') {
           S.orientacion = ev.orientacion; panel();
@@ -58,6 +60,7 @@
           if (respuesta) S.historial.push({role:'assistant', content:respuesta});
         } else if (ev.stage === 'error') {     // readSSE se traga lo que lance este callback: se muestra aquí
           quitarEspera(); burbuja('assistant', '').innerHTML = `<span class="bad">Error: ${e(ev.error)}</span>`;
+          if (S.ultima && S.ultima.tipo === 'pregunta' && !respuesta) decir(S.ultima.texto);   // la pregunta fija del catálogo
         }
       });
       quitarEspera();
@@ -66,7 +69,9 @@
   }
 
   function decir(texto, extra){ burbuja('assistant', texto, extra); S.historial.push({role:'assistant', content:texto}); }
-  function responder(s){
+  // `llm`: la pregunta (y el aviso) los redacta el LLM y llegan como tokens; aquí no se escriben.
+  function responder(s, llm){
+    if (s.tipo === 'pregunta' && llm) return;
     if (s.aviso) decir(s.aviso);
     if (s.tipo === 'pregunta') decir(s.texto);
     else if (s.tipo === 'elegir_tipo')

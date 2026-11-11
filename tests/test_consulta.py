@@ -383,3 +383,12 @@ def test_si_nombra_otro_estado_gana_ese_y_no_hay_supuesto():
     exp = pasos[1][1]
     assert exp['datos']['lugar_hechos'] == 'Querétaro' and not exp.get('supuestos')
     assert 'aviso' not in pasos[1][2]
+
+
+def test_la_pregunta_redactada_lleva_el_dato_su_texto_y_el_aviso():
+    salida = {'tipo': 'pregunta', 'dato': 'edad_victima', 'texto': '¿Qué edad tiene la víctima?',
+              'aviso': 'Voy a asumir que lo que te pasó ocurrió en Ciudad de México, donde vives.'}
+    m = O.mensajes_pregunta('Persona: me piden dinero por mis fotos', salida, CAT)
+    assert m[0]['role'] == 'system' and 'Pregunta solo eso' in m[0]['content']
+    u = m[1]['content']
+    assert 'DATO QUE FALTA: edad_victima' in u and '¿Qué edad tiene la víctima?' in u and 'AVISO: Voy a asumir' in u

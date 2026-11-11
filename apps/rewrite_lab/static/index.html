@@ -420,6 +420,7 @@
    <label title="Cuántos tokens de artículos caben en el contexto (no es el largo de la respuesta, que es de 4,096)">Artículos hasta: <select id="cat-tope">
      <option value="">automático (todos 22,000 · embedding 6,000)</option><option>2000</option><option>4000</option><option>8000</option><option>16000</option><option value="24000">24000 (máximo)</option></select> tokens</label>
    <label>Prompt: <select id="cat-prompt"><option value="ronda2:intermedio">Ronda 2 · intermedio</option></select></label>
+   <label class="chk" title="Mientras se llena el expediente, el LLM redacta cada pregunta: reconoce lo que contó la persona y pide el dato que falta (el código sigue decidiendo qué dato). Sin marcar, se usa el texto fijo del catálogo."><input type="checkbox" id="cat-preg-llm"> preguntas redactadas por el LLM</label>
    <label class="chk" title="Usa solo las reglas que Karen ya marcó como confirmadas"><input type="checkbox" id="cat-conf"> solo reglas confirmadas</label>
    <button class="ghost" onclick="catReiniciar()">↺ Empezar de nuevo</button>
  </div>

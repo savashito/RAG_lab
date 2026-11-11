@@ -39,6 +39,34 @@ Orienta a la persona sobre su caso con base solo en estos artículos. Cita cada 
 Si una regla está marcada como incierta, di qué dato falta para saber si aplica."""
 
 
+# Con «preguntas redactadas por el LLM»: la máquina decide QUÉ dato falta; el LLM solo decide CÓMO pedirlo.
+PREGUNTAR_SYSTEM = """Eres Tlacua, un asistente que orienta a personas en México sobre problemas legales. Estás reuniendo
+los datos que necesitas para orientar a la persona; todavía no la orientas.
+
+Escribe UN mensaje breve (máximo 3 oraciones), en español de México, tuteando, cálido y sin juzgar:
+- Si la persona contó algo difícil, reconócelo en pocas palabras (sin repetir su historia ni exagerar).
+- Si hay un AVISO, dilo con tus palabras.
+- Termina con la PREGUNTA que falta, con sentido claro para la persona. Pregunta solo eso: ningún otro dato.
+- No des orientación legal, no cites artículos, no prometas resultados y no inventes datos del caso."""
+
+PREGUNTAR_USER = """CONVERSACIÓN:
+{conversacion}
+
+{aviso}DATO QUE FALTA: {dato}
+PREGUNTA DEL CATÁLOGO: {pregunta}
+PARA QUÉ SE PREGUNTA: {para_que}{opciones}"""
+
+
+def mensajes_pregunta(conversacion: str, salida: dict, catalogo: dict) -> list[dict]:
+    """Salida 'pregunta' de la máquina → mensajes para que el LLM redacte la pregunta."""
+    d = next((x for x in catalogo.get('datos', []) if x['id'] == salida.get('dato')), {})
+    user = PREGUNTAR_USER.format(conversacion=conversacion, dato=salida.get('dato', ''),
+                                 aviso=f'AVISO: {salida["aviso"]}\n' if salida.get('aviso') else '',
+                                 pregunta=salida.get('texto', ''), para_que=d.get('para_que') or '(no dice)',
+                                 opciones=f'\nOPCIONES: {", ".join(d["opciones"])}' if d.get('opciones') else '')
+    return [{'role': 'system', 'content': PREGUNTAR_SYSTEM}, {'role': 'user', 'content': user}]
+
+
 def _norm(s: str) -> str:
     s = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
     return re.sub(r'\s+', ' ', s).strip().lower()

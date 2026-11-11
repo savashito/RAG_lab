@@ -1725,20 +1725,23 @@ def consulta_prompts_route():
 
 
 def _consulta_turno(body: dict):
-    """La máquina de estados con el catálogo de la base → (doc, {estado, expediente, salida, registro}, preparar)
-    donde `preparar()` arma el contexto de la orientación (None si no toca orientar) → (system, prep)."""
+    """La máquina de estados con el catálogo de la base → ({estado, expediente, salida, registro, [mensajes_pregunta]},
+    preparar) donde `preparar()` arma el contexto de la orientación (None si no toca orientar) → (system, prep).
+    `mensajes_pregunta`: con preguntas_llm, lo que recibe el LLM para redactar la pregunta del dato que falta."""
     doc, _, _ = catalogo.leer()
     estado, exp, salida, registro = consulta_maquina.turno(body.get('estado'), body.get('expediente'),
                                                            body.get('evento') or {}, doc, consulta_ia,
                                                            solo_confirmadas=bool(body.get('solo_confirmadas')))
     out = {'estado': estado, 'expediente': exp, 'salida': salida, 'registro': registro}
     modo = body.get('contexto') or 'todos'
+    conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
+                             for m in body.get('historial') or [])
+    if salida.get('tipo') == 'pregunta' and body.get('preguntas_llm'):
+        out['mensajes_pregunta'] = consulta_orientar.mensajes_pregunta(conversacion, salida, doc)
     if salida.get('tipo') != 'orientar' or salida.get('sin_reglas') or modo == 'ninguno':
         return out, None
 
     def preparar():
-        conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
-                                 for m in body.get('historial') or [])
         familia = any(r.get('materia') == 'familiar' for r in doc.get('reglas', []) if r['id'] in salida['reglas'])
         topic = 'derecho_familiar' if familia else 'derecho_penal_mexicano'
         prompt = body.get('prompt') or CONSULTA_PROMPT
@@ -1755,8 +1758,11 @@ def _consulta_turno(body: dict):
 @app.post('/api/consulta/turno')
 def consulta_turno(body: dict):
     """body: {estado, expediente, evento, solo_confirmadas, historial (toda la conversación, para orientar),
-    contexto: 'todos' | 'embedding' | 'ninguno' (no redacta), tope_tokens, prompt}. Sin streaming (benchmark)."""
+    contexto: 'todos' | 'embedding' | 'ninguno' (no redacta), tope_tokens, prompt, preguntas_llm (el LLM redacta la
+    pregunta del dato que falta)}. Sin streaming (benchmark)."""
     out, preparar = _consulta_turno(body)
+    if out.get('mensajes_pregunta'):
+        out['pregunta_llm'] = llm.chat_messages(out.pop('mensajes_pregunta'), max_tokens=400, timeout=90)
     if preparar:
         system, prep = preparar()
         t = time.time()
@@ -1776,7 +1782,11 @@ def consulta_turno_stream(body: dict):
     def gen():
         try:
             out, preparar = _consulta_turno(body)
+            mensajes = out.pop('mensajes_pregunta', None)
             yield sse({'stage': 'turno', **out})
+            if mensajes:                           # la pregunta del dato que falta, redactada por el LLM
+                for piece in llm.chat_stream(mensajes, max_tokens=400, timeout=90):
+                    yield sse({'stage': 'token', 'text': piece})
             if not preparar:
                 yield sse({'stage': 'done'})
                 return
