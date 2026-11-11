@@ -57,6 +57,7 @@
   table.lect tr.duda td{background:color-mix(in srgb,var(--warn) 13%,transparent)} .si{color:var(--ok);font-weight:700} .no{color:var(--muted)}
   .dudas{font-weight:700;color:var(--warn)}
   .vistas{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap} .vistas button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  #lect:not(:empty){margin-top:8px} body.con-lect #cmwrap{height:38vh}
   #cmwrap{height:72vh;border:1px solid var(--line);border-radius:8px;overflow:hidden}
   #cmwrap .CodeMirror{height:100%;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);color:var(--ink)}
   #cmwrap .CodeMirror-gutters{background:var(--bg);border-right:1px solid var(--line)}
@@ -87,6 +88,7 @@
         <span id="yamlbar"><button class="primary" id="b-gy" onclick="guardarYaml()">Guardar YAML</button> <span class="muted small" id="sucio"></span></span>
         <span class="msg" id="ymsg"></span></div>
       <div id="cmwrap"></div>
+      <div id="lect"></div>
       <div id="panel" hidden><span class="muted">Elige una fila para verla o editarla.</span></div>
     </div>
   </div>
@@ -104,7 +106,7 @@ cm.on('cursorActivity', () => {   // el cursor dentro de una entrada marca su fi
 });
 function vista(v){
   S.vista = v; document.getElementById('v-yaml').classList.toggle('on', v==='yaml'); document.getElementById('v-form').classList.toggle('on', v==='form');
-  document.getElementById('cmwrap').hidden = v!=='yaml'; document.getElementById('yamlbar').hidden = v!=='yaml' || !S.puede; document.getElementById('panel').hidden = v!=='form';
+  document.getElementById('cmwrap').hidden = v!=='yaml'; document.getElementById('yamlbar').hidden = v!=='yaml' || !S.puede; document.getElementById('panel').hidden = v!=='form'; $('lect').hidden = v!=='yaml';
   if (v==='yaml') { cm.refresh(); if (S.sel) saltar(S.parte, S.sel); }
 }
 // Línea de inicio y fin de la entrada `id` dentro de la parte (las entradas empiezan con «- id: …» bajo «parte:»).
@@ -241,7 +243,7 @@ function tablaLecturas(e){
     <div style="max-height:40vh;overflow:auto;border:1px solid var(--line);border-radius:8px"><table class="lect"><tr><th>Artículo</th>${cols.map(([, n]) => `<th>${esc(n)}</th>`).join('')}</tr>
     ${filas.map(f => `<tr class="${esDuda(f) ? 'duda' : ''}"><td><span class="chip" onclick="leer('${f.ley}','${esc(f.art)}')">${esc(NOMBRES[f.ley] || f.ley)} ${esc(f.art)}</span></td>${cols.map(([c]) => `<td>${v(f[c])}</td>`).join('')}</tr>`).join('')}</table></div>`;
 }
-function panelVacio(){ $('panel').innerHTML = '<span class="muted">Elige una fila para verla o editarla.</span>'; S.marcas.forEach(l => cm.removeLineClass(l, 'background', 'sel-line')); S.marcas = []; }
+function panelVacio(){ $('lect').innerHTML = ''; document.body.classList.remove('con-lect'); cm.refresh(); $('panel').innerHTML = '<span class="muted">Elige una fila para verla o editarla.</span>'; S.marcas.forEach(l => cm.removeLineClass(l, 'background', 'sel-line')); S.marcas = []; }
 function materiaSel(v){ return `<select id="e-materia" ${S.puede?'':'disabled'}>${['penal','familiar'].map(m=>`<option ${(v||'penal')===m?'selected':''}>${m}</option>`).join('')}</select>`; }
 // Leyes que el editor de una regla muestra: las de su materia y las que ya cita.
 function leyesDe(e){ return S.codigos.filter(k => (MATERIA_LEY[k] || 'penal') === (e.materia || 'penal') || (e.articulos?.[k]||[]).length); }
@@ -283,14 +285,17 @@ function abrir(id, nuevaEntrada){
   }
   if (S.puede) h += `<div style="margin-top:12px"><button class="primary" onclick="guardar()">Guardar</button><span class="msg" id="msg"></span></div>`;
   $('panel').innerHTML = h;
+  const tl = p === 'reglas' && !nuevaEntrada ? tablaLecturas(e) : '';
+  $('lect').innerHTML = tl ? tl + '<div id="ltexto"></div>' : ''; document.body.classList.toggle('con-lect', !!tl); cm.refresh();
   if (!S.puede) $('e-estado').disabled = true;
   if (S.vista === 'yaml' && !nuevaEntrada) saltar(p, id);
   else if (nuevaEntrada) vista('form');
 }
 async function leer(codigo, num){
-  $('texto').innerHTML = '<div class="texto muted">Cargando…</div>';
+  const dest = S.vista === 'yaml' && $('ltexto') ? $('ltexto') : $('texto');
+  dest.innerHTML = '<div class="texto muted">Cargando…</div>';
   const j = await (await fetch(`/api/catalogo/articulo?codigo=${encodeURIComponent(codigo)}&num=${encodeURIComponent(num)}`)).json();
-  $('texto').innerHTML = j.encontrado ? `<div class="texto"><b>${esc(NOMBRES[codigo])} · ${esc(j.ruta)}</b>\n\n${esc(j.texto)}</div>`
+  dest.innerHTML = j.encontrado ? `<div class="texto"><b>${esc(NOMBRES[codigo])} · ${esc(j.ruta)}</b>\n\n${esc(j.texto)}</div>`
     : `<div class="texto" style="color:var(--bad)">No encontré el artículo ${esc(num)} en ${esc(NOMBRES[codigo])}. Revisa el número.</div>`;
 }
 function nueva(){
