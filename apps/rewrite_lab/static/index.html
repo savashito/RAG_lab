@@ -282,14 +282,14 @@
 <body>
 <header><h1>🧪 Rewrite Lab — experimenta y compara prompts de query rewriting</h1></header>
 <div class="tabs">
-  <button id="tabbtn-ask" class="active" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
+  <button id="tabbtn-ask" onclick="showTab('ask')">💬 Preguntar (RAG)</button>
   <button id="tabbtn-chat"  onclick="showTab('chat')">🗨️ Conversacional</button>
   <button onclick="location.href='/preguntar-catalogo'" title="Consulta de la ronda 3: clasifica el caso, pide los datos y llega a reglas y artículos del catálogo">📚 Preguntar (Catálogo)</button>
   <button onclick="location.href='/tramites'" title="Asistente que te guía para llenar un trámite (p. ej. divorcio)">📝 Trámites</button>
   <details class="navmenu" id="nav-inv"><summary>🔬 Investigación ▾</summary>
     <div class="navmenu-items">
       <button id="tabbtn-bench"  onclick="showTab('bench')" hidden>🧪 Benchmark</button>
-      <button id="tabbtn-informes" onclick="location.href='/benchmark?vista=informes'" hidden title="Resúmenes de varias corridas del benchmark">📑 Informes</button>
+      <button id="tabbtn-informes" onclick="openInformes()" hidden title="Resúmenes de varias corridas del benchmark">📑 Informes</button>
       <button id="tabbtn-estudios" onclick="location.href='/estudios'" hidden title="Estudio con usuarios: códigos, avance y resultados">👥 Estudios</button>
       <button id="tabbtn-rewrite"  onclick="showTab('rewrite')">✏️ Rewrite Lab</button>
     </div></details>
@@ -354,7 +354,7 @@
  <div id="heatmap"></div>
 </div>
 
-<div id="tab-ask" class="wrap tabpage">
+<div id="tab-ask" class="wrap tabpage" hidden>
  <p class="muted">Elige el <b>método de recuperación</b>, trae los 5 chunks más cercanos y deja que el LLM (Llama) responda usándolos como contexto.</p>
  <div class="row">
    <label>Pregunta:
@@ -898,6 +898,13 @@ function showTab(name, push=true){
   if(push && location.pathname!==path) history.pushState({tab:name}, '', path);
   if(name==='bench' && typeof benchUrlSync==='function') benchUrlSync();
   navMenus();
+}
+// 📑 Informes: abre 🧪 Benchmark → Informes sin recargar la página. La primera vez, benchInit lee ?vista= de la URL.
+function openInformes(){
+  const first = !BENCH.inited;
+  history.pushState({tab:'bench'}, '', '/benchmark?vista=informes');
+  showTab('bench', false);
+  if(!first) benchSub('informes');
 }
 // Menús del header: el título del menú se marca si una de sus opciones es el tab activo; elegir una opción lo
 // cierra; abrir uno cierra el otro y coloca su panel debajo del título.

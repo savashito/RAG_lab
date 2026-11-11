@@ -148,6 +148,8 @@ async function benchInit(){
       b.dataset.sub==='compare' ? compareBenchRuns() : benchSub(b.dataset.sub)));
     $('bench-runs').addEventListener('change', e=>{ if(e.target.classList.contains('bench-cmp')) syncCompareTab(); });
     BENCH.want = benchUrlWanted();
+    // Las vistas que no dependen del set se abren ya, sin mostrar antes la de corridas mientras carga el set.
+    if(!['run', 'compare'].includes(BENCH.want.sub)) benchSub(BENCH.want.sub);
     $('bench-set').addEventListener('change', ()=>loadBenchSet($('bench-set').value));
     $('bench-topic-filter').addEventListener('change', ()=>renderSetOptions());
     // Menú ⋯: cada acción cierra el menú.
@@ -279,7 +281,7 @@ async function loadBenchSet(id){
     }
     if(w.sub==='compare' && checkedRuns().length >= 2){ await compareBenchRuns(); return; }
     if(w.run) await showBenchRun(w.run, true);
-    if(w.sub!=='run') benchSub(w.sub);
+    if(w.sub!=='run' && BENCH.sub!==w.sub) benchSub(w.sub);
   }
   benchUrlSync();
 }
