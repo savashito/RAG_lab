@@ -8,12 +8,14 @@ generales:
 - papel
 datos:
 - id: lugar_hechos
+  materia: penal
   tipo: estado
   obligatorio: true
   pregunta: ¿En qué estado pasó?
   para_que: Qué código penal aplica (solo en delitos del fuero común; ver federal)
   estado: borrador
 - id: papel
+  materia: penal
   tipo: opcion
   opciones:
   - victima
@@ -23,17 +25,20 @@ datos:
   para_que: Derechos de víctima o de imputado
   estado: borrador
 - id: edad_victima
+  materia: penal
   tipo: numero
   pregunta: ¿Qué edad tiene la víctima?
   para_que: Menor de edad o adulta; los umbrales (por ejemplo, 12 años en la CDMX) cambian por estado
   estado: borrador
 - id: victima_mujer
+  materia: penal
   tipo: si_no
   pregunta: ¿La víctima es mujer (incluida mujer trans)?
   para_que: Feminicidio y transfeminicidio; Ley General de Acceso de las Mujeres. No cambia los delitos que protegen a cualquier
     persona (violencia familiar, acoso, Ley Olimpia), ni las medidas de protección del CNPP, que son para cualquier víctima
   estado: borrador
 - id: relacion_partes
+  materia: penal
   tipo: opcion
   opciones:
   - pareja_o_expareja
@@ -45,41 +50,49 @@ datos:
   para_que: Violencia familiar, hostigamiento, agravantes
   estado: borrador
 - id: superior_o_docente
+  materia: penal
   tipo: si_no
   pregunta: ¿Esa persona es tu jefe, maestro o supervisa tu trabajo?
   para_que: Hostigamiento sexual frente a acoso sexual
   estado: borrador
 - id: servidor_publico
+  materia: penal
   tipo: si_no
   pregunta: ¿Quien lo hizo es policía o trabaja en el gobierno?
   para_que: Abuso de autoridad, tortura, cohecho
   estado: borrador
 - id: pide_dinero
+  materia: penal
   tipo: si_no
   pregunta: ¿Te pidieron dinero o algo a cambio?
   para_que: Extorsión frente a amenazas o difusión
   estado: borrador
 - id: ya_difundido
+  materia: penal
   tipo: si_no
   pregunta: ¿Ya publicaron o mandaron las imágenes a alguien?
   para_que: Intimidad sexual consumada o amenaza
   estado: borrador
 - id: violencia_o_arma
+  materia: penal
   tipo: si_no
   pregunta: ¿Hubo golpes, amenazas con arma o fuerza?
   para_que: Robo con violencia, agravantes
   estado: borrador
 - id: medio_digital
+  materia: penal
   tipo: si_no
   pregunta: ¿Pasó por internet, redes o teléfono?
   para_que: Violencia digital; delitos a distancia
   estado: borrador
 - id: intencional
+  materia: penal
   tipo: si_no
   pregunta: ¿Fue a propósito o fue un accidente?
   para_que: Doloso frente a culposo (tránsito, médico)
   estado: borrador
 - id: gravedad_lesion
+  materia: penal
   tipo: opcion
   opciones:
   - menos_15_dias
@@ -90,16 +103,19 @@ datos:
   para_que: Grado de lesiones; los plazos (15 y 60 días en la CDMX) cambian por estado
   estado: borrador
 - id: monto
+  materia: penal
   tipo: numero
   pregunta: ¿Cuánto dinero o de qué valor?
   para_que: Pena del robo y del fraude
   estado: borrador
 - id: consentimiento
+  materia: penal
   tipo: si_no
   pregunta: ¿La persona estuvo de acuerdo? (tomar las imágenes, el procedimiento médico)
   para_que: Intimidad sexual (en algunos estados), responsabilidad médica
   estado: borrador
 - id: federal
+  materia: penal
   tipo: si_no
   preguntar: false
   pregunta: (no se pregunta; lo decide el tipo de caso o el delito)
@@ -108,6 +124,7 @@ datos:
   estado: borrador
 tipos_caso:
 - id: golpes_lesiones
+  materia: penal
   titulo: Golpes, peleas o lesiones
   descripcion: Golpes, peleas o lesiones
   datos:
@@ -118,6 +135,7 @@ tipos_caso:
   - relacion_partes
   estado: borrador
 - id: muerte
+  materia: penal
   titulo: Murió una persona
   descripcion: Murió una persona
   datos:
@@ -127,6 +145,7 @@ tipos_caso:
   - relacion_partes
   estado: borrador
 - id: violencia_familiar
+  materia: penal
   titulo: Violencia en la familia o la pareja
   descripcion: Violencia en la familia o la pareja
   datos:
@@ -136,6 +155,7 @@ tipos_caso:
   - victima_mujer
   estado: borrador
 - id: agresion_sexual
+  materia: penal
   titulo: Agresión sexual
   descripcion: Agresión sexual
   datos:
@@ -145,6 +165,7 @@ tipos_caso:
   - consentimiento
   estado: borrador
 - id: acoso_hostigamiento
+  materia: penal
   titulo: Acoso u hostigamiento sexual
   descripcion: Acoso u hostigamiento sexual
   datos:
@@ -154,6 +175,7 @@ tipos_caso:
   - victima_mujer
   estado: borrador
 - id: imagenes_intimas
+  materia: penal
   titulo: Fotos, videos o mensajes íntimos
   descripcion: Fotos, videos o mensajes íntimos
   datos:
@@ -165,6 +187,7 @@ tipos_caso:
   - victima_mujer
   estado: borrador
 - id: amenazas_extorsion
+  materia: penal
   titulo: Amenazas, extorsión o cobros
   descripcion: Amenazas, extorsión o cobros
   datos:
@@ -174,6 +197,7 @@ tipos_caso:
   - violencia_o_arma
   estado: borrador
 - id: privacion_libertad
+  materia: penal
   titulo: Se llevaron a una persona o no aparece
   descripcion: Se llevaron a una persona o no aparece
   datos:
@@ -183,6 +207,7 @@ tipos_caso:
   - edad_victima
   estado: borrador
 - id: robo
+  materia: penal
   titulo: Me robaron
   descripcion: Me robaron
   datos:
@@ -192,6 +217,7 @@ tipos_caso:
   - relacion_partes
   estado: borrador
 - id: fraude_datos
+  materia: penal
   titulo: Me estafaron o usaron mis datos
   descripcion: Me estafaron o usaron mis datos
   datos:
@@ -200,6 +226,7 @@ tipos_caso:
   - medio_digital
   estado: borrador
 - id: propiedad
+  materia: penal
   titulo: Mi casa, terreno o propiedad
   descripcion: Mi casa, terreno o propiedad
   datos:
@@ -208,6 +235,7 @@ tipos_caso:
   - intencional
   estado: borrador
 - id: transito
+  materia: penal
   titulo: Accidente o choque de tránsito
   descripcion: Accidente o choque de tránsito
   datos:
@@ -217,6 +245,7 @@ tipos_caso:
   - papel
   estado: borrador
 - id: intimidad_honor
+  materia: penal
   titulo: Me difamaron o revelaron algo privado
   descripcion: Me difamaron o revelaron algo privado
   datos:
@@ -225,6 +254,7 @@ tipos_caso:
   - servidor_publico
   estado: borrador
 - id: abuso_autoridad
+  materia: penal
   titulo: Abuso de la policía o de una autoridad
   descripcion: Abuso de la policía o de una autoridad
   datos:
@@ -232,6 +262,7 @@ tipos_caso:
   - servidor_publico
   estado: borrador
 - id: discriminacion
+  materia: penal
   titulo: Discriminación
   descripcion: Discriminación
   datos:
@@ -239,6 +270,7 @@ tipos_caso:
   - servidor_publico
   estado: borrador
 - id: salud
+  materia: penal
   titulo: Atención médica o de salud
   descripcion: Atención médica o de salud
   datos:
@@ -248,6 +280,7 @@ tipos_caso:
   - victima_mujer
   estado: borrador
 - id: menores_vulnerables
+  materia: penal
   titulo: Niñas, niños o personas vulnerables
   descripcion: Niñas, niños o personas vulnerables
   datos:
@@ -256,6 +289,7 @@ tipos_caso:
   - relacion_partes
   estado: borrador
 - id: proceso_penal
+  materia: penal
   titulo: Me acusan, me citaron o me detuvieron
   descripcion: Me acusan, me citaron o me detuvieron
   datos:
@@ -263,6 +297,7 @@ tipos_caso:
   - papel
   estado: borrador
 - id: animales_ambiente
+  materia: penal
   titulo: Animales o medio ambiente
   descripcion: Animales o medio ambiente
   datos:
@@ -270,6 +305,7 @@ tipos_caso:
   - intencional
   estado: borrador
 - id: armas_crimen_organizado
+  materia: penal
   titulo: Armas, pandillas o crimen organizado
   descripcion: Armas, pandillas o crimen organizado
   datos:
@@ -277,6 +313,7 @@ tipos_caso:
   - violencia_o_arma
   estado: borrador
 - id: drogas
+  materia: penal
   titulo: Drogas
   descripcion: Drogas
   datos:
@@ -284,6 +321,7 @@ tipos_caso:
   - federal
   estado: borrador
 - id: corrupcion_gobierno
+  materia: penal
   titulo: Corrupción en el gobierno (la persona la denuncia)
   descripcion: Corrupción en el gobierno (la persona la denuncia)
   datos:
@@ -291,6 +329,7 @@ tipos_caso:
   - servidor_publico
   estado: borrador
 - id: conflicto_con_autoridad
+  materia: penal
   titulo: Problemas con una autoridad por algo que hizo la persona
   descripcion: Problemas con una autoridad por algo que hizo la persona
   datos:
@@ -298,6 +337,7 @@ tipos_caso:
   - papel
   estado: borrador
 - id: justicia_abogados
+  materia: penal
   titulo: Problemas con la Fiscalía, un juzgado o un abogado
   descripcion: Problemas con la Fiscalía, un juzgado o un abogado
   datos:
@@ -306,14 +346,100 @@ tipos_caso:
   - servidor_publico
   estado: borrador
 - id: derechos_autor
+  materia: penal
   titulo: Piratería o derechos de autor
   descripcion: Piratería o derechos de autor
   datos:
   - lugar_hechos
   - federal
   estado: borrador
+- id: divorcio_y_separacion
+  materia: familiar
+  titulo: Me quiero divorciar o separarme de mi pareja
+  descripcion: Casos de divorcio bilateral, unilateral, administrativo, nulidad de matrimonio y separación de personas.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: pension_alimenticia
+  materia: familiar
+  titulo: Necesito pedir, cobrar o cancelar una pensión alimenticia
+  descripcion: Solicitud, modificación, cese o ejecución de pensiones alimenticias y registro de deudores.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: custodia_y_convivencias
+  materia: familiar
+  titulo: Quiero regularizar la custodia de mis hijos o mis visitas
+  descripcion: Conflictos sobre guarda y custodia, regímenes de convivencia y protección de menores.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: patria_potestad_y_filiacion
+  materia: familiar
+  titulo: Tengo problemas con el reconocimiento de hijos o la patria potestad
+  descripcion: Reconocimiento de paternidad/maternidad, impugnación de filiación y pérdida o suspensión de la patria potestad.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: herencias_y_sucesiones
+  materia: familiar
+  titulo: Quiero reclamar una herencia o iniciar un juicio sucesorio
+  descripcion: Sucesiones testamentarias e intestamentarias, albaceazgo y partición de bienes.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: tutela_y_curatela
+  materia: familiar
+  titulo: Necesito nombrar un tutor o representante para un menor o incapacitado
+  descripcion: Designación, remoción y administración de bienes bajo tutela o curatela.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: apoyos_y_capacidad_juridica
+  materia: familiar
+  titulo: Busco designar apoyos para tomar decisiones legales
+  descripcion: Sistemas de apoyos y salvaguardias para personas con discapacidad o adultos mayores.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: adopcion_y_restitucion
+  materia: familiar
+  titulo: Quiero adoptar un niño o recuperar a un menor trasladado
+  descripcion: Procesos de adopción nacional e internacional y restitución de menores.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: bienes_matrimoniales_y_familiares
+  materia: familiar
+  titulo: Tengo dudas sobre mis bienes, la sociedad conyugal o el patrimonio familiar
+  descripcion: Régimen de bienes, liquidación de sociedad conyugal y constitución de patrimonio de familia.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: registro_civil_y_estado_civil
+  materia: familiar
+  titulo: Necesito corregir un acta o cambiar mi nombre o género
+  descripcion: Trámites de registro civil, rectificación de actas y reconocimiento de identidad de género.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: ausencia_y_presuncion_muerte
+  materia: familiar
+  titulo: Una persona desapareció y necesito declarar su ausencia o muerte
+  descripcion: Declaración de ausencia, presunción de muerte y representación de ausentes.
+  datos:
+  - lugar_hechos
+  estado: sugerida
+- id: procedimiento_judicial_general
+  materia: familiar
+  titulo: Tengo un juicio activo y quiero saber sobre las etapas, pruebas o recursos
+  descripcion: 'Temas procesales aplicables a cualquier juicio: notificaciones, pruebas, audiencias y apelaciones.'
+  datos:
+  - lugar_hechos
+  estado: sugerida
 reglas:
 - id: r001
+  materia: penal
   tipo_caso: golpes_lesiones
   delito: Lesiones
   condicion: ''
@@ -335,9 +461,11 @@ reglas:
     - '130'
     - '134'
     - '131'
+    - '128'
+    - '132'
+    - '133'
     edomex:
     - '111'
-    - '69'
     - '236'
     - '239'
     - '237'
@@ -352,8 +480,8 @@ reglas:
     - '126'
     - '125'
     - '129'
-    - 131 QUATER
     - '260'
+    - '132'
     federal:
     - '293'
     - '288'
@@ -373,8 +501,18 @@ reglas:
     - '317'
     - 321 Bis
     - '316'
+    - '137'
+    - '322'
+    ley_victimas:
+    - '35'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 137, 322; morelos 132*; queretaro 128, 132*, 133; ley_victimas 35*
+
+    − quitados: edomex 69; morelos 131 QUATER'
 - id: r002
+  materia: penal
   tipo_caso: golpes_lesiones
   delito: lesiones con ácido
   condicion: ''
@@ -383,17 +521,25 @@ reglas:
     cdmx:
     - 135 BIS
     - 135 TER
+    - 135 QUINQUIES
     queretaro:
     - '131'
+    - '129'
+    - '133'
     edomex:
     - '238'
     morelos:
     - 131 TER
     - 125 Bis
     - 125 Ter
-    federal: []
+    federal:
+    - '322'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 135 QUINQUIES; federal 322; queretaro 129*, 133'
 - id: r003
+  materia: penal
   tipo_caso: golpes_lesiones
   delito: reglas de riña
   condicion: ''
@@ -404,17 +550,24 @@ reglas:
     - '137'
     queretaro:
     - '132'
+    - '133'
     edomex:
     - '244'
     - '239'
     morelos:
     - '127'
     - '124'
+    - '110'
     federal:
     - '297'
     - '314'
+    - '322'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 322; morelos 110*; queretaro 133'
 - id: r004
+  materia: penal
   tipo_caso: golpes_lesiones
   delito: disparo de arma
   condicion: ''
@@ -424,14 +577,21 @@ reglas:
     - 211 TER
     queretaro:
     - '131'
+    - '129'
+    - '133'
     edomex:
     - '238'
     - '253'
     morelos:
     - 245 BIS
-    federal: []
+    federal:
+    - '322'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 322; queretaro 129*, 133'
 - id: r005
+  materia: penal
   tipo_caso: muerte
   delito: Homicidio
   condicion: ''
@@ -455,9 +615,11 @@ reglas:
     - '132'
     - '134'
     - '131'
+    - 125 BIS
+    - '133'
+    - '252'
     edomex:
     - '111'
-    - '69'
     - '241'
     - '242'
     - '243'
@@ -475,6 +637,7 @@ reglas:
     - '107'
     - '129'
     - '260'
+    - '132'
     federal:
     - '302'
     - '304'
@@ -492,8 +655,21 @@ reglas:
     - '323'
     - 321 Bis
     - '316'
+    - '137'
+    - '136'
+    - '322'
+    ley_victimas:
+    - '31'
+    lgamvlv:
+    - '21'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 137, 136, 322; morelos 132*; queretaro 125 BIS*, 133, 252*; ley_victimas 31*; lgamvlv 21
+
+    − quitados: edomex 69'
 - id: r006
+  materia: penal
   tipo_caso: muerte
   delito: feminicidio
   condicion: ''
@@ -501,24 +677,39 @@ reglas:
   articulos:
     cdmx:
     - 148 BIS
-    - 321 Bis
     queretaro:
     - 126 BIS
     - '131'
+    - 125 BIS
+    - '133'
     edomex:
-    - '69'
     - '281'
-    - '283'
     - '284'
     morelos:
     - 125 Ter
     - '107'
     - 213 QUINTUS
     - '312'
+    - 162 Ter
     federal:
     - '325'
+    - '322'
+    ley_victimas:
+    - '31'
+    lgamvlv:
+    - '26'
+    - '21'
+    - 34 Septies
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 322; morelos 162 Ter*; queretaro 125 BIS*, 133; ley_victimas 31*; lgamvlv 26, 21, 34 Septies, 34
+    Ter*
+
+    − quitados: cdmx 321 Bis*; edomex 69, 283'
 - id: r007
+  materia: penal
   tipo_caso: muerte
   delito: transfeminicidio
   condicion: ''
@@ -526,16 +717,28 @@ reglas:
   articulos:
     cdmx:
     - 148 Ter
-    - 321 Bis
     queretaro:
     - '131'
+    - 125 BIS
+    - '133'
     edomex:
     - 281 Bis
     - '284'
     morelos: []
-    federal: []
+    federal:
+    - '322'
+    ley_victimas:
+    - '31'
+    lgamvlv:
+    - '26'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 322; queretaro 125 BIS*, 133; ley_victimas 31*; lgamvlv 26
+
+    − quitados: cdmx 321 Bis*'
 - id: r008
+  materia: penal
   tipo_caso: muerte
   delito: ayuda o inducción al suicidio
   condicion: ''
@@ -544,8 +747,10 @@ reglas:
     cdmx:
     - '142'
     - '143'
+    - 143 BIS
     queretaro:
     - '135'
+    - 125 BIS
     edomex:
     - '246'
     - '247'
@@ -555,8 +760,18 @@ reglas:
     - '114'
     federal:
     - '312'
+    - '322'
+    - '313'
+    ley_victimas:
+    - '31'
+    lgamvlv:
+    - '21'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 143 BIS; federal 322, 313*; queretaro 125 BIS*; ley_victimas 31*; lgamvlv 21'
 - id: r009
+  materia: penal
   tipo_caso: violencia_familiar
   delito: Violencia familiar
   condicion: ''
@@ -568,26 +783,31 @@ reglas:
     - '201'
     - 201 BIS
     - '131'
+    - '132'
+    - '202'
     queretaro:
     - '130'
     - 142 BIS
     - 217 QUINTUS
     - 217 TER
     - 217 BIS
+    - 217 SEXTUS
+    - 217 QUÁTER
     edomex:
-    - '69'
     - '218'
     - '240'
     - '238'
     - '280'
-    - '283'
     - '282'
     - '284'
+    - 218 Ter
     morelos:
     - '125'
     - 202 QUINTUS
     - 202 BIS
     - 202 TER
+    - 202 QUATER
+    - 213 Nonies
     federal:
     - 265 bis
     - '295'
@@ -595,8 +815,29 @@ reglas:
     - 343 Ter
     - 343 Bis
     - '316'
+    - 343 quáter
+    ley_victimas:
+    - '35'
+    lgamvlv:
+    - '9'
+    - '8'
+    - '7'
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 132, 202*; edomex 218 Ter; federal 343 quáter*; morelos 202 QUATER*, 213 Nonies*; queretaro 217 SEXTUS*,
+    217 QUÁTER; ley_victimas 35*; lgamvlv 9, 8*, 7, 34 Septies, 34 Quáter*, 30*, 34 Bis*, 52*, 34 Octies*, 34 Ter*
+
+    − quitados: edomex 69, 283'
 - id: r010
+  materia: penal
   tipo_caso: violencia_familiar
   delito: violencia vicaria
   condicion: ''
@@ -604,17 +845,36 @@ reglas:
   articulos:
     cdmx:
     - 201 TER
-    queretaro: []
+    - '202'
+    queretaro:
+    - 217 SEXTUS
     edomex:
     - 218 Bis
     - '282'
     - '284'
+    - 218 Ter
     morelos:
     - 213 Octies
     - 213 Nonies
-    federal: []
+    federal:
+    - 343 quáter
+    lgamvlv:
+    - '9'
+    - '8'
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 202*; edomex 218 Ter; federal 343 quáter*; queretaro 217 SEXTUS*; lgamvlv 9, 8*, 34 Septies, 34 Quáter*,
+    30*, 34 Bis*, 52*, 34 Octies*, 34 Ter*'
 - id: r011
+  materia: penal
   tipo_caso: violencia_familiar
   delito: incumplimiento de la obligación alimentaria
   condicion: ''
@@ -626,6 +886,7 @@ reglas:
     - '196'
     - '197'
     - '195'
+    - '199'
     queretaro:
     - '210'
     - 211 BIS
@@ -638,13 +899,20 @@ reglas:
     - 132 Bis
     - '202'
     - '201'
-    - 213 Nonies
     federal:
     - 336 Bis
     - '338'
     - '337'
+    lgamvlv:
+    - 34 Quáter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 199; lgamvlv 34 Quáter
+
+    − quitados: morelos 213 Nonies*'
 - id: r012
+  materia: penal
   tipo_caso: agresion_sexual
   delito: Violación
   condicion: ''
@@ -655,6 +923,7 @@ reglas:
     - '175'
     - '178'
     - '182'
+    - 178 BIS
     queretaro:
     - '163'
     - '162'
@@ -663,10 +932,8 @@ reglas:
     - '169'
     - '168'
     edomex:
-    - '69'
     - '274'
     - '273'
-    - '283'
     - '282'
     - '284'
     morelos:
@@ -676,6 +943,7 @@ reglas:
     - '156'
     - '153'
     - '154'
+    - 162 Ter
     federal:
     - '265'
     - 265 bis
@@ -684,8 +952,28 @@ reglas:
     - 266 Ter
     - 276 Bis
     - 315 Bis
+    cnpp:
+    - '275'
+    - '366'
+    ley_victimas:
+    - '35'
+    lgamvlv:
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; morelos 162 Ter*; cnpp 275, 366; ley_victimas 35*; lgamvlv 34 Septies, 34 Quáter*, 30*, 34
+    Bis*, 52*, 34 Octies*, 34 Ter*
+
+    − quitados: edomex 69, 283'
 - id: r013
+  materia: penal
   tipo_caso: agresion_sexual
   delito: abuso sexual
   condicion: ''
@@ -704,24 +992,43 @@ reglas:
     - '169'
     - '168'
     edomex:
-    - '69'
     - '270'
     - '283'
     - 270 Bis
     - '282'
     - '284'
+    - '207'
     morelos:
     - 131 QUATER
     - '161'
     - '162'
+    - 162 Ter
     federal:
-    - '263'
     - '260'
     - '261'
     - 266 Ter
     - 276 Bis
+    cnpp:
+    - '275'
+    ley_victimas:
+    - '35'
+    lgamvlv:
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 207*; morelos 162 Ter*; cnpp 275; ley_victimas 35*; lgamvlv 34 Septies, 34 Quáter*, 30*, 34 Bis*,
+    52*, 34 Octies*, 34 Ter*
+
+    − quitados: edomex 69; federal 263*'
 - id: r014
+  materia: penal
   tipo_caso: agresion_sexual
   delito: estupro
   condicion: ''
@@ -730,6 +1037,7 @@ reglas:
     cdmx:
     - '180'
     - '182'
+    - 178 BIS
     queretaro:
     - '167'
     - '169'
@@ -742,12 +1050,30 @@ reglas:
     morelos:
     - '160'
     - '159'
+    - 162 Ter
     federal:
     - '262'
     - 266 Ter
     - 276 Bis
+    - '263'
+    cnpp:
+    - '275'
+    ley_victimas:
+    - '35'
+    lgamvlv:
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; federal 263*; morelos 162 Ter*; cnpp 275; ley_victimas 35*; lgamvlv 34 Septies, 34 Quáter*,
+    30*, 34 Bis*, 52*, 34 Octies*'
 - id: r015
+  materia: penal
   tipo_caso: agresion_sexual
   delito: incesto
   condicion: ''
@@ -756,6 +1082,7 @@ reglas:
     cdmx:
     - '181'
     - '182'
+    - 178 BIS
     queretaro:
     - '169'
     - '168'
@@ -770,8 +1097,23 @@ reglas:
     - '271'
     - '272'
     - 276 Bis
+    cnpp:
+    - '275'
+    ley_victimas:
+    - '35'
+    lgamvlv:
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; cnpp 275; ley_victimas 35*; lgamvlv 34 Septies, 34 Quáter*, 30*, 34 Bis*, 52*, 34 Octies*'
 - id: r016
+  materia: penal
   tipo_caso: agresion_sexual
   delito: delitos contra menores de 12 años
   condicion: ''
@@ -784,6 +1126,7 @@ reglas:
     - '182'
     - '192'
     - '191'
+    - 178 BIS
     queretaro:
     - '161'
     - '166'
@@ -798,12 +1141,32 @@ reglas:
     morelos:
     - '154'
     - '162'
+    - 162 Ter
     federal:
     - 209 Bis
     - '261'
     - 276 Bis
+    - 209 Ter
+    - 205 Bis
+    cnpp:
+    - '275'
+    ley_victimas:
+    - '35'
+    lgamvlv:
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; federal 209 Ter*, 205 Bis*; morelos 162 Ter*; cnpp 275; ley_victimas 35*; lgamvlv 34 Septies,
+    34 Quáter*, 30*, 34 Bis*, 52*, 34 Octies*, 34 Ter*'
 - id: r017
+  materia: penal
   tipo_caso: agresion_sexual
   delito: privación de la libertad con fines sexuales
   condicion: ''
@@ -812,6 +1175,7 @@ reglas:
     cdmx:
     - '162'
     - '182'
+    - 178 BIS
     queretaro:
     - '148'
     - '169'
@@ -822,8 +1186,25 @@ reglas:
     morelos: []
     federal:
     - 276 Bis
+    cnpp:
+    - '275'
+    ley_victimas:
+    - '35'
+    lgamvlv:
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; cnpp 275; ley_victimas 35*; lgamvlv 34 Septies, 34 Quáter*, 30*, 34 Bis*, 52*, 34 Octies*,
+    34 Ter*'
 - id: r018
+  materia: penal
   tipo_caso: acoso_hostigamiento
   delito: Acoso sexual
   condicion: ''
@@ -833,9 +1214,11 @@ reglas:
     - '179'
     - 179 BIS
     - '182'
+    - 178 BIS
     queretaro:
     - 167 BIS
     - '168'
+    - '169'
     edomex:
     - 269 Bis
     - '282'
@@ -843,10 +1226,29 @@ reglas:
     morelos:
     - '158'
     - 158 BIS
-    federal:
-    - 266 Ter
+    - 162 Ter
+    federal: []
+    lgamvlv:
+    - '15'
+    - 16 Bis
+    - '13'
+    - '10'
+    - 20 Sexies
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; morelos 162 Ter*; queretaro 169; lgamvlv 15, 16 Bis, 13, 10, 20 Sexies*, 34 Septies, 34 Quáter*,
+    30*, 34 Bis*, 52*, 34 Octies*
+
+    − quitados: federal 266 Ter*'
 - id: r019
+  materia: penal
   tipo_caso: acoso_hostigamiento
   delito: hostigamiento sexual
   condicion: ''
@@ -854,9 +1256,11 @@ reglas:
   articulos:
     cdmx:
     - '182'
+    - 178 BIS
     queretaro:
     - 167 TER
     - '168'
+    - '169'
     edomex:
     - '269'
     - '282'
@@ -864,11 +1268,29 @@ reglas:
     morelos:
     - '158'
     - 158 BIS
+    - 162 Ter
     federal:
     - 259 Bis
-    - 266 Ter
+    lgamvlv:
+    - '15'
+    - '13'
+    - '10'
+    - 20 Sexies
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; morelos 162 Ter*; queretaro 169; lgamvlv 15, 13, 10, 20 Sexies*, 34 Septies, 34 Quáter*, 30*,
+    34 Bis*, 52*, 34 Octies*
+
+    − quitados: federal 266 Ter*'
 - id: r020
+  materia: penal
   tipo_caso: imagenes_intimas
   delito: Contra la intimidad sexual (Ley Olimpia)
   condicion: ''
@@ -877,9 +1299,12 @@ reglas:
     cdmx:
     - 181 Quintus
     - '182'
+    - 178 BIS
     queretaro:
     - 167 Quinquies
     - 167 QUÁTER
+    - '168'
+    - '169'
     edomex:
     - 211 Quinquies
     - 211 Ter
@@ -889,10 +1314,26 @@ reglas:
     - '284'
     morelos:
     - 150 BIS
+    - 162 Ter
     federal:
     - 199 Octies
+    - 199 Nonies
+    lgamvlv:
+    - 20 Quáter
+    - 20 Sexies
+    - 34 Septies
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - '52'
+    - 34 Octies
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS; federal 199 Nonies*; morelos 162 Ter*; queretaro 168, 169; lgamvlv 20 Quáter*, 20 Sexies*,
+    34 Septies, 34 Quáter*, 30*, 34 Bis*, 52*, 34 Octies*'
 - id: r021
+  materia: penal
   tipo_caso: imagenes_intimas
   delito: extorsión
   condicion: ''
@@ -907,9 +1348,27 @@ reglas:
     - 211 Quater
     morelos: []
     federal: []
+    ley_extorsion:
+    - '6'
+    - '2'
+    - '15'
+    - '25'
+    - '34'
+    - '33'
+    - '22'
+    - '35'
+    - '43'
+    - '16'
+    - '18'
+    - '17'
   estado: sugerida
-  nota: 236 derogado
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: ley_extorsion 6*, 2, 15, 25, 34, 33, 22, 35, 43, 16, 18, 17
+
+    236 derogado'
 - id: r022
+  materia: penal
   tipo_caso: imagenes_intimas
   delito: amenazas
   condicion: ''
@@ -927,6 +1386,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r023
+  materia: penal
   tipo_caso: imagenes_intimas
   delito: pornografía de personas menores de edad
   condicion: ''
@@ -938,19 +1398,31 @@ reglas:
     - '188'
     - '187'
     - '191'
+    - 178 BIS
+    - '192'
     queretaro: []
     edomex:
-    - '69'
     - '206'
     - '284'
+    - '282'
     morelos:
     - '212'
+    - 162 Ter
     federal:
     - '200'
     - 202 BIS
     - '202'
+    - 205 Bis
+    lgamvlv:
+    - 34 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS, 192*; edomex 282*; federal 205 Bis*; morelos 162 Ter*; lgamvlv 34 Bis*
+
+    − quitados: edomex 69'
 - id: r024
+  materia: penal
   tipo_caso: imagenes_intimas
   delito: corrupción de menores
   condicion: ''
@@ -960,15 +1432,26 @@ reglas:
     cdmx:
     - '182'
     - '191'
+    - 178 BIS
+    - '192'
     queretaro: []
     edomex:
     - '284'
+    - '282'
     morelos:
     - 211 ter
+    - 162 Ter
     federal:
     - '201'
+    - 205 Bis
+    lgamvlv:
+    - 34 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 178 BIS, 192*; edomex 282*; federal 205 Bis*; morelos 162 Ter*; lgamvlv 34 Bis*'
 - id: r025
+  materia: penal
   tipo_caso: imagenes_intimas
   delito: 'federal: delitos contra la indemnidad de privacidad de la información sexual (CPF, título séptimo bis)'
   condicion: ''
@@ -983,8 +1466,14 @@ reglas:
     - 199 Octies
     - 199 Nonies
     - 199 Decies
+    lgamvlv:
+    - 20 Quáter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: lgamvlv 20 Quáter*'
 - id: r026
+  materia: penal
   tipo_caso: amenazas_extorsion
   delito: Amenazas
   condicion: ''
@@ -1004,6 +1493,7 @@ reglas:
     - '282'
   estado: sugerida
 - id: r027
+  materia: penal
   tipo_caso: amenazas_extorsion
   delito: extorsión (Ley General en materia de Extorsión; en la CDMX el art. 236 está derogado desde el 12-dic-2024 y queda
     el 148 Quáter; revisar cada estado)
@@ -1016,9 +1506,44 @@ reglas:
     edomex: []
     morelos: []
     federal: []
+    ley_extorsion:
+    - '8'
+    - '9'
+    - '6'
+    - '3'
+    - '2'
+    - '39'
+    - '26'
+    - '41'
+    - '32'
+    - '15'
+    - '25'
+    - '36'
+    - '34'
+    - '33'
+    - '30'
+    - '40'
+    - '24'
+    - '22'
+    - '35'
+    - '20'
+    - '43'
+    - '16'
+    - '18'
+    - '19'
+    - '17'
+    - '21'
+    lfcdo:
+    - 3o
   estado: sugerida
-  nota: 236 derogado
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: ley_extorsion 8*, 9*, 6*, 3*, 2, 39, 26*, 41*, 32, 15, 25, 36, 34, 33, 30*, 40, 24, 22, 35, 20, 43, 16, 18,
+    19*, 17, 21*; lfcdo 3o*
+
+    236 derogado'
 - id: r028
+  materia: penal
   tipo_caso: amenazas_extorsion
   delito: cobranza ilegítima
   condicion: ''
@@ -1035,6 +1560,7 @@ reglas:
     - 284 Bis
   estado: sugerida
 - id: r029
+  materia: penal
   tipo_caso: privacion_libertad
   delito: Privación de la libertad
   condicion: ''
@@ -1056,8 +1582,15 @@ reglas:
     - '270'
     federal:
     - '348'
+    - '137'
+    ley_victimas:
+    - '19'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 137; ley_victimas 19*'
 - id: r030
+  materia: penal
   tipo_caso: privacion_libertad
   delito: secuestro (Ley General en materia de Secuestro)
   condicion: ''
@@ -1075,8 +1608,53 @@ reglas:
     edomex: []
     morelos: []
     federal: []
+    cnpp:
+    - '366'
+    ley_victimas:
+    - '19'
+    ley_secuestro:
+    - '3'
+    - '6'
+    - '5'
+    - '8'
+    - '2'
+    - '20'
+    - '27'
+    - '7'
+    - '23'
+    - '9'
+    - '25'
+    - '33'
+    - '39'
+    - '18'
+    - '11'
+    - '12'
+    - '37'
+    - '17'
+    - '19'
+    - '38'
+    - '14'
+    - '32'
+    - '34'
+    - '40'
+    - '13'
+    - '46'
+    - '35'
+    - '43'
+    - '10'
+    - '48'
+    - '16'
+    - '15'
+    lfcdo:
+    - 4o
+    - '37'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cnpp 366; ley_victimas 19*; ley_secuestro 3, 6, 5, 8, 2, 20, 27, 7, 23, 9, 25, 33, 39, 18, 11, 12, 37, 17,
+    19, 38, 14, 32, 34, 40, 13, 46, 35, 43, 10, 48, 16*, 15; lfcdo 4o*, 37'
 - id: r031
+  materia: penal
   tipo_caso: privacion_libertad
   delito: desaparición de personas (ley general, no está en el corpus)
   condicion: ''
@@ -1087,8 +1665,15 @@ reglas:
     edomex: []
     morelos: []
     federal: []
+    ley_victimas:
+    - '21'
+    - '19'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: ley_victimas 21*, 19*'
 - id: r032
+  materia: penal
   tipo_caso: privacion_libertad
   delito: sustracción o retención de menores
   condicion: ''
@@ -1104,14 +1689,21 @@ reglas:
     edomex:
     - '262'
     - '263'
+    - '283'
     morelos:
     - '203'
     - 203 Bis
     - 213 Nonies
     federal:
     - 366 quáter
+    lgamvlv:
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 283; lgamvlv 34 Ter*'
 - id: r033
+  materia: penal
   tipo_caso: privacion_libertad
   delito: tráfico de menores
   condicion: ''
@@ -1129,6 +1721,7 @@ reglas:
     - 366 Ter
   estado: sugerida
 - id: r034
+  materia: penal
   tipo_caso: privacion_libertad
   delito: desaparición forzada por un servidor público (CDMX, art. 168)
   condicion: ''
@@ -1140,8 +1733,14 @@ reglas:
     edomex: []
     morelos: []
     federal: []
+    ley_victimas:
+    - '19'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: ley_victimas 19*'
 - id: r035
+  materia: penal
   tipo_caso: robo
   delito: Robo (y sus agravantes)
   condicion: ''
@@ -1158,6 +1757,8 @@ reglas:
     - 226 BIS
     - 226 TER
     - '248'
+    - '247'
+    - '246'
     queretaro:
     - '157'
     - '188'
@@ -1172,9 +1773,9 @@ reglas:
     - 190 TER
     - '187'
     - '183'
-    - 190 BIS
+    - '207'
+    - '206'
     edomex:
-    - '69'
     - '287'
     - '289'
     - '288'
@@ -1197,6 +1798,8 @@ reglas:
     - '176'
     - '181'
     - '182'
+    - '200'
+    - '199'
     federal:
     - 315 Bis
     - '369'
@@ -1218,8 +1821,20 @@ reglas:
     - '380'
     - '381'
     - '377'
+    - '137'
+    - '287'
+    - 381 Quáter
+    - 399 Bis
+    lfcdo:
+    - 4o
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247, 246; federal 137, 287*, 381 Quáter, 399 Bis; morelos 200, 199; queretaro 207, 206*; lfcdo 4o*
+
+    − quitados: edomex 69; queretaro 190 BIS'
 - id: r036
+  materia: penal
   tipo_caso: robo
   delito: abuso de confianza
   condicion: ''
@@ -1230,9 +1845,13 @@ reglas:
     - '228'
     - '229'
     - '248'
+    - '247'
+    - '246'
     queretaro:
     - '191'
     - '192'
+    - '207'
+    - '206'
     edomex:
     - '304'
     - '303'
@@ -1240,13 +1859,20 @@ reglas:
     morelos:
     - '186'
     - '187'
+    - '200'
+    - '199'
     federal:
     - '382'
     - '383'
     - '384'
     - '385'
+    - 399 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247, 246; federal 399 Bis; morelos 200, 199; queretaro 207, 206*'
 - id: r037
+  materia: penal
   tipo_caso: robo
   delito: encubrimiento por receptación
   condicion: ''
@@ -1256,23 +1882,33 @@ reglas:
     - '243'
     - '244'
     - '245'
+    - '247'
     queretaro:
-    - 183 BIS
     - '209'
     - '204'
     - '205'
     - '208'
     - 205 BIS
     - '206'
+    - '207'
     edomex:
     - '152'
     morelos:
     - '197'
+    - 176 BIS
+    - '200'
+    - '199'
     federal:
     - 368 Bis
     - 368 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247; morelos 176 BIS*, 200, 199; queretaro 207
+
+    − quitados: queretaro 183 BIS'
 - id: r038
+  materia: penal
   tipo_caso: fraude_datos
   delito: Fraude
   condicion: ''
@@ -1286,24 +1922,38 @@ reglas:
     - '233'
     - 233 BIS
     - '248'
+    - '247'
+    - '246'
     queretaro:
     - '193'
     - '194'
     - '195'
+    - '207'
+    - '206'
     edomex:
     - '307'
     - '305'
     - '306'
+    - '283'
+    - 307 Bis
     morelos:
     - '188'
     - '189'
+    - '192'
+    - '200'
+    - '199'
     federal:
     - '386'
     - '387'
     - 389 Bis
     - '389'
+    - 399 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247, 246; edomex 283, 307 Bis; federal 399 Bis; morelos 192, 200, 199; queretaro 207, 206*'
 - id: r039
+  materia: penal
   tipo_caso: fraude_datos
   delito: administración fraudulenta
   condicion: ''
@@ -1312,15 +1962,25 @@ reglas:
     cdmx:
     - '234'
     - '248'
+    - '247'
+    - '246'
     queretaro:
     - '197'
+    - '207'
+    - '206'
     edomex: []
     morelos:
     - '190'
+    - '200'
+    - '199'
     federal:
     - '388'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247, 246; morelos 200, 199; queretaro 207, 206*'
 - id: r040
+  materia: penal
   tipo_caso: fraude_datos
   delito: insolvencia fraudulenta
   condicion: ''
@@ -1328,14 +1988,24 @@ reglas:
   articulos:
     cdmx:
     - '235'
-    queretaro: []
+    - '247'
+    - '246'
+    queretaro:
+    - '207'
+    - '206'
     edomex: []
     morelos:
     - '191'
+    - '200'
+    - '199'
     federal:
     - 388 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247, 246; morelos 200, 199; queretaro 207, 206*'
 - id: r041
+  materia: penal
   tipo_caso: fraude_datos
   delito: usurpación de identidad
   condicion: ''
@@ -1346,15 +2016,23 @@ reglas:
     queretaro:
     - 159 QUINTUS
     - 159 SEXTUS
+    - '207'
+    - '206'
     edomex:
     - '264'
     - '265'
     - 265 bis
     morelos:
     - 189 Bis
+    - '200'
+    - '199'
     federal: []
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 200, 199; queretaro 207, 206*'
 - id: r042
+  materia: penal
   tipo_caso: fraude_datos
   delito: falsificación de documentos
   condicion: ''
@@ -1364,11 +2042,13 @@ reglas:
     - '339'
     - '340'
     - '341'
+    - '342'
     queretaro:
     - '231'
     - '232'
     - '234'
     - '233'
+    - '207'
     edomex:
     - '167'
     - '173'
@@ -1382,6 +2062,9 @@ reglas:
     - '217'
     - '216'
     - '219'
+    - 176 BIS
+    - '200'
+    - '199'
     federal:
     - '244'
     - '245'
@@ -1390,8 +2073,13 @@ reglas:
     - '246'
     - '251'
     - '378'
+    - '409'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 342*; federal 409; morelos 176 BIS*, 200, 199; queretaro 207'
 - id: r043
+  materia: penal
   tipo_caso: fraude_datos
   delito: falsificación de sellos, llaves o contraseñas
   condicion: ''
@@ -1404,18 +2092,25 @@ reglas:
     - '230'
     - '233'
     - 232 BIS
+    - '207'
     edomex:
     - '172'
     - '171'
     morelos:
     - '218'
     - '219'
+    - '200'
+    - '199'
     federal:
     - '242'
     - '241'
     - '251'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 200, 199; queretaro 207'
 - id: r044
+  materia: penal
   tipo_caso: fraude_datos
   delito: falsificación de tarjetas o títulos de crédito
   condicion: ''
@@ -1426,15 +2121,22 @@ reglas:
     queretaro:
     - '233'
     - 232 BIS
+    - '207'
     edomex:
     - '174'
     morelos:
     - 220 Bis
+    - '200'
+    - '199'
     federal:
     - '239'
     - '251'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 200, 199; queretaro 207'
 - id: r045
+  materia: penal
   tipo_caso: fraude_datos
   delito: acceso ilícito a sistemas o equipos de informática (CPF, título noveno; Querétaro, título séptimo)
   condicion: ''
@@ -1444,6 +2146,7 @@ reglas:
     queretaro:
     - 159 TER
     - 159 QUATER
+    - '207'
     edomex: []
     morelos:
     - 148 quarter
@@ -1451,6 +2154,8 @@ reglas:
     - 267 TER 2
     - 267 TER 3
     - 267 TER 1
+    - '200'
+    - '199'
     federal:
     - 211 bis 1
     - 211 bis 6
@@ -1460,7 +2165,11 @@ reglas:
     - 211 bis 5
     - 211 bis 4
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 200, 199; queretaro 207'
 - id: r046
+  materia: penal
   tipo_caso: propiedad
   delito: Despojo
   condicion: ''
@@ -1470,10 +2179,14 @@ reglas:
     - '237'
     - '238'
     - '248'
+    - '247'
+    - '246'
     queretaro:
     - '201'
     - '199'
     - '200'
+    - '207'
+    - '206'
     edomex:
     - '308'
     - 314 Bis
@@ -1481,12 +2194,21 @@ reglas:
     morelos:
     - '184'
     - '185'
+    - '200'
+    - '199'
     federal:
     - '396'
     - '395'
-    - 389 Bis
+    - '137'
+    - 399 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247, 246; federal 137, 399 Bis; morelos 200, 199; queretaro 207, 206*
+
+    − quitados: federal 389 Bis'
 - id: r047
+  materia: penal
   tipo_caso: propiedad
   delito: daño a la propiedad
   condicion: ''
@@ -1498,9 +2220,13 @@ reglas:
     - '241'
     - 241 BIS
     - '248'
+    - '247'
+    - '246'
     queretaro:
     - '202'
     - '203'
+    - '207'
+    - '206'
     edomex:
     - '310'
     - '311'
@@ -1509,12 +2235,20 @@ reglas:
     - '193'
     - '195'
     - '194'
+    - '200'
+    - '199'
+    - 295 BIS
     federal:
     - '399'
     - '397'
     - 399 Bis
+    - '398'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 247, 246; federal 398; morelos 200, 199, 295 BIS; queretaro 207, 206*'
 - id: r048
+  materia: penal
   tipo_caso: propiedad
   delito: allanamiento de morada
   condicion: ''
@@ -1525,16 +2259,24 @@ reglas:
     - '211'
     queretaro:
     - '158'
+    - '207'
     edomex:
-    - '268'
     - '314'
     morelos:
     - '149'
+    - '200'
+    - '199'
     federal:
     - '285'
     - 315 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 200, 199; queretaro 207
+
+    − quitados: edomex 268'
 - id: r049
+  materia: penal
   tipo_caso: propiedad
   delito: responsabilidad de directores responsables de obra (construcción)
   condicion: ''
@@ -1548,6 +2290,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r050
+  materia: penal
   tipo_caso: transito
   delito: Lesiones u homicidio culposo
   condicion: ''
@@ -1559,7 +2302,9 @@ reglas:
     - '140'
     queretaro:
     - '145'
-    edomex: []
+    - 125 BIS
+    edomex:
+    - '237'
     morelos:
     - '125'
     - '128'
@@ -1567,8 +2312,16 @@ reglas:
     federal:
     - '341'
     - 321 Bis
+    cnpp:
+    - '239'
+    ley_victimas:
+    - '31'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 237; queretaro 125 BIS*; cnpp 239*; ley_victimas 31*'
 - id: r051
+  materia: penal
   tipo_caso: transito
   delito: daño culposo
   condicion: ''
@@ -1577,14 +2330,22 @@ reglas:
     cdmx:
     - '240'
     - '242'
+    - '246'
     queretaro: []
     edomex:
     - '309'
+    - '310'
     morelos: []
     federal:
     - '172'
+    cnpp:
+    - '239'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 246; edomex 310*; cnpp 239*'
 - id: r052
+  materia: penal
   tipo_caso: transito
   delito: delitos contra la seguridad del tránsito
   condicion: ''
@@ -1594,6 +2355,7 @@ reglas:
     - '332'
     queretaro:
     - '228'
+    - 221 BIS E
     edomex: []
     morelos:
     - '240'
@@ -1602,7 +2364,11 @@ reglas:
     - '172'
     - '171'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: queretaro 221 BIS E'
 - id: r053
+  materia: penal
   tipo_caso: transito
   delito: ataques a las vías de comunicación y a los medios de transporte
   condicion: ''
@@ -1617,11 +2383,13 @@ reglas:
     - '227'
     - '223'
     - '226'
+    - '222'
     edomex:
     - '194'
     - '192'
     - '195'
     - '193'
+    - '191'
     morelos:
     - '226'
     - '230'
@@ -1633,14 +2401,22 @@ reglas:
     - '229'
     - '235'
     - '236'
+    - '225'
+    - '228'
+    - '237'
     federal:
     - '166'
     - '168'
     - '170'
     - '169'
     - '167'
+    - '165'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 191; federal 165; morelos 225, 228, 237; queretaro 222'
 - id: r054
+  materia: penal
   tipo_caso: intimidad_honor
   delito: Violación de la intimidad personal
   condicion: ''
@@ -1653,8 +2429,14 @@ reglas:
     morelos:
     - '150'
     federal: []
+    lgamvlv:
+    - 20 Sexies
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: lgamvlv 20 Sexies*'
 - id: r055
+  materia: penal
   tipo_caso: intimidad_honor
   delito: revelación de secretos
   condicion: ''
@@ -1676,6 +2458,7 @@ reglas:
     - '210'
   estado: sugerida
 - id: r056
+  materia: penal
   tipo_caso: intimidad_honor
   delito: Violación de correspondencia o comunicación privada
   condicion: ''
@@ -1695,8 +2478,14 @@ reglas:
     federal:
     - '177'
     - '173'
+    - '174'
+    - '175'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 174, 175'
 - id: r057
+  materia: penal
   tipo_caso: intimidad_honor
   delito: Difamación y calumnia (derogadas en la CDMX, arts. 214–218; la vía es civil; revisar cada estado)
   condicion: ''
@@ -1710,6 +2499,7 @@ reglas:
   estado: sugerida
   nota: derogados 214–218
 - id: r058
+  materia: penal
   tipo_caso: abuso_autoridad
   delito: Abuso de autoridad
   condicion: ''
@@ -1726,6 +2516,7 @@ reglas:
     - 293 TER
     queretaro:
     - '264'
+    - '259'
     edomex:
     - '335'
     - '338'
@@ -1733,16 +2524,25 @@ reglas:
     - '337'
     - '339'
     - '355'
+    - '330'
     morelos:
     - '272'
     - 272 Bis
     - '270'
+    - 269 BIS
     federal:
     - '145'
     - '215'
     - '402'
+    - 213 Bis
+    cnpp:
+    - '290'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 330*; federal 213 Bis; morelos 269 BIS; queretaro 259; cnpp 290'
 - id: r059
+  materia: penal
   tipo_caso: abuso_autoridad
   delito: uso ilegal de la fuerza pública
   condicion: ''
@@ -1752,7 +2552,8 @@ reglas:
     - '262'
     - '257'
     - '258'
-    queretaro: []
+    queretaro:
+    - '259'
     edomex: []
     morelos:
     - '272'
@@ -1760,7 +2561,11 @@ reglas:
     - '145'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: queretaro 259'
 - id: r060
+  materia: penal
   tipo_caso: abuso_autoridad
   delito: tortura (ley general, no está en el corpus; el código de la CDMX tiene los arts. 206 Bis y siguientes)
   condicion: ''
@@ -1773,14 +2578,19 @@ reglas:
     - 206 TER
     - '257'
     - '258'
-    queretaro: []
+    queretaro:
+    - '259'
     edomex: []
     morelos: []
     federal:
     - '145'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: queretaro 259'
 - id: r061
+  materia: penal
   tipo_caso: abuso_autoridad
   delito: intimidación
   condicion: ''
@@ -1793,27 +2603,35 @@ reglas:
     - '258'
     queretaro:
     - '265'
+    - '259'
     edomex:
     - '343'
+    - '330'
     morelos:
     - '275'
+    - 269 BIS
     federal:
     - '145'
     - '219'
     - '402'
+    - 213 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 330*; federal 213 Bis; morelos 269 BIS; queretaro 259'
 - id: r062
+  materia: penal
   tipo_caso: abuso_autoridad
   delito: cohecho
   condicion: ''
   cuando: []
   articulos:
     cdmx:
-    - 257 BIS
     - '257'
     - '258'
     queretaro:
     - '268'
+    - '259'
     edomex:
     - '349'
     - '348'
@@ -1821,14 +2639,23 @@ reglas:
     - '355'
     - '347'
     - '354'
+    - '330'
     morelos:
     - '278'
+    - 269 BIS
     federal:
     - '145'
     - '222'
     - '402'
+    - 213 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 330*; federal 213 Bis; morelos 269 BIS; queretaro 259
+
+    − quitados: cdmx 257 BIS'
 - id: r063
+  materia: penal
   tipo_caso: abuso_autoridad
   delito: concusión
   condicion: ''
@@ -1840,10 +2667,12 @@ reglas:
     - '258'
     queretaro:
     - '269'
+    - '259'
     edomex:
     - '342'
     - '355'
     - '354'
+    - '330'
     morelos:
     - '274'
     federal:
@@ -1851,7 +2680,11 @@ reglas:
     - '218'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 330*; queretaro 259'
 - id: r064
+  materia: penal
   tipo_caso: abuso_autoridad
   delito: negación del servicio público
   condicion: ''
@@ -1860,7 +2693,8 @@ reglas:
     cdmx:
     - '257'
     - '258'
-    queretaro: []
+    queretaro:
+    - '259'
     edomex: []
     morelos:
     - '272'
@@ -1868,7 +2702,11 @@ reglas:
     - '145'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: queretaro 259'
 - id: r065
+  materia: penal
   tipo_caso: discriminacion
   delito: Discriminación
   condicion: ''
@@ -1881,12 +2719,19 @@ reglas:
     edomex:
     - '211'
     - '282'
+    - '284'
     morelos:
     - 212 Quater
     federal:
     - 149 Ter
+    lgamvlv:
+    - '52'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 284*; lgamvlv 52*'
 - id: r066
+  materia: penal
   tipo_caso: discriminacion
   delito: delitos contra el libre desarrollo de la personalidad y la identidad sexual (terapias de conversión)
   condicion: ''
@@ -1902,8 +2747,14 @@ reglas:
     - 212 Septies
     federal:
     - 209 Quintus
+    lgamvlv:
+    - '52'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: lgamvlv 52*'
 - id: r067
+  materia: penal
   tipo_caso: salud
   delito: Responsabilidad profesional
   condicion: ''
@@ -1926,6 +2777,7 @@ reglas:
     - '230'
   estado: sugerida
 - id: r068
+  materia: penal
   tipo_caso: salud
   delito: abandono o práctica indebida del servicio médico
   condicion: ''
@@ -1944,11 +2796,16 @@ reglas:
     - '249'
     - '251'
     - '250'
+    - '252'
     federal:
     - '229'
     - '230'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 252'
 - id: r069
+  materia: penal
   tipo_caso: salud
   delito: aborto
   condicion: ''
@@ -1967,6 +2824,7 @@ reglas:
     - '138'
     - '140'
     - '139'
+    - '141'
     edomex:
     - '248'
     - '251'
@@ -1983,8 +2841,13 @@ reglas:
     - '331'
     - '333'
     - '332'
+    - 199 Sextus
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 199 Sextus; queretaro 141'
 - id: r070
+  materia: penal
   tipo_caso: salud
   delito: esterilización forzada
   condicion: ''
@@ -2003,8 +2866,13 @@ reglas:
     - 157 Ter
     federal:
     - 199 Quintus
+    - 199 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 199 Ter'
 - id: r071
+  materia: penal
   tipo_caso: salud
   delito: peligro de contagio
   condicion: ''
@@ -2021,6 +2889,7 @@ reglas:
     - 199 Bis
   estado: sugerida
 - id: r072
+  materia: penal
   tipo_caso: salud
   delito: sustancias modelantes
   condicion: ''
@@ -2035,6 +2904,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r073
+  materia: penal
   tipo_caso: salud
   delito: administración subrepticia de sustancias
   condicion: ''
@@ -2044,10 +2914,15 @@ reglas:
     - 141 QUÁTER
     queretaro: []
     edomex: []
-    morelos: []
+    morelos:
+    - 131 BIS
     federal: []
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 131 BIS'
 - id: r074
+  materia: penal
   tipo_caso: salud
   delito: suministro de medicinas nocivas o inapropiadas
   condicion: ''
@@ -2062,6 +2937,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r075
+  materia: penal
   tipo_caso: salud
   delito: usurpación de profesión
   condicion: ''
@@ -2079,6 +2955,7 @@ reglas:
     - '250'
   estado: sugerida
 - id: r076
+  materia: penal
   tipo_caso: menores_vulnerables
   delito: Corrupción de menores
   condicion: ''
@@ -2092,7 +2969,6 @@ reglas:
     - '191'
     queretaro: []
     edomex:
-    - '69'
     - '208'
     - '207'
     - '205'
@@ -2100,12 +2976,27 @@ reglas:
     morelos:
     - '211'
     - 211 ter
+    - 162 Ter
+    - 212 bis
     federal:
     - '200'
     - '201'
     - 201 BIS
+    - 209 Ter
+    - 205 Bis
+    lgamvlv:
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 209 Ter*, 205 Bis*; morelos 162 Ter*, 212 bis*; lgamvlv 34 Quáter*, 30*, 34 Bis*, 34 Ter*
+
+    − quitados: edomex 69'
 - id: r077
+  materia: penal
   tipo_caso: menores_vulnerables
   delito: trata de personas (ley general, no está en el corpus; el código de la CDMX tiene el art. 188 Bis)
   condicion: ''
@@ -2121,8 +3012,19 @@ reglas:
     morelos: []
     federal:
     - 205 Bis
+    lgamvlv:
+    - 34 Quáter
+    - '30'
+    - 34 Bis
+    - 34 Ter
+    lfcdo:
+    - 4o
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: lfcdo 4o*; lgamvlv 34 Quáter*, 30*, 34 Bis*, 34 Ter*'
 - id: r078
+  materia: penal
   tipo_caso: menores_vulnerables
   delito: lenocinio
   condicion: ''
@@ -2139,12 +3041,23 @@ reglas:
     - '210'
     morelos:
     - 212 ter
+    - 162 Ter
+    - 212 bis
     federal:
     - '206'
     - 206 BIS
     - '204'
+    - 205 Bis
+    lgamvlv:
+    - 34 Quáter
+    - '30'
+    - 34 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 205 Bis*; morelos 162 Ter*, 212 bis*; lgamvlv 34 Quáter*, 30*, 34 Bis*'
 - id: r079
+  materia: penal
   tipo_caso: menores_vulnerables
   delito: explotación laboral de menores
   condicion: ''
@@ -2159,25 +3072,43 @@ reglas:
     morelos:
     - 211 bis
     federal: []
+    lgamvlv:
+    - 34 Quáter
+    - '30'
+    - 34 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: lgamvlv 34 Quáter*, 30*, 34 Bis*'
 - id: r080
+  materia: penal
   tipo_caso: menores_vulnerables
   delito: omisión de cuidado
   condicion: ''
   cuando: []
   articulos:
-    cdmx: []
+    cdmx:
+    - '158'
     queretaro:
     - '144'
+    - 144 BIS
     edomex:
-    - '69'
     - '204'
     morelos:
     - '132'
-    - 132 Bis
     federal: []
+    lgamvlv:
+    - 34 Quáter
+    - '30'
+    - 34 Ter
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 158*; queretaro 144 BIS; lgamvlv 34 Quáter, 30*, 34 Ter*
+
+    − quitados: edomex 69; morelos 132 Bis'
 - id: r081
+  materia: penal
   tipo_caso: menores_vulnerables
   delito: turismo sexual
   condicion: ''
@@ -2189,11 +3120,21 @@ reglas:
     edomex: []
     morelos:
     - 162 Bis
+    - 162 Ter
     federal:
     - 203 BIS
     - '203'
+    - 205 Bis
+    lgamvlv:
+    - 34 Quáter
+    - '30'
+    - 34 Bis
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 205 Bis*; morelos 162 Ter*; lgamvlv 34 Quáter*, 30*, 34 Bis*'
 - id: r082
+  materia: penal
   tipo_caso: menores_vulnerables
   delito: omisión de auxilio
   condicion: ''
@@ -2203,7 +3144,6 @@ reglas:
     - '156'
     - '157'
     - 157 BIS
-    - '158'
     - 158 BIS
     queretaro:
     - '143'
@@ -2218,7 +3158,11 @@ reglas:
     - '341'
     - '340'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    − quitados: cdmx 158*'
 - id: r083
+  materia: penal
   tipo_caso: proceso_penal
   delito: '(procedimiento: Código Nacional de Procedimientos Penales) más el delito del que se acusa, que se clasifica con
     los tipos 1–17'
@@ -2231,7 +3175,9 @@ reglas:
     morelos: []
     federal: []
   estado: sugerida
+  nota: 'Pendiente 2026-11-11: Gemma propone citar 406 artículos del CNPP en esta regla; no se agregaron. Decide Karen.'
 - id: r084
+  materia: penal
   tipo_caso: animales_ambiente
   delito: Maltrato o crueldad contra animales
   condicion: ''
@@ -2242,11 +3188,14 @@ reglas:
     - 350 QUÁTER
     - 350 BIS
     - 350 TER
+    - 349 BIS
+    - '350'
     queretaro:
     - 246 D QUINTUS
     - 246 D BIS
     - 246 D QUATER
     - 246 D SEXTUS
+    - 246 D TER
     edomex:
     - 235 Bis
     - 235 Ter
@@ -2259,8 +3208,14 @@ reglas:
     - '328'
     federal:
     - 419 Bis
+    lgeepa:
+    - 87 BIS 2
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 349 BIS*, 350; queretaro 246 D TER; lgeepa 87 BIS 2'
 - id: r085
+  materia: penal
   tipo_caso: animales_ambiente
   delito: delitos contra el ambiente
   condicion: ''
@@ -2278,10 +3233,14 @@ reglas:
     - 346 BIS
     - '349'
     - '348'
+    - 349 TER
+    - 349 BIS
+    - '350'
     queretaro:
     - 246 D
     - 246 C
     - 246 A
+    - 246 B
     edomex:
     - '231'
     - 228 Bis
@@ -2291,6 +3250,8 @@ reglas:
     - '233'
     - '230'
     - '235'
+    - '234'
+    - 229 Bis
     morelos:
     - 242 BIS
     - 242 Ter
@@ -2308,8 +3269,56 @@ reglas:
     - 420 Bis
     - '423'
     - '419'
+    lfra:
+    - 1o
+    - 2o
+    - '15'
+    - 3o
+    - '11'
+    - '14'
+    - '21'
+    - '16'
+    - '23'
+    - '22'
+    - '17'
+    - '28'
+    - 8o
+    - '12'
+    - '29'
+    - '13'
+    - '20'
+    - '39'
+    - '33'
+    - '19'
+    - '26'
+    - '10'
+    - '41'
+    - '24'
+    - '35'
+    - '25'
+    - '37'
+    - '42'
+    - '40'
+    - '47'
+    - '48'
+    - '50'
+    - '54'
+    - '52'
+    - '55'
+    - '51'
+    - '49'
+    - '56'
+    lgeepa:
+    - '182'
+    - '203'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 349 TER*, 349 BIS*, 350; edomex 234, 229 Bis; queretaro 246 B; lfra 1o, 2o, 15, 3o, 11*, 14, 21, 16,
+    23, 22, 17, 28*, 8o, 12, 29, 13, 20, 39, 33*, 19*, 26, 10*, 41, 24, 35, 25, 37*, 42, 40, 47, 48, 50, 54, 52, 55, 51, 49,
+    56; lgeepa 182*, 203'
 - id: r086
+  materia: penal
   tipo_caso: animales_ambiente
   delito: delitos contra la gestión ambiental
   condicion: ''
@@ -2323,6 +3332,9 @@ reglas:
     - 347 TER
     - '349'
     - '348'
+    - 349 TER
+    - 349 BIS
+    - '350'
     queretaro: []
     edomex: []
     morelos: []
@@ -2330,8 +3342,47 @@ reglas:
     - '421'
     - 420 Quáter
     - '422'
+    lfra:
+    - 1o
+    - 2o
+    - '15'
+    - 3o
+    - '14'
+    - '21'
+    - '16'
+    - '23'
+    - '22'
+    - '17'
+    - '12'
+    - '29'
+    - '13'
+    - '20'
+    - '39'
+    - '26'
+    - '10'
+    - '41'
+    - '35'
+    - '25'
+    - '42'
+    - '40'
+    - '47'
+    - '48'
+    - '50'
+    - '54'
+    - '52'
+    - '55'
+    - '51'
+    - '49'
+    - '56'
+    lgeepa:
+    - '203'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 349 TER*, 349 BIS*, 350; lfra 1o, 2o, 15, 3o, 14, 21, 16, 23, 22, 17, 12, 29, 13, 20, 39, 26, 10*, 41,
+    35, 25, 42, 40, 47, 48, 50, 54, 52, 55, 51, 49, 56; lgeepa 203'
 - id: r087
+  materia: penal
   tipo_caso: armas_crimen_organizado
   delito: Portación de objetos para agredir
   condicion: ''
@@ -2351,6 +3402,7 @@ reglas:
     - '160'
   estado: sugerida
 - id: r088
+  materia: penal
   tipo_caso: armas_crimen_organizado
   delito: armas de fuego (Ley Federal de Armas de Fuego, no está en el corpus; federal)
   condicion: ''
@@ -2363,8 +3415,13 @@ reglas:
     federal:
     - '161'
     - '162'
+    - '163'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 163'
 - id: r089
+  materia: penal
   tipo_caso: armas_crimen_organizado
   delito: pandilla
   condicion: ''
@@ -2382,6 +3439,7 @@ reglas:
     - 164 Bis
   estado: sugerida
 - id: r090
+  materia: penal
   tipo_caso: armas_crimen_organizado
   delito: asociación delictuosa
   condicion: ''
@@ -2402,6 +3460,7 @@ reglas:
     - '164'
   estado: sugerida
 - id: r091
+  materia: penal
   tipo_caso: armas_crimen_organizado
   delito: delincuencia organizada (ley federal)
   condicion: ''
@@ -2415,8 +3474,40 @@ reglas:
     - '178'
     morelos: []
     federal: []
+    lfcdo:
+    - 1o
+    - 8o
+    - 9o
+    - '10'
+    - 4o
+    - 11 Bis
+    - 3o
+    - 2o Ter
+    - 6o
+    - 11 Quáter
+    - '20'
+    - 5o
+    - '12'
+    - '13'
+    - '16'
+    - '14'
+    - '30'
+    - '37'
+    - '34'
+    - '29'
+    - 35 Bis
+    - '36'
+    - '35'
+    - 2o
+    - '41'
+    - '45'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: lfcdo 1o, 8o, 9o*, 10, 4o*, 11 Bis, 3o*, 2o Ter, 6o*, 11 Quáter*, 20, 5o, 12, 13, 16, 14, 30, 37, 34*, 29,
+    35 Bis, 36, 35, 2o, 41*, 45*'
 - id: r092
+  materia: penal
   tipo_caso: armas_crimen_organizado
   delito: operaciones con recursos de procedencia ilícita
   condicion: ''
@@ -2435,14 +3526,23 @@ reglas:
     - '323'
     - '322'
     - '321'
+    - '317'
     morelos:
     - '198'
     - 198 Bis
     federal:
     - 400 Bis
-    - 400 Bis 1
+    lfcdo:
+    - 9o
+    - 4o
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 317; lfcdo 9o*, 4o*
+
+    − quitados: federal 400 Bis 1'
 - id: r093
+  materia: penal
   tipo_caso: drogas
   delito: 'Delitos contra la salud (Código Penal Federal, título séptimo; narcomenudeo: Ley General de Salud, no está en el
     corpus)'
@@ -2463,8 +3563,18 @@ reglas:
     - '195'
     - '198'
     - '196'
+    - '199'
+    cnpp:
+    - '235'
+    lfcdo:
+    - 4o
+    - 3o
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 199; cnpp 235*; lfcdo 4o*, 3o*'
 - id: r094
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: Peculado
   condicion: ''
@@ -2473,9 +3583,11 @@ reglas:
     cdmx:
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '267'
     - '260'
+    - '259'
     edomex:
     - '329'
     - '328'
@@ -2484,18 +3596,23 @@ reglas:
     - '330'
     morelos:
     - '269'
-    - 269 BIS
     - '279'
     - 269 TER
+    - '268'
     federal:
     - '145'
-    - 213 Bis
     - '212'
     - '213'
     - '223'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: federal 213 Bis; morelos 269 BIS'
 - id: r095
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: enriquecimiento ilícito
   condicion: ''
@@ -2505,9 +3622,12 @@ reglas:
     - 256 BIS
     - '257'
     - '258'
+    - '256'
+    - '280'
     queretaro:
     - '270'
     - '260'
+    - '259'
     edomex:
     - '329'
     - '328'
@@ -2518,6 +3638,7 @@ reglas:
     - '269'
     - '280'
     - 269 TER
+    - '268'
     federal:
     - '145'
     - '212'
@@ -2525,7 +3646,11 @@ reglas:
     - '224'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*, 280*; morelos 268*; queretaro 259'
 - id: r096
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: tráfico de influencia
   condicion: ''
@@ -2535,9 +3660,11 @@ reglas:
     - '271'
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '272'
     - '260'
+    - '259'
     edomex:
     - '329'
     - '328'
@@ -2547,18 +3674,23 @@ reglas:
     - '354'
     morelos:
     - '269'
-    - 269 BIS
     - '277'
     - 269 TER
+    - '268'
     federal:
     - '145'
-    - 213 Bis
     - '212'
     - '221'
     - '213'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: federal 213 Bis; morelos 269 BIS'
 - id: r097
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: ejercicio abusivo de funciones
   condicion: ''
@@ -2569,10 +3701,13 @@ reglas:
     - '268'
     - '257'
     - '258'
+    - '256'
+    - '266'
     queretaro:
     - '263'
     - '260'
     - '271'
+    - '259'
     edomex:
     - '332'
     - '331'
@@ -2585,6 +3720,7 @@ reglas:
     - '276'
     - 276 BIS
     - 269 TER
+    - '268'
     federal:
     - '145'
     - '212'
@@ -2592,7 +3728,11 @@ reglas:
     - '220'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*, 266; morelos 268*; queretaro 259'
 - id: r098
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: ejercicio ilegal y abandono del servicio público
   condicion: ''
@@ -2604,19 +3744,21 @@ reglas:
     - '261'
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '262'
     - '261'
     - '260'
+    - '259'
     edomex:
     - '333'
     - '329'
     - '328'
-    - '330'
     morelos:
     - '271'
     - '269'
     - 269 TER
+    - '268'
     federal:
     - '145'
     - '214'
@@ -2624,28 +3766,35 @@ reglas:
     - '213'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: edomex 330'
 - id: r099
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: coalición de servidores públicos
   condicion: ''
   cuando: []
   articulos:
     cdmx:
-    - '266'
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '266'
     - '260'
+    - '259'
     edomex:
     - '334'
     - '329'
     - '328'
-    - '330'
     morelos:
     - '273'
     - '269'
     - 269 TER
+    - '268'
     federal:
     - '145'
     - '216'
@@ -2653,7 +3802,13 @@ reglas:
     - '213'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: cdmx 266; edomex 330'
 - id: r100
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: usurpación de funciones públicas
   condicion: ''
@@ -2663,18 +3818,20 @@ reglas:
     - '276'
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '260'
     - '294'
+    - '259'
     edomex:
     - '176'
     - '329'
     - '328'
-    - '330'
     morelos:
     - '269'
     - 269 TER
     - '295'
+    - '268'
     federal:
     - '145'
     - '212'
@@ -2682,7 +3839,13 @@ reglas:
     - '250'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: edomex 330'
 - id: r101
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: remuneración ilícita
   condicion: ''
@@ -2693,26 +3856,33 @@ reglas:
     - 276 TER
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '260'
+    - '259'
     edomex:
     - '329'
     - '328'
     - '330'
     morelos:
     - '269'
-    - 269 BIS
     - 269 TER
+    - '268'
     federal:
     - '145'
     - 217 Quáter
-    - 213 Bis
     - 217 Ter
     - '212'
     - '213'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: federal 213 Bis; morelos 269 BIS'
 - id: r102
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: corrupción inmobiliaria
   condicion: ''
@@ -2722,22 +3892,30 @@ reglas:
     - 276 Quater
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '260'
+    - '259'
     edomex:
     - '329'
     - '328'
-    - '330'
     morelos:
     - '269'
     - 269 TER
+    - '268'
     federal:
     - '145'
     - '212'
     - '213'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: edomex 330'
 - id: r103
+  materia: penal
   tipo_caso: corrupcion_gobierno
   delito: distracción de recursos públicos
   condicion: ''
@@ -2745,26 +3923,33 @@ reglas:
   articulos:
     cdmx:
     - '279'
-    - '280'
     - '257'
     - '258'
+    - '256'
     queretaro:
     - '260'
+    - '259'
     edomex:
     - '329'
     - '328'
-    - '330'
     morelos:
     - '269'
     - '285'
     - 269 TER
+    - '268'
     federal:
     - '145'
     - '212'
     - '213'
     - '402'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: cdmx 256*; morelos 268*; queretaro 259
+
+    − quitados: cdmx 280*; edomex 330'
 - id: r104
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: Desobediencia y resistencia de particulares
   condicion: ''
@@ -2801,6 +3986,7 @@ reglas:
     - '179'
   estado: sugerida
 - id: r105
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: ultrajes a la autoridad
   condicion: ''
@@ -2814,6 +4000,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r106
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: quebrantamiento de sellos
   condicion: ''
@@ -2835,6 +4022,7 @@ reglas:
     - '188'
   estado: sugerida
 - id: r107
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: oposición a una obra pública
   condicion: ''
@@ -2853,6 +4041,7 @@ reglas:
     - '185'
   estado: sugerida
 - id: r108
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: ejercicio ilegal del propio derecho (hacerse justicia por su mano)
   condicion: ''
@@ -2870,6 +4059,7 @@ reglas:
     - '226'
   estado: sugerida
 - id: r109
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: uso indebido de insignias y uniformes
   condicion: ''
@@ -2881,8 +4071,10 @@ reglas:
     queretaro:
     - 235 TER
     - '295'
+    - 235 BIS
     edomex:
     - '177'
+    - 177 Bis
     morelos:
     - '296'
     - '295'
@@ -2892,7 +4084,11 @@ reglas:
     - 250 bis 1
     - '250'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 177 Bis; queretaro 235 BIS'
 - id: r110
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: uso indebido de las llamadas de emergencia
   condicion: ''
@@ -2903,6 +4099,7 @@ reglas:
     queretaro:
     - 229 QUÁTER
     - 229 TER
+    - 229 QUINTUS
     edomex:
     - 116 Bis
     morelos:
@@ -2910,7 +4107,11 @@ reglas:
     - 291 BIS
     federal: []
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: queretaro 229 QUINTUS'
 - id: r111
+  materia: penal
   tipo_caso: conflicto_con_autoridad
   delito: cohecho cometido por particulares (ofrecer «mordida»)
   condicion: ''
@@ -2923,6 +4124,7 @@ reglas:
     - '268'
     edomex:
     - '346'
+    - '330'
     morelos:
     - '281'
     - '278'
@@ -2931,7 +4133,11 @@ reglas:
     federal:
     - '222'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: edomex 330*'
 - id: r112
+  materia: penal
   tipo_caso: justicia_abogados
   delito: Denegación o retardo de justicia
   condicion: ''
@@ -2952,6 +4158,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r113
+  materia: penal
   tipo_caso: justicia_abogados
   delito: delitos en la procuración de justicia
   condicion: ''
@@ -2974,10 +4181,16 @@ reglas:
     - '298'
     - '297'
     - '299'
+    - 213 Undecies
+    - 213 Decies
     federal:
     - '225'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 213 Undecies, 213 Decies'
 - id: r114
+  materia: penal
   tipo_caso: justicia_abogados
   delito: delitos en la administración de justicia
   condicion: ''
@@ -3000,10 +4213,16 @@ reglas:
     - '297'
     - '299'
     - '309'
+    - 213 Undecies
+    - 213 Decies
     federal:
     - '225'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: morelos 213 Undecies, 213 Decies'
 - id: r115
+  materia: penal
   tipo_caso: justicia_abogados
   delito: omisión de informes médico forenses
   condicion: ''
@@ -3018,6 +4237,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r116
+  materia: penal
   tipo_caso: justicia_abogados
   delito: delitos en la ejecución penal
   condicion: ''
@@ -3032,11 +4252,18 @@ reglas:
     - '165'
     - '353'
     morelos:
-    - '297'
     - '309'
-    federal: []
+    federal:
+    - '157'
+    - '158'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 157, 158
+
+    − quitados: morelos 297*'
 - id: r117
+  materia: penal
   tipo_caso: justicia_abogados
   delito: evasión de presos
   condicion: ''
@@ -3068,8 +4295,13 @@ reglas:
     - '152'
     - '153'
     - '150'
+    - '155'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 155'
 - id: r118
+  materia: penal
   tipo_caso: justicia_abogados
   delito: fraude procesal
   condicion: ''
@@ -3087,6 +4319,7 @@ reglas:
     federal: []
   estado: sugerida
 - id: r119
+  materia: penal
   tipo_caso: justicia_abogados
   delito: falsedad ante autoridades (falso testimonio)
   condicion: ''
@@ -3120,6 +4353,7 @@ reglas:
     - '248'
   estado: sugerida
 - id: r120
+  materia: penal
   tipo_caso: justicia_abogados
   delito: simulación de pruebas
   condicion: ''
@@ -3137,6 +4371,7 @@ reglas:
     - 248 Bis
   estado: sugerida
 - id: r121
+  materia: penal
   tipo_caso: justicia_abogados
   delito: variación del nombre o domicilio
   condicion: ''
@@ -3153,6 +4388,7 @@ reglas:
     - '249'
   estado: sugerida
 - id: r122
+  materia: penal
   tipo_caso: justicia_abogados
   delito: delitos de abogados, patronos y asesores jurídicos
   condicion: ''
@@ -3173,8 +4409,13 @@ reglas:
     - '232'
     - '231'
     - '387'
+    - '233'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 233'
 - id: r123
+  materia: penal
   tipo_caso: justicia_abogados
   delito: encubrimiento por favorecimiento
   condicion: ''
@@ -3200,6 +4441,7 @@ reglas:
     - '400'
   estado: sugerida
 - id: r124
+  materia: penal
   tipo_caso: derechos_autor
   delito: Delitos en materia de derechos de autor (CPF, título vigésimo sexto; federal)
   condicion: ''
@@ -3221,7 +4463,2914 @@ reglas:
     - 427 Quinquies
     - 427 Ter
     - 427 Quáter
+    - '429'
+    cnpp:
+    - '235'
   estado: sugerida
+  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+
+    + agregados: federal 429; cnpp 235*'
+- id: r125
+  materia: familiar
+  tipo_caso: divorcio_y_separacion
+  delito: divorcio general
+  condicion: cuando la persona desea iniciar el trámite de divorcio, ya sea de mutuo acuerdo (bilateral), sin consentimiento
+    de la pareja (unilateral) o sin necesidad de acreditar una causa
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '268'
+    - '266'
+    - '273'
+    - '279'
+    - '278'
+    - '281'
+    - '276'
+    - '267'
+    - '284'
+    - '274'
+    - '289'
+    - 289 Bis
+    cnpcf:
+    - '656'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r126
+  materia: familiar
+  tipo_caso: divorcio_y_separacion
+  delito: divorcio administrativo
+  condicion: cuando ambos cónyuges están de acuerdo y buscan realizar el trámite directamente ante el registro civil sin juicio
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '116'
+    - '115'
+    - '272'
+    cnpcf:
+    - '655'
+    - '661'
+    - '662'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r127
+  materia: familiar
+  tipo_caso: divorcio_y_separacion
+  delito: nulidad de matrimonio
+  condicion: cuando se busca invalidar el vínculo matrimonial por existir alguna causa legal que lo haga nulo
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '241'
+    - '236'
+    - '235'
+    - '242'
+    - '244'
+    - '246'
+    - '248'
+    - '245'
+    - '247'
+    - '249'
+    - '253'
+    - '257'
+    - '254'
+    - '251'
+    - '258'
+    - '250'
+    - '255'
+    - '261'
+    - '262'
+    - '252'
+    - '263'
+    - '256'
+    - '259'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r128
+  materia: familiar
+  tipo_caso: divorcio_y_separacion
+  delito: separación de personas
+  condicion: cuando no se desea el divorcio, sino únicamente la suspensión de la cohabitación o la separación legal de cuerpos
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '277'
+    cnpcf:
+    - '579'
+    - '582'
+    - '583'
+    - '581'
+    - '580'
+    - '578'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r129
+  materia: familiar
+  tipo_caso: divorcio_y_separacion
+  delito: medidas provisionales y urgentes
+  condicion: cuando se requieren decisiones inmediatas sobre la patria potestad, el domicilio conyugal, alimentos provisionales
+    o protección de los integrantes
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '163'
+    - '168'
+    - '260'
+    - '288'
+    - '275'
+    - '283'
+    - '282'
+    - 444 Bis
+    cpc_cdmx:
+    - '1040'
+    cnpcf:
+    - '556'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r130
+  materia: familiar
+  tipo_caso: divorcio_y_separacion
+  delito: liquidación de bienes
+  condicion: cuando el interés principal es la disolución y repartición de la sociedad conyugal o los derechos y obligaciones
+    patrimoniales
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '197'
+    - '198'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r131
+  materia: familiar
+  tipo_caso: divorcio_y_separacion
+  delito: procedimiento y trámites judiciales
+  condicion: cuando hay dudas sobre las etapas del juicio, notificaciones, competencia del juez, conciliación, registro civil
+    o ejecución de la sentencia
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '114'
+    - '138'
+    - '131'
+    - '271'
+    - '280'
+    - '287'
+    - '291'
+    - '290'
+    cpc_cdmx:
+    - '684'
+    - '937'
+    - '1020'
+    - '1036'
+    - '1025'
+    - '1033'
+    - '1041'
+    - '1050'
+    cnpcf:
+    - '11'
+    - '5'
+    - '7'
+    - '112'
+    - '89'
+    - '93'
+    - '143'
+    - '184'
+    - '257'
+    - '306'
+    - '560'
+    - '586'
+    - '585'
+    - '584'
+    - '660'
+    - '654'
+    - '659'
+    - '657'
+    - '658'
+    - '677'
+    - '664'
+    - '672'
+    - '671'
+    - '670'
+    - '663'
+    - '673'
+    - '666'
+    - '665'
+    - '667'
+    - '676'
+    - '993'
+    - '1122'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r132
+  materia: familiar
+  tipo_caso: pension_alimenticia
+  delito: Solicitud de pensión
+  condicion: Cuando la persona quiere pedir pensión alimenticia por primera vez, solicitar una pensión provisional o definir
+    la competencia del juez.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '285'
+    - 301 Bis
+    - '301'
+    - '304'
+    - '303'
+    - '308'
+    - '307'
+    - '305'
+    - 311 Ter
+    - 311 Bis
+    - '313'
+    - '312'
+    - '306'
+    - '315'
+    - 315 Bis
+    - '323'
+    - '316'
+    - '2367'
+    - '2950'
+    - '2376'
+    - '2392'
+    cpc_cdmx:
+    - '943'
+    - '1031'
+    - '942'
+    cnpcf:
+    - '153'
+    - '379'
+    - '562'
+    - '563'
+    - '564'
+    - '555'
+    - '566'
+    - '569'
+    - '1121'
+    - '1123'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r133
+  materia: familiar
+  tipo_caso: pension_alimenticia
+  delito: Cobro y ejecución
+  condicion: Cuando ya existe una sentencia pero no se cumple el pago, se busca el embargo, el registro de deudores alimentarios
+    o la ejecución forzosa.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '309'
+    - '317'
+    - 323 Octavus
+    - '322'
+    - 323 Nonies
+    - '1160'
+    - '2192'
+    - '2089'
+    - '2348'
+    - '2787'
+    - '2951'
+    - '3043'
+    cnpcf:
+    - '42'
+    - '407'
+    - '515'
+    - '568'
+    - '565'
+    - '577'
+    - '762'
+    - '996'
+    - '1030'
+    - '991'
+    - '1040'
+    - '995'
+    - '1013'
+    - '1024'
+    - '1007'
+    - '1137'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r134
+  materia: familiar
+  tipo_caso: pension_alimenticia
+  delito: Modificación de monto
+  condicion: Cuando se requiere aumentar o disminuir la cantidad de la pensión debido a un cambio en las circunstancias económicas.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '311'
+    cnpcf:
+    - '178'
+    - '683'
+    - '976'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r135
+  materia: familiar
+  tipo_caso: pension_alimenticia
+  delito: Cancelación o cese
+  condicion: Cuando se busca dejar de pagar la pensión, cancelar la obligación alimentaria o realizar la consignación de pagos.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '321'
+    - '320'
+    cnpcf:
+    - '598'
+    - '600'
+    - '602'
+    - '599'
+    - '601'
+    - '597'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r136
+  materia: familiar
+  tipo_caso: pension_alimenticia
+  delito: Casos especiales
+  condicion: Cuando la pensión deriva de obligaciones matrimoniales, sucesiones, herencias o créditos preferentes.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '164'
+    - '302'
+    - 311 Quáter
+    - '319'
+    - '1027'
+    - '1369'
+    - '1370'
+    - '1372'
+    - '1376'
+    - '1646'
+    - '1643'
+    - '1644'
+    - '1645'
+    - '1908'
+    - '2360'
+    - '2994'
+    - '2375'
+    cnpcf:
+    - '825'
+    - '819'
+    - '844'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r137
+  materia: familiar
+  tipo_caso: pension_alimenticia
+  delito: Impugnación y proceso
+  condicion: Cuando se desea apelar una sentencia, interponer recursos judiciales o conocer las etapas del procedimiento familiar.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cpc_cdmx:
+    - '768'
+    - 699 BIS
+    - '951'
+    - '941'
+    - '1051'
+    - '1019'
+    cnpcf:
+    - '150'
+    - '567'
+    - '540'
+    - '910'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r138
+  materia: familiar
+  tipo_caso: custodia_y_convivencias
+  delito: definir_custodia
+  condicion: cuando el usuario busca determinar quién tendrá la guarda y custodia, si será compartida o los temas de vivienda
+    y crianza
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 283 Bis
+    - '380'
+    - '381'
+    - '418'
+    - 414 Bis
+    - '416'
+    - 416 Bis
+    - 2448 M
+    cpc_cdmx:
+    - 941 BIS
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r139
+  materia: familiar
+  tipo_caso: custodia_y_convivencias
+  delito: establecer_convivencias
+  condicion: cuando el usuario desea regularizar las visitas, solicitar convivencias provisionales o modificar el régimen
+    de convivencia
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cpc_cdmx:
+    - 941 TER
+    - '1030'
+    cnpcf:
+    - '561'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r140
+  materia: familiar
+  tipo_caso: custodia_y_convivencias
+  delito: derechos_del_menor
+  condicion: cuando se trata del interés superior del menor, su derecho a ser escuchado, su protección o el manejo de sus
+    datos
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '417'
+    - 416 Ter
+    cpc_cdmx:
+    - '1029'
+    - '939'
+    cnpcf:
+    - '559'
+    - '558'
+    - '557'
+    - '1145'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r141
+  materia: familiar
+  tipo_caso: custodia_y_convivencias
+  delito: representacion_juridica_menores
+  condicion: cuando se requiere un asistente de menores, representación legal o representación técnica del menor en el juicio
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 417 Bis
+    cnpcf:
+    - '130'
+    - '695'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r142
+  materia: familiar
+  tipo_caso: custodia_y_convivencias
+  delito: casos_especiales_y_tramites
+  condicion: cuando el caso implica custodia internacional o se busca realizar el trámite mediante jurisdicción voluntaria
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cnpcf:
+    - '591'
+    - '1150'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r143
+  materia: familiar
+  tipo_caso: patria_potestad_y_filiacion
+  delito: Reconocimiento y filiación
+  condicion: Cuando la persona desea reconocer a un hijo, reclamar la paternidad o maternidad, o realizar pruebas de filiación.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '60'
+    - '82'
+    - '79'
+    - '83'
+    - '63'
+    - '78'
+    - '81'
+    - '80'
+    - '334'
+    - '340'
+    - '342'
+    - '338'
+    - '324'
+    - 338 Bis
+    - '347'
+    - '339'
+    - '337'
+    - 353 Bis
+    - '344'
+    - '361'
+    - '351'
+    - 353 Quáter
+    - 353 Ter
+    - '366'
+    - '343'
+    - '348'
+    - '360'
+    - '341'
+    - '349'
+    - '362'
+    - '372'
+    - '367'
+    - '373'
+    - '370'
+    - '369'
+    - '374'
+    - '384'
+    - '375'
+    - '371'
+    - '377'
+    - '385'
+    - '386'
+    - '387'
+    - '382'
+    - '383'
+    - '388'
+    - '389'
+    - '1623'
+    - '1642'
+    cpc_cdmx:
+    - '1065'
+    cnpcf:
+    - '41'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r144
+  materia: familiar
+  tipo_caso: patria_potestad_y_filiacion
+  delito: Impugnación de paternidad o maternidad
+  condicion: Cuando se busca anular un reconocimiento previo o negar el vínculo filial mediante una impugnación.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '335'
+    - '352'
+    - '336'
+    - '329'
+    - '330'
+    - '332'
+    - '325'
+    - '333'
+    - '326'
+    - '345'
+    - '363'
+    - '368'
+    - '376'
+    - '379'
+    - '378'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r145
+  materia: familiar
+  tipo_caso: patria_potestad_y_filiacion
+  delito: Pérdida, suspensión o extinción de la patria potestad
+  condicion: Cuando se solicita quitar, suspender o dar por terminados los derechos y obligaciones de la patria potestad.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '353'
+    - '412'
+    - '415'
+    - '414'
+    - '411'
+    - '420'
+    - '421'
+    - '422'
+    - '423'
+    - '443'
+    - '446'
+    - '445'
+    - '444'
+    - '448'
+    - '447'
+    - '465'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r146
+  materia: familiar
+  tipo_caso: patria_potestad_y_filiacion
+  delito: Administración de bienes de los hijos
+  condicion: Cuando el conflicto se centra en el manejo del patrimonio, la administración de bienes o la representación legal
+    de los menores.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '413'
+    - '425'
+    - '431'
+    - '428'
+    - '426'
+    - '424'
+    - '429'
+    - '427'
+    - '433'
+    - '439'
+    - '430'
+    - '436'
+    - '437'
+    - '435'
+    - '440'
+    - '442'
+    - '441'
+    - '438'
+    - '434'
+    - '1167'
+    - '3037'
+    cpc_cdmx:
+    - '920'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r147
+  materia: familiar
+  tipo_caso: patria_potestad_y_filiacion
+  delito: Patria potestad y filiación en adopción
+  condicion: Cuando el caso se refiere específicamente a los derechos, obligaciones y vínculos derivados de un proceso de
+    adopción.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '295'
+    - '293'
+    - '419'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r148
+  materia: familiar
+  tipo_caso: herencias_y_sucesiones
+  delito: Sucesión intestamentaria
+  condicion: Cuando la persona falleció sin dejar testamento o este es nulo, y se busca iniciar el juicio para declarar a
+    los herederos.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '1603'
+    - '1601'
+    - '1605'
+    - '1599'
+    - '1606'
+    - '1600'
+    - '1602'
+    - '1604'
+    - '1608'
+    - '1607'
+    - '1609'
+    - '1615'
+    - '1634'
+    - '1617'
+    - '1616'
+    - '1614'
+    - '1630'
+    - '1619'
+    - '1610'
+    - '1631'
+    - '1628'
+    - '1618'
+    - '1629'
+    - '1625'
+    - '1621'
+    - '1627'
+    - '1626'
+    - '1636'
+    - '1633'
+    - '1632'
+    - '1624'
+    cpc_cdmx:
+    - '785'
+    - '792'
+    - '799'
+    - '789'
+    - '795'
+    - '807'
+    - '801'
+    - '811'
+    - '815'
+    cnpcf:
+    - '684'
+    - '686'
+    - '685'
+    - '705'
+    - '699'
+    - '712'
+    - '709'
+    - '721'
+    - '711'
+    - '718'
+    - '716'
+    - '715'
+    - '723'
+    - '720'
+    - '722'
+    - '755'
+    - '799'
+    - '801'
+    - '807'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r149
+  materia: familiar
+  tipo_caso: herencias_y_sucesiones
+  delito: Sucesión testamentaria
+  condicion: Cuando existe un testamento (notarial, ológrafo o privado) y se desea ejecutar su voluntad o impugnar su validez.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '1283'
+    - '1295'
+    - '1304'
+    - '1305'
+    - '1296'
+    - '1297'
+    - '1302'
+    - '1300'
+    - '1299'
+    - '1303'
+    - '1307'
+    - '1298'
+    - '1301'
+    - '1310'
+    - '1306'
+    - '1312'
+    - '1311'
+    - '1308'
+    - '1344'
+    - '1348'
+    - '1357'
+    - '1349'
+    - '1355'
+    - '1356'
+    - '1379'
+    - '1382'
+    - '1380'
+    - '1385'
+    - '1378'
+    - '1387'
+    - '1381'
+    - '1386'
+    - '1383'
+    - '1384'
+    - '1390'
+    - '1388'
+    - '1389'
+    - '1417'
+    - '1474'
+    - '1473'
+    - '1475'
+    - '1477'
+    - '1476'
+    - '1491'
+    - '1487'
+    - '1493'
+    - '1472'
+    - '1483'
+    - '1478'
+    - '1492'
+    - '1488'
+    - '1480'
+    - '1481'
+    - '1479'
+    - '1484'
+    - '1490'
+    - '1499'
+    - '1485'
+    - '1489'
+    - '1495'
+    - '1494'
+    - '1486'
+    - '1496'
+    - '1503'
+    - '1482'
+    - '1505'
+    - '1498'
+    - '1509'
+    - '1510'
+    - '1506'
+    - '1511'
+    - '1513'
+    - '1504'
+    - '1507'
+    - '1512'
+    - '1508'
+    - '1497'
+    - '1518'
+    - '1514'
+    - '1519'
+    - '1516'
+    - '1502'
+    - '1517'
+    - '1593'
+    - '1515'
+    - '1594'
+    - '1520'
+    - '1664'
+    - 3o
+    cpc_cdmx:
+    - '790'
+    - '797'
+    - '891'
+    - '873'
+    cnpcf:
+    - '727'
+    - '728'
+    - '726'
+    - '729'
+    - '732'
+    - '730'
+    - '734'
+    - '783'
+    - '787'
+    - '784'
+    - '785'
+    - '788'
+    - '790'
+    - '786'
+    - '791'
+    - '789'
+    - '793'
+    - '792'
+    - '796'
+    - '795'
+    - '794'
+    - '798'
+    - '797'
+    - '802'
+    - '806'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r150
+  materia: familiar
+  tipo_caso: herencias_y_sucesiones
+  delito: Administración y albaceazgo
+  condicion: Cuando el proceso ya inició y se requiere nombrar albacea, realizar el inventario, avalúo o exigir la rendición
+    de cuentas de los bienes.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '1031'
+    - '1332'
+    - '1647'
+    - '1651'
+    - '1681'
+    - '1679'
+    - '1688'
+    - '1691'
+    - '1684'
+    - '1685'
+    - '1678'
+    - '1690'
+    - '1683'
+    - '1682'
+    - '1680'
+    - '1686'
+    - '1687'
+    - '1689'
+    - '1695'
+    - 1695 Bis
+    - '1696'
+    - '1703'
+    - '1697'
+    - '1700'
+    - '1694'
+    - '1702'
+    - '1701'
+    - '1699'
+    - '1692'
+    - '1693'
+    - '1709'
+    - '1705'
+    - '1704'
+    - '1708'
+    - '1729'
+    - '1698'
+    - '1711'
+    - '1715'
+    - '1718'
+    - '1710'
+    - '1706'
+    - '1713'
+    - '1712'
+    - '1714'
+    - '1707'
+    - '1723'
+    - '1719'
+    - '1727'
+    - '1717'
+    - '1724'
+    - '1716'
+    - '1720'
+    - '1730'
+    - '1721'
+    - '1722'
+    - '1733'
+    - '1732'
+    - '1725'
+    - '1726'
+    - '1737'
+    - '1728'
+    - '1734'
+    - '1738'
+    - '1740'
+    - '1735'
+    - '1739'
+    - '1746'
+    - '1736'
+    - '1742'
+    - '1749'
+    - '1750'
+    - '1751'
+    - '1752'
+    - '1753'
+    - '1731'
+    - '1741'
+    - '1754'
+    - '1755'
+    - '1748'
+    - '1745'
+    - '1743'
+    - '1756'
+    - '1744'
+    - '1747'
+    - '1759'
+    - '1762'
+    - '1760'
+    - '1757'
+    - '1761'
+    - '1758'
+    - '1766'
+    - '1765'
+    - '1763'
+    - '1764'
+    cpc_cdmx:
+    - '784'
+    - '781'
+    - '770'
+    - '771'
+    - '820'
+    - '819'
+    - '817'
+    - '816'
+    - '831'
+    - '829'
+    - '842'
+    - '854'
+    - '841'
+    - '836'
+    - '832'
+    - '858'
+    - 8°
+    - 7°
+    cnpcf:
+    - '47'
+    - '45'
+    - '538'
+    - '697'
+    - '688'
+    - '687'
+    - '690'
+    - '689'
+    - '704'
+    - '694'
+    - '701'
+    - '693'
+    - '692'
+    - '691'
+    - '707'
+    - '706'
+    - '725'
+    - '719'
+    - '739'
+    - '736'
+    - '738'
+    - '735'
+    - '737'
+    - '741'
+    - '750'
+    - '744'
+    - '747'
+    - '754'
+    - '753'
+    - '749'
+    - '758'
+    - '756'
+    - '746'
+    - '764'
+    - '770'
+    - '752'
+    - '767'
+    - '759'
+    - '751'
+    - '765'
+    - '768'
+    - '808'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r151
+  materia: familiar
+  tipo_caso: herencias_y_sucesiones
+  delito: Partición y adjudicación
+  condicion: Cuando se busca dividir los bienes, cobrar legados específicos o determinar la capacidad legal de los herederos
+    para recibir los bienes.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '975'
+    - '1285'
+    - '1284'
+    - '1286'
+    - '1290'
+    - '1289'
+    - '1288'
+    - '1293'
+    - '1291'
+    - '1294'
+    - '1292'
+    - '1287'
+    - '1313'
+    - '1315'
+    - '1330'
+    - '1328'
+    - '1314'
+    - '1317'
+    - '1322'
+    - '1327'
+    - '1318'
+    - '1320'
+    - '1316'
+    - '1319'
+    - '1334'
+    - '1324'
+    - '1329'
+    - '1338'
+    - '1335'
+    - '1321'
+    - '1337'
+    - '1323'
+    - '1325'
+    - '1342'
+    - '1345'
+    - '1347'
+    - '1341'
+    - '1339'
+    - '1336'
+    - '1333'
+    - '1331'
+    - '1361'
+    - '1351'
+    - '1350'
+    - '1352'
+    - '1346'
+    - '1343'
+    - '1353'
+    - '1358'
+    - '1354'
+    - '1363'
+    - '1362'
+    - '1366'
+    - '1365'
+    - '1364'
+    - '1367'
+    - '1360'
+    - '1391'
+    - '1392'
+    - '1377'
+    - '1397'
+    - '1394'
+    - '1396'
+    - '1395'
+    - '1393'
+    - 1392 Bis
+    - '1403'
+    - '1401'
+    - '1399'
+    - '1398'
+    - '1405'
+    - '1407'
+    - '1410'
+    - '1402'
+    - '1400'
+    - '1406'
+    - '1414'
+    - '1404'
+    - '1423'
+    - '1409'
+    - '1408'
+    - '1418'
+    - '1413'
+    - '1411'
+    - '1426'
+    - '1412'
+    - '1421'
+    - '1419'
+    - '1425'
+    - '1420'
+    - '1415'
+    - '1416'
+    - '1429'
+    - '1422'
+    - '1427'
+    - '1424'
+    - '1428'
+    - '1430'
+    - '1431'
+    - '1433'
+    - '1437'
+    - '1432'
+    - '1445'
+    - '1434'
+    - '1435'
+    - '1438'
+    - '1442'
+    - '1436'
+    - '1439'
+    - '1440'
+    - '1444'
+    - '1451'
+    - '1446'
+    - '1448'
+    - '1449'
+    - '1450'
+    - '1454'
+    - '1452'
+    - '1457'
+    - '1453'
+    - '1462'
+    - '1447'
+    - '1458'
+    - '1443'
+    - '1461'
+    - '1455'
+    - '1459'
+    - '1460'
+    - '1456'
+    - '1463'
+    - '1466'
+    - '1465'
+    - '1470'
+    - '1469'
+    - '1467'
+    - '1468'
+    - '1471'
+    - '1637'
+    - '1648'
+    - '1653'
+    - '1657'
+    - '1658'
+    - '1661'
+    - '1656'
+    - '1660'
+    - '1655'
+    - '1659'
+    - '1662'
+    - '1667'
+    - '1668'
+    - '1663'
+    - '1654'
+    - '1669'
+    - '1671'
+    - '1670'
+    - '1673'
+    - '1672'
+    - '1674'
+    - '1676'
+    - '1768'
+    - '1767'
+    - '1769'
+    - '1771'
+    - '1770'
+    - '1779'
+    - '1786'
+    - '1773'
+    - '1778'
+    - '1775'
+    - '1776'
+    - '1788'
+    - '1791'
+    - '1785'
+    - '1777'
+    - '1772'
+    - '1782'
+    - '1781'
+    - '1783'
+    - '1784'
+    - '1780'
+    - '1790'
+    - '1789'
+    - '1787'
+    - 2939 Sexies
+    - '2935'
+    cpc_cdmx:
+    - '782'
+    - '860'
+    - '859'
+    - '863'
+    - '862'
+    - '866'
+    - '867'
+    - '875'
+    cnpcf:
+    - '703'
+    - '708'
+    - '702'
+    - '731'
+    - '733'
+    - '769'
+    - '771'
+    - '773'
+    - '774'
+    - '776'
+    - '782'
+    - '777'
+    - '778'
+    - '781'
+    - '780'
+    - '775'
+    - '779'
+    - '772'
+    - '800'
+    - '803'
+    - '809'
+    - '810'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r152
+  materia: familiar
+  tipo_caso: herencias_y_sucesiones
+  delito: Alimentos y pensiones en herencia
+  condicion: Cuando se requiere que la masa hereditaria cubra pensiones alimenticias, proteja el patrimonio de familia o involucre
+    tutelas.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 746 Bis
+    - '1340'
+    - '1359'
+    - '1374'
+    - '1371'
+    - '1373'
+    - '1375'
+    - '1368'
+    - '1464'
+    - '1611'
+    - '1774'
+    cpc_cdmx:
+    - '776'
+    - '796'
+    - '871'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r153
+  materia: familiar
+  tipo_caso: herencias_y_sucesiones
+  delito: Reclamación de derechos hereditarios
+  condicion: Cuando se busca reclamar la herencia basándose en la filiación, adopción, concubinato o mediante una acción de
+    petición de herencia.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '350'
+    - '1612'
+    - '1622'
+    - '1620'
+    - '1635'
+    - '1640'
+    - '1638'
+    - '1650'
+    - '1639'
+    - '1652'
+    - '1641'
+    - '1677'
+    - '2047'
+    cnpcf:
+    - '12'
+    - '24'
+    - '25'
+    - '367'
+    - '698'
+    - '724'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r154
+  materia: familiar
+  tipo_caso: tutela_y_curatela
+  delito: Nombramiento de tutor
+  condicion: Cuando se busca designar a un representante legal para un menor o persona incapacitada, ya sea por testamento,
+    por ley o por decisión judicial.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '91'
+    - '90'
+    - '89'
+    - '451'
+    - '452'
+    - '449'
+    - '454'
+    - '455'
+    - '461'
+    - '456'
+    - 456 Bis
+    - '453'
+    - '466'
+    - '462'
+    - '467'
+    - '457'
+    - '458'
+    - '464'
+    - '476'
+    - '470'
+    - '474'
+    - '460'
+    - '459'
+    - '471'
+    - '468'
+    - '485'
+    - '478'
+    - '481'
+    - '477'
+    - '480'
+    - '483'
+    - 475 Bis
+    - '484'
+    - '475'
+    - '482'
+    - 485 Bis
+    - '487'
+    - '490'
+    - '486'
+    - '488'
+    - '494'
+    - '489'
+    - 494 A
+    - '491'
+    - '499'
+    - '493'
+    - '498'
+    - '503'
+    - 494 E
+    - '495'
+    - '492'
+    - '496'
+    - '505'
+    - '497'
+    - '509'
+    - 494 C
+    - '513'
+    - '511'
+    - '512'
+    - '515'
+    - '516'
+    - '514'
+    - '519'
+    - '518'
+    - '517'
+    - '531'
+    - '577'
+    - '583'
+    - '581'
+    - 585 Bis
+    - '618'
+    - '620'
+    - '624'
+    - '623'
+    - '622'
+    - '619'
+    - '621'
+    - '625'
+    - '633'
+    - '634'
+    - '632'
+    - '663'
+    cpc_cdmx:
+    - '905'
+    - '904'
+    - '908'
+    - '906'
+    - '907'
+    cnpcf:
+    - '607'
+    - '603'
+    - '604'
+    - '588'
+    - '606'
+    - '609'
+    - '605'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r155
+  materia: familiar
+  tipo_caso: tutela_y_curatela
+  delito: Administración de bienes
+  condicion: Cuando se requiere gestionar el patrimonio, vender bienes, rendir cuentas o entregar los activos de la persona
+    bajo tutela.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '479'
+    - '473'
+    - '522'
+    - '521'
+    - '526'
+    - '523'
+    - '520'
+    - '530'
+    - '529'
+    - '528'
+    - '525'
+    - '524'
+    - '535'
+    - '532'
+    - '527'
+    - '548'
+    - '536'
+    - '533'
+    - '534'
+    - '551'
+    - '549'
+    - '552'
+    - '550'
+    - '554'
+    - '555'
+    - '553'
+    - '556'
+    - '560'
+    - '557'
+    - '567'
+    - '559'
+    - '558'
+    - '563'
+    - '562'
+    - '565'
+    - '566'
+    - '561'
+    - '576'
+    - '571'
+    - '578'
+    - '564'
+    - '572'
+    - '568'
+    - '574'
+    - '579'
+    - '569'
+    - '570'
+    - '575'
+    - '573'
+    - '596'
+    - '586'
+    - '585'
+    - '587'
+    - '590'
+    - '582'
+    - '592'
+    - '588'
+    - '600'
+    - '593'
+    - '595'
+    - '597'
+    - '610'
+    - '604'
+    - '594'
+    - '601'
+    - '612'
+    - '599'
+    - '608'
+    - '609'
+    - '602'
+    - '607'
+    - '603'
+    - '598'
+    - '591'
+    - '615'
+    - '614'
+    - '613'
+    - '611'
+    - '605'
+    - '617'
+    - '616'
+    - '630'
+    - 607 Bis
+    - '1166'
+    - '1921'
+    - '2499'
+    - '2280'
+    - '2936'
+    - '2946'
+    cpc_cdmx:
+    - '919'
+    - '916'
+    - '921'
+    - '915'
+    - '917'
+    cnpcf:
+    - '537'
+    - '620'
+    - '610'
+    - '614'
+    - '617'
+    - '619'
+    - '608'
+    - '615'
+    - '757'
+    - '760'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r156
+  materia: familiar
+  tipo_caso: tutela_y_curatela
+  delito: Remoción y extinción
+  condicion: Cuando se desea quitar al tutor o administrador por incumplimiento de sus deberes, o cuando la tutela debe finalizar.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '463'
+    - '472'
+    - '507'
+    - '504'
+    - '508'
+    - '510'
+    - '584'
+    - '589'
+    - '606'
+    - '628'
+    - '629'
+    - '627'
+    - '664'
+    cpc_cdmx:
+    - '913'
+    cnpcf:
+    - '612'
+    - '611'
+    - '763'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r157
+  materia: familiar
+  tipo_caso: tutela_y_curatela
+  delito: Apoyos y capacidad jurídica
+  condicion: Cuando se trata de establecer medidas de apoyo, representación y curatela para adultos con discapacidad o en
+    estado de interdicción.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '450'
+    - '626'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r158
+  materia: familiar
+  tipo_caso: tutela_y_curatela
+  delito: Alimentos y cuidados
+  condicion: Cuando el caso versa sobre la manutención, el cuidado personal, la asistencia social y las obligaciones básicas
+    del tutor hacia el tutelado.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '318'
+    - 494 B
+    - 494 D
+    - '538'
+    - '539'
+    - '540'
+    - '537'
+    - '542'
+    - '546'
+    - '547'
+    - '543'
+    - '541'
+    - '544'
+    - '545'
+    - '1922'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r159
+  materia: familiar
+  tipo_caso: apoyos_y_capacidad_juridica
+  delito: Designación de apoyos
+  condicion: Cuando la persona desea nombrar formalmente a alguien para que le asista en la toma de decisiones legales
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 24 I
+    - '23'
+    - 24 N
+    - 24 G
+    - 24 M
+    - 24 O
+    - 24 H
+    - 24 B
+    - 24 C
+    - 24 A
+    cnpcf:
+    - '141'
+    - '454'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r160
+  materia: familiar
+  tipo_caso: apoyos_y_capacidad_juridica
+  delito: Modificación o revocación
+  condicion: Cuando se quiere cambiar a la persona de apoyo o cancelar la designación previamente realizada
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 24 J
+    cnpcf:
+    - '452'
+    - '451'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r161
+  materia: familiar
+  tipo_caso: apoyos_y_capacidad_juridica
+  delito: Solicitud de apoyos por terceros
+  condicion: Cuando un familiar o interesado busca que se designen apoyos para una persona que no puede manifestar su voluntad
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '331'
+    cnpcf:
+    - '447'
+    - '453'
+    - '446'
+    - '448'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r162
+  materia: familiar
+  tipo_caso: apoyos_y_capacidad_juridica
+  delito: Alcance de la capacidad jurídica
+  condicion: Cuando se requiere saber cuáles son los límites de los apoyos y cómo se garantiza el respeto a la voluntad de
+    la persona
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 24 K
+    - 24 F
+    - 24 L
+    - 24 D
+    - 24 E
+    cnpcf:
+    - '445'
+    - '450'
+    - '449'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r163
+  materia: familiar
+  tipo_caso: adopcion_y_restitucion
+  delito: proceso de adopción
+  condicion: cuando la persona desea iniciar el trámite de adopción, conocer los requisitos, la tutela o el registro civil
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '84'
+    - '85'
+    - '87'
+    - '86'
+    - 392 Bis
+    - '390'
+    - 397 Bis
+    - '394'
+    - '392'
+    - '396'
+    - 410 C
+    - '403'
+    - '395'
+    - '393'
+    - '399'
+    - '391'
+    - '397'
+    - '405'
+    - '398'
+    - '402'
+    - '400'
+    - '406'
+    - '401'
+    - 410 D
+    cpc_cdmx:
+    - '900'
+    - '925'
+    - '923'
+    cnpcf:
+    - '642'
+    - '643'
+    - '645'
+    - '644'
+    - '652'
+    - '646'
+    - '647'
+    - '650'
+    - '648'
+    - '649'
+    - '651'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r164
+  materia: familiar
+  tipo_caso: adopcion_y_restitucion
+  delito: adopción internacional
+  condicion: cuando el proceso de adopción involucra a personas o menores de distintos países
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 410 F
+    - 410 E
+    cnpcf:
+    - '653'
+    - '1120'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r165
+  materia: familiar
+  tipo_caso: adopcion_y_restitucion
+  delito: restitución nacional
+  condicion: cuando un menor ha sido trasladado o retenido ilegalmente dentro del territorio nacional
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cnpcf:
+    - '629'
+    - '630'
+    - '632'
+    - '637'
+    - '633'
+    - '631'
+    - '636'
+    - '634'
+    - '639'
+    - '635'
+    - '638'
+    - '640'
+    - '1018'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r166
+  materia: familiar
+  tipo_caso: adopcion_y_restitucion
+  delito: restitución internacional
+  condicion: cuando el menor ha sido trasladado o retenido en un país extranjero
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cnpcf:
+    - '641'
+    - '1156'
+    - '1152'
+    - '1158'
+    - '1151'
+    - '1155'
+    - '1159'
+    - '1154'
+    - '1160'
+    - '1157'
+    - '1161'
+    - '1153'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r167
+  materia: familiar
+  tipo_caso: adopcion_y_restitucion
+  delito: nulidad de adopción
+  condicion: cuando se busca invalidar legalmente un proceso de adopción ya realizado
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '404'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r168
+  materia: familiar
+  tipo_caso: bienes_matrimoniales_y_familiares
+  delito: Régimen matrimonial
+  condicion: Cuando la persona tiene dudas sobre si está en sociedad conyugal o separación de bienes, o quiere anular pactos
+    matrimoniales.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '147'
+    - '178'
+    - '176'
+    - '179'
+    - '172'
+    - '180'
+    - '187'
+    - '184'
+    - '186'
+    - 182 Bis
+    - 182 Ter
+    - 182 Sextus
+    - 182 Quáter
+    - '183'
+    - '189'
+    - '202'
+    - '185'
+    - 182 Quintus
+    - '209'
+    - '207'
+    - '188'
+    - '218'
+    - '208'
+    - '190'
+    - '210'
+    - '211'
+    - '220'
+    - '194'
+    - '229'
+    - '196'
+    - '212'
+    - '213'
+    - '3012'
+    - 4o
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r169
+  materia: familiar
+  tipo_caso: bienes_matrimoniales_y_familiares
+  delito: Reparto y liquidación
+  condicion: Cuando se requiere dividir los bienes, realizar el inventario, avalúo o iniciar el procedimiento de partición
+    por divorcio.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '191'
+    - '203'
+    - '204'
+    - 206 Bis
+    - '206'
+    - '193'
+    - '205'
+    - 194 Bis
+    cnpcf:
+    - '740'
+    - '743'
+    - '742'
+    - '748'
+    - '766'
+    - '1094'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r170
+  materia: familiar
+  tipo_caso: bienes_matrimoniales_y_familiares
+  delito: Protección del patrimonio
+  condicion: Cuando se busca constituir un patrimonio de familia o saber qué bienes son inembargables para proteger el hogar.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '725'
+    - '723'
+    - '729'
+    - '726'
+    - '724'
+    - '728'
+    - '727'
+    - '732'
+    - '738'
+    - '730'
+    - '739'
+    - '733'
+    - '735'
+    - '734'
+    - '731'
+    - '737'
+    - '745'
+    - '746'
+    - '741'
+    - '740'
+    - '742'
+    - '744'
+    - '743'
+    - '3042'
+    cnpcf:
+    - '1039'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r171
+  materia: familiar
+  tipo_caso: bienes_matrimoniales_y_familiares
+  delito: Donaciones y herencias
+  condicion: Cuando hay dudas sobre la propiedad de bienes recibidos por herencia, donaciones entre cónyuges o revocación
+    de las mismas.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '192'
+    - '225'
+    - '226'
+    - '221'
+    - '222'
+    - '231'
+    - '219'
+    - '223'
+    - '224'
+    - '215'
+    - '233'
+    - '232'
+    - '227'
+    - '234'
+    - '228'
+    - '2339'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r172
+  materia: familiar
+  tipo_caso: bienes_matrimoniales_y_familiares
+  delito: Bienes de menores
+  condicion: Cuando se trata de la administración, patria potestad o la necesidad de vender bienes que pertenecen a los hijos.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '217'
+    - '2278'
+    cnpcf:
+    - '618'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r173
+  materia: familiar
+  tipo_caso: bienes_matrimoniales_y_familiares
+  delito: Deudas y aportaciones
+  condicion: Cuando existen conflictos sobre la contribución económica al hogar o el pago de acreedores con bienes matrimoniales.
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 164 Bis
+    - '216'
+    - '2991'
+    cnpcf:
+    - '813'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r174
+  materia: familiar
+  tipo_caso: registro_civil_y_estado_civil
+  delito: rectificación y nombre
+  condicion: cuando la persona quiere corregir errores en un acta, cambiar su nombre o realizar el reconocimiento de su identidad
+    de género
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '43'
+    - '40'
+    - '47'
+    - '35'
+    - '137'
+    - '134'
+    - 135 Bis
+    - '132'
+    - 138 Bis
+    - 135 Ter
+    - '135'
+    - '136'
+    - 135 Quater
+    cnpcf:
+    - '39'
+    - '40'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r175
+  materia: familiar
+  tipo_caso: registro_civil_y_estado_civil
+  delito: trámites de matrimonio
+  condicion: cuando busca conocer los requisitos, celebrar un matrimonio o registrar un matrimonio realizado en el extranjero
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '97'
+    - 103 Bis
+    - '101'
+    - '102'
+    - '103'
+    - '100'
+    - '98'
+    - '113'
+    - '112'
+    - '161'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r176
+  materia: familiar
+  tipo_caso: registro_civil_y_estado_civil
+  delito: impedimentos y validez matrimonial
+  condicion: cuando existen dudas sobre si legalmente puede casarse o si un matrimonio es válido
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '104'
+    - '109'
+    - '106'
+    - '107'
+    - '111'
+    - '105'
+    - '110'
+    - '156'
+    - '2948'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r177
+  materia: familiar
+  tipo_caso: registro_civil_y_estado_civil
+  delito: nacimiento y filiación
+  condicion: cuando necesita registrar un nacimiento o resolver asuntos relacionados con la filiación
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '73'
+    - '55'
+    - '76'
+    - '72'
+    - '66'
+    - '67'
+    - '58'
+    - '68'
+    - '54'
+    - '59'
+    - '61'
+    - '75'
+    - '69'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r178
+  materia: familiar
+  tipo_caso: registro_civil_y_estado_civil
+  delito: acreditación de estado civil
+  condicion: cuando requiere probar su estado civil actual o iniciar acciones legales para modificarlo
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '39'
+    - '48'
+    - '50'
+    - '51'
+    cnpcf:
+    - '14'
+    - '1143'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r179
+  materia: familiar
+  tipo_caso: registro_civil_y_estado_civil
+  delito: otros registros civiles
+  condicion: cuando el trámite es sobre actas de defunción, representación legal ante el registro o el registro de deudores
+    alimentarios
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '44'
+    - '121'
+    - '125'
+    - '127'
+    - '120'
+    - '117'
+    - '119'
+    - '126'
+    - '118'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r180
+  materia: familiar
+  tipo_caso: ausencia_y_presuncion_muerte
+  delito: declaración de ausencia
+  condicion: cuando la persona ha desaparecido y se busca iniciar el proceso legal para declarar su ausencia o determinar
+    la competencia del juez
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '649'
+    - '650'
+    - '667'
+    - '669'
+    - '674'
+    - '670'
+    - '675'
+    - '676'
+    - '677'
+    - '678'
+    - '673'
+    - '722'
+    cnpcf:
+    - '621'
+    - '623'
+    - '622'
+    - '625'
+    - '624'
+    - '626'
+    - '627'
+    - '1117'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r181
+  materia: familiar
+  tipo_caso: ausencia_y_presuncion_muerte
+  delito: presunción de muerte
+  condicion: cuando se busca que la ley declare formalmente la muerte de la persona desaparecida
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '124'
+    - '705'
+    - '707'
+    - '708'
+    - '706'
+    - '711'
+    - '718'
+    - '716'
+    cpc_cdmx:
+    - '775'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r182
+  materia: familiar
+  tipo_caso: ausencia_y_presuncion_muerte
+  delito: representación y bienes
+  condicion: cuando se requiere nombrar a un representante legal para administrar los bienes y derechos del ausente
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '654'
+    - '656'
+    - '653'
+    - '662'
+    - '661'
+    - '660'
+    - '659'
+    - '658'
+    - '665'
+    - '688'
+    - '672'
+    - '685'
+    - '680'
+    - '679'
+    - '682'
+    - '683'
+    - '687'
+    - '692'
+    - '686'
+    - '681'
+    - '690'
+    - '694'
+    - '693'
+    - '697'
+    - '701'
+    - '689'
+    - '695'
+    - '699'
+    - '696'
+    - '712'
+    - '710'
+    - '709'
+    - '702'
+    - '719'
+    - '717'
+    - '720'
+    cnpcf:
+    - '131'
+    - '628'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r183
+  materia: familiar
+  tipo_caso: ausencia_y_presuncion_muerte
+  delito: sociedad conyugal
+  condicion: cuando la desaparición de uno de los cónyuges afecta la administración o liquidación de los bienes del matrimonio
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '195'
+    - '698'
+    - '700'
+    - '704'
+    - '713'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r184
+  materia: familiar
+  tipo_caso: ausencia_y_presuncion_muerte
+  delito: hijos y alimentos
+  condicion: cuando se requiere establecer la tutela de los hijos o solicitar pensiones alimenticias derivadas de la ausencia
+    o presunción de muerte
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - '651'
+    - '703'
+    - '714'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r185
+  materia: familiar
+  tipo_caso: procedimiento_judicial_general
+  delito: Etapas y trámite del juicio
+  condicion: Cuando el usuario quiere saber cómo inicia la demanda, la representación legal, la legitimación, los plazos o
+    la caducidad de la instancia
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cpc_cdmx:
+    - '1026'
+    - '1028'
+    - '947'
+    - '1048'
+    - '1053'
+    - '1056'
+    cnpcf:
+    - '3'
+    - '83'
+    - '68'
+    - '75'
+    - '127'
+    - '63'
+    - '71'
+    - '107'
+    - '135'
+    - '128'
+    - '133'
+    - '138'
+    - '129'
+    - '139'
+    - '134'
+    - '140'
+    - '142'
+    - '145'
+    - '152'
+    - '148'
+    - '157'
+    - '155'
+    - '160'
+    - '161'
+    - '171'
+    - '215'
+    - '235'
+    - '236'
+    - '243'
+    - '242'
+    - '249'
+    - '251'
+    - '241'
+    - '252'
+    - '244'
+    - '256'
+    - '255'
+    - '258'
+    - '260'
+    - '234'
+    - '353'
+    - '354'
+    - '358'
+    - '357'
+    - '363'
+    - '550'
+    - '674'
+    - '681'
+    - '680'
+    - '700'
+    - '714'
+    - '869'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r186
+  materia: familiar
+  tipo_caso: procedimiento_judicial_general
+  delito: Notificaciones y emplazamiento
+  condicion: Cuando el usuario tiene dudas sobre cómo se le avisa de los acuerdos judiciales o el proceso de notificación
+    inicial
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cpc_cdmx:
+    - '1035'
+    cnpcf:
+    - '200'
+    - '194'
+    - '195'
+    - '196'
+    - '206'
+    - '204'
+    - '202'
+    - '197'
+    - '203'
+    - '201'
+    - '199'
+    - '223'
+    - '214'
+    - '211'
+    - '209'
+    - '218'
+    - '226'
+    - '232'
+    - '210'
+    - '220'
+    - '240'
+    - '254'
+    - '259'
+    - '239'
+    - '355'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r187
+  materia: familiar
+  tipo_caso: procedimiento_judicial_general
+  delito: Pruebas y evidencias
+  condicion: Cuando el usuario desea presentar pruebas, impugnar documentos, saber sobre la valoración de pruebas digitales
+    o el procedimiento probatorio
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cpc_cdmx:
+    - '945'
+    - '1008'
+    - '1052'
+    cnpcf:
+    - '147'
+    - '186'
+    - '213'
+    - '247'
+    - '245'
+    - '246'
+    - '248'
+    - '250'
+    - '261'
+    - '265'
+    - '263'
+    - '273'
+    - '268'
+    - '270'
+    - '274'
+    - '275'
+    - '272'
+    - '276'
+    - '280'
+    - '279'
+    - '271'
+    - '277'
+    - '281'
+    - '288'
+    - '284'
+    - '291'
+    - '287'
+    - '282'
+    - '286'
+    - '285'
+    - '290'
+    - '301'
+    - '283'
+    - '295'
+    - '300'
+    - '303'
+    - '302'
+    - '293'
+    - '294'
+    - '292'
+    - '299'
+    - '298'
+    - '289'
+    - '296'
+    - '297'
+    - '308'
+    - '304'
+    - '307'
+    - '305'
+    - '309'
+    - '315'
+    - '310'
+    - '316'
+    - '314'
+    - '320'
+    - '312'
+    - '329'
+    - '318'
+    - '325'
+    - '326'
+    - '323'
+    - '328'
+    - '327'
+    - '330'
+    - '332'
+    - '331'
+    - '333'
+    - '334'
+    - '342'
+    - '336'
+    - '343'
+    - '335'
+    - '349'
+    - '345'
+    - '350'
+    - '356'
+    - '359'
+    - '551'
+    - '552'
+    - '348'
+    - '668'
+    - '678'
+    - '679'
+    - '675'
+    - '717'
+    - '745'
+    - '876'
+    - '873'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r188
+  materia: familiar
+  tipo_caso: procedimiento_judicial_general
+  delito: Recursos e impugnaciones
+  condicion: Cuando el usuario no está de acuerdo con una resolución y busca apelar, promover incidentes o solicitar la nulidad
+    de un juicio concluido
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cpc_cdmx:
+    - 692 Ter
+    - '1075'
+    - '1076'
+    cnpcf:
+    - '55'
+    - '159'
+    - '164'
+    - '163'
+    - '166'
+    - '176'
+    - '173'
+    - '185'
+    - '172'
+    - '190'
+    - '187'
+    - '188'
+    - '237'
+    - '253'
+    - '361'
+    - '914'
+    - '921'
+    - '912'
+    - '911'
+    - '925'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r189
+  materia: familiar
+  tipo_caso: procedimiento_judicial_general
+  delito: Ejecución de sentencia
+  condicion: Cuando ya existe una sentencia y se busca su cumplimiento, el embargo de bienes o la ejecución de sentencias
+    extranjeras
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cnpcf:
+    - '179'
+    - '207'
+    - '682'
+    - '884'
+    - '981'
+    - '989'
+    - '992'
+    - '990'
+    - '1002'
+    - '1000'
+    - '1020'
+    - '1114'
+    - '1191'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r190
+  materia: familiar
+  tipo_caso: procedimiento_judicial_general
+  delito: Costas y medios de apremio
+  condicion: Cuando el usuario quiere saber quién paga los gastos del juicio o cómo obligar a la contraparte a cumplir mediante
+    medidas de apremio
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cnpcf:
+    - '180'
+    - '181'
+    - '183'
+    - '182'
+    - '191'
+    - '893'
+    - '889'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r191
+  materia: familiar
+  tipo_caso: procedimiento_judicial_general
+  delito: Jurisdicción voluntaria
+  condicion: Cuando se requiere un procedimiento judicial que no es contencioso (sin pleito) o trámites de rendición de cuentas
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cnpcf:
+    - '590'
+    - '593'
+    - '589'
+    - '595'
+    - '592'
+    - '594'
+    - '596'
+    - '761'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r192
+  materia: familiar
+  tipo_caso: violencia_familiar
+  delito: identificar violencia
+  condicion: cuando la persona quiere saber si las conductas que vive constituyen violencia familiar o afectan sus relaciones
+    familiares
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 138 Sextus
+    - 323 Ter
+    - 323 Quintus
+    - 323 Quáter
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r193
+  materia: familiar
+  tipo_caso: violencia_familiar
+  delito: medidas de protección urgentes
+  condicion: cuando la persona necesita medidas provisionales o de protección inmediata para garantizar su seguridad
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 323 Sextus
+    cnpcf:
+    - '554'
+    - '570'
+    - '571'
+    - '576'
+    - '574'
+    - '575'
+    - '572'
+    - '573'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r194
+  materia: familiar
+  tipo_caso: violencia_familiar
+  delito: violencia vicaria
+  condicion: cuando la violencia se ejerce a través de los hijos o personas cercanas para causar daño a la víctima
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 323 Séptimus
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r195
+  materia: familiar
+  tipo_caso: violencia_familiar
+  delito: protección en divorcio
+  condicion: cuando existe violencia y se requieren medidas de protección específicas dentro de un proceso de divorcio
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cc_cdmx:
+    - 282 Bis
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
+- id: r196
+  materia: familiar
+  tipo_caso: violencia_familiar
+  delito: proceso legal
+  condicion: cuando la persona desea conocer los pasos y el procedimiento judicial familiar para denunciar o litigar la violencia
+  cuando: []
+  articulos:
+    cdmx: []
+    queretaro: []
+    edomex: []
+    morelos: []
+    federal: []
+    cnpcf:
+    - '553'
+  estado: sugerida
+  nota: Propuesta por Gemma 4 31B leyendo los artículos (revisión 2026-11-11).
 otro:
 - Delitos electorales (arts. 351–360).
 - Rebelión (361); ataques con sustancias tóxicas, incendio o explosivos contra las instituciones (362); sabotaje (363); motín
