@@ -180,9 +180,9 @@ function pintarLista(){
   let filas = l.filter(e => (!S.f.estado || e.estado === S.f.estado) && (!S.f.materia || (e.materia || 'penal') === S.f.materia));
   if (p === 'reglas') {
     const q = S.f.q.toLowerCase();
-    filas = filas.filter(e => (!S.f.tipo || e.tipo_caso === S.f.tipo) && (!q || (e.delito||'').toLowerCase().includes(q)));
+    filas = filas.filter(e => (!S.f.tipo || e.tipo_caso === S.f.tipo) && (!q || ((e.delito||'') + ' ' + (e.nota||'')).toLowerCase().includes(q)));
     $('lista').innerHTML = `<table><tr><th>Tipo de caso</th><th>Delito</th><th>Artículos</th><th>Estado</th></tr>${filas.map(e=>`
-      <tr class="row ${S.sel===e.id?'sel':''}" onclick="abrir('${e.id}')"><td class="small">${esc(titulo(e.tipo_caso))}</td><td>${esc(e.delito)}</td>
+      <tr class="row ${S.sel===e.id?'sel':''}" onclick="abrir('${e.id}')"><td class="small">${esc(titulo(e.tipo_caso))}</td><td>${esc(e.delito)}${e.nota?`<div class="muted small">${esc(e.nota.split('\n')[0])}</div>`:''}</td>
       <td class="small muted">${S.codigos.map(k=>(e.articulos?.[k]||[]).length?`${NOMBRES[k]}: ${(e.articulos[k]).length}`:'').filter(Boolean).join(' · ')}</td>
       <td><span class="est ${e.estado}">${e.estado}</span></td></tr>`).join('')}</table>`;
   } else if (p === 'tipos_caso') {
