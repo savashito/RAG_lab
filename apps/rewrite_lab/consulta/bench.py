@@ -26,6 +26,7 @@ import json
 import subprocess
 import threading
 import time
+import unicodedata
 from collections import Counter
 from pathlib import Path
 from typing import Callable
@@ -68,8 +69,8 @@ def respuesta(caso: dict, dato: str, veces: Counter) -> str:
 def simular(caso: dict, catalogo: dict, ia, config: dict | None = None, redactar: Callable | None = None) -> dict:
     """`redactar(mensajes) → str`: con config preguntas = 'llm', redacta la pregunta como en Preguntar (Catálogo)."""
     config = {**CONFIG, **(config or {})}
-    estado = exp = None
-    historial, preguntas, veces = [], [], Counter()
+    estado = exp = orientacion = None
+    historial, preguntas, complementarios, veces = [], [], [], Counter()
     evento = {'tipo': 'mensaje', 'texto': caso['relato']}
     salida, t0 = {}, time.time()
     for _ in range(MAX_MENSAJES):
@@ -78,7 +79,14 @@ def simular(caso: dict, catalogo: dict, ia, config: dict | None = None, redactar
         if evento['tipo'] == 'mensaje':
             historial.append({'role': 'user', 'content': evento['texto']})
         if salida['tipo'] == 'orientar':
-            break
+            orientacion = orientacion or salida      # las reglas se califican con la primera orientación
+            if not salida.get('pregunta'):
+                break
+            # Después de orientar se contestan los datos complementarios (ahí se reescribe la lista de hechos).
+            historial.append({'role': 'assistant', 'content': f'[orientación]\n\n{salida["pregunta"]["texto"]}'})
+            complementarios.append(salida['pregunta']['dato'])
+            evento = {'tipo': 'mensaje', 'texto': respuesta(caso, salida['pregunta']['dato'], veces)}
+            continue
         historial.append({'role': 'assistant', 'content': salida['texto']})
         if salida['tipo'] == 'elegir_tipo':                  # elige el primer tipo esperado que esté entre las opciones
             ids = [o['id'] for o in salida['opciones']]
@@ -92,10 +100,21 @@ def simular(caso: dict, catalogo: dict, ia, config: dict | None = None, redactar
             texto = (redactar(mensajes_pregunta(conversacion, salida, catalogo, exp)) or '').strip()
             if texto:
                 historial[-1] = {'role': 'assistant', 'content': texto}
-        preguntas.append(salida['dato'])
+        (complementarios if orientacion else preguntas).append(salida['dato'])
         evento = {'tipo': 'mensaje', 'texto': respuesta(caso, salida['dato'], veces)}
-    return {'estado': estado, 'expediente': exp or {}, 'salida': salida, 'preguntas': preguntas,
-            'conversacion': historial, 'segundos': round(time.time() - t0, 1)}
+    return {'estado': estado, 'expediente': exp or {}, 'salida': orientacion or salida, 'preguntas': preguntas,
+            'complementarios': complementarios, 'conversacion': historial, 'segundos': round(time.time() - t0, 1)}
+
+
+def _norm(s: str) -> str:
+    return ''.join(c for c in unicodedata.normalize('NFD', str(s).lower()) if unicodedata.category(c) != 'Mn')
+
+
+def hechos_conservados(esperados: list[str], hechos: list[str]) -> dict[str, bool]:
+    """Cada hecho esperado es una o más palabras separadas por «|» («pistola|arma»): se conserva si alguna aparece en
+    la lista de hechos del expediente (sin acentos ni mayúsculas)."""
+    texto = _norm(' · '.join(hechos or []))
+    return {h: any(_norm(a).strip() in texto for a in h.split('|')) for h in esperados or []}
 
 
 def calificar(caso: dict, r: dict) -> dict:
@@ -107,6 +126,7 @@ def calificar(caso: dict, r: dict) -> dict:
         datos[k] = 'acierta' if got is not None and str(got) == str(v) else 'falta' if got is None else f'equivocado ({got})'
     preguntas = [p for p in r['preguntas'] if p != '(elegir tipo)']
     return {'orienta': s.get('tipo') == 'orientar',
+            'hechos': hechos_conservados(esp.get('hechos'), exp.get('hechos')),
             'tipos': set(esp.get('tipos', [])) <= set(exp.get('tipos_caso', [])),
             'datos': datos,
             'reglas_faltan': sorted(set(esp.get('reglas', [])) - reglas),
@@ -121,7 +141,8 @@ def fila(caso: dict, catalogo: dict, ia, config: dict | None = None, redactar: C
     return {'id': caso['id'], 'rep': rep, **calificar(caso, r), 'tipos_caso': r['expediente'].get('tipos_caso'),
             'expediente': r['expediente'].get('datos'), 'no_sabe': r['expediente'].get('no_sabe'),
             'reglas': r['salida'].get('reglas'), 'inciertas': r['salida'].get('inciertas'),
-            'preguntas': r['preguntas'], 'conversacion': r['conversacion'], 'segundos': r['segundos']}
+            'preguntas': r['preguntas'], 'complementarios': r['complementarios'], 'lista_hechos': r['expediente'].get('hechos', []),
+            'conversacion': r['conversacion'], 'segundos': r['segundos']}
 
 
 def resumen(filas: list[dict]) -> dict:
@@ -131,6 +152,8 @@ def resumen(filas: list[dict]) -> dict:
     return {'casos': n, 'orienta': sum(x['orienta'] for x in filas), 'tipos': sum(x['tipos'] for x in filas),
             'datos_acierta': datos['acierta'], 'datos_total': sum(datos.values()),
             'datos_falta': datos['falta'], 'datos_equivocado': datos['equivocado'],
+            'hechos_conservados': sum(v for x in filas for v in x.get('hechos', {}).values()),
+            'hechos_total': sum(len(x.get('hechos', {})) for x in filas),
             'reglas': sum(not x['reglas_faltan'] and not x['reglas_de_mas'] for x in filas),
             'preguntas_promedio': round(sum(x['n_preguntas'] for x in filas) / max(n, 1), 2),
             'preguntas_de_mas': sum(bool(x['preguntas_de_mas']) for x in filas),

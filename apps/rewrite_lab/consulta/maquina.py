@@ -152,10 +152,11 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
         registro['cambios'] += cambios
         if x.get('residencia'):
             exp = {**exp, 'residencia': x['residencia']}
-        nuevos_hechos = [h for h in x.get('hechos') or [] if h not in exp.get('hechos', [])]
-        if nuevos_hechos:
-            exp = {**exp, 'hechos': (exp.get('hechos', []) + nuevos_hechos)[-MAX_HECHOS:]}
-            registro['hechos'] = nuevos_hechos
+        # El LLM devuelve la lista completa de hechos (la anterior, sin repetidos, más lo nuevo): reemplaza la anterior.
+        # Si quita alguno, se pierde; el benchmark mide cuánto (esperado.hechos).
+        if x.get('hechos') is not None and x['hechos'][-MAX_HECHOS:] != exp.get('hechos', []):
+            registro['hechos_antes'] = exp.get('hechos', [])
+            exp = {**exp, 'hechos': x['hechos'][-MAX_HECHOS:]}
         # La persona solo dijo dónde vive («soy de CDMX»), ya se le preguntó dónde pasó y contestó sin nombrar otro
         # estado («sí», «ya te dije»): se toma donde vive como lugar de los hechos y queda marcado como supuesto.
         if ('lugar_hechos' not in exp['datos'] and exp.get('residencia')

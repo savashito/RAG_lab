@@ -64,10 +64,10 @@ Reglas:
   tomado o aceptado algo antes («mandé unas fotos y ahora me piden dinero» → victima); "persona_senalada" solo si la
   acusan, la denunciaron o la detuvieron a ella; "familiar_o_tercero" si le pasó a otra persona.
 - Tipos: si_no → "si" o "no"; numero → un número; opcion → exactamente una de las opciones listadas.
-- "hechos": lo que la persona contó en su ÚLTIMO MENSAJE que importa para su caso y que no cabe en ningún dato de la
-  lista, en frases cortas en tercera persona («la golpearon muy feo», «le quitaron el celular y la cartera»). No repitas
-  lo que ya quedó en un dato, ni saludos o preguntas, ni nada que diga lo mismo que los HECHOS YA ANOTADOS (aunque
-  sea con otras palabras). Lista vacía si no hay nada nuevo.
+- "hechos": la lista COMPLETA de hechos del caso, en frases cortas en tercera persona («la golpearon muy feo», «le
+  quitaron el celular y la cartera»). Copia los HECHOS YA ANOTADOS sin quitar ninguno (puedes juntar dos que digan lo
+  mismo en una sola frase) y agrega lo que la persona contó en su ÚLTIMO MENSAJE que importa para su caso y no cabe en
+  ningún dato de la lista. Sin saludos ni preguntas. Si no hay hechos anotados ni nuevos, lista vacía.
 - No expliques nada fuera del JSON."""
 
 
@@ -142,16 +142,16 @@ class ConsultaIA:
             lug = jgate.extraer_lugares(texto_lugar, self.llm, sistema=sistema, texto_regex=texto)
             llamadas.append({'tarea': 'extraer_lugares', 'prompt_md5': _md5(sistema), 'system': sistema,
                              'user': f'CONSULTA:\n{texto_lugar}', 'raw': lug.get('raw', ''), 'fuente': lug.get('fuente')})
-            hechos = list(dict.fromkeys(x['estado'] for x in lug.get('lugares', [])
-                                        if x.get('estado') and x.get('rol', 'hechos') == 'hechos'))
-            if len(hechos) == 1:          # dos estados distintos: no se decide; se vuelve a preguntar
-                out['lugar_hechos'] = hechos[0]
+            estados = list(dict.fromkeys(x['estado'] for x in lug.get('lugares', [])
+                                         if x.get('estado') and x.get('rol', 'hechos') == 'hechos'))
+            if len(estados) == 1:         # dos estados distintos: no se decide; se vuelve a preguntar
+                out['lugar_hechos'] = estados[0]
             otros = list(dict.fromkeys(x['estado'] for x in lug.get('lugares', [])
                                        if x.get('estado') and x.get('rol') == 'otro'))
             if len(otros) == 1:           # «soy de CDMX»: donde vive, no donde pasó; la máquina lo ofrece al preguntar
                 residencia = otros[0]
         resto = [d for d in datos if d['id'] != 'lugar_hechos']
-        hechos = []
+        nuevos_hechos = None
         if resto or ultimo:
             lista = '\n'.join(f'- {d["id"]} ({d.get("tipo", "si_no")}'
                               + (f': {", ".join(d["opciones"])}' if d.get('opciones') else '')
@@ -165,6 +165,7 @@ class ConsultaIA:
             d = _json(raw) or {}
             ids = {x['id'] for x in resto}
             out.update({k: v for k, v in d.items() if k in ids and v is not None})
-            hechos = [h.strip() for h in d.get('hechos') or [] if isinstance(h, str) and h.strip()][:5]
-        return {'datos': out, 'residencia': residencia, 'hechos': hechos,
+            if isinstance(d.get('hechos'), list):    # la lista completa; sin la llave, no se cambia
+                nuevos_hechos = [h.strip() for h in d['hechos'] if isinstance(h, str) and h.strip()]
+        return {'datos': out, 'residencia': residencia, 'hechos': nuevos_hechos,
                 '_llamada': {'tarea': 'extraer_expediente', 'partes': llamadas}}

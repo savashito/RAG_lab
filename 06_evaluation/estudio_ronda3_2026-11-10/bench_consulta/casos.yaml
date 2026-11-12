@@ -11,6 +11,8 @@
 #     reglas          reglas que deben aplicar
 #     reglas_no       reglas que no deben aplicar
 #     max_preguntas   cuántas preguntas a lo más antes de orientar
+#     hechos          lo que contó y no cabe en ningún dato, que debe seguir en la lista de hechos del expediente al final;
+#                     cada uno es una o más palabras separadas por «|» (sin acentos ni mayúsculas): basta una
 casos:
 - id: fotos_extorsion_adulta
   relato: Mandé unas fotos íntimas a alguien que conocí en una app y ahora me pide dinero para no publicarlas
@@ -46,6 +48,7 @@ casos:
   relato: Mi expareja publicó mis videos íntimos en Facebook sin mi permiso
   respuestas: {lugar_hechos: en Querétaro, papel: a mí, pide_dinero: 'no', edad_victima: tengo 26}
   esperado:
+    hechos: ['facebook']
     tipos: [imagenes_intimas]
     datos: {lugar_hechos: Querétaro, papel: victima, edad_victima: 26}
     reglas: [r020]
@@ -73,6 +76,7 @@ casos:
   relato: Hola
   respuestas: {relato: Me robaron el celular en el metro, lugar_hechos: CDMX, papel: a mí}
   esperado:
+    hechos: ['celular', 'metro']
     tipos: [robo]
     datos: {lugar_hechos: Ciudad de México, papel: victima}
     max_preguntas: 3
@@ -81,6 +85,7 @@ casos:
   relato: Me asaltaron con una pistola y me quitaron la cartera y el celular
   respuestas: {lugar_hechos: en Ecatepec, papel: a mí}
   esperado:
+    hechos: ['cartera', 'celular']
     tipos: [robo]
     datos: {lugar_hechos: Estado de México, papel: victima}
     max_preguntas: 2
@@ -89,6 +94,7 @@ casos:
   relato: Mi esposo me golpea y me insulta enfrente de mis hijos
   respuestas: {lugar_hechos: Cuernavaca, Morelos, papel: a mí}
   esperado:
+    hechos: ['insult', 'hijos']
     tipos: [violencia_familiar]
     datos: {lugar_hechos: Morelos, papel: victima}
     max_preguntas: 2
@@ -97,6 +103,7 @@ casos:
   relato: Me estafaron en una venta por internet, pagué un celular y nunca llegó
   respuestas: {lugar_hechos: Querétaro, papel: a mí}
   esperado:
+    hechos: ['celular', 'internet|en linea|venta']
     tipos: [fraude_datos]
     datos: {lugar_hechos: Querétaro, papel: victima}
     max_preguntas: 2
@@ -114,6 +121,7 @@ casos:
   relato: Soy de Querétaro y me robaron la camioneta afuera de mi trabajo
   respuestas: {lugar_hechos: sí, ahí mismo, papel: a mí}
   esperado:
+    hechos: ['camioneta', 'trabajo']
     tipos: [robo]
     datos: {lugar_hechos: Querétaro, papel: victima}
     max_preguntas: 2
@@ -122,6 +130,7 @@ casos:
   relato: Vivo en la CDMX pero me robaron el coche en Toluca
   respuestas: {papel: a mí}
   esperado:
+    hechos: ['coche|auto|carro|vehiculo']
     tipos: [robo]
     datos: {lugar_hechos: Estado de México, papel: victima}
     max_preguntas: 1
@@ -130,6 +139,7 @@ casos:
   relato: Me peleé en una fiesta y me rompieron la nariz de un golpe
   respuestas: {lugar_hechos: CDMX, papel: a mí}
   esperado:
+    hechos: ['fiesta', 'nariz']
     tipos: [golpes_lesiones]
     datos: {lugar_hechos: Ciudad de México, papel: victima}
     max_preguntas: 2
@@ -138,6 +148,7 @@ casos:
   relato: Mi jefe me manda mensajes sexuales y me toca sin mi permiso en la oficina
   respuestas: {lugar_hechos: Estado de México, papel: a mí}
   esperado:
+    hechos: ['oficina|trabajo', 'mensaje']
     tipos: [acoso_hostigamiento]
     datos: {lugar_hechos: Estado de México, papel: victima, superior_o_docente: si}
     reglas: [r018, r019]
@@ -147,6 +158,7 @@ casos:
   relato: Un vecino me amenazó con matarme si sigo estacionando mi coche frente a su casa
   respuestas: {lugar_hechos: Querétaro, papel: a mí, pide_dinero: no, solo me amenaza}
   esperado:
+    hechos: ['estacion|coche']
     tipos: [amenazas_extorsion]
     datos: {lugar_hechos: Querétaro, papel: victima, pide_dinero: 'no'}
     reglas: [r026]
@@ -174,6 +186,7 @@ casos:
   relato: Tengo 16 y un chavo con el que me mandaba fotos sin ropa las está pasando en un grupo de la escuela
   respuestas: {lugar_hechos: Querétaro, papel: a mí, pide_dinero: no, no me pide nada}
   esperado:
+    hechos: ['escuela|grupo']
     tipos: [imagenes_intimas]
     datos: {lugar_hechos: Querétaro, papel: victima, contenido_intimo: si, edad_victima: 16}
     reglas: [r020, r023, r024]
@@ -183,6 +196,7 @@ casos:
   relato: Mataron a mi hermana, su pareja la golpeaba desde hace años
   respuestas: {lugar_hechos: CDMX, papel: a mi hermana}
   esperado:
+    hechos: ['golpe']
     tipos: [muerte]
     datos: {lugar_hechos: Ciudad de México, victima_mujer: si}
     reglas: [r005, r006]
@@ -192,6 +206,7 @@ casos:
   relato: Mataron a mi papá en un asalto afuera de su negocio
   respuestas: {lugar_hechos: Estado de México, papel: a mi papá, victima_mujer: no, era hombre}
   esperado:
+    hechos: ['negocio', 'asalt']
     tipos: [muerte]
     datos: {lugar_hechos: Estado de México, victima_mujer: 'no'}
     reglas: [r005]
@@ -212,6 +227,7 @@ casos:
   relato: Mi hija de 15 años tuvo relaciones con un hombre de 30 que la engañó diciendo que se iban a casar
   respuestas: {lugar_hechos: CDMX, papel: a mi hija, relacion_partes: ninguna, no es familiar}
   esperado:
+    hechos: ['casar|engan']
     tipos: [agresion_sexual]
     datos: {lugar_hechos: Ciudad de México, edad_victima: 15}
     reglas: [r014]
@@ -241,6 +257,7 @@ casos:
   relato: Se llevaron a mi esposo y piden un rescate de 500 mil pesos
   respuestas: {lugar_hechos: Estado de México, papel: a mi esposo, edad_victima: '45', servidor_publico: no sé}
   esperado:
+    hechos: ['rescate|500']
     tipos: [privacion_libertad]
     datos: {lugar_hechos: Estado de México, pide_dinero: si}
     reglas: [r030]
@@ -251,6 +268,7 @@ casos:
   relato: Mi expareja se llevó a mi hijo de 5 años y no me lo quiere regresar
   respuestas: {lugar_hechos: Querétaro, papel: a mi hijo, pide_dinero: 'no', servidor_publico: 'no'}
   esperado:
+    hechos: ['regres']
     tipos: [privacion_libertad]
     datos: {lugar_hechos: Querétaro, edad_victima: 5}
     reglas: [r032]
@@ -261,6 +279,7 @@ casos:
   relato: Unos policías se llevaron a mi hermano en una patrulla y no sabemos dónde está
   respuestas: {lugar_hechos: Morelos, papel: a mi hermano, pide_dinero: 'no', edad_victima: '28'}
   esperado:
+    hechos: ['patrulla']
     tipos: [privacion_libertad]
     datos: {lugar_hechos: Morelos, servidor_publico: si}
     reglas: [r034]
@@ -280,6 +299,7 @@ casos:
   relato: Un policía me detuvo sin razón y me pidió 2 mil pesos para dejarme ir
   respuestas: {lugar_hechos: Querétaro, papel: a mí}
   esperado:
+    hechos: ['2 mil|2,000|2000|dos mil']
     tipos: [abuso_autoridad]
     datos: {lugar_hechos: Querétaro, pide_dinero: si}
     reglas: [r062, r063]
@@ -289,6 +309,7 @@ casos:
   relato: En el hospital me hicieron la salpingoclasia después del parto sin preguntarme
   respuestas: {lugar_hechos: Estado de México, papel: a mí, consentimiento_medico: no, nunca me preguntaron}
   esperado:
+    hechos: ['parto']
     tipos: [salud]
     datos: {lugar_hechos: Estado de México, consentimiento_medico: 'no'}
     reglas: [r070]
@@ -298,6 +319,7 @@ casos:
   relato: Me encontré una cartera tirada en la calle
   respuestas: {lugar_hechos: CDMX, papel: a mí, relato: encontré una cartera con dinero y credenciales y no sé qué hacer}
   esperado:
+    hechos: ['cartera', 'credencial']
     tipos: [otro]
     datos: {lugar_hechos: Ciudad de México}
     max_preguntas: 2

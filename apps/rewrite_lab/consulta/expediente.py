@@ -11,7 +11,8 @@ El expediente es un dict:
      'preguntas': {'lugar_hechos': 2},             # cuántas veces se preguntó cada dato
      'orientados': ['imagenes_intimas'],           # tipos de caso de la última orientación
      'por_actualizar': ['monto'],                  # datos complementarios que se preguntan después de orientar
-     'hechos': ['la golpearon muy feo']}           # lo que contó y no cabe en ningún dato (lo anota el extractor)
+     'hechos': ['la golpearon muy feo']}           # lo que contó y no cabe en ningún dato: el LLM que llena el
+                                                   # expediente reescribe la lista completa en cada mensaje
 
 Valores de cada dato, según su `tipo` en el catálogo:
     si_no → 'si' | 'no' · numero → int/float · opcion → uno de `opciones` · estado → nombre oficial de la entidad.

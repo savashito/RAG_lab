@@ -306,6 +306,17 @@ def test_ia_extraer_usa_el_filtro_de_lugares_y_el_json(monkeypatch):
     datos = [d for d in CAT['datos'] if d['id'] in ('lugar_hechos', 'pide_dinero', 'edad_victima')]
     r = ia.extraer_expediente('vivo en CDMX, me pasó en Querétaro, me piden dinero', '', datos)
     assert r['datos'] == {'lugar_hechos': 'Querétaro', 'pide_dinero': 'si'}
+    assert r['hechos'] is None                    # sin la llave «hechos», la lista del expediente no cambia
+
+
+def test_ia_extraer_recibe_los_hechos_anotados_y_devuelve_la_lista_completa(monkeypatch):
+    monkeypatch.setattr(IA.jgate, 'extraer_lugares', lambda *a, **k: {'lugares': [{'estado': 'Querétaro', 'rol': 'hechos'}]})
+    llm = LLMFalso(['{"pide_dinero": null, "hechos": ["le quitaron el celular", "la golpearon"]}'])
+    datos = [d for d in CAT['datos'] if d['id'] in ('lugar_hechos', 'pide_dinero')]
+    r = IA.ConsultaIA(llm).extraer_expediente('me robaron\nme golpearon', '', datos, 'me golpearon',
+                                              hechos=['le quitaron el celular'])
+    assert 'HECHOS YA ANOTADOS:\n- le quitaron el celular' in llm.usuarios[0] and 'Querétaro' not in llm.usuarios[0].split('HECHOS')[-1]
+    assert r['hechos'] == ['le quitaron el celular', 'la golpearon']
 
 
 def test_ia_llm_caido_no_tumba():
@@ -502,8 +513,10 @@ def test_bench_con_preguntas_redactadas_por_el_llm():
                redactar=lambda m: 'Gracias por contarme. ' + m[1]['content'].split('PREGUNTA DEL CATÁLOGO: ')[1].split('\n')[0],
                rep=2)
     assert x['rep'] == 2 and x['orienta'] and x['datos'] == {'edad_victima': 'acierta'}
-    asistente = [m['content'] for m in x['conversacion'] if m['role'] == 'assistant']
+    # la orientación y el primer complementario (va pegado a ella, con el texto del catálogo) no se redactan aparte
+    asistente = [m['content'] for m in x['conversacion'] if m['role'] == 'assistant' and not m['content'].startswith('[orientación]')]
     assert asistente and all(t.startswith('Gracias por contarme.') for t in asistente)
+    assert x['complementarios'][0] == 'ya_difundido'
 
 
 def test_bench_config_no_valida():
@@ -548,7 +561,8 @@ def test_si_conto_algo_y_no_se_reconoce_el_caso_pide_mas_sin_ignorarlo():
 class IAHechos(IAFalsa):
     def extraer_expediente(self, texto, pregunta, datos, ultimo=None, hechos=None):
         x = super().extraer_expediente(texto, pregunta, datos, ultimo, hechos)
-        return {**x, 'hechos': ['la golpearon muy feo'] if 'golpearon' in texto.split('\n')[-1] else []}
+        nuevo = ['la golpearon muy feo'] if 'golpearon' in texto.split('\n')[-1] else []
+        return {**x, 'hechos': list(hechos or []) + nuevo}
 
 
 def test_despues_de_orientar_pregunta_los_complementarios_y_actualiza():
@@ -591,3 +605,8 @@ def test_actualizacion_y_hechos_llegan_al_llm_que_orienta():
     assert u.count('YA ORIENTASTE') == 1        # actualización, no también el seguimiento
     u = O.preparar(salida={**salida, 'actualizacion': None, 'por_preguntar': ['¿Hubo violencia?']}, **kw)['user']
     assert 'le hará a la persona estas preguntas' in u and '- ¿Hubo violencia?' in u
+
+
+def test_bench_hechos_conservados():
+    assert B.hechos_conservados(['pistola|arma', 'cartera', 'Metro'], ['Le apuntaron con un ARMA', 'le quitaron la cartera']) == \
+        {'pistola|arma': True, 'cartera': True, 'Metro': False}
