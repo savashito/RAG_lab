@@ -56,6 +56,9 @@ Escribe UN mensaje breve (1 a 3 oraciones) que haga dos cosas:
 2. Hacer la PREGUNTA que falta. Puedes cambiar las palabras, pero no el sentido: pregunta exactamente lo mismo que la
    PREGUNTA DEL CATÁLOGO. Para el lugar, pregunta dónde pasó; nunca dónde vive o dónde se encuentra la persona. Si
    ayuda, di en pocas palabras para qué la necesitas. Pregunta solo eso: ningún otro dato.
+   Si en la CONVERSACIÓN el asistente ya hizo esa pregunta y la persona contestó otra cosa, no la entendió: pregúntala
+   de otra forma, sin la palabra que causó la confusión y con ejemplos. Para el lugar, «estado» puede entenderse como
+   estado de ánimo o de ebriedad: pregunta «¿en qué ciudad o parte de México pasó? (por ejemplo, CDMX o Querétaro)».
 
 Además:
 - Si hay un AVISO, dilo con tus palabras. Sin AVISO, no digas que supones o que tomas como base algún dato.

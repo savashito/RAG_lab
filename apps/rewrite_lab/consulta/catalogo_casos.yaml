@@ -11,7 +11,7 @@ datos:
   materia: penal
   tipo: estado
   obligatorio: true
-  pregunta: ¿En qué estado pasó?
+  pregunta: ¿En qué estado de la República pasó? (por ejemplo, Ciudad de México, Querétaro o Estado de México)
   para_que: Qué código penal aplica (solo en delitos del fuero común; ver federal)
   estado: borrador
 - id: papel
