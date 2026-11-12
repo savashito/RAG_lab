@@ -425,6 +425,18 @@
    <label class="chk" title="Usa solo las reglas que Karen ya marcó como confirmadas"><input type="checkbox" id="cat-conf"> solo reglas confirmadas</label>
    <button class="ghost" onclick="catReiniciar()">↺ Empezar de nuevo</button>
  </div>
+ <details id="cat-pbox" style="margin:0 0 10px">
+   <summary>⚙️ Prompt de las preguntas (estado LLENAR_EXPEDIENTE, con «preguntas redactadas por el LLM») <span id="cat-psum" class="muted"></span></summary>
+   <p class="muted" style="margin:8px 0 0;font-size:13px">Lo que escribas aquí se usa solo en tus mensajes de esta página (no se guarda). <b>Guardar como prompt por
+     omisión</b> lo deja en la base para todos, también para el benchmark del cuestionario, y queda en el historial.</p>
+   <textarea id="cat-psys" style="min-height:220px;margin-top:8px"></textarea>
+   <div class="row">
+     <button class="ghost" id="cat-preset">Borra tus cambios!</button>
+     <button id="cat-psave">Guardar como prompt por omisión</button>
+     <label>Versiones: <select id="cat-pvers"></select></label>
+     <span class="muted" id="cat-pmsg"></span>
+   </div>
+ </details>
  <div class="cat-grid">
    <div>
      <div id="cat-msgs" class="cat-msgs"></div>

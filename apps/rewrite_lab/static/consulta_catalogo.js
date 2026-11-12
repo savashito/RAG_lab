@@ -17,7 +17,38 @@
       const ps = await (await fetch('/api/consulta/prompts')).json();
       g('cat-prompt').innerHTML = ps.map(p => `<option value="${e(p.id)}" ${p.id === PROMPT_POR_OMISION ? 'selected' : ''}>${e(p.nombre)}${p.id === PROMPT_POR_OMISION ? ' (el mejor de la ronda 2)' : ''}</option>`).join('');
     } catch (_) {}
+    cargarPrompt();
+    g('cat-preset').onclick = () => { g('cat-psys').value = P.guardado; resumenPrompt(); };
+    g('cat-psys').addEventListener('input', resumenPrompt);
+    g('cat-psave').onclick = guardarPrompt;
+    g('cat-pvers').onchange = async ev => { if (!ev.target.value) return;
+      const v = await (await fetch(`/api/consulta/prompt_preguntas/${ev.target.value}`)).json(); if (v.texto) { g('cat-psys').value = v.texto; resumenPrompt(); } };
     g('cat-txt').addEventListener('keydown', ev => { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); enviar(); } });
+  }
+  // El prompt de las preguntas: el guardado en la base; lo editado en el cuadro solo vale para esta página.
+  const P = {guardado:''};
+  async function cargarPrompt(){
+    try {
+      const j = await (await fetch('/api/consulta/prompt_preguntas')).json();
+      P.guardado = j.texto; P.info = j.por ? `guardado por ${j.por} · ${j.creado.slice(0, 16).replace('T', ' ')}` : 'versión inicial (del código)';
+      if (!g('cat-psys').value || g('cat-psys').dataset.limpio === '1') g('cat-psys').value = j.texto;
+      g('cat-psys').dataset.limpio = '1';
+      g('cat-pvers').innerHTML = '<option value="">— elegir —</option>' + j.historial.map(v => `<option value="${v.id}">#${v.id} · ${e(v.por || '')} · ${e(v.creado.slice(0, 16).replace('T', ' '))}</option>`).join('');
+      resumenPrompt();
+    } catch (_) {}
+  }
+  function resumenPrompt(){
+    const cambiado = g('cat-psys').value !== P.guardado;
+    g('cat-psys').dataset.limpio = cambiado ? '0' : '1';
+    g('cat-psum').innerHTML = cambiado ? '<span class="warn">· editado (solo en esta página)</span>' : `· ${e(P.info || '')}`;
+  }
+  async function guardarPrompt(){
+    try {
+      const r = await fetch('/api/consulta/prompt_preguntas', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({texto:g('cat-psys').value})});
+      const j = await r.json(); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status);
+      g('cat-pmsg').textContent = 'Guardado ✓'; setTimeout(() => g('cat-pmsg').textContent = '', 2500);
+      await cargarPrompt();
+    } catch (err) { g('cat-pmsg').textContent = '⚠ ' + err.message; }
   }
   const tipo = id => ((C.cat.tipos_caso || []).find(t => t.id === id) || {titulo:id}).titulo;
   const regla = id => (C.cat.reglas || []).find(r => r.id === id) || {id, delito:id};
@@ -38,7 +69,7 @@
       const r = await fetch('/api/consulta/turno/stream', {method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({estado:S.estado, expediente:S.expediente, evento, solo_confirmadas:g('cat-conf').checked,
           historial:S.historial, contexto:g('cat-modo').value, tope_tokens:+g('cat-tope').value || null, prompt:g('cat-prompt').value,
-          preguntas_llm:g('cat-preg-llm').checked})});
+          preguntas_llm:g('cat-preg-llm').checked, prompt_preguntas:g('cat-psys').value !== P.guardado ? g('cat-psys').value : null})});
       if (!r.ok) throw new Error('HTTP ' + r.status);
       await readSSE(r, ev => {
         if (ev.stage === 'turno') {

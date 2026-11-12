@@ -1705,8 +1705,60 @@ consulta_ia = ConsultaIA(llm)
 from consulta.bench import BenchConsulta  # noqa: E402
 bench_consulta = BenchConsulta(connect=connect, catalogo=lambda: catalogo.leer()[0], ia=consulta_ia,
                                current_email=current_email, can_run=can_ingest,
-                               redactar=lambda mensajes: llm.chat_messages(mensajes, max_tokens=400, timeout=90))
+                               redactar=lambda mensajes: llm.chat_messages(   # con el prompt guardado de las preguntas
+                                   [{'role': 'system', 'content': prompt_preguntas()['texto']}] + mensajes[1:],
+                                   max_tokens=400, timeout=90))
 app.include_router(bench_consulta.router)
+
+
+# Prompt con el que el LLM redacta las preguntas en LLENAR_EXPEDIENTE. Como el system prompt de un tema en Preguntar (RAG):
+# lo que se escribe en el cuadro de la pestaña solo vale para esos mensajes; «Guardar» lo deja en la base para todos
+# (también el benchmark del cuestionario), con historial. Sin versiones guardadas: PREGUNTAR_SYSTEM (consulta/orientar.py).
+with connect() as _c, _c.cursor() as _cur:
+    _cur.execute("""CREATE TABLE IF NOT EXISTS consulta_prompts (
+        id serial PRIMARY KEY, nombre text NOT NULL, texto text NOT NULL, por text, creado timestamptz DEFAULT now())""")
+    _c.commit()
+
+
+def prompt_preguntas() -> dict:
+    """La versión guardada más reciente del prompt de las preguntas (o la inicial del código)."""
+    with connect() as c, c.cursor() as cur:
+        cur.execute("SELECT texto, por, creado FROM consulta_prompts WHERE nombre = 'preguntar' ORDER BY id DESC LIMIT 1")
+        row = cur.fetchone()
+    if not row:
+        return {'texto': consulta_orientar.PREGUNTAR_SYSTEM, 'por': None, 'creado': None}
+    return {'texto': row[0], 'por': row[1], 'creado': row[2].isoformat()}
+
+
+@app.get('/api/consulta/prompt_preguntas')
+def prompt_preguntas_route():
+    with connect() as c, c.cursor() as cur:
+        cur.execute("SELECT id, por, creado, length(texto) FROM consulta_prompts WHERE nombre = 'preguntar' ORDER BY id DESC LIMIT 20")
+        historial = [{'id': i, 'por': p, 'creado': t.isoformat(), 'caracteres': n} for i, p, t, n in cur.fetchall()]
+    return {**prompt_preguntas(), 'inicial': consulta_orientar.PREGUNTAR_SYSTEM, 'historial': historial}
+
+
+@app.get('/api/consulta/prompt_preguntas/{pid}')
+def prompt_preguntas_version(pid: int):
+    with connect() as c, c.cursor() as cur:
+        cur.execute("SELECT texto FROM consulta_prompts WHERE id = %s AND nombre = 'preguntar'", (pid,))
+        row = cur.fetchone()
+    return {'texto': row[0]} if row else JSONResponse({'error': 'No existe esa versión.'}, status_code=404)
+
+
+@app.put('/api/consulta/prompt_preguntas')
+async def prompt_preguntas_guardar(request: Request):
+    email = current_email(request)
+    if not can_ingest(email):
+        return JSONResponse({'error': 'Solo administradores pueden guardar el prompt por omisión.'}, status_code=403)
+    texto = ((await request.json()).get('texto') or '').strip()
+    if len(texto) < 20:
+        return JSONResponse({'error': 'El prompt está vacío o es demasiado corto.'}, status_code=400)
+    if texto != prompt_preguntas()['texto']:
+        with connect() as c, c.cursor() as cur:
+            cur.execute("INSERT INTO consulta_prompts (nombre, texto, por) VALUES ('preguntar', %s, %s)", (texto, email))
+            c.commit()
+    return prompt_preguntas()
 
 
 CONSULTA_ESTUDIO_PROMPTS = Path(__file__).resolve().parent / 'study' / 'estudios' / 'ronda2_penal.yaml'
@@ -1754,7 +1806,8 @@ def _consulta_turno(body: dict):
     conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
                              for m in body.get('historial') or [])
     if salida.get('tipo') == 'pregunta' and body.get('preguntas_llm'):
-        out['mensajes_pregunta'] = consulta_orientar.mensajes_pregunta(conversacion, salida, doc, exp)
+        out['mensajes_pregunta'] = consulta_orientar.mensajes_pregunta(
+            conversacion, salida, doc, exp, (body.get('prompt_preguntas') or '').strip() or prompt_preguntas()['texto'])
     if salida.get('tipo') != 'orientar' or modo == 'ninguno':
         return out, None
     if salida.get('sin_reglas') or exp.get('tipos_caso') == [consulta_maquina.OTRO]:
@@ -1788,7 +1841,7 @@ def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict):
 def consulta_turno(body: dict):
     """body: {estado, expediente, evento, solo_confirmadas, historial (toda la conversación, para orientar),
     contexto: 'todos' | 'embedding' | 'ninguno' (no redacta), tope_tokens, prompt, preguntas_llm (el LLM redacta la
-    pregunta del dato que falta)}. Sin streaming (benchmark)."""
+    pregunta del dato que falta), prompt_preguntas (el prompt para eso; sin él, el guardado)}. Sin streaming."""
     out, preparar = _consulta_turno(body)
     if out.get('mensajes_pregunta'):
         out['pregunta_llm'] = llm.chat_messages(out.pop('mensajes_pregunta'), max_tokens=400, timeout=90)

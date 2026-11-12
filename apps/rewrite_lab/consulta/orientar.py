@@ -86,15 +86,17 @@ PREGUNTA DEL CATÁLOGO: {pregunta}
 PARA QUÉ SE PREGUNTA: {para_que}{opciones}"""
 
 
-def mensajes_pregunta(conversacion: str, salida: dict, catalogo: dict, expediente: dict | None = None) -> list[dict]:
-    """Salida 'pregunta' de la máquina → mensajes para que el LLM redacte la pregunta."""
+def mensajes_pregunta(conversacion: str, salida: dict, catalogo: dict, expediente: dict | None = None,
+                      system: str | None = None) -> list[dict]:
+    """Salida 'pregunta' de la máquina → mensajes para que el LLM redacte la pregunta. `system`: el prompt guardado o el
+    que la persona escribió en Preguntar (Catálogo); sin él, PREGUNTAR_SYSTEM (la versión inicial)."""
     d = next((x for x in catalogo.get('datos', []) if x['id'] == salida.get('dato')), {})
     datos = '\n'.join(f'- {k}: {v}' for k, v in ((expediente or {}).get('datos') or {}).items()) or '(ninguno)'
     user = PREGUNTAR_USER.format(conversacion=conversacion, datos=datos, dato=salida.get('dato', ''),
                                  aviso=f'AVISO: {salida["aviso"]}\n' if salida.get('aviso') else '',
                                  pregunta=salida.get('texto', ''), para_que=d.get('para_que') or '(no dice)',
                                  opciones=f'\nOPCIONES: {", ".join(d["opciones"])}' if d.get('opciones') else '')
-    return [{'role': 'system', 'content': PREGUNTAR_SYSTEM}, {'role': 'user', 'content': user}]
+    return [{'role': 'system', 'content': (system or '').strip() or PREGUNTAR_SYSTEM}, {'role': 'user', 'content': user}]
 
 
 def _norm(s: str) -> str:

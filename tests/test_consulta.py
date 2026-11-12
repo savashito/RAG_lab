@@ -509,3 +509,10 @@ def test_bench_config_no_valida():
             pass
     with pytest.raises(ValueError):
         Falso().correr('a', config={'preguntas': 'otra'})
+
+
+def test_mensajes_pregunta_usa_el_prompt_que_se_le_pasa():
+    salida = {'tipo': 'pregunta', 'dato': 'papel', 'texto': '¿Te pasó a ti?'}
+    assert O.mensajes_pregunta('', salida, CAT)[0]['content'] == O.PREGUNTAR_SYSTEM
+    assert O.mensajes_pregunta('', salida, CAT, system='Sé muy cálido y breve.')[0]['content'] == 'Sé muy cálido y breve.'
+    assert O.mensajes_pregunta('', salida, CAT, system='  ')[0]['content'] == O.PREGUNTAR_SYSTEM
