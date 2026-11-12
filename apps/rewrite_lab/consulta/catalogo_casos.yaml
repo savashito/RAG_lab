@@ -48,7 +48,8 @@ datos:
   - trabajo
   - escuela
   - ninguna
-  pregunta: ¿Qué relación tienen? (pareja o expareja, familiar, trabajo, escuela, ninguna)
+  pregunta: ¿Qué relación tiene la víctima con quien lo hizo? (pareja o expareja, familiar, trabajo, escuela, ninguna)
+  pregunta_tu: ¿Qué relación tienes con quien lo hizo? (pareja o expareja, familiar, trabajo, escuela, ninguna)
   para_que: Violencia familiar, hostigamiento, agravantes
   estado: borrador
 - id: superior_o_docente

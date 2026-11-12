@@ -34,6 +34,12 @@ Responde SOLO un JSON:
 - Si la persona todavía no ha contado ninguna situación (solo saluda, pide ayuda sin decir de qué, o solo da datos
   sueltos como su estado o su edad), deja "agregar" vacío y "dudoso": false: el asistente le pedirá que la cuente.
 - Si los actuales están vacíos y la persona contó algo que no corresponde a ningún tipo, "agregar": ["otro"].
+- Si a la persona la acusan, la denunciaron o la detuvieron, agrega el tipo de proceso penal (si está en la lista) y
+  además el tipo de caso del delito del que la acusan (por ejemplo, compartir fotos íntimas → también el de fotos).
+- Un mismo caso puede ser de familia y penal a la vez: si una expareja o un familiar se llevó o retiene a un menor, va
+  el tipo de custodia y también el de privación de la libertad (sustracción de menores).
+- Si llaman o escriben diciendo que tienen a un familiar para pedir dinero, pero no se sabe que de verdad se lo
+  llevaron (secuestro virtual), es amenazas o extorsión, no privación de la libertad.
 - Si los actuales están vacíos y no puedes decidir entre 2 o 3 tipos, deja "agregar" vacío, pon "dudoso": true y en
   "opciones" esos 2 o 3 ids.
 - No inventes ids. No expliques nada fuera del JSON."""
