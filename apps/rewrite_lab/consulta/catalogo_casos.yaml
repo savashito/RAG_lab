@@ -1064,7 +1064,9 @@ reglas:
   tipo_caso: agresion_sexual
   delito: estupro
   condicion: ''
-  cuando: []
+  cuando:
+  - edad_victima > 12
+  - edad_victima < 18
   articulos:
     cdmx:
     - '180'
@@ -1100,7 +1102,10 @@ reglas:
     - '52'
     - 34 Octies
   estado: sugerida
-  nota: 'Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
+  nota: 'Condición de edad según la CDMX (art. 180: mayor de 12 y menor de 18) para todos los estados por ahora; en Querétaro
+    es mayor de 14 y en Edomex y el federal mayor de 15 (2026-11-12).
+
+    Cambios 2026-11-11 (Gemma 4 31B razonando; * = decidido a mano por Claude, revisar):
 
     + agregados: cdmx 178 BIS; federal 263*; morelos 162 Ter*; cnpp 275; ley_victimas 35*; lgamvlv 34 Septies, 34 Quáter*,
     30*, 34 Bis*, 52*, 34 Octies*'
