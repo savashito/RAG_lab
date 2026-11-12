@@ -1717,6 +1717,10 @@ app.include_router(bench_consulta.router)
 with connect() as _c, _c.cursor() as _cur:
     _cur.execute("""CREATE TABLE IF NOT EXISTS consulta_prompts (
         id serial PRIMARY KEY, nombre text NOT NULL, texto text NOT NULL, por text, creado timestamptz DEFAULT now())""")
+    _cur.execute("SELECT 1 FROM consulta_prompts WHERE nombre = 'preguntar' LIMIT 1")
+    if not _cur.fetchone():   # línea base: la versión del código queda como la #1 del historial
+        _cur.execute("INSERT INTO consulta_prompts (nombre, texto, por) VALUES ('preguntar', %s, 'versión inicial (código)')",
+                     (consulta_orientar.PREGUNTAR_SYSTEM,))
     _c.commit()
 
 
