@@ -103,11 +103,12 @@ casos:
 
 - id: lugar_estado_de_ebriedad
   relato: Me están extorsionando por teléfono, dicen que tienen a mi hermano
-  respuestas: {lugar_hechos: [estaba muy tomado cuando pasó, en Querétaro], papel: a mi hermano}
+  respuestas: {lugar_hechos: [estaba muy tomado cuando pasó, en Querétaro], papel: a mi hermano, pide_dinero: sí, 50 mil pesos}
   esperado:
     tipos: [amenazas_extorsion]
-    datos: {lugar_hechos: Querétaro, papel: familiar_o_tercero}
-    max_preguntas: 3
+    datos: {lugar_hechos: Querétaro, papel: familiar_o_tercero, pide_dinero: si}
+    reglas: [r027]
+    max_preguntas: 4
 
 - id: solo_dice_donde_vive
   relato: Soy de Querétaro y me robaron la camioneta afuera de mi trabajo
@@ -138,16 +139,19 @@ casos:
   respuestas: {lugar_hechos: Estado de México, papel: a mí}
   esperado:
     tipos: [acoso_hostigamiento]
-    datos: {lugar_hechos: Estado de México, papel: victima}
+    datos: {lugar_hechos: Estado de México, papel: victima, superior_o_docente: si}
+    reglas: [r018, r019]
     max_preguntas: 2
 
 - id: amenaza_de_muerte
   relato: Un vecino me amenazó con matarme si sigo estacionando mi coche frente a su casa
-  respuestas: {lugar_hechos: Querétaro, papel: a mí}
+  respuestas: {lugar_hechos: Querétaro, papel: a mí, pide_dinero: no, solo me amenaza}
   esperado:
     tipos: [amenazas_extorsion]
-    datos: {lugar_hechos: Querétaro, papel: victima}
-    max_preguntas: 2
+    datos: {lugar_hechos: Querétaro, papel: victima, pide_dinero: 'no'}
+    reglas: [r026]
+    reglas_no: [r027]
+    max_preguntas: 3
 
 - id: foto_cara_dinero_adulta
   relato: Un desconocido tiene una foto de mi cara y me pide dinero o la va a publicar con mentiras sobre mí
@@ -173,4 +177,119 @@ casos:
     tipos: [imagenes_intimas]
     datos: {lugar_hechos: Querétaro, papel: victima, contenido_intimo: si, edad_victima: 16}
     reglas: [r020, r023, r024]
+    max_preguntas: 3
+
+- id: feminicidio
+  relato: Mataron a mi hermana, su pareja la golpeaba desde hace años
+  respuestas: {lugar_hechos: CDMX, papel: a mi hermana}
+  esperado:
+    tipos: [muerte]
+    datos: {lugar_hechos: Ciudad de México, victima_mujer: si}
+    reglas: [r005, r006]
+    max_preguntas: 3
+
+- id: homicidio_hombre
+  relato: Mataron a mi papá en un asalto afuera de su negocio
+  respuestas: {lugar_hechos: Estado de México, papel: a mi papá, victima_mujer: no, era hombre}
+  esperado:
+    tipos: [muerte]
+    datos: {lugar_hechos: Estado de México, victima_mujer: 'no'}
+    reglas: [r005]
+    reglas_no: [r006, r007]
+    max_preguntas: 3
+
+- id: abuso_nina_10
+  relato: Un vecino tocó a mi hija de 10 años en sus partes íntimas
+  respuestas: {lugar_hechos: Querétaro, papel: a mi hija, relacion_partes: es un vecino, ninguna}
+  esperado:
+    tipos: [agresion_sexual]
+    datos: {lugar_hechos: Querétaro, edad_victima: 10}
+    reglas: [r016]
+    reglas_no: [r014, r015]
+    max_preguntas: 3
+
+- id: estupro_15
+  relato: Mi hija de 15 años tuvo relaciones con un hombre de 30 que la engañó diciendo que se iban a casar
+  respuestas: {lugar_hechos: CDMX, papel: a mi hija, relacion_partes: ninguna, no es familiar}
+  esperado:
+    tipos: [agresion_sexual]
+    datos: {lugar_hechos: Ciudad de México, edad_victima: 15}
+    reglas: [r014]
+    reglas_no: [r015, r016]
+    max_preguntas: 3
+
+- id: incesto
+  relato: Mi tío abusa de mí desde que tengo 16, ahora tengo 19
+  respuestas: {lugar_hechos: Morelos, papel: a mí, relacion_partes: es mi tío, familiar}
+  esperado:
+    tipos: [agresion_sexual]
+    datos: {lugar_hechos: Morelos, relacion_partes: familiar}
+    reglas: [r015]
+    max_preguntas: 3
+
+- id: acoso_compañero
+  relato: Un compañero del transporte me manda mensajes sexuales y me sigue, no es mi jefe ni nada
+  respuestas: {lugar_hechos: CDMX, papel: a mí, superior_o_docente: no}
+  esperado:
+    tipos: [acoso_hostigamiento]
+    datos: {lugar_hechos: Ciudad de México, superior_o_docente: 'no'}
+    reglas: [r018]
+    reglas_no: [r019]
+    max_preguntas: 3
+
+- id: secuestro
+  relato: Se llevaron a mi esposo y piden un rescate de 500 mil pesos
+  respuestas: {lugar_hechos: Estado de México, papel: a mi esposo, edad_victima: '45', servidor_publico: no sé}
+  esperado:
+    tipos: [privacion_libertad]
+    datos: {lugar_hechos: Estado de México, pide_dinero: si}
+    reglas: [r030]
+    reglas_no: [r032, r033]
+    max_preguntas: 4
+
+- id: sustraccion_menor
+  relato: Mi expareja se llevó a mi hijo de 5 años y no me lo quiere regresar
+  respuestas: {lugar_hechos: Querétaro, papel: a mi hijo, pide_dinero: 'no', servidor_publico: 'no'}
+  esperado:
+    tipos: [privacion_libertad]
+    datos: {lugar_hechos: Querétaro, edad_victima: 5}
+    reglas: [r032]
+    reglas_no: [r030, r034]
+    max_preguntas: 4
+
+- id: desaparicion_forzada
+  relato: Unos policías se llevaron a mi hermano en una patrulla y no sabemos dónde está
+  respuestas: {lugar_hechos: Morelos, papel: a mi hermano, pide_dinero: 'no', edad_victima: '28'}
+  esperado:
+    tipos: [privacion_libertad]
+    datos: {lugar_hechos: Morelos, servidor_publico: si}
+    reglas: [r034]
+    reglas_no: [r030, r032]
+    max_preguntas: 4
+
+- id: choque_culposo
+  relato: Choqué sin querer contra otro coche y la otra persona salió lesionada, me quieren meter a la cárcel
+  respuestas: {lugar_hechos: CDMX, papel: a mí me acusan, intencional: no, fue un accidente}
+  esperado:
+    tipos: [transito]
+    datos: {lugar_hechos: Ciudad de México, intencional: 'no'}
+    reglas: [r050]
+    max_preguntas: 3
+
+- id: policia_pide_dinero
+  relato: Un policía me detuvo sin razón y me pidió 2 mil pesos para dejarme ir
+  respuestas: {lugar_hechos: Querétaro, papel: a mí}
+  esperado:
+    tipos: [abuso_autoridad]
+    datos: {lugar_hechos: Querétaro, pide_dinero: si}
+    reglas: [r062, r063]
+    max_preguntas: 2
+
+- id: esterilizacion_forzada
+  relato: En el hospital me hicieron la salpingoclasia después del parto sin preguntarme
+  respuestas: {lugar_hechos: Estado de México, papel: a mí, consentimiento_medico: no, nunca me preguntaron}
+  esperado:
+    tipos: [salud]
+    datos: {lugar_hechos: Estado de México, consentimiento_medico: 'no'}
+    reglas: [r070]
     max_preguntas: 3

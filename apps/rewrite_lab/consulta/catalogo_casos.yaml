@@ -228,6 +228,7 @@ tipos_caso:
   - pide_dinero
   - relacion_partes
   - edad_victima
+  - servidor_publico
   estado: borrador
 - id: robo
   materia: penal
@@ -283,6 +284,7 @@ tipos_caso:
   datos:
   - lugar_hechos
   - servidor_publico
+  - pide_dinero
   estado: borrador
 - id: discriminacion
   materia: penal
@@ -705,7 +707,8 @@ reglas:
   tipo_caso: muerte
   delito: feminicidio
   condicion: ''
-  cuando: []
+  cuando:
+  - victima_mujer = si
   articulos:
     cdmx:
     - 148 BIS
@@ -745,7 +748,8 @@ reglas:
   tipo_caso: muerte
   delito: transfeminicidio
   condicion: ''
-  cuando: []
+  cuando:
+  - victima_mujer = si
   articulos:
     cdmx:
     - 148 Ter
@@ -1114,7 +1118,8 @@ reglas:
   tipo_caso: agresion_sexual
   delito: incesto
   condicion: ''
-  cuando: []
+  cuando:
+  - relacion_partes = familiar
   articulos:
     cdmx:
     - '181'
@@ -1154,7 +1159,8 @@ reglas:
   tipo_caso: agresion_sexual
   delito: delitos contra menores de 12 años
   condicion: ''
-  cuando: []
+  cuando:
+  - edad_victima < 12
   articulos:
     cdmx:
     - 181 BIS
@@ -1289,7 +1295,8 @@ reglas:
   tipo_caso: acoso_hostigamiento
   delito: hostigamiento sexual
   condicion: ''
-  cuando: []
+  cuando:
+  - superior_o_docente = si
   articulos:
     cdmx:
     - '182'
@@ -1518,7 +1525,8 @@ reglas:
   tipo_caso: amenazas_extorsion
   delito: Amenazas
   condicion: ''
-  cuando: []
+  cuando:
+  - NO pide_dinero
   articulos:
     cdmx:
     - '209'
@@ -1539,7 +1547,8 @@ reglas:
   delito: extorsión (Ley General en materia de Extorsión; en la CDMX el art. 236 está derogado desde el 12-dic-2024 y queda
     el 148 Quáter; revisar cada estado)
   condicion: ''
-  cuando: []
+  cuando:
+  - pide_dinero = si
   articulos:
     cdmx:
     - 148 Quáter
@@ -1639,7 +1648,8 @@ reglas:
   tipo_caso: privacion_libertad
   delito: secuestro (Ley General en materia de Secuestro)
   condicion: ''
-  cuando: []
+  cuando:
+  - pide_dinero = si
   articulos:
     cdmx:
     - '163'
@@ -1726,7 +1736,8 @@ reglas:
   tipo_caso: privacion_libertad
   delito: sustracción o retención de menores
   condicion: ''
-  cuando: []
+  cuando:
+  - edad_victima < 18
   articulos:
     cdmx:
     - '172'
@@ -1756,7 +1767,8 @@ reglas:
   tipo_caso: privacion_libertad
   delito: tráfico de menores
   condicion: ''
-  cuando: []
+  cuando:
+  - edad_victima < 18
   articulos:
     cdmx:
     - '169'
@@ -1774,7 +1786,8 @@ reglas:
   tipo_caso: privacion_libertad
   delito: desaparición forzada por un servidor público (CDMX, art. 168)
   condicion: ''
-  cuando: []
+  cuando:
+  - servidor_publico = si
   articulos:
     cdmx:
     - '168'
@@ -2359,7 +2372,8 @@ reglas:
   tipo_caso: transito
   delito: Lesiones u homicidio culposo
   condicion: ''
-  cuando: []
+  cuando:
+  - NO intencional
   articulos:
     cdmx:
     - '135'
@@ -2390,7 +2404,8 @@ reglas:
   tipo_caso: transito
   delito: daño culposo
   condicion: ''
-  cuando: []
+  cuando:
+  - NO intencional
   articulos:
     cdmx:
     - '240'
@@ -2689,7 +2704,8 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: cohecho
   condicion: ''
-  cuando: []
+  cuando:
+  - pide_dinero = si
   articulos:
     cdmx:
     - '257'
@@ -2728,7 +2744,8 @@ reglas:
   tipo_caso: abuso_autoridad
   delito: concusión
   condicion: ''
-  cuando: []
+  cuando:
+  - pide_dinero = si
   articulos:
     cdmx:
     - '274'
@@ -2920,7 +2937,8 @@ reglas:
   tipo_caso: salud
   delito: esterilización forzada
   condicion: ''
-  cuando: []
+  cuando:
+  - consentimiento_medico = no
   articulos:
     cdmx:
     - '151'
@@ -3138,7 +3156,8 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: explotación laboral de menores
   condicion: ''
-  cuando: []
+  cuando:
+  - edad_victima < 18
   articulos:
     cdmx:
     - 190 BIS
@@ -3193,7 +3212,8 @@ reglas:
   tipo_caso: menores_vulnerables
   delito: turismo sexual
   condicion: ''
-  cuando: []
+  cuando:
+  - edad_victima < 18
   articulos:
     cdmx:
     - '186'
