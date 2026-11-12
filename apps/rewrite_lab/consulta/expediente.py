@@ -9,7 +9,9 @@ El expediente es un dict:
      'datos': {'lugar_hechos': 'Querétaro', 'pide_dinero': 'si', 'edad_victima': 24},
      'no_sabe': ['monto'],                         # la persona dijo que no sabe: cuenta como contestado
      'preguntas': {'lugar_hechos': 2},             # cuántas veces se preguntó cada dato
-     'orientados': ['imagenes_intimas']}           # tipos de caso de la última orientación
+     'orientados': ['imagenes_intimas'],           # tipos de caso de la última orientación
+     'por_actualizar': ['monto'],                  # datos complementarios que se preguntan después de orientar
+     'hechos': ['la golpearon muy feo']}           # lo que contó y no cabe en ningún dato (lo anota el extractor)
 
 Valores de cada dato, según su `tipo` en el catálogo:
     si_no → 'si' | 'no' · numero → int/float · opcion → uno de `opciones` · estado → nombre oficial de la entidad.
@@ -111,10 +113,29 @@ def datos_necesarios(expediente: dict, catalogo: dict) -> list[dict]:
     return [por_id[i] for i in ids if i in por_id and por_id[i].get('preguntar', True)]
 
 
+def datos_complementarios(expediente: dict, catalogo: dict) -> list[dict]:
+    """Datos que los tipos de caso del expediente listan pero que ninguna condición de sus reglas usa: no cambian qué
+    reglas aplican, pero sí precisan la orientación (en robo, `monto` y `violencia_o_arma` cambian la pena). Se
+    preguntan después de orientar. Cada uno es un hueco del catálogo: una regla que lo use haría que se pregunte antes."""
+    por_id = {d['id']: d for d in catalogo.get('datos', [])}
+    necesarios = {d['id'] for d in datos_necesarios(expediente, catalogo)}
+    tipos = {t['id']: t for t in catalogo.get('tipos_caso', [])}
+    ids = []
+    for t in expediente.get('tipos_caso', []):
+        ids += [d for d in tipos.get(t, {}).get('datos', []) if d not in ids and d not in necesarios]
+    return [por_id[i] for i in ids if i in por_id and por_id[i].get('preguntar', True)]
+
+
 def datos_faltantes(expediente: dict, catalogo: dict) -> list[dict]:
     """Los datos necesarios sin valor ni «no sé», en el orden en que se preguntan. Lista vacía = ya están todos."""
     hay = set(expediente.get('datos', {})) | set(expediente.get('no_sabe', []))
     return [d for d in datos_necesarios(expediente, catalogo) if d['id'] not in hay]
+
+
+def complementarios_faltantes(expediente: dict, catalogo: dict) -> list[dict]:
+    """Los datos complementarios sin valor ni «no sé»."""
+    hay = set(expediente.get('datos', {})) | set(expediente.get('no_sabe', []))
+    return [d for d in datos_complementarios(expediente, catalogo) if d['id'] not in hay]
 
 
 # ── Reglas: datos → delitos ──────────────────────────────────────────────────────

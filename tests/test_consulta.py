@@ -135,7 +135,9 @@ def test_no_orienta_hasta_tener_los_datos_y_luego_orienta():
     # lo dijo; si ya se difundió, el consentimiento o si es mujer no los usa ninguna regla de imágenes íntimas.
     assert [p[2]['dato'] for p in pasos[:-1]] == ['lugar_hechos', 'papel', 'edad_victima']
     estado, exp, salida, reg = pasos[-1]
-    assert estado == M.ORIENTACION and reg['estado_antes'] == M.LLENAR_EXPEDIENTE
+    # Orienta, y como faltan datos complementarios (los que ninguna regla usa), sigue en LLENAR_EXPEDIENTE con el primero.
+    assert salida['tipo'] == 'orientar' and estado == M.LLENAR_EXPEDIENTE and reg['estado_antes'] == M.LLENAR_EXPEDIENTE
+    assert salida['pregunta']['dato'] == 'ya_difundido' and exp['por_actualizar'] == ['ya_difundido', 'consentimiento_difusion', 'victima_mujer']
     delitos = {r['delito'] for r in CAT['reglas'] if r['id'] in salida['reglas']}
     assert 'extorsión' in delitos and 'amenazas' not in delitos                       # pide dinero
     assert 'pornografía de personas menores de edad' not in delitos                  # tiene 24
@@ -541,3 +543,51 @@ def test_si_conto_algo_y_no_se_reconoce_el_caso_pide_mas_sin_ignorarlo():
     assert pasos[0][2]['texto'] == f'{M.SALUDO}\n{M.RELATO}'
     pasos = conversar(IASaludo(), ['me robaron', 'ya te dije'])   # corto, pero no es un saludo
     assert pasos[0][2]['texto'] == f'{M.SALUDO}\n{M.RELATO_MAS}' and pasos[1][2]['texto'] == M.RELATO_MAS
+
+
+class IAHechos(IAFalsa):
+    def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
+        x = super().extraer_expediente(texto, pregunta, datos, ultimo)
+        return {**x, 'hechos': ['la golpearon muy feo'] if 'golpearon' in texto.split('\n')[-1] else []}
+
+
+def test_despues_de_orientar_pregunta_los_complementarios_y_actualiza():
+    """Robo: ninguna regla usa violencia_o_arma, monto ni relacion_partes. Se orienta con el lugar y el papel, luego se
+    preguntan uno por uno y al final se orienta otra vez con una actualización corta."""
+    resp = {'me robaron en CDMX': {'lugar_hechos': 'Ciudad de México', 'papel': 'victima'},
+            'sí, me golpearon muy feo': {'violencia_o_arma': 'si'},
+            'como 3 mil pesos': {'monto': 'como 3 mil pesos'}}
+    pasos = conversar(IAHechos(tipos=['robo'], respuestas=resp),
+                      ['me robaron en CDMX', 'sí, me golpearon muy feo', 'como 3 mil pesos', '¿y ahora qué hago?'])
+    (e1, x1, s1, _), (e2, x2, s2, r2), (e3, x3, s3, _), (e4, x4, s4, r4) = pasos
+    assert s1['tipo'] == 'orientar' and e1 == M.LLENAR_EXPEDIENTE and s1['pregunta']['dato'] == 'violencia_o_arma'
+    assert len(s1['por_preguntar']) == 3 and 'actualizacion' not in s1
+    # «sí, me golpearon» llena violencia_o_arma y queda como hecho; el siguiente complementario es el monto
+    assert x2['datos']['violencia_o_arma'] == 'si' and x2['hechos'] == ['la golpearon muy feo']
+    assert s2 == {'tipo': 'pregunta', 'dato': 'monto', 'texto': s2['texto']} and e2 == M.LLENAR_EXPEDIENTE
+    assert s3['dato'] == 'relacion_partes'
+    # no contestó relacion_partes: se pregunta una sola vez, cuenta como «no sabe» y se actualiza
+    assert s4['tipo'] == 'orientar' and e4 == M.ORIENTACION and 'pregunta' not in s4
+    assert s4['actualizacion'] == {'violencia_o_arma': 'si', 'monto': x4['datos']['monto'], 'relacion_partes': 'no sabe'}
+    assert x4['por_actualizar'] == [] and 'relacion_partes' in x4['no_sabe']
+    # un mensaje más ya es seguimiento normal
+    e5, _, s5, _ = M.turno(e4, x4, {'tipo': 'mensaje', 'texto': 'gracias', 'historial': []}, CAT, IAHechos(tipos=['robo']))
+    assert e5 == M.ORIENTACION and s5['tipo'] == 'orientar' and 'actualizacion' not in s5 and 'pregunta' not in s5
+
+
+def test_actualizacion_y_hechos_llegan_al_llm_que_orienta():
+    class Cur:
+        def execute(self, sql, p):
+            self.p = p
+
+        def fetchall(self):
+            return []
+    salida = {'tipo': 'orientar', 'reglas': ['r035'], 'inciertas': [], 'articulos': {},
+              'actualizacion': {'violencia_o_arma': 'si'}}
+    kw = dict(cur=Cur(), table='t', expediente={'datos': {}, 'hechos': ['la golpearon muy feo']}, catalogo=CAT,
+              conversacion='…', contexto='todos', embed=None)
+    u = O.preparar(salida=salida, seguimiento='sí, me golpearon', **kw)['user']
+    assert 'OTROS HECHOS' in u and 'la golpearon muy feo' in u and '- violencia_o_arma: si' in u and 'YA ORIENTASTE' in u
+    assert u.count('YA ORIENTASTE') == 1        # actualización, no también el seguimiento
+    u = O.preparar(salida={**salida, 'actualizacion': None, 'por_preguntar': ['¿Hubo violencia?']}, **kw)['user']
+    assert 'le hará a la persona estas preguntas' in u and '- ¿Hubo violencia?' in u

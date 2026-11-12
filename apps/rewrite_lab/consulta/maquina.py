@@ -7,6 +7,11 @@ qué ley aplica.
     └───────────────────┘ ◀── falta un dato nuevo ─── └─────────────┘ ──┘
        ▲            │  falta un dato: pregunta (texto del catálogo)
        └────────────┘  tipo de caso dudoso: botones para elegir
+                       orienta y faltan datos complementarios: los pregunta y luego da una actualización corta
+
+Datos complementarios (expediente.datos_complementarios): los que el tipo de caso lista pero ninguna condición usa. No
+cambian qué reglas aplican, así que no detienen la orientación; se preguntan DESPUÉS de orientar, uno por uno, y al
+terminar se orienta de nuevo con una actualización corta (salida['actualizacion']).
 
 Reglas de diseño (06_evaluation/estudio_ronda3_2026-11-10/diseno_maquina_estados.md):
   · El ESTADO lo decide este código, nunca el LLM. Las transiciones válidas están en TRANSICIONES.
@@ -28,7 +33,10 @@ Salida (qué le toca hacer al asistente):
     {'tipo': 'elegir_tipo', 'texto': '...', 'opciones': [{'id', 'titulo'}]}
     {'tipo': 'orientar', 'reglas': [...], 'inciertas': [...], 'codigos': ['queretaro'], 'articulos': {...},
      'fuera_de_corpus': bool, 'sin_reglas': bool,
-     'tipos_quitados': [...]}   # tipos de los que ya se orientó y ya no aplican: la orientación debe decirlo
+     'tipos_quitados': [...],   # tipos de los que ya se orientó y ya no aplican: la orientación debe decirlo
+     'pregunta': {'dato', 'texto'},        # el primer dato complementario: va después de la orientación
+     'por_preguntar': ['¿…?'],             # todos los complementarios que faltan: el LLM que orienta no los pregunta
+     'actualizacion': {'monto': 'no sabe'}}   # ya se había orientado: solo qué cambia con estos datos
 """
 from __future__ import annotations
 
@@ -44,10 +52,14 @@ TRANSICIONES = {
     (LLENAR_EXPEDIENTE, 'expediente_completo'):  ORIENTACION,
     (ORIENTACION, 'seguimiento'):                ORIENTACION,
     (ORIENTACION, 'falta_dato'):                 LLENAR_EXPEDIENTE,
+    (LLENAR_EXPEDIENTE, 'faltan_complementarios'):  LLENAR_EXPEDIENTE,   # orienta y pregunta el primero
+    (ORIENTACION, 'faltan_complementarios'):        LLENAR_EXPEDIENTE,
 }
 # «reiniciar» vale desde cualquier estado: expediente nuevo y LLENAR_EXPEDIENTE.
 
 MAX_PREGUNTAS = 2    # un dato no obligatorio que se preguntó 2 veces sin respuesta cuenta como «no sé»
+MAX_COMPLEMENTARIO = 1   # un complementario se pregunta una vez: si no contesta, no se insiste (ya se orientó)
+MAX_HECHOS = 30
 OTRO = 'otro'
 RELATO = '¿En qué te puedo ayudar? Cuéntame tu situación.'   # sin tipo de caso todavía: se pide el relato
 SALUDO = 'Hola, soy Tlacua, tu asistente jurídico.'           # antes del RELATO si es el primer mensaje del asistente
@@ -127,7 +139,10 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
         elif c.get('opciones') and not antes:
             dudoso = c['opciones']        # con un tipo ya elegido, la duda no cambia nada: no se muestran botones
         # Se extrae aunque el tipo de caso sea dudoso, para no perder lo que la persona ya contó.
-        buscar = E.datos_necesarios(exp, catalogo) if exp.get('tipos_caso') else list(catalogo.get('datos', []))
+        # Con tipo de caso: los datos que cambian las reglas y también los complementarios («sí, me golpearon» llena
+        # violencia_o_arma aunque todavía no se haya preguntado).
+        buscar = (E.datos_necesarios(exp, catalogo) + E.datos_complementarios(exp, catalogo) if exp.get('tipos_caso')
+                  else list(catalogo.get('datos', [])))
         if exp['datos'].get('papel') == 'victima':  # quien escribe es la víctima: «tengo 24» es la edad de la víctima
             buscar = [{**d, 'pregunta': d.get('pregunta_tu') or d.get('pregunta')} for d in buscar]
         x = ia.extraer_expediente(texto, pregunta, [d for d in buscar if d.get('preguntar', True)], evento.get('texto', ''))
@@ -136,6 +151,10 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
         registro['cambios'] += cambios
         if x.get('residencia'):
             exp = {**exp, 'residencia': x['residencia']}
+        nuevos_hechos = [h for h in x.get('hechos') or [] if h not in exp.get('hechos', [])]
+        if nuevos_hechos:
+            exp = {**exp, 'hechos': (exp.get('hechos', []) + nuevos_hechos)[-MAX_HECHOS:]}
+            registro['hechos'] = nuevos_hechos
         # La persona solo dijo dónde vive («soy de CDMX»), ya se le preguntó dónde pasó y contestó sin nombrar otro
         # estado («sí», «ya te dije»): se toma donde vive como lugar de los hechos y queda marcado como supuesto.
         if ('lugar_hechos' not in exp['datos'] and exp.get('residencia')
@@ -174,14 +193,20 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
     registro['faltan'] = [d['id'] for d in faltan]
 
     if faltan:
-        d = faltan[0]
-        exp = {**exp, 'preguntas': {**exp.get('preguntas', {}), d['id']: exp.get('preguntas', {}).get(d['id'], 0) + 1}}
-        texto = d['pregunta']
-        if exp['datos'].get('papel') == 'victima' and d.get('pregunta_tu'):
-            texto = d['pregunta_tu']      # le pasó a la persona: «¿Qué edad tienes?», no «¿Qué edad tiene la víctima?»
-        if d['id'] == 'lugar_hechos' and exp.get('residencia'):
-            texto = f'{exp["residencia"]} es tu lugar de residencia, ¿también ocurrieron los hechos ahí?'
-        salida = {'tipo': 'pregunta', 'dato': d['id'], 'texto': texto}
+        exp, salida = _preguntar(exp, faltan[0])
+        return _cerrar(registro['estado_antes'], _siguiente(estado, 'falta_dato'), exp, salida, registro)
+
+    # Complementarios: se preguntan una vez cada uno; el que ya se preguntó y no se contestó cuenta como «no sé».
+    preguntas = exp.get('preguntas', {})
+    callados = [d['id'] for d in E.complementarios_faltantes(exp, catalogo)
+                if preguntas.get(d['id'], 0) >= MAX_COMPLEMENTARIO]
+    if callados:
+        exp = {**exp, 'no_sabe': exp.get('no_sabe', []) + callados}
+    complementarios = E.complementarios_faltantes(exp, catalogo)
+    ya_orientado = set(exp['tipos_caso']) <= set(exp.get('orientados', []))
+    if ya_orientado and complementarios and exp.get('por_actualizar'):
+        registro['faltan'] = [d['id'] for d in complementarios]
+        exp, salida = _preguntar(exp, complementarios[0])
         return _cerrar(registro['estado_antes'], _siguiente(estado, 'falta_dato'), exp, salida, registro)
 
     reglas = E.reglas_aplicables(exp, catalogo, solo_confirmadas=solo_confirmadas)
@@ -192,9 +217,34 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
               'fuera_de_corpus': exp['datos'].get('lugar_hechos') not in E.CODIGO_DE_ESTADO and not codigos,
               'sin_reglas': not reglas, 'supuestos': list(exp.get('supuestos', [])),
               'tipos_quitados': [t for t in exp.get('orientados', []) if t not in exp['tipos_caso']]}
+    if ya_orientado and exp.get('por_actualizar'):
+        # Ya contestó (o no) los complementarios: la orientación es una actualización corta con esos datos.
+        salida['actualizacion'] = {k: exp['datos'].get(k, 'no sabe') for k in exp['por_actualizar']}
+        exp = {**exp, 'por_actualizar': []}
     exp = {**exp, 'orientados': list(exp['tipos_caso'])}
+    if complementarios and not ya_orientado:
+        exp, pregunta = _preguntar(exp, complementarios[0])
+        salida.update({'pregunta': {'dato': pregunta['dato'], 'texto': pregunta['texto']},
+                       'por_preguntar': [_texto_pregunta(exp, d) for d in complementarios]})
+        exp = {**exp, 'por_actualizar': [d['id'] for d in complementarios]}
+        registro['faltan'] = [d['id'] for d in complementarios]
+        return _cerrar(registro['estado_antes'], _siguiente(estado, 'faltan_complementarios'), exp, salida, registro)
     evento_interno = 'expediente_completo' if estado == LLENAR_EXPEDIENTE else 'seguimiento'
     return _cerrar(registro['estado_antes'], _siguiente(estado, evento_interno), exp, salida, registro)
+
+
+def _texto_pregunta(exp: dict, d: dict) -> str:
+    if exp['datos'].get('papel') == 'victima' and d.get('pregunta_tu'):
+        return d['pregunta_tu']           # le pasó a la persona: «¿Qué edad tienes?», no «¿Qué edad tiene la víctima?»
+    if d['id'] == 'lugar_hechos' and exp.get('residencia'):
+        return f'{exp["residencia"]} es tu lugar de residencia, ¿también ocurrieron los hechos ahí?'
+    return d['pregunta']
+
+
+def _preguntar(exp: dict, d: dict) -> tuple[dict, dict]:
+    """Cuenta una pregunta más del dato y arma la salida 'pregunta'."""
+    exp = {**exp, 'preguntas': {**exp.get('preguntas', {}), d['id']: exp.get('preguntas', {}).get(d['id'], 0) + 1}}
+    return exp, {'tipo': 'pregunta', 'dato': d['id'], 'texto': _texto_pregunta(exp, d)}
 
 
 def _cerrar(antes: str, despues: str, exp: dict, salida: dict, registro: dict):

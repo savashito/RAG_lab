@@ -1818,8 +1818,15 @@ def _consulta_turno(body: dict):
         # El catálogo no tiene reglas para el caso («otro» o ninguna aplica): orienta el buscador, como en el estudio.
         out['buscador'] = consulta_buscador_cfg(body.get('prompt') or CONSULTA_PROMPT)
         return out, None
-    seguimiento = (body.get('evento') or {}).get('texto') if registro.get('estado_antes') == consulta_maquina.ORIENTACION else None
+    seguimiento = ((body.get('evento') or {}).get('texto')
+                   if registro.get('estado_antes') == consulta_maquina.ORIENTACION or salida.get('actualizacion') else None)
     return out, _consulta_preparar(body, doc, salida, exp, seguimiento)
+
+
+def _consulta_despues(salida: dict) -> str:
+    """Lo que va después de la orientación: el primer dato complementario (texto del catálogo), si falta alguno."""
+    p = salida.get('pregunta') if salida.get('tipo') == 'orientar' else None
+    return f'\n\n**{p["texto"]}**' if p else ''
 
 
 def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict, seguimiento: str | None = None):
@@ -1852,12 +1859,13 @@ def consulta_turno(body: dict):
         out['pregunta_llm'] = llm.chat_messages(out.pop('mensajes_pregunta'), max_tokens=400, timeout=90)
     if out.get('buscador'):
         evs = list(_study_chat_stream(body.get('historial') or [], out.pop('buscador')))
-        out['buscador'] = {'respuesta': ''.join(e.get('text', '') for e in evs if e.get('stage') == 'token'),
+        out['buscador'] = {'respuesta': ''.join(e.get('text', '') for e in evs if e.get('stage') == 'token')
+                                        + _consulta_despues(out['salida']),
                            'chunks': next((e['chunks'] for e in evs if e.get('stage') == 'context'), [])}
     if preparar:
         system, prep = preparar()
         t = time.time()
-        prep['respuesta'] = llm.chat(system, prep.pop('user'), max_tokens=4096, timeout=180)
+        prep['respuesta'] = llm.chat(system, prep.pop('user'), max_tokens=4096, timeout=180) + _consulta_despues(out['salida'])
         prep['segundos']['respuesta'] = round(time.time() - t, 2)
         out['orientacion'] = prep
     return out
@@ -1884,6 +1892,8 @@ def consulta_turno_stream(body: dict):
                                                                     'rank': c.get('rank')} for c in ev.get('chunks') or []]})
                     elif ev.get('stage') in ('token', 'error'):
                         yield sse(ev)
+                if _consulta_despues(out['salida']):
+                    yield sse({'stage': 'token', 'text': _consulta_despues(out['salida'])})
                 yield sse({'stage': 'done', 'segundos_respuesta': round(time.time() - t, 2)})
                 return
             if mensajes:                           # la pregunta del dato que falta, redactada por el LLM
@@ -1902,6 +1912,8 @@ def consulta_turno_stream(body: dict):
             for piece in llm.chat_stream([{'role': 'system', 'content': system}, {'role': 'user', 'content': user}],
                                          max_tokens=4096, timeout=180):
                 yield sse({'stage': 'token', 'text': piece})
+            if _consulta_despues(out['salida']):   # el primer dato complementario, en el mismo mensaje
+                yield sse({'stage': 'token', 'text': _consulta_despues(out['salida'])})
             yield sse({'stage': 'done', 'segundos_respuesta': round(time.time() - t, 2)})
         except Exception as e:   # noqa: BLE001 — el error viaja como evento para mostrarlo en la UI
             yield sse({'stage': 'error', 'error': f'{type(e).__name__}: {e}'})

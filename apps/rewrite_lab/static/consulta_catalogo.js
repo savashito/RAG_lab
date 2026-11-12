@@ -118,6 +118,8 @@
     else if (s.tipo === 'orientar' && s.sin_reglas) decir('Con los datos que diste no encontré reglas del catálogo para tu caso.');
     else if (s.tipo === 'orientar' && g('cat-modo').value === 'ninguno')
       decir(`Tengo lo necesario para orientarte: ${s.reglas.length} regla(s) del catálogo y ${Object.values(s.articulos).flat().length} artículo(s). Míralos en el panel.`);
+    // Sin orientación del LLM, el dato complementario se escribe aquí; con ella, el servidor lo manda al final.
+    if (s.tipo === 'orientar' && s.pregunta && (s.sin_reglas || g('cat-modo').value === 'ninguno') && !buscador) decir(s.pregunta.texto);
   }
 
   function enviar(){
@@ -142,7 +144,10 @@
       ${r.por_que ? `<div class="muted">Por qué (LLM): ${e(r.por_que)}</div>` : ''}
       <h3>Expediente</h3>${datos.length ? `<table>${datos.map(([k, v]) => `<tr><td>${e(k)}</td><td>${e(v)}${(x.supuestos || []).includes(k) ? ' <span class="warn">(supuesto: es donde vive)</span>' : ''}</td></tr>`).join('')}</table>` : '<span class="muted">sin datos</span>'}
       ${(x.no_sabe || []).length ? `<div class="warn">No sabe: ${e(x.no_sabe.join(', '))}</div>` : ''}
-      ${(r.faltan || []).length ? `<div>Faltan: ${e(r.faltan.join(', '))}</div>` : ''}`;
+      ${(x.hechos || []).length ? `<h3>Hechos (no caben en ningún dato)</h3><ul>${x.hechos.map(h => `<li>${e(h)}</li>`).join('')}</ul>` : ''}
+      ${(r.faltan || []).length ? `<div>Faltan: ${e(r.faltan.join(', '))}</div>` : ''}
+      ${(x.por_actualizar || []).length ? `<div class="muted">Complementarios (después de orientar): ${e(x.por_actualizar.join(', '))}</div>` : ''}
+      ${s.actualizacion ? `<div class="muted">Actualización corta con: ${e(Object.entries(s.actualizacion).map(([k, v]) => k + ' = ' + v).join(', '))}</div>` : ''}`;
     if (s.tipo === 'orientar') {
       h += `<h3>Reglas que aplican (${s.reglas.length})</h3>` + (s.reglas.length ? `<table>${s.reglas.map(id => { const q = regla(id);
           return `<tr><td>${e(id)}</td><td>${e(q.delito)}${s.inciertas.includes(id) ? ' <span class="warn">(incierta: falta un dato)</span>' : ''}

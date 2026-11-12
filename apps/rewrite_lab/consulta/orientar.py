@@ -50,6 +50,25 @@ Responde a ese mensaje: qué aporta de nuevo y si cambia algo de lo que ya dijis
 No repitas lo que ya explicaste ni la estructura completa de la orientación, y no vuelvas a preguntar lo que la persona
 ya contestó. Si no cambia nada, dilo en pocas palabras y responde su duda."""
 
+# Después de orientar, la máquina pregunta los datos complementarios (los que el tipo de caso lista y ninguna regla
+# usa). El LLM no los pregunta: si lo hiciera, la persona vería la misma pregunta dos veces.
+POR_PREGUNTAR = """
+
+Después de tu respuesta, el asistente le hará a la persona estas preguntas, una por una:
+{preguntas}
+No hagas tú esas preguntas ni otras sobre lo mismo. Si alguna cambia la orientación (por ejemplo, una agravante),
+explica cómo la cambia y termina con una frase que diga que le harás unas preguntas para precisarla."""
+
+# Al terminar los complementarios: una actualización corta, no la orientación completa otra vez.
+ACTUALIZACION = """
+
+YA ORIENTASTE a la persona: tu orientación anterior está en el CASO. Después le preguntaste unos datos y contestó:
+{datos}
+Su ÚLTIMO MENSAJE es: «{ultimo}»
+En pocas líneas di qué cambia con esos datos (qué artículos o agravantes aplican ahora y cuáles no), con su ley y
+número, y responde lo que haya preguntado. Si un dato es «no sabe», di qué cambiaría según la respuesta. No repitas la
+orientación completa ni vuelvas a preguntar lo que ya contestó."""
+
 
 # Con «preguntas redactadas por el LLM»: la máquina decide QUÉ dato falta; el LLM solo decide CÓMO pedirlo.
 PREGUNTAR_SYSTEM = """Eres Tlacua, un asistente que orienta a personas en México sobre problemas legales. Hablas como una
@@ -185,7 +204,8 @@ def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
              contexto: str, embed, tope: int | None = None, seguimiento: str | None = None) -> dict:
     """Salida 'orientar' de la máquina → {user: el mensaje para el LLM, y qué artículos entraron al contexto}.
     `embed(texto) → vector` lo pone quien llama. La respuesta la pide quien llama (orientar() o en streaming).
-    `seguimiento`: el último mensaje de la persona cuando ya se había orientado (estado ORIENTACION antes del mensaje)."""
+    `seguimiento`: el último mensaje de la persona cuando ya se había orientado (estado ORIENTACION antes del mensaje,
+    o una actualización: salida['actualizacion'])."""
     if contexto not in CONTEXTOS:
         raise ValueError(f'contexto desconocido: {contexto!r} (usa {CONTEXTOS})')
     t0 = time.time()
@@ -203,14 +223,21 @@ def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
     datos = '\n'.join(f'- {k}: {v}' + (' (SUPUESTO: la persona solo dijo que vive ahí; dilo en la respuesta)'
                                        if k in supuestos else '')
                       for k, v in (expediente.get('datos') or {}).items()) or '(ninguno)'
+    if expediente.get('hechos'):              # lo que contó y no cabe en ningún dato (campo «hechos» del expediente)
+        datos += '\n\nOTROS HECHOS QUE CONTÓ LA PERSONA:\n' + '\n'.join(f'- {h}' for h in expediente['hechos'])
     lista = '\n'.join(f'- {r["delito"]}' + (f' — {r["condicion"]}' if r.get('condicion') else '')
                       + (' [INCIERTA: falta un dato]' if r['incierta'] else '') for r in reglas) or '(ninguna)'
     texto = '\n\n'.join(f'[{a["orden"]}] {NOMBRES.get(a["codigo"], a["codigo"])} — {a["ruta"]}\n{a["texto"]}'
                         for a in elegidos)
     user = ORIENTAR_USER.format(conversacion=conversacion, datos=datos, reglas=lista, contexto=texto or '(vacío)')
-    if seguimiento:
+    if salida.get('actualizacion'):
+        user += ACTUALIZACION.format(ultimo=seguimiento or '',
+                                     datos='\n'.join(f'- {k}: {v}' for k, v in salida['actualizacion'].items()))
+    elif seguimiento:
         user += SEGUIMIENTO.format(ultimo=seguimiento)
-    return {'user': user, 'seguimiento': bool(seguimiento),
+    if salida.get('por_preguntar'):
+        user += POR_PREGUNTAR.format(preguntas='\n'.join(f'- {q}' for q in salida['por_preguntar']))
+    return {'user': user, 'seguimiento': bool(seguimiento), 'actualizacion': bool(salida.get('actualizacion')),
             'modo_contexto': contexto, 'tope_tokens': tope or TOPE[contexto],
             'tokens_contexto': sum(tokens(a['texto']) for a in elegidos),
             'contexto': [{'codigo': a['codigo'], 'num': a['num'], 'entra': a['entra'], 'orden': a.get('orden'),

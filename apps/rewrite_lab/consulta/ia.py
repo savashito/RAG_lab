@@ -52,8 +52,8 @@ Responde SOLO un JSON:
 EXTRAER_EXPEDIENTE_SYSTEM = """Extraes datos de una consulta legal en México. Recibes los mensajes de la persona, la última
 pregunta que le hizo el asistente y una lista de DATOS con su id, su tipo y la pregunta que lo obtiene.
 
-Responde SOLO un JSON con los ids de la lista como llaves:
-{"id_del_dato": valor, ...}
+Responde SOLO un JSON con los ids de la lista como llaves, más "hechos":
+{"id_del_dato": valor, ..., "hechos": ["frase corta", ...]}
 
 Reglas:
 - Solo datos que la persona dijo o que se deducen sin duda de lo que dijo. Si no lo dijo, pon null. No adivines.
@@ -64,6 +64,9 @@ Reglas:
   tomado o aceptado algo antes («mandé unas fotos y ahora me piden dinero» → victima); "persona_senalada" solo si la
   acusan, la denunciaron o la detuvieron a ella; "familiar_o_tercero" si le pasó a otra persona.
 - Tipos: si_no → "si" o "no"; numero → un número; opcion → exactamente una de las opciones listadas.
+- "hechos": lo que la persona contó en su ÚLTIMO MENSAJE que importa para su caso y que no cabe en ningún dato de la
+  lista, en frases cortas en tercera persona («la golpearon muy feo», «le quitaron el celular y la cartera»). No repitas
+  lo que ya quedó en un dato ni saludos o preguntas. Lista vacía si no hay nada.
 - No expliques nada fuera del JSON."""
 
 
@@ -146,15 +149,19 @@ class ConsultaIA:
             if len(otros) == 1:           # «soy de CDMX»: donde vive, no donde pasó; la máquina lo ofrece al preguntar
                 residencia = otros[0]
         resto = [d for d in datos if d['id'] != 'lugar_hechos']
-        if resto:
+        hechos = []
+        if resto or ultimo:
             lista = '\n'.join(f'- {d["id"]} ({d.get("tipo", "si_no")}'
                               + (f': {", ".join(d["opciones"])}' if d.get('opciones') else '')
                               + f'): {d.get("pregunta") or d.get("para_que")}' for d in resto)   # la pregunta dice qué buscar
             raw, llamada = self._llamar('extraer_expediente', EXTRAER_EXPEDIENTE_SYSTEM,
-                                        f'DATOS:\n{lista}\n\nÚLTIMA PREGUNTA DEL ASISTENTE:\n{ultima_pregunta or "(ninguna)"}'
-                                        f'\n\nMENSAJES DE LA PERSONA:\n{texto}', 300)
+                                        f'DATOS:\n{lista or "(ninguno)"}\n\nÚLTIMA PREGUNTA DEL ASISTENTE:\n{ultima_pregunta or "(ninguna)"}'
+                                        f'\n\nMENSAJES DE LA PERSONA:\n{texto}'
+                                        + (f'\n\nÚLTIMO MENSAJE:\n{ultimo}' if ultimo else ''), 400)
             llamadas.append(llamada)
             d = _json(raw) or {}
             ids = {x['id'] for x in resto}
             out.update({k: v for k, v in d.items() if k in ids and v is not None})
-        return {'datos': out, 'residencia': residencia, '_llamada': {'tarea': 'extraer_expediente', 'partes': llamadas}}
+            hechos = [h.strip() for h in d.get('hechos') or [] if isinstance(h, str) and h.strip()][:5]
+        return {'datos': out, 'residencia': residencia, 'hechos': hechos,
+                '_llamada': {'tarea': 'extraer_expediente', 'partes': llamadas}}
