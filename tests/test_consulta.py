@@ -127,10 +127,13 @@ FOTOS = {
 
 
 def test_no_orienta_hasta_tener_los_datos_y_luego_orienta():
-    pasos = conversar(IAFalsa(respuestas=FOTOS), list(FOTOS))
+    mensajes = [m for m in FOTOS if m.startswith(('Me escribe', 'En Quer', 'A mí', 'Tengo'))]
+    pasos = conversar(IAFalsa(respuestas=FOTOS), mensajes)
     for estado, _, salida, _ in pasos[:-1]:
         assert estado == M.LLENAR_EXPEDIENTE and salida['tipo'] == 'pregunta'
-    assert pasos[0][2]['dato'] == 'lugar_hechos'        # lo primero que pregunta es el lugar
+    # Solo lo que cambia el resultado: lugar y papel (generales) y la edad (la usan las reglas de menores). El dinero ya
+    # lo dijo; si ya se difundió, el consentimiento o si es mujer no los usa ninguna regla de imágenes íntimas.
+    assert [p[2]['dato'] for p in pasos[:-1]] == ['lugar_hechos', 'papel', 'edad_victima']
     estado, exp, salida, reg = pasos[-1]
     assert estado == M.ORIENTACION and reg['estado_antes'] == M.LLENAR_EXPEDIENTE
     delitos = {r['delito'] for r in CAT['reglas'] if r['id'] in salida['reglas']}

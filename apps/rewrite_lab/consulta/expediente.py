@@ -85,14 +85,29 @@ def combinar(expediente: dict, extraido: dict, catalogo: dict) -> tuple[dict, li
     return exp, cambios
 
 
+def datos_en_condiciones(catalogo: dict, tipo: str) -> set[str]:
+    """Ids de los datos que usa alguna condición `cuando` de las reglas (no descartadas) de un tipo de caso."""
+    usados = set()
+    for r in catalogo.get('reglas', []):
+        if r.get('tipo_caso') != tipo or r.get('estado') == 'descartada':
+            continue
+        for c in r.get('cuando') or []:
+            m = _COND.match(str(c))
+            if m:
+                usados.add(m.group('id') or m.group('solo'))
+    return usados
+
+
 def datos_necesarios(expediente: dict, catalogo: dict) -> list[dict]:
     """Datos que pide el caso, en orden: primero los de todos los casos (`generales`), luego los de cada tipo de caso
-    del expediente. Sin tipo de caso, solo los generales."""
+    del expediente que cambian el resultado: los que usa alguna condición de sus reglas. Un dato que el tipo de caso
+    lista pero que ninguna regla usa no se pregunta (no cambia ningún artículo). Sin tipo de caso, solo los generales."""
     por_id = {d['id']: d for d in catalogo.get('datos', [])}
     ids = list(catalogo.get('generales', ['lugar_hechos']))
     tipos = {t['id']: t for t in catalogo.get('tipos_caso', [])}
     for t in expediente.get('tipos_caso', []):
-        ids += [d for d in tipos.get(t, {}).get('datos', []) if d not in ids]
+        usados = datos_en_condiciones(catalogo, t)
+        ids += [d for d in tipos.get(t, {}).get('datos', []) if d not in ids and d in usados]
     return [por_id[i] for i in ids if i in por_id and por_id[i].get('preguntar', True)]
 
 

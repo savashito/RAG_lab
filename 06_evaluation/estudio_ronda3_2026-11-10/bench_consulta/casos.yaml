@@ -1,0 +1,150 @@
+# Benchmark de la consulta (ronda 3): casos inventados, sin datos de participantes.
+#
+# Cada caso:
+#   relato      primer mensaje de la persona
+#   respuestas  lo que contesta cuando el asistente pide ese dato (id de la pestaña Datos del expediente; «relato»
+#               si le pide que cuente su situación). Una lista = una respuesta por cada vez que se lo pregunta.
+#               Lo que no está aquí lo contesta con «no sé».
+#   esperado
+#     tipos           tipos de caso que deben quedar en el expediente (puede haber más)
+#     datos           valores que deben quedar en el expediente
+#     reglas          reglas que deben aplicar
+#     reglas_no       reglas que no deben aplicar
+#     max_preguntas   cuántas preguntas a lo más antes de orientar
+casos:
+- id: fotos_extorsion_adulta
+  relato: Mandé unas fotos íntimas a alguien que conocí en una app y ahora me pide dinero para no publicarlas
+  respuestas: {lugar_hechos: En la CDMX, papel: a mí, edad_victima: tengo 24}
+  esperado:
+    tipos: [imagenes_intimas]
+    datos: {lugar_hechos: Ciudad de México, papel: victima, pide_dinero: si, edad_victima: 24}
+    reglas: [r021]
+    reglas_no: [r022, r023, r024]
+    max_preguntas: 3
+
+- id: fotos_extorsion_menor
+  relato: Tengo 17 años, mandé fotos sin ropa a un chavo y ahora me pide mucho dinero o las sube
+  respuestas: {lugar_hechos: Querétaro, papel: a mí}
+  esperado:
+    tipos: [imagenes_intimas]
+    datos: {lugar_hechos: Querétaro, papel: victima, pide_dinero: si, edad_victima: 17}
+    reglas: [r021, r023, r024]
+    reglas_no: [r022]
+    max_preguntas: 2
+
+- id: fotos_amenaza_sin_dinero
+  relato: Mi ex me amenaza con subir mis fotos íntimas si no regreso con él
+  respuestas: {lugar_hechos: Estado de México, papel: me pasa a mí, pide_dinero: no, no me pide dinero, edad_victima: '30'}
+  esperado:
+    tipos: [imagenes_intimas]
+    datos: {lugar_hechos: Estado de México, papel: victima, pide_dinero: 'no', edad_victima: 30}
+    reglas: [r022]
+    reglas_no: [r021, r023]
+    max_preguntas: 4
+
+- id: fotos_ya_publicadas
+  relato: Mi expareja publicó mis videos íntimos en Facebook sin mi permiso
+  respuestas: {lugar_hechos: en Querétaro, papel: a mí, pide_dinero: 'no', edad_victima: tengo 26}
+  esperado:
+    tipos: [imagenes_intimas]
+    datos: {lugar_hechos: Querétaro, papel: victima, edad_victima: 26}
+    reglas: [r020]
+    reglas_no: [r023]
+    max_preguntas: 4
+
+- id: fotos_me_acusan
+  relato: Me denunciaron por compartir unas fotos de mi exnovia, ¿qué me puede pasar?
+  respuestas: {lugar_hechos: CDMX, papel: a mí me acusan, pide_dinero: 'no', edad_victima: ella tiene 22}
+  esperado:
+    tipos: [imagenes_intimas]
+    datos: {lugar_hechos: Ciudad de México, papel: persona_senalada}
+    max_preguntas: 4
+
+- id: fotos_hija_menor
+  relato: A mi hija de 15 años le están pidiendo dinero porque tienen unas fotos íntimas de ella
+  respuestas: {lugar_hechos: Morelos, papel: a mi hija}
+  esperado:
+    tipos: [imagenes_intimas]
+    datos: {lugar_hechos: Morelos, papel: familiar_o_tercero, pide_dinero: si, edad_victima: 15}
+    reglas: [r021, r023, r024]
+    max_preguntas: 2
+
+- id: saludo_y_robo
+  relato: Hola
+  respuestas: {relato: Me robaron el celular en el metro, lugar_hechos: CDMX, papel: a mí}
+  esperado:
+    tipos: [robo]
+    datos: {lugar_hechos: Ciudad de México, papel: victima}
+    max_preguntas: 3
+
+- id: asalto_con_arma
+  relato: Me asaltaron con una pistola y me quitaron la cartera y el celular
+  respuestas: {lugar_hechos: en Ecatepec, papel: a mí}
+  esperado:
+    tipos: [robo]
+    datos: {lugar_hechos: Estado de México, papel: victima}
+    max_preguntas: 2
+
+- id: violencia_familiar
+  relato: Mi esposo me golpea y me insulta enfrente de mis hijos
+  respuestas: {lugar_hechos: Cuernavaca, Morelos, papel: a mí}
+  esperado:
+    tipos: [violencia_familiar]
+    datos: {lugar_hechos: Morelos, papel: victima}
+    max_preguntas: 2
+
+- id: fraude_en_linea
+  relato: Me estafaron en una venta por internet, pagué un celular y nunca llegó
+  respuestas: {lugar_hechos: Querétaro, papel: a mí}
+  esperado:
+    tipos: [fraude_datos]
+    datos: {lugar_hechos: Querétaro, papel: victima}
+    max_preguntas: 2
+
+- id: lugar_estado_de_ebriedad
+  relato: Me están extorsionando por teléfono, dicen que tienen a mi hermano
+  respuestas: {lugar_hechos: [estaba muy tomado cuando pasó, en Querétaro], papel: a mi hermano}
+  esperado:
+    tipos: [amenazas_extorsion]
+    datos: {lugar_hechos: Querétaro, papel: familiar_o_tercero}
+    max_preguntas: 3
+
+- id: solo_dice_donde_vive
+  relato: Soy de Querétaro y me robaron la camioneta afuera de mi trabajo
+  respuestas: {lugar_hechos: sí, ahí mismo, papel: a mí}
+  esperado:
+    tipos: [robo]
+    datos: {lugar_hechos: Querétaro, papel: victima}
+    max_preguntas: 2
+
+- id: vive_en_uno_paso_en_otro
+  relato: Vivo en la CDMX pero me robaron el coche en Toluca
+  respuestas: {papel: a mí}
+  esperado:
+    tipos: [robo]
+    datos: {lugar_hechos: Estado de México, papel: victima}
+    max_preguntas: 1
+
+- id: pelea_lesiones
+  relato: Me peleé en una fiesta y me rompieron la nariz de un golpe
+  respuestas: {lugar_hechos: CDMX, papel: a mí}
+  esperado:
+    tipos: [golpes_lesiones]
+    datos: {lugar_hechos: Ciudad de México, papel: victima}
+    max_preguntas: 2
+
+- id: acoso_del_jefe
+  relato: Mi jefe me manda mensajes sexuales y me toca sin mi permiso en la oficina
+  respuestas: {lugar_hechos: Estado de México, papel: a mí}
+  esperado:
+    tipos: [acoso_hostigamiento]
+    datos: {lugar_hechos: Estado de México, papel: victima}
+    max_preguntas: 2
+
+- id: amenaza_de_muerte
+  relato: Un vecino me amenazó con matarme si sigo estacionando mi coche frente a su casa
+  respuestas: {lugar_hechos: Querétaro, papel: a mí}
+  esperado:
+    tipos: [amenazas_extorsion]
+    datos: {lugar_hechos: Querétaro, papel: victima}
+    max_preguntas: 2

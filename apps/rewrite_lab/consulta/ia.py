@@ -47,7 +47,11 @@ Responde SOLO un JSON con los ids de la lista como llaves:
 Reglas:
 - Solo datos que la persona dijo o que se deducen sin duda de lo que dijo. Si no lo dijo, pon null. No adivines.
 - Si la persona dice que no sabe, pon "no_sabe".
-- Si su mensaje es una respuesta corta («sí», «no», «24»), es la respuesta a la ÚLTIMA PREGUNTA del asistente.
+- Si su mensaje es una respuesta corta («sí», «no», «mucho», «24»), es la respuesta a la ÚLTIMA PREGUNTA del asistente
+  y solo a esa: no la uses para ningún otro dato.
+- «papel» (a quién le pasó): "victima" si le pasó a la persona que escribe, aunque ella haya mandado las fotos, pagado,
+  tomado o aceptado algo antes («mandé unas fotos y ahora me piden dinero» → victima); "persona_senalada" solo si la
+  acusan, la denunciaron o la detuvieron a ella; "familiar_o_tercero" si le pasó a otra persona.
 - Tipos: si_no → "si" o "no"; numero → un número; opcion → exactamente una de las opciones listadas.
 - No expliques nada fuera del JSON."""
 
