@@ -17,8 +17,8 @@ casos:
   respuestas: {lugar_hechos: En la CDMX, papel: a mí, edad_victima: tengo 24}
   esperado:
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Ciudad de México, papel: victima, pide_dinero: si, edad_victima: 24}
-    reglas: [r021]
+    datos: {lugar_hechos: Ciudad de México, papel: victima, pide_dinero: si, contenido_intimo: si, edad_victima: 24}
+    reglas: [r021, r020]
     reglas_no: [r022, r023, r024]
     max_preguntas: 3
 
@@ -27,8 +27,8 @@ casos:
   respuestas: {lugar_hechos: Querétaro, papel: a mí}
   esperado:
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Querétaro, papel: victima, pide_dinero: si, edad_victima: 17}
-    reglas: [r021, r023, r024]
+    datos: {lugar_hechos: Querétaro, papel: victima, pide_dinero: si, contenido_intimo: si, edad_victima: 17}
+    reglas: [r021, r020, r023, r024]
     reglas_no: [r022]
     max_preguntas: 2
 
@@ -148,3 +148,28 @@ casos:
     tipos: [amenazas_extorsion]
     datos: {lugar_hechos: Querétaro, papel: victima}
     max_preguntas: 2
+
+- id: foto_cara_dinero_adulta
+  relato: Un desconocido tiene una foto de mi cara y me pide dinero o la va a publicar con mentiras sobre mí
+  respuestas: {lugar_hechos: CDMX, papel: a mí, contenido_intimo: no, es solo una foto de mi cara, edad_victima: tengo 30}
+  esperado:
+    datos: {lugar_hechos: Ciudad de México, pide_dinero: si}
+    reglas_no: [r020, r023, r024, r025]
+    max_preguntas: 4
+
+- id: foto_cara_menor_no_intima
+  relato: Tengo 17 años, alguien tiene una foto de mi cara y me pide dinero para no subirla con cosas falsas
+  respuestas: {lugar_hechos: Morelos, papel: a mí, contenido_intimo: no, solo es mi cara}
+  esperado:
+    datos: {lugar_hechos: Morelos, edad_victima: 17}
+    reglas_no: [r020, r023, r025]
+    max_preguntas: 3
+
+- id: fotos_intimas_16
+  relato: Tengo 16 y un chavo con el que me mandaba fotos sin ropa las está pasando en un grupo de la escuela
+  respuestas: {lugar_hechos: Querétaro, papel: a mí, pide_dinero: no, no me pide nada}
+  esperado:
+    tipos: [imagenes_intimas]
+    datos: {lugar_hechos: Querétaro, papel: victima, contenido_intimo: si, edad_victima: 16}
+    reglas: [r020, r023, r024]
+    max_preguntas: 3

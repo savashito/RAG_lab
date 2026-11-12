@@ -116,7 +116,7 @@ def test_faltan_primero_los_generales():
 # ── máquina de estados ────────────────────────────────────────────────────────────
 FOTOS = {
     'Me escribe alguien que conocí en una app: si no le deposito 5,000 pesos publica mis fotos íntimas':
-        {'pide_dinero': 'si', 'medio_digital': 'si'},
+        {'pide_dinero': 'si', 'medio_digital': 'si', 'contenido_intimo': 'si'},
     'En Querétaro': {'lugar_hechos': 'Querétaro'},
     'A mí': {'papel': 'victima'},
     'No, todavía no': {'ya_difundido': 'no'},

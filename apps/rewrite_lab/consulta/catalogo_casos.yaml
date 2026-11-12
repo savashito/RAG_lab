@@ -69,6 +69,15 @@ datos:
   pregunta: ¿Te pidieron dinero o algo a cambio?
   para_que: Extorsión frente a amenazas o difusión
   estado: borrador
+- id: contenido_intimo
+  materia: penal
+  tipo: si_no
+  pregunta: ¿Las fotos o videos son íntimos o de contenido sexual?
+  pregunta_tu: ¿Tus fotos o videos son íntimos o de contenido sexual?
+  para_que: La Ley Olimpia y los delitos con menores solo aplican si el contenido es íntimo o sexual; si no (una foto de la
+    cara), puede ser extorsión o amenazas
+  estado: borrador
+  nota: 'Agregado el 2026-11-12: antes el tipo de caso daba por hecho que el contenido era íntimo.'
 - id: ya_difundido
   materia: penal
   tipo: si_no
@@ -194,6 +203,7 @@ tipos_caso:
   datos:
   - lugar_hechos
   - pide_dinero
+  - contenido_intimo
   - ya_difundido
   - edad_victima
   - consentimiento_difusion
@@ -1316,7 +1326,8 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: Contra la intimidad sexual (Ley Olimpia)
   condicion: ''
-  cuando: []
+  cuando:
+  - contenido_intimo = si
   articulos:
     cdmx:
     - 181 Quintus
@@ -1414,6 +1425,7 @@ reglas:
   condicion: ''
   cuando:
   - edad_victima < 18
+  - contenido_intimo = si
   articulos:
     cdmx:
     - '182'
@@ -1477,7 +1489,8 @@ reglas:
   tipo_caso: imagenes_intimas
   delito: 'federal: delitos contra la indemnidad de privacidad de la información sexual (CPF, título séptimo bis)'
   condicion: ''
-  cuando: []
+  cuando:
+  - contenido_intimo = si
   articulos:
     cdmx: []
     queretaro: []
