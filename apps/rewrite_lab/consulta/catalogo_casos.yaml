@@ -1462,6 +1462,7 @@ reglas:
   condicion: ''
   cuando:
   - edad_victima < 18
+  - contenido_intimo = si
   articulos:
     cdmx:
     - '182'

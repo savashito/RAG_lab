@@ -153,7 +153,8 @@ casos:
   relato: Un desconocido tiene una foto de mi cara y me pide dinero o la va a publicar con mentiras sobre mí
   respuestas: {lugar_hechos: CDMX, papel: a mí, contenido_intimo: no, es solo una foto de mi cara, edad_victima: tengo 30}
   esperado:
-    datos: {lugar_hechos: Ciudad de México, pide_dinero: si}
+    # puede quedar en amenazas, intimidad o fraude (no es imágenes íntimas): esos tipos no piden el dinero
+    datos: {lugar_hechos: Ciudad de México}
     reglas_no: [r020, r023, r024, r025]
     max_preguntas: 4
 
@@ -162,7 +163,7 @@ casos:
   respuestas: {lugar_hechos: Morelos, papel: a mí, contenido_intimo: no, solo es mi cara}
   esperado:
     datos: {lugar_hechos: Morelos, edad_victima: 17}
-    reglas_no: [r020, r023, r025]
+    reglas_no: [r020, r023, r024, r025]
     max_preguntas: 3
 
 - id: fotos_intimas_16
