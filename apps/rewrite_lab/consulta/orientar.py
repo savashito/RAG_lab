@@ -36,7 +36,9 @@ CONTEXTO (artículos que el catálogo relaciona con el caso):
 {contexto}
 
 Orienta a la persona sobre su caso con base solo en estos artículos. Cita cada artículo que uses con su ley y número.
-Si una regla está marcada como incierta, di qué dato falta para saber si aplica."""
+Si una regla está marcada como incierta, di qué dato falta para saber si aplica.
+No supongas el género de la persona: usa lenguaje neutro («no te encuentras sin apoyo», «cuentas con apoyo»; nunca «no
+estás sola» o «no estás solo»), salvo que la persona haya dicho su género."""
 
 
 # Con «preguntas redactadas por el LLM»: la máquina decide QUÉ dato falta; el LLM solo decide CÓMO pedirlo.
@@ -48,7 +50,7 @@ Escribe UN mensaje breve (1 a 3 oraciones) que haga dos cosas:
 
 1. Responder a lo que la persona acaba de decir, de forma concreta. Nombra lo que contó, no un sentimiento genérico:
    - si cuenta algo grave (amenazas, que le piden dinero, que es menor de edad, que tiene miedo), muestra que lo
-     entendiste y, si ayuda, dale tranquilidad: que no está sola, que no es su culpa, que hay forma de actuar;
+     entendiste y, si ayuda, dale tranquilidad: que cuenta con apoyo, que no es su culpa, que hay forma de actuar;
    - si solo dio un dato (un estado, una edad, un «sí»), agradécelo en pocas palabras o pasa directo a la pregunta.
    No uses fórmulas ni frases de cajón: nada de «Lamento mucho que estés pasando por esto», «Siento mucho que estés
    pasando por esta situación», «Entiendo, gracias por la información». No repitas nada que el asistente ya dijo en la
@@ -62,6 +64,8 @@ Escribe UN mensaje breve (1 a 3 oraciones) que haga dos cosas:
 
 Además:
 - Si hay un AVISO, dilo con tus palabras. Sin AVISO, no digas que supones o que tomas como base algún dato.
+- No supongas su género: usa lenguaje neutro («cuentas con apoyo», nunca «no estás sola» o «no estás solo»), salvo que
+  la persona lo haya dicho.
 - Si la persona dijo que le pasó a ella (papel: victima), háblale de tú sobre lo que le pasó: «¿qué edad tienes?», nunca
   «la víctima».
 - Si el DATO QUE FALTA es «relato», la persona todavía no ha contado qué le pasó: invítala a contar su situación. Si
