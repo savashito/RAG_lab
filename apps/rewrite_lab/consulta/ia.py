@@ -24,7 +24,7 @@ CONVERSACIÓN entre la persona y el asistente. Dices qué tipos de caso hay que 
 describan lo que le pasó a la persona. Puede haber más de uno (por ejemplo, fotos íntimas y amenazas).
 
 Responde SOLO un JSON:
-{"agregar": [], "quitar": [], "por_que": "", "dudoso": false, "opciones": []}
+{"agregar": [], "quitar": [], "por_que": "", "dudoso": false, "opciones": [], "conto_algo": false}
 
 - "agregar": ids de la lista que describen algo que contó la persona y que no están en los actuales.
 - "quitar": ids de los actuales que ya no corresponden. Quita solo si la persona corrigió o contradijo lo que había
@@ -44,6 +44,9 @@ Responde SOLO un JSON:
   llevaron (secuestro virtual), es amenazas o extorsión, no privación de la libertad.
 - Si los actuales están vacíos y no puedes decidir entre 2 o 3 tipos, deja "agregar" vacío, pon "dudoso": true y en
   "opciones" esos 2 o 3 ids.
+- "conto_algo": true si en toda la conversación la persona dijo algo de su situación, aunque sea muy poco para saber
+  el tipo de caso («mandé fotos», «me robaron», «tengo problemas con mi ex»); false si solo saludó, pidió ayuda sin
+  decir de qué o solo dio datos sueltos (su estado, su edad).
 - No inventes ids. No expliques nada fuera del JSON."""
 
 EXTRAER_EXPEDIENTE_SYSTEM = """Extraes datos de una consulta legal en México. Recibes los mensajes de la persona, la última
@@ -115,7 +118,8 @@ class ConsultaIA:
         elif len(opciones) < 2:
             agregar, opciones = opciones, []   # «dudoso» con una sola opción = esa opción
         return {'agregar': list(dict.fromkeys(agregar)), 'quitar': list(dict.fromkeys(quitar)),
-                'por_que': str(d.get('por_que') or '').strip(), 'opciones': opciones, '_llamada': llamada}
+                'por_que': str(d.get('por_que') or '').strip(), 'opciones': opciones,
+                'conto_algo': d.get('conto_algo') is True, '_llamada': llamada}
 
     def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict], ultimo: str | None = None) -> dict:
         """`texto`: todos los mensajes de la persona; `ultimo`: el actual (al final de `texto`). Para el lugar, la pregunta

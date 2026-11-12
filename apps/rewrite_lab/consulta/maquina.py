@@ -150,9 +150,9 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
             # ya dio, como el estado, se guardaron arriba).
             registro['faltan'] = ['relato']
             primero = not any(m.get('role') == 'assistant' for m in evento.get('historial', []))
-            # Si la persona ya escribió algo más que un saludo, no se le contesta como si no hubiera dicho nada.
-            conto_algo = len(_texto_usuario(evento).split()) >= 5   # «me encontré una cartera tirada»; no «Hola, soy de Querétaro»
-            pide = RELATO_MAS if conto_algo else RELATO
+            # Si la persona ya dijo algo de su situación («mandé fotos»), no se le contesta como si no hubiera dicho nada.
+            # Lo decide el clasificador: contar palabras confundía relatos cortos con saludos.
+            pide = RELATO_MAS if c.get('conto_algo') else RELATO
             salida = {'tipo': 'pregunta', 'dato': 'relato', 'texto': f'{SALUDO}\n{pide}' if primero else pide}
             return _cerrar(registro['estado_antes'], _siguiente(estado, 'falta_dato'), exp, salida, registro)
         if dudoso:

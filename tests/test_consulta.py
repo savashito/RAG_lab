@@ -402,6 +402,7 @@ class IASaludo(IAFalsa):
 
     def clasificar_caso(self, conversacion, actuales, catalogo):
         c = super().clasificar_caso(conversacion, actuales, catalogo)
+        c = {**c, 'conto_algo': any(w in conversacion for w in ('fotos', 'cartera', 'robaron'))}
         return c if 'fotos' in conversacion else {**c, 'agregar': []}
 
 
@@ -538,3 +539,5 @@ def test_si_conto_algo_y_no_se_reconoce_el_caso_pide_mas_sin_ignorarlo():
     assert pasos[0][2]['texto'] == f'{M.SALUDO}\n{M.RELATO_MAS}'
     pasos = conversar(IASaludo(), ['Hola'])
     assert pasos[0][2]['texto'] == f'{M.SALUDO}\n{M.RELATO}'
+    pasos = conversar(IASaludo(), ['me robaron', 'ya te dije'])   # corto, pero no es un saludo
+    assert pasos[0][2]['texto'] == f'{M.SALUDO}\n{M.RELATO_MAS}' and pasos[1][2]['texto'] == M.RELATO_MAS
