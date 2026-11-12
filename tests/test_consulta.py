@@ -444,3 +444,17 @@ def test_si_le_paso_a_la_persona_la_pregunta_es_de_tu():
         historial += [{'role': 'user', 'content': m}, {'role': 'assistant', 'content': salida.get('texto', '')}]
         salidas.append(salida)
     assert salidas[-1]['dato'] == 'edad_victima' and salidas[-1]['texto'] == '¿Qué edad tienes?'
+
+
+def test_si_es_la_victima_el_extractor_recibe_las_preguntas_de_tu():
+    cat = {**CAT, 'datos': [{**d, 'pregunta_tu': '¿Qué edad tienes?'} if d['id'] == 'edad_victima' else d
+                            for d in CAT['datos']]}
+    vistos = []
+
+    class IA(IAFalsa):
+        def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
+            vistos.append({d['id']: d.get('pregunta') for d in datos})
+            return super().extraer_expediente(texto, pregunta, datos, ultimo)
+    exp = {**E.nuevo(), 'tipos_caso': ['imagenes_intimas'], 'datos': {'papel': 'victima'}}
+    M.turno(M.LLENAR_EXPEDIENTE, exp, {'tipo': 'mensaje', 'texto': 'tengo 24', 'historial': []}, cat, IA())
+    assert vistos[-1]['edad_victima'] == '¿Qué edad tienes?'
