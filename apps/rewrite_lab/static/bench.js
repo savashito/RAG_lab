@@ -1620,13 +1620,30 @@ async function repPrompts(){
 // ── 🗨️ Consulta (catálogo): benchmark de la consulta de la ronda 3 (consulta/bench.py) ─────────────────────────────
 const BC = {poll: null, sel: null};
 const bcPct = (a, b) => b ? `${a}/${b} <span class="muted">(${Math.round(100 * a / b)} %)</span>` : '—';
+// Opciones de la corrida: las mismas de 📚 Preguntar (Catálogo). Se dibujan una vez (no se reinician mientras corre).
+function bcConfigRow(){
+  if($('bc-config')) return;
+  $('bc-corridas').insertAdjacentHTML('beforebegin', `<div class="bcard" id="bc-config" style="margin-bottom:10px">
+    <h3 style="margin:0 0 4px;font-size:14px">Configuración de la corrida</h3>
+    <div class="row" style="margin:4px 0">
+      <label title="Cómo pide los datos el asistente. Con LLM, el extractor ve la pregunta redactada (como en Preguntar con la casilla marcada)">Preguntas: <select id="bc-c-preguntas"><option value="catalogo">texto del catálogo</option><option value="llm">redactadas por el LLM</option></select></label>
+      <label title="Qué reglas del catálogo cuentan">Reglas: <select id="bc-c-reglas"><option value="todas">todas</option><option value="confirmadas">solo confirmadas</option></select></label>
+      <label title="Cuántas veces se corre cada caso: el LLM no responde igual cada vez">Repeticiones: <select id="bc-c-rep"><option>1</option><option>2</option><option>3</option><option>5</option></select></label>
+    </div></div>`);
+}
+function bcConfig(){
+  return {preguntas: $('bc-c-preguntas').value, reglas: $('bc-c-reglas').value, repeticiones: +$('bc-c-rep').value};
+}
+const bcConfigTexto = c => !c ? '' : [c.preguntas === 'llm' ? 'preguntas LLM' : 'preguntas catálogo', c.reglas === 'confirmadas' ? 'solo confirmadas' : '',
+  c.repeticiones > 1 ? `×${c.repeticiones}` : ''].filter(Boolean).join(' · ');
 async function loadBenchConsulta(){
   clearTimeout(BC.poll);
+  bcConfigRow();
   let d; try{ d = await bjson('/api/bench_consulta'); }catch(e){ $('bc-corridas').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
   const filas = d.corridas.map(c => { const r = c.resumen || {};
     return `<tr class="${BC.sel === c.id ? 'sel' : ''}" style="cursor:pointer" onclick="bcVer(${c.id})">
       <td>#${c.id}</td><td>${esc(c.creada.slice(0, 16).replace('T', ' '))}</td><td><code>${esc(c.catalogo_md5 || '')}</code></td><td><code>${esc(c.commit || '')}</code></td>
-      <td>${esc(c.estado)}${c.error ? ` <span style="color:#f87171" title="${escA(c.error)}">⚠</span>` : ''}</td>
+      <td>${esc(c.estado)}${c.error ? ` <span style="color:#f87171" title="${escA(c.error)}">⚠</span>` : ''}</td><td style="font-size:12px">${esc(bcConfigTexto(c.config))}</td>
       <td>${bcPct(r.orienta ?? 0, r.casos)}</td><td>${bcPct(r.tipos ?? 0, r.casos)}</td><td>${bcPct(r.datos_acierta ?? 0, r.datos_total)}</td>
       <td>${bcPct(r.reglas ?? 0, r.casos)}</td><td>${r.preguntas_promedio ?? '—'}</td><td>${r.casos ? r.preguntas_de_mas + '/' + r.casos : '—'}</td><td>${r.segundos ?? '—'}</td></tr>`; }).join('');
   $('bc-corridas').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Corridas</h3>
@@ -1636,9 +1653,9 @@ async function loadBenchConsulta(){
       Clic en una fila para ver cada caso.</p>
     <div class="row" style="margin:0 0 8px"><button id="bc-run" ${d.en_curso ? 'disabled' : ''}>▶ Correr todos los casos</button>
       ${d.en_curso ? `<span class="muted">Corrida #${d.en_curso} en curso…</span>` : ''}</div>
-    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>#</th><th>Fecha</th><th>Catálogo</th><th>Commit</th><th>Estado</th><th>Orienta</th><th>Tipos</th>
-      <th>Datos</th><th>Reglas</th><th>Preguntas</th><th>De más</th><th>Segundos</th></tr>${filas || '<tr><td colspan="12" class="muted">Todavía no hay corridas.</td></tr>'}</table></div></div>`;
-  $('bc-run').onclick = async () => { try{ const r = await bpost('/api/bench_consulta/correr'); BC.sel = r.corrida; loadBenchConsulta(); }catch(e){ alert(e.message); } };
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>#</th><th>Fecha</th><th>Catálogo</th><th>Commit</th><th>Estado</th><th>Configuración</th><th>Orienta</th><th>Tipos</th>
+      <th>Datos</th><th>Reglas</th><th>Preguntas</th><th>De más</th><th>Segundos</th></tr>${filas || '<tr><td colspan="13" class="muted">Todavía no hay corridas.</td></tr>'}</table></div></div>`;
+  $('bc-run').onclick = async () => { try{ const r = await bpost('/api/bench_consulta/correr', {config: bcConfig()}); BC.sel = r.corrida; loadBenchConsulta(); }catch(e){ alert(e.message); } };
   if(!$('bc-yaml')){
     $('bc-casos').innerHTML = `<details class="bcard"><summary style="cursor:pointer"><b>📝 Casos</b> <span class="muted">(YAML; se guardan en la base, no en el repo)</span></summary>
       <p class="muted" style="font-size:12px">Cada caso: <code>id</code>, <code>relato</code> (primer mensaje), <code>respuestas</code> (lo que contesta a cada dato; una lista = una
@@ -1677,7 +1694,7 @@ function bcFila(x){
   const ok = b => b ? '✓' : '<b style="color:#f87171">✗</b>';
   const mal = Object.entries(x.datos).filter(([, v]) => v !== 'acierta');
   const reglas = [...(x.reglas_faltan.length ? ['faltan ' + x.reglas_faltan.join(', ')] : []), ...(x.reglas_de_mas.length ? ['de más ' + x.reglas_de_mas.join(', ')] : [])];
-  return `<tr class="${bcMal(x) ? 'bc-mal' : 'bc-bien'}"><td><b>${esc(x.id)}</b>${x.orienta ? '' : ' <span style="color:#f87171">(no orientó)</span>'}
+  return `<tr class="${bcMal(x) ? 'bc-mal' : 'bc-bien'}"><td><b>${esc(x.id)}</b>${x.rep > 1 ? ` <span class="muted">#${x.rep}</span>` : ''}${x.orienta ? '' : ' <span style="color:#f87171">(no orientó)</span>'}
       <details><summary class="muted" style="cursor:pointer;font-size:12px">conversación</summary><pre>${esc(x.conversacion.map(m => (m.role === 'user' ? 'Persona: ' : 'Asistente: ') + m.content).join('\n'))}</pre>
       <div class="muted" style="font-size:12px">Expediente: ${esc(JSON.stringify(x.expediente))}${(x.no_sabe || []).length ? ' · no sabe: ' + esc(x.no_sabe.join(', ')) : ''}<br>Reglas: ${esc((x.reglas || []).join(', '))}${(x.inciertas || []).length ? ' · inciertas: ' + esc(x.inciertas.join(', ')) : ''}</div></details></td>
     <td>${ok(x.tipos)}${x.tipos ? '' : ' ' + esc((x.tipos_caso || []).join(', '))}</td>

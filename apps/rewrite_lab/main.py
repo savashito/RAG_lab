@@ -1704,7 +1704,8 @@ consulta_ia = ConsultaIA(llm)
 # 🧪 Benchmark → Consulta (catálogo): casos inventados que simulan la consulta y miden el expediente (consulta/bench.py).
 from consulta.bench import BenchConsulta  # noqa: E402
 bench_consulta = BenchConsulta(connect=connect, catalogo=lambda: catalogo.leer()[0], ia=consulta_ia,
-                               current_email=current_email, can_run=can_ingest)
+                               current_email=current_email, can_run=can_ingest,
+                               redactar=lambda mensajes: llm.chat_messages(mensajes, max_tokens=400, timeout=90))
 app.include_router(bench_consulta.router)
 
 
@@ -1760,6 +1761,14 @@ def _consulta_turno(body: dict):
         # El catálogo no tiene reglas para el caso («otro» o ninguna aplica): orienta el buscador, como en el estudio.
         out['buscador'] = consulta_buscador_cfg(body.get('prompt') or CONSULTA_PROMPT)
         return out, None
+    return out, _consulta_preparar(body, doc, salida, exp)
+
+
+def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict):
+    """→ preparar(): arma el contexto de la orientación (artículos, system prompt) → (system, prep)."""
+    modo = body.get('contexto') or 'todos'
+    conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
+                             for m in body.get('historial') or [])
 
     def preparar():
         familia = any(r.get('materia') == 'familiar' for r in doc.get('reglas', []) if r['id'] in salida['reglas'])
@@ -1772,7 +1781,7 @@ def _consulta_turno(body: dict):
                 contexto=modo, tope=body.get('tope_tokens'),
                 embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0])
         return system, {**prep, 'prompt': prompt}
-    return out, preparar
+    return preparar
 
 
 @app.post('/api/consulta/turno')

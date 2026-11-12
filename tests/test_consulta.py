@@ -489,3 +489,23 @@ def test_bench_casos_iniciales_son_validos_y_se_rechazan_los_mal_hechos():
     for malo in ('casos: []', 'casos: [{id: a}]', 'casos: [{id: a, relato: x, esperado: {}}, {id: a, relato: y, esperado: {}}]', ':'):
         with pytest.raises(ValueError):
             B.validar_casos(malo)
+
+
+def test_bench_con_preguntas_redactadas_por_el_llm():
+    caso = {'id': 'x', 'relato': 'Me escribe alguien que conocí en una app: si no le deposito 5,000 pesos publica mis fotos íntimas',
+            'respuestas': {'lugar_hechos': 'En Querétaro', 'papel': 'A mí', 'edad_victima': 'Tengo 24'},
+            'esperado': {'tipos': ['imagenes_intimas'], 'datos': {'edad_victima': 24}}}
+    x = B.fila(caso, CAT, IAFalsa(respuestas=FOTOS), {'preguntas': 'llm'},
+               redactar=lambda m: 'Gracias por contarme. ' + m[1]['content'].split('PREGUNTA DEL CATÁLOGO: ')[1].split('\n')[0],
+               rep=2)
+    assert x['rep'] == 2 and x['orienta'] and x['datos'] == {'edad_victima': 'acierta'}
+    asistente = [m['content'] for m in x['conversacion'] if m['role'] == 'assistant']
+    assert asistente and all(t.startswith('Gracias por contarme.') for t in asistente)
+
+
+def test_bench_config_no_valida():
+    class Falso(B.BenchConsulta):
+        def __init__(self):
+            pass
+    with pytest.raises(ValueError):
+        Falso().correr('a', config={'preguntas': 'otra'})
