@@ -28,12 +28,14 @@ datos:
   materia: penal
   tipo: numero
   pregunta: ¿Qué edad tiene la víctima?
+  pregunta_tu: ¿Qué edad tienes?
   para_que: Menor de edad o adulta; los umbrales (por ejemplo, 12 años en la CDMX) cambian por estado
   estado: borrador
 - id: victima_mujer
   materia: penal
   tipo: si_no
   pregunta: ¿La víctima es mujer (incluida mujer trans)?
+  pregunta_tu: ¿Eres mujer (incluida mujer trans)?
   para_que: Feminicidio y transfeminicidio; Ley General de Acceso de las Mujeres. No cambia los delitos que protegen a cualquier
     persona (violencia familiar, acoso, Ley Olimpia), ni las medidas de protección del CNPP, que son para cualquier víctima
   estado: borrador
@@ -112,6 +114,7 @@ datos:
   materia: penal
   tipo: si_no
   pregunta: ¿La persona estuvo de acuerdo? (tomar las imágenes, el procedimiento médico)
+  pregunta_tu: ¿Estuviste de acuerdo? (en tomar las imágenes, en el procedimiento médico)
   para_que: Intimidad sexual (en algunos estados), responsabilidad médica
   estado: borrador
 - id: federal

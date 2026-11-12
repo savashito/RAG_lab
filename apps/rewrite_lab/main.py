@@ -1747,7 +1747,7 @@ def _consulta_turno(body: dict):
     conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
                              for m in body.get('historial') or [])
     if salida.get('tipo') == 'pregunta' and body.get('preguntas_llm'):
-        out['mensajes_pregunta'] = consulta_orientar.mensajes_pregunta(conversacion, salida, doc)
+        out['mensajes_pregunta'] = consulta_orientar.mensajes_pregunta(conversacion, salida, doc, exp)
     if salida.get('tipo') != 'orientar' or modo == 'ninguno':
         return out, None
     if salida.get('sin_reglas') or exp.get('tipos_caso') == [consulta_maquina.OTRO]:

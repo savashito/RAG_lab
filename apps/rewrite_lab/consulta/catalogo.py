@@ -66,7 +66,8 @@ def cargar(path: Path = YAML_INICIAL) -> tuple[dict, str]:
 
 # Orden de las llaves al escribir el YAML: la base (jsonb) no guarda el orden y el YAML se lee mejor siempre igual.
 ORDEN = {None: ['version', 'nota', 'generales', 'datos', 'tipos_caso', 'reglas', 'otro'],
-         'datos': ['id', 'materia', 'tipo', 'opciones', 'obligatorio', 'preguntar', 'pregunta', 'para_que', 'estado', 'nota'],
+         'datos': ['id', 'materia', 'tipo', 'opciones', 'obligatorio', 'preguntar', 'pregunta', 'pregunta_tu', 'para_que',
+                   'estado', 'nota'],
          'tipos_caso': ['id', 'materia', 'titulo', 'descripcion', 'datos', 'estado', 'nota'],
          'reglas': ['id', 'materia', 'tipo_caso', 'delito', 'condicion', 'cuando', 'articulos', 'estado', 'nota'],
          'articulos': list(CODIGOS)}

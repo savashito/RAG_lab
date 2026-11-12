@@ -50,20 +50,26 @@ Escribe UN mensaje breve (máximo 3 oraciones), en español de México, tuteando
 - Si el DATO QUE FALTA es «relato», la persona todavía no ha contado qué le pasó: invítala a contar su situación. Si
   en la CONVERSACIÓN el asistente no ha dicho nada todavía, empieza presentándote: «Hola, soy Tlacua, tu asistente jurídico».
 - Termina con la PREGUNTA que falta, con sentido claro para la persona. Pregunta solo eso: ningún otro dato.
+- Si la persona dijo que le pasó a ella (papel: victima), háblale de tú sobre lo que le pasó: «¿qué edad tienes?», nunca
+  «la víctima».
 - No des orientación legal, no cites artículos, no prometas resultados y no inventes datos del caso."""
 
 PREGUNTAR_USER = """CONVERSACIÓN:
 {conversacion}
+
+DATOS QUE YA DIO:
+{datos}
 
 {aviso}DATO QUE FALTA: {dato}
 PREGUNTA DEL CATÁLOGO: {pregunta}
 PARA QUÉ SE PREGUNTA: {para_que}{opciones}"""
 
 
-def mensajes_pregunta(conversacion: str, salida: dict, catalogo: dict) -> list[dict]:
+def mensajes_pregunta(conversacion: str, salida: dict, catalogo: dict, expediente: dict | None = None) -> list[dict]:
     """Salida 'pregunta' de la máquina → mensajes para que el LLM redacte la pregunta."""
     d = next((x for x in catalogo.get('datos', []) if x['id'] == salida.get('dato')), {})
-    user = PREGUNTAR_USER.format(conversacion=conversacion, dato=salida.get('dato', ''),
+    datos = '\n'.join(f'- {k}: {v}' for k, v in ((expediente or {}).get('datos') or {}).items()) or '(ninguno)'
+    user = PREGUNTAR_USER.format(conversacion=conversacion, datos=datos, dato=salida.get('dato', ''),
                                  aviso=f'AVISO: {salida["aviso"]}\n' if salida.get('aviso') else '',
                                  pregunta=salida.get('texto', ''), para_que=d.get('para_que') or '(no dice)',
                                  opciones=f'\nOPCIONES: {", ".join(d["opciones"])}' if d.get('opciones') else '')

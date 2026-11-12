@@ -32,7 +32,7 @@ class IAFalsa:
         return {'agregar': [t for t in self.tipos if t not in actuales], 'quitar': self.quitar, 'por_que': 'prueba',
                 'opciones': self.opciones, '_llamada': {'tarea': 'clasificar_caso'}}
 
-    def extraer_expediente(self, texto, pregunta, datos):
+    def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
         ultimo = texto.split('\n')[-1]
         pedidos = {d['id'] for d in datos}
         return {'datos': {k: v for k, v in self.respuestas.get(ultimo, {}).items() if k in pedidos},
@@ -294,7 +294,7 @@ def test_ia_clasificar_dudoso():
 
 def test_ia_extraer_usa_el_filtro_de_lugares_y_el_json(monkeypatch):
     monkeypatch.setattr(IA.jgate, 'extraer_lugares',
-                        lambda texto, llm: {'lugares': [{'texto': 'Querétaro', 'estado': 'Querétaro', 'rol': 'hechos'},
+                        lambda texto, llm, sistema=None: {'lugares': [{'texto': 'Querétaro', 'estado': 'Querétaro', 'rol': 'hechos'},
                                                         {'texto': 'CDMX', 'estado': 'Ciudad de México', 'rol': 'vive'}],
                                             'raw': '', 'fuente': 'llm'})
     ia = IA.ConsultaIA(LLMFalso(['{"pide_dinero": "si", "edad_victima": null, "inventado": 3}']))
@@ -362,8 +362,8 @@ def test_contexto_desconocido_se_rechaza():
 class IAConResidencia(IAFalsa):
     """Como IAFalsa, pero el extractor de lugares dice dónde vive la persona (rol «otro») si el texto dice «soy de»."""
 
-    def extraer_expediente(self, texto, pregunta, datos):
-        x = super().extraer_expediente(texto, pregunta, datos)
+    def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
+        x = super().extraer_expediente(texto, pregunta, datos, ultimo)
         return {**x, 'residencia': 'Ciudad de México' if 'soy de cdmx' in texto.lower() else None}
 
 
@@ -416,3 +416,27 @@ def test_sin_relato_pide_que_cuente_su_situacion_y_guarda_lo_que_ya_dio():
 def test_el_saludo_va_solo_en_el_primer_mensaje_del_asistente():
     pasos = conversar(IASaludo(), ['Hola', 'mmm'])
     assert pasos[0][2]['texto'].startswith('Hola, soy Tlacua') and pasos[1][2]['texto'] == M.RELATO
+
+
+def test_ia_extraer_lugar_ve_la_pregunta_del_asistente(monkeypatch):
+    vistos = []
+    monkeypatch.setattr(IA.jgate, 'extraer_lugares', lambda texto, llm, sistema=None: vistos.append((texto, sistema)) or
+                        {'lugares': [{'texto': 'cdmx', 'estado': 'Ciudad de México', 'rol': 'hechos'}], 'raw': '', 'fuente': 'llm'})
+    ia = IA.ConsultaIA(LLMFalso([]))
+    datos = [d for d in CAT['datos'] if d['id'] == 'lugar_hechos']
+    r = ia.extraer_expediente('mandé unas fotos\nen cdmx', '¿En qué estado pasó?', datos, 'en cdmx')
+    assert r['datos'] == {'lugar_hechos': 'Ciudad de México'}
+    assert vistos == [('mandé unas fotos\n[El asistente preguntó: ¿En qué estado pasó?]\nen cdmx', IA.jgate.EXTRAER_SYSTEM_V2)]
+
+
+def test_si_le_paso_a_la_persona_la_pregunta_es_de_tu():
+    cat = {**CAT, 'datos': [{**d, 'pregunta_tu': '¿Qué edad tienes?'} if d['id'] == 'edad_victima' else d
+                            for d in CAT['datos']]}
+    ia = IAFalsa(respuestas={**FOTOS})
+    historial, salidas = [], []
+    estado = exp = None
+    for m in list(FOTOS)[:4]:
+        estado, exp, salida, _ = M.turno(estado, exp, {'tipo': 'mensaje', 'texto': m, 'historial': historial}, cat, ia)
+        historial += [{'role': 'user', 'content': m}, {'role': 'assistant', 'content': salida.get('texto', '')}]
+        salidas.append(salida)
+    assert salidas[-1]['dato'] == 'edad_victima' and salidas[-1]['texto'] == '¿Qué edad tienes?'

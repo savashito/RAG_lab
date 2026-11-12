@@ -104,13 +104,20 @@ class ConsultaIA:
         return {'agregar': list(dict.fromkeys(agregar)), 'quitar': list(dict.fromkeys(quitar)),
                 'por_que': str(d.get('por_que') or '').strip(), 'opciones': opciones, '_llamada': llamada}
 
-    def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict]) -> dict:
+    def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict], ultimo: str | None = None) -> dict:
+        """`texto`: todos los mensajes de la persona; `ultimo`: el actual (al final de `texto`). Para el lugar, la pregunta
+        del asistente va justo antes de `ultimo` (v2 del filtro): a «¿En qué estado pasó?» → «en cdmx», CDMX es de los
+        hechos y no donde vive la persona."""
         out: dict = {}
         llamadas = []
         residencia = None
         if any(d['id'] == 'lugar_hechos' for d in datos):
-            lug = jgate.extraer_lugares(texto, self.llm)
-            llamadas.append({'tarea': 'extraer_lugares', 'prompt_md5': _md5(jgate.EXTRAER_SYSTEM), 'raw': lug.get('raw', ''),
+            sistema, texto_lugar = jgate.EXTRAER_SYSTEM, texto
+            if ultima_pregunta and ultimo and texto.endswith(ultimo):
+                sistema = jgate.EXTRAER_SYSTEM_V2
+                texto_lugar = f'{texto[:-len(ultimo)]}{jgate.PREGUNTA_PREFIJO}{ultima_pregunta}]\n{ultimo}'
+            lug = jgate.extraer_lugares(texto_lugar, self.llm, sistema=sistema)
+            llamadas.append({'tarea': 'extraer_lugares', 'prompt_md5': _md5(sistema), 'raw': lug.get('raw', ''),
                              'fuente': lug.get('fuente')})
             hechos = list(dict.fromkeys(x['estado'] for x in lug.get('lugares', [])
                                         if x.get('estado') and x.get('rol', 'hechos') == 'hechos'))
