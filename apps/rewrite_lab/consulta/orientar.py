@@ -40,6 +40,16 @@ Si una regla está marcada como incierta, di qué dato falta para saber si aplic
 No supongas el género de la persona: usa lenguaje neutro («no te encuentras sin apoyo», «cuentas con apoyo»; nunca «no
 estás sola» o «no estás solo»), salvo que la persona haya dicho su género."""
 
+# Un mensaje que llega cuando ya se orientó (seguimiento en ORIENTACION): sin esto, el LLM recibe la misma instrucción y
+# los mismos artículos y repite la orientación completa (y las preguntas que la persona ya contestó).
+SEGUIMIENTO = """
+
+YA ORIENTASTE a la persona: tu orientación anterior está en el CASO. Su ÚLTIMO MENSAJE es:
+«{ultimo}»
+Responde a ese mensaje: qué aporta de nuevo y si cambia algo de lo que ya dijiste, con los artículos que correspondan.
+No repitas lo que ya explicaste ni la estructura completa de la orientación, y no vuelvas a preguntar lo que la persona
+ya contestó. Si no cambia nada, dilo en pocas palabras y responde su duda."""
+
 
 # Con «preguntas redactadas por el LLM»: la máquina decide QUÉ dato falta; el LLM solo decide CÓMO pedirlo.
 PREGUNTAR_SYSTEM = """Eres Tlacua, un asistente que orienta a personas en México sobre problemas legales. Hablas como una
@@ -172,9 +182,10 @@ def elegir(arts: list[dict], reglas: list[dict], contexto: str, tope: int | None
 
 
 def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict, conversacion: str,
-             contexto: str, embed, tope: int | None = None) -> dict:
+             contexto: str, embed, tope: int | None = None, seguimiento: str | None = None) -> dict:
     """Salida 'orientar' de la máquina → {user: el mensaje para el LLM, y qué artículos entraron al contexto}.
-    `embed(texto) → vector` lo pone quien llama. La respuesta la pide quien llama (orientar() o en streaming)."""
+    `embed(texto) → vector` lo pone quien llama. La respuesta la pide quien llama (orientar() o en streaming).
+    `seguimiento`: el último mensaje de la persona cuando ya se había orientado (estado ORIENTACION antes del mensaje)."""
     if contexto not in CONTEXTOS:
         raise ValueError(f'contexto desconocido: {contexto!r} (usa {CONTEXTOS})')
     t0 = time.time()
@@ -196,7 +207,10 @@ def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
                       + (' [INCIERTA: falta un dato]' if r['incierta'] else '') for r in reglas) or '(ninguna)'
     texto = '\n\n'.join(f'[{a["orden"]}] {NOMBRES.get(a["codigo"], a["codigo"])} — {a["ruta"]}\n{a["texto"]}'
                         for a in elegidos)
-    return {'user': ORIENTAR_USER.format(conversacion=conversacion, datos=datos, reglas=lista, contexto=texto or '(vacío)'),
+    user = ORIENTAR_USER.format(conversacion=conversacion, datos=datos, reglas=lista, contexto=texto or '(vacío)')
+    if seguimiento:
+        user += SEGUIMIENTO.format(ultimo=seguimiento)
+    return {'user': user, 'seguimiento': bool(seguimiento),
             'modo_contexto': contexto, 'tope_tokens': tope or TOPE[contexto],
             'tokens_contexto': sum(tokens(a['texto']) for a in elegidos),
             'contexto': [{'codigo': a['codigo'], 'num': a['num'], 'entra': a['entra'], 'orden': a.get('orden'),

@@ -1818,10 +1818,11 @@ def _consulta_turno(body: dict):
         # El catálogo no tiene reglas para el caso («otro» o ninguna aplica): orienta el buscador, como en el estudio.
         out['buscador'] = consulta_buscador_cfg(body.get('prompt') or CONSULTA_PROMPT)
         return out, None
-    return out, _consulta_preparar(body, doc, salida, exp)
+    seguimiento = (body.get('evento') or {}).get('texto') if registro.get('estado_antes') == consulta_maquina.ORIENTACION else None
+    return out, _consulta_preparar(body, doc, salida, exp, seguimiento)
 
 
-def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict):
+def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict, seguimiento: str | None = None):
     """→ preparar(): arma el contexto de la orientación (artículos, system prompt) → (system, prep)."""
     modo = body.get('contexto') or 'todos'
     conversacion = '\n'.join(f'{"Persona" if m.get("role") == "user" else "Asistente"}: {m.get("content", "")}'
@@ -1835,7 +1836,7 @@ def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict):
         with connect() as c, c.cursor() as cur:
             prep = consulta_orientar.preparar(
                 cur=cur, table=TABLE, salida=salida, expediente=exp, catalogo=doc, conversacion=conversacion,
-                contexto=modo, tope=body.get('tope_tokens'),
+                contexto=modo, tope=body.get('tope_tokens'), seguimiento=seguimiento,
                 embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0])
         return system, {**prep, 'prompt': prompt}
     return preparar

@@ -516,3 +516,18 @@ def test_mensajes_pregunta_usa_el_prompt_que_se_le_pasa():
     assert O.mensajes_pregunta('', salida, CAT)[0]['content'] == O.PREGUNTAR_SYSTEM
     assert O.mensajes_pregunta('', salida, CAT, system='Sé muy cálido y breve.')[0]['content'] == 'Sé muy cálido y breve.'
     assert O.mensajes_pregunta('', salida, CAT, system='  ')[0]['content'] == O.PREGUNTAR_SYSTEM
+
+
+def test_orientacion_de_seguimiento_responde_al_ultimo_mensaje():
+    class Cur:
+        def execute(self, sql, p):
+            self.p = p
+
+        def fetchall(self):
+            return [(1, 'Ley > ' + self.p[1].strip('%'), 'Ley > ' + self.p[1].strip('%') + ' texto')]
+    salida = {'tipo': 'orientar', 'reglas': ['r021'], 'inciertas': [], 'articulos': {'cdmx': ['236']}}
+    kw = dict(cur=Cur(), table='t', salida=salida, expediente={'datos': {}}, catalogo=CAT, conversacion='…',
+              contexto='todos', embed=None)
+    primera, otra = O.preparar(**kw), O.preparar(**kw, seguimiento='sí tienen contenido sexual')
+    assert 'YA ORIENTASTE' not in primera['user'] and not primera['seguimiento']
+    assert 'YA ORIENTASTE' in otra['user'] and '«sí tienen contenido sexual»' in otra['user'] and otra['seguimiento']
