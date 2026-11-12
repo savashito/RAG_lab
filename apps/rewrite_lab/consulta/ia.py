@@ -33,7 +33,9 @@ Responde SOLO un JSON:
 - Si nada de lo que dijo cambia el tipo de caso, deja "agregar" y "quitar" vacíos.
 - Si la persona todavía no ha contado ninguna situación (solo saluda, pide ayuda sin decir de qué, o solo da datos
   sueltos como su estado o su edad), deja "agregar" vacío y "dudoso": false: el asistente le pedirá que la cuente.
-- Si los actuales están vacíos y la persona contó algo que no corresponde a ningún tipo, "agregar": ["otro"].
+- Si los actuales están vacíos y la persona contó algo que no corresponde a ningún tipo, "agregar": ["otro"]. Cualquier
+  situación que cuente, aunque no sea un delito o no esté en la lista («me encontré una cartera tirada»), va en «otro»:
+  la lista vacía es solo para cuando no contó nada.
 - Si a la persona la acusan, la denunciaron o la detuvieron, agrega el tipo de proceso penal (si está en la lista) y
   además el tipo de caso del delito del que la acusan (por ejemplo, compartir fotos íntimas → también el de fotos).
 - Un mismo caso puede ser de familia y penal a la vez: si una expareja o un familiar se llevó o retiene a un menor, va

@@ -531,3 +531,10 @@ def test_orientacion_de_seguimiento_responde_al_ultimo_mensaje():
     primera, otra = O.preparar(**kw), O.preparar(**kw, seguimiento='sí tienen contenido sexual')
     assert 'YA ORIENTASTE' not in primera['user'] and not primera['seguimiento']
     assert 'YA ORIENTASTE' in otra['user'] and '«sí tienen contenido sexual»' in otra['user'] and otra['seguimiento']
+
+
+def test_si_conto_algo_y_no_se_reconoce_el_caso_pide_mas_sin_ignorarlo():
+    pasos = conversar(IASaludo(), ['me encontré una cartera tirada en la calle'])
+    assert pasos[0][2]['texto'] == f'{M.SALUDO}\n{M.RELATO_MAS}'
+    pasos = conversar(IASaludo(), ['Hola'])
+    assert pasos[0][2]['texto'] == f'{M.SALUDO}\n{M.RELATO}'

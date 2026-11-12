@@ -293,3 +293,11 @@ casos:
     datos: {lugar_hechos: Estado de México, consentimiento_medico: 'no'}
     reglas: [r070]
     max_preguntas: 3
+
+- id: cartera_encontrada
+  relato: Me encontré una cartera tirada en la calle
+  respuestas: {lugar_hechos: CDMX, papel: a mí, relato: encontré una cartera con dinero y credenciales y no sé qué hacer}
+  esperado:
+    tipos: [otro]
+    datos: {lugar_hechos: Ciudad de México}
+    max_preguntas: 2

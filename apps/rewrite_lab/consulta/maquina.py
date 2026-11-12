@@ -51,6 +51,7 @@ MAX_PREGUNTAS = 2    # un dato no obligatorio que se preguntó 2 veces sin respu
 OTRO = 'otro'
 RELATO = '¿En qué te puedo ayudar? Cuéntame tu situación.'   # sin tipo de caso todavía: se pide el relato
 SALUDO = 'Hola, soy Tlacua, tu asistente jurídico.'           # antes del RELATO si es el primer mensaje del asistente
+RELATO_MAS = 'Cuéntame un poco más de lo que pasó para poder orientarte.'   # si ya contó algo, pero no se reconoce el caso
 
 
 def _siguiente(estado: str, evento: str) -> str:
@@ -149,7 +150,10 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
             # ya dio, como el estado, se guardaron arriba).
             registro['faltan'] = ['relato']
             primero = not any(m.get('role') == 'assistant' for m in evento.get('historial', []))
-            salida = {'tipo': 'pregunta', 'dato': 'relato', 'texto': f'{SALUDO}\n{RELATO}' if primero else RELATO}
+            # Si la persona ya escribió algo más que un saludo, no se le contesta como si no hubiera dicho nada.
+            conto_algo = len(_texto_usuario(evento).split()) >= 5   # «me encontré una cartera tirada»; no «Hola, soy de Querétaro»
+            pide = RELATO_MAS if conto_algo else RELATO
+            salida = {'tipo': 'pregunta', 'dato': 'relato', 'texto': f'{SALUDO}\n{pide}' if primero else pide}
             return _cerrar(registro['estado_antes'], _siguiente(estado, 'falta_dato'), exp, salida, registro)
         if dudoso:
             titulos = {t['id']: t['titulo'] for t in catalogo.get('tipos_caso', [])}
