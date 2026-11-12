@@ -294,7 +294,7 @@ def test_ia_clasificar_dudoso():
 
 def test_ia_extraer_usa_el_filtro_de_lugares_y_el_json(monkeypatch):
     monkeypatch.setattr(IA.jgate, 'extraer_lugares',
-                        lambda texto, llm, sistema=None: {'lugares': [{'texto': 'Querétaro', 'estado': 'Querétaro', 'rol': 'hechos'},
+                        lambda texto, llm, sistema=None, texto_regex=None: {'lugares': [{'texto': 'Querétaro', 'estado': 'Querétaro', 'rol': 'hechos'},
                                                         {'texto': 'CDMX', 'estado': 'Ciudad de México', 'rol': 'vive'}],
                                             'raw': '', 'fuente': 'llm'})
     ia = IA.ConsultaIA(LLMFalso(['{"pide_dinero": "si", "edad_victima": null, "inventado": 3}']))
@@ -420,13 +420,14 @@ def test_el_saludo_va_solo_en_el_primer_mensaje_del_asistente():
 
 def test_ia_extraer_lugar_ve_la_pregunta_del_asistente(monkeypatch):
     vistos = []
-    monkeypatch.setattr(IA.jgate, 'extraer_lugares', lambda texto, llm, sistema=None: vistos.append((texto, sistema)) or
+    monkeypatch.setattr(IA.jgate, 'extraer_lugares', lambda texto, llm, sistema=None, texto_regex=None: vistos.append((texto, sistema, texto_regex)) or
                         {'lugares': [{'texto': 'cdmx', 'estado': 'Ciudad de México', 'rol': 'hechos'}], 'raw': '', 'fuente': 'llm'})
     ia = IA.ConsultaIA(LLMFalso([]))
     datos = [d for d in CAT['datos'] if d['id'] == 'lugar_hechos']
     r = ia.extraer_expediente('mandé unas fotos\nen cdmx', '¿En qué estado pasó?', datos, 'en cdmx')
     assert r['datos'] == {'lugar_hechos': 'Ciudad de México'}
-    assert vistos == [('mandé unas fotos\n[El asistente preguntó: ¿En qué estado pasó?]\nen cdmx', IA.jgate.EXTRAER_SYSTEM_V2)]
+    assert vistos == [('mandé unas fotos\n[El asistente preguntó: ¿En qué estado pasó?]\nen cdmx', IA.jgate.EXTRAER_SYSTEM_V2,
+                       'mandé unas fotos\nen cdmx')]   # el respaldo por regex no ve la pregunta
 
 
 def test_si_le_paso_a_la_persona_la_pregunta_es_de_tu():

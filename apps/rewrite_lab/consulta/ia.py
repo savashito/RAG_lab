@@ -116,7 +116,8 @@ class ConsultaIA:
             if ultima_pregunta and ultimo and texto.endswith(ultimo):
                 sistema = jgate.EXTRAER_SYSTEM_V2
                 texto_lugar = f'{texto[:-len(ultimo)]}{jgate.PREGUNTA_PREFIJO}{ultima_pregunta}]\n{ultimo}'
-            lug = jgate.extraer_lugares(texto_lugar, self.llm, sistema=sistema)
+            # El respaldo por regex lee solo a la persona: los ejemplos de la pregunta («Ciudad de México, Querétaro…») no cuentan.
+            lug = jgate.extraer_lugares(texto_lugar, self.llm, sistema=sistema, texto_regex=texto)
             llamadas.append({'tarea': 'extraer_lugares', 'prompt_md5': _md5(sistema), 'raw': lug.get('raw', ''),
                              'fuente': lug.get('fuente')})
             hechos = list(dict.fromkeys(x['estado'] for x in lug.get('lugares', [])
