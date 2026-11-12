@@ -110,13 +110,24 @@ datos:
   pregunta: ¿Cuánto dinero o de qué valor?
   para_que: Pena del robo y del fraude
   estado: borrador
-- id: consentimiento
+- id: consentimiento_difusion
   materia: penal
   tipo: si_no
-  pregunta: ¿La persona estuvo de acuerdo? (tomar las imágenes, el procedimiento médico)
-  pregunta_tu: ¿Estuviste de acuerdo? (en tomar las imágenes, en el procedimiento médico)
-  para_que: Intimidad sexual (en algunos estados), responsabilidad médica
+  pregunta: ¿La persona estuvo de acuerdo en que se compartieran o publicaran las imágenes?
+  pregunta_tu: ¿Estuviste de acuerdo en que se compartieran o publicaran?
+  para_que: 'Intimidad sexual: importa si aceptó que se difundieran, no si las tomó o las mandó'
   estado: borrador
+  nota: Separado de «consentimiento» el 2026-11-12 (antes una sola pregunta mezclaba imágenes y procedimiento médico). Revisar
+    Karen.
+- id: consentimiento_medico
+  materia: penal
+  tipo: si_no
+  pregunta: ¿La persona estuvo de acuerdo con el procedimiento médico?
+  pregunta_tu: ¿Estuviste de acuerdo con el procedimiento médico?
+  para_que: Responsabilidad médica
+  estado: borrador
+  nota: Separado de «consentimiento» el 2026-11-12 (antes una sola pregunta mezclaba imágenes y procedimiento médico). Revisar
+    Karen.
 - id: federal
   materia: penal
   tipo: si_no
@@ -165,7 +176,6 @@ tipos_caso:
   - lugar_hechos
   - edad_victima
   - relacion_partes
-  - consentimiento
   estado: borrador
 - id: acoso_hostigamiento
   materia: penal
@@ -186,7 +196,7 @@ tipos_caso:
   - pide_dinero
   - ya_difundido
   - edad_victima
-  - consentimiento
+  - consentimiento_difusion
   - victima_mujer
   estado: borrador
 - id: amenazas_extorsion
@@ -278,7 +288,7 @@ tipos_caso:
   descripcion: Atención médica o de salud
   datos:
   - lugar_hechos
-  - consentimiento
+  - consentimiento_medico
   - intencional
   - victima_mujer
   estado: borrador

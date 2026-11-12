@@ -121,7 +121,7 @@ FOTOS = {
     'A mí': {'papel': 'victima'},
     'No, todavía no': {'ya_difundido': 'no'},
     'Tengo 24': {'edad_victima': 24},
-    'Sí, yo se las mandé': {'consentimiento': 'si'},
+    'No, nunca acepté que las compartiera': {'consentimiento_difusion': 'no'},
     'Sí': {'victima_mujer': 'si'},
 }
 
