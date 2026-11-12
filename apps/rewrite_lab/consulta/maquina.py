@@ -145,7 +145,8 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
                   else list(catalogo.get('datos', [])))
         if exp['datos'].get('papel') == 'victima':  # quien escribe es la víctima: «tengo 24» es la edad de la víctima
             buscar = [{**d, 'pregunta': d.get('pregunta_tu') or d.get('pregunta')} for d in buscar]
-        x = ia.extraer_expediente(texto, pregunta, [d for d in buscar if d.get('preguntar', True)], evento.get('texto', ''))
+        x = ia.extraer_expediente(texto, pregunta, [d for d in buscar if d.get('preguntar', True)], evento.get('texto', ''),
+                                  hechos=exp.get('hechos', []))
         registro['llamadas'].append(x.get('_llamada'))
         exp, cambios = E.combinar(exp, x.get('datos', {}), catalogo)
         registro['cambios'] += cambios

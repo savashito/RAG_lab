@@ -32,7 +32,7 @@ class IAFalsa:
         return {'agregar': [t for t in self.tipos if t not in actuales], 'quitar': self.quitar, 'por_que': 'prueba',
                 'opciones': self.opciones, '_llamada': {'tarea': 'clasificar_caso'}}
 
-    def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
+    def extraer_expediente(self, texto, pregunta, datos, ultimo=None, hechos=None):
         ultimo = texto.split('\n')[-1]
         pedidos = {d['id'] for d in datos}
         return {'datos': {k: v for k, v in self.respuestas.get(ultimo, {}).items() if k in pedidos},
@@ -367,8 +367,8 @@ def test_contexto_desconocido_se_rechaza():
 class IAConResidencia(IAFalsa):
     """Como IAFalsa, pero el extractor de lugares dice dónde vive la persona (rol «otro») si el texto dice «soy de»."""
 
-    def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
-        x = super().extraer_expediente(texto, pregunta, datos, ultimo)
+    def extraer_expediente(self, texto, pregunta, datos, ultimo=None, hechos=None):
+        x = super().extraer_expediente(texto, pregunta, datos, ultimo, hechos)
         return {**x, 'residencia': 'Ciudad de México' if 'soy de cdmx' in texto.lower() else None}
 
 
@@ -455,7 +455,7 @@ def test_si_es_la_victima_el_extractor_recibe_las_preguntas_de_tu():
     vistos = []
 
     class IA(IAFalsa):
-        def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
+        def extraer_expediente(self, texto, pregunta, datos, ultimo=None, hechos=None):
             vistos.append({d['id']: d.get('pregunta') for d in datos})
             return super().extraer_expediente(texto, pregunta, datos, ultimo)
     exp = {**E.nuevo(), 'tipos_caso': ['imagenes_intimas'], 'datos': {'papel': 'victima'}}
@@ -546,8 +546,8 @@ def test_si_conto_algo_y_no_se_reconoce_el_caso_pide_mas_sin_ignorarlo():
 
 
 class IAHechos(IAFalsa):
-    def extraer_expediente(self, texto, pregunta, datos, ultimo=None):
-        x = super().extraer_expediente(texto, pregunta, datos, ultimo)
+    def extraer_expediente(self, texto, pregunta, datos, ultimo=None, hechos=None):
+        x = super().extraer_expediente(texto, pregunta, datos, ultimo, hechos)
         return {**x, 'hechos': ['la golpearon muy feo'] if 'golpearon' in texto.split('\n')[-1] else []}
 
 

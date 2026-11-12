@@ -66,7 +66,8 @@ Reglas:
 - Tipos: si_no → "si" o "no"; numero → un número; opcion → exactamente una de las opciones listadas.
 - "hechos": lo que la persona contó en su ÚLTIMO MENSAJE que importa para su caso y que no cabe en ningún dato de la
   lista, en frases cortas en tercera persona («la golpearon muy feo», «le quitaron el celular y la cartera»). No repitas
-  lo que ya quedó en un dato ni saludos o preguntas. Lista vacía si no hay nada.
+  lo que ya quedó en un dato, ni saludos o preguntas, ni nada que diga lo mismo que los HECHOS YA ANOTADOS (aunque
+  sea con otras palabras). Lista vacía si no hay nada nuevo.
 - No expliques nada fuera del JSON."""
 
 
@@ -124,7 +125,8 @@ class ConsultaIA:
                 'por_que': str(d.get('por_que') or '').strip(), 'opciones': opciones,
                 'conto_algo': d.get('conto_algo') is True, '_llamada': llamada}
 
-    def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict], ultimo: str | None = None) -> dict:
+    def extraer_expediente(self, texto: str, ultima_pregunta: str, datos: list[dict], ultimo: str | None = None,
+                           hechos: list[str] | None = None) -> dict:
         """`texto`: todos los mensajes de la persona; `ultimo`: el actual (al final de `texto`). Para el lugar, la pregunta
         del asistente va justo antes de `ultimo` (v2 del filtro): a «¿En qué estado pasó?» → «en cdmx», CDMX es de los
         hechos y no donde vive la persona."""
@@ -157,7 +159,8 @@ class ConsultaIA:
             raw, llamada = self._llamar('extraer_expediente', EXTRAER_EXPEDIENTE_SYSTEM,
                                         f'DATOS:\n{lista or "(ninguno)"}\n\nÚLTIMA PREGUNTA DEL ASISTENTE:\n{ultima_pregunta or "(ninguna)"}'
                                         f'\n\nMENSAJES DE LA PERSONA:\n{texto}'
-                                        + (f'\n\nÚLTIMO MENSAJE:\n{ultimo}' if ultimo else ''), 400)
+                                        + (f'\n\nÚLTIMO MENSAJE:\n{ultimo}' if ultimo else '')
+                                        + ('\n\nHECHOS YA ANOTADOS:\n' + '\n'.join(f'- {h}' for h in hechos) if hechos else ''), 400)
             llamadas.append(llamada)
             d = _json(raw) or {}
             ids = {x['id'] for x in resto}
