@@ -458,3 +458,34 @@ def test_si_es_la_victima_el_extractor_recibe_las_preguntas_de_tu():
     exp = {**E.nuevo(), 'tipos_caso': ['imagenes_intimas'], 'datos': {'papel': 'victima'}}
     M.turno(M.LLENAR_EXPEDIENTE, exp, {'tipo': 'mensaje', 'texto': 'tengo 24', 'historial': []}, cat, IA())
     assert vistos[-1]['edad_victima'] == '¿Qué edad tienes?'
+
+
+# ── Benchmark de la consulta ────────────────────────────────────────────────────────────────────────────────────────
+from consulta import bench as B  # noqa: E402
+
+
+def test_bench_simula_hasta_orientar_y_califica():
+    caso = {'id': 'x', 'relato': 'Me escribe alguien que conocí en una app: si no le deposito 5,000 pesos publica mis fotos íntimas',
+            'respuestas': {'lugar_hechos': 'En Querétaro', 'papel': 'A mí', 'edad_victima': 'Tengo 24'},
+            'esperado': {'tipos': ['imagenes_intimas'], 'datos': {'lugar_hechos': 'Querétaro', 'edad_victima': 24},
+                         'reglas': ['r021'], 'reglas_no': ['r023'], 'max_preguntas': 2}}
+    x = B.fila(caso, CAT, IAFalsa(respuestas=FOTOS))
+    assert x['orienta'] and x['tipos'] and x['datos'] == {'lugar_hechos': 'acierta', 'edad_victima': 'acierta'}
+    assert not x['reglas_faltan'] and not x['reglas_de_mas']
+    assert x['preguntas'] == ['lugar_hechos', 'papel', 'edad_victima'] and x['preguntas_de_mas'] == 1
+    r = B.resumen([x])
+    assert r['datos_acierta'] == r['datos_total'] == 2 and r['preguntas_de_mas'] == 1
+
+
+def test_bench_respuesta_en_lista_y_no_se():
+    from collections import Counter
+    caso, veces = {'respuestas': {'lugar_hechos': ['muy tomado', 'en Querétaro']}}, Counter()
+    assert [B.respuesta(caso, 'lugar_hechos', veces) for _ in range(3)] == ['muy tomado', 'en Querétaro', 'en Querétaro']
+    assert B.respuesta(caso, 'papel', veces) == B.NO_SE
+
+
+def test_bench_casos_iniciales_son_validos_y_se_rechazan_los_mal_hechos():
+    assert len(B.validar_casos(B.CASOS_INICIALES.read_text())) >= 16
+    for malo in ('casos: []', 'casos: [{id: a}]', 'casos: [{id: a, relato: x, esperado: {}}, {id: a, relato: y, esperado: {}}]', ':'):
+        with pytest.raises(ValueError):
+            B.validar_casos(malo)

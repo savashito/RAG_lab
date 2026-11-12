@@ -590,6 +590,7 @@
      <button data-sub="informes" title="Resúmenes de varias corridas, con tablas y explicación">📑 Informes</button>
      <button data-sub="componentes" title="Cada llamada al LLM probada contra su propio objetivo">🧩 Componentes</button>
      <button data-sub="repeticiones" title="Las conversaciones reales de la ronda 1, repetidas con otra configuración del asistente">🔁 Ronda 1 real</button>
+     <button data-sub="consulta" title="La consulta de la ronda 3 (Preguntar con el catálogo): casos inventados que miden tipos de caso, expediente, reglas y preguntas">🗨️ Consulta (catálogo)</button>
      <button data-sub="compare" hidden>📊 Comparar <span id="bench-ccount" class="pill" hidden></span></button>
    </div>
  </div>
@@ -715,6 +716,15 @@
    <div id="comp-detalle"></div>
  </div>
 
+ <div id="bsub-consulta" class="bsubpage" hidden>
+   <p class="muted" style="font-size:13px;margin-top:0">La consulta de la ronda 3 (<b>📚 Preguntar (Catálogo)</b>) con <b>casos inventados</b>: cada caso
+     es lo que cuenta una persona y lo que contesta a cada pregunta. Se simula la conversación con el LLM de la app y el catálogo actual hasta
+     orientar, y se mide si el expediente quedó bien: <b>tipos de caso</b>, <b>datos</b>, <b>reglas</b> que aplican y cuántas <b>preguntas</b>
+     hizo antes de orientar. No redacta la orientación. No depende del set elegido arriba.</p>
+   <div id="bc-corridas"></div>
+   <div id="bc-detalle"></div>
+   <div id="bc-casos"></div>
+ </div>
  <div id="bsub-repeticiones" class="bsubpage" hidden>
    <p class="muted" style="font-size:13px;margin-top:0">Las <b>conversaciones reales</b> de la ronda 1 del estudio (lo que escribieron las
      personas participantes), repetidas con otra configuración del asistente. Los mensajes de la persona son los reales; el asistente

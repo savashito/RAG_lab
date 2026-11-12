@@ -101,15 +101,16 @@ function diffStats(results){
 // ── Navegación ──────────────────────────────────────────────────────────────────
 // La URL refleja lo que se ve, para recargar o compartir el enlace:
 //   /benchmark?set=3&vista=preguntas · ?set=3&corrida=12 · ?set=3&vista=comparar&comparar=11,12
-const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', informes: 'informes', componentes: 'componentes', repeticiones: 'ronda1', compare: 'comparar'};
+const SUB_URL = {run: '', questions: 'preguntas', prompts: 'prompts', informes: 'informes', componentes: 'componentes', repeticiones: 'ronda1', consulta: 'consulta', compare: 'comparar'};
 function benchSub(name){
   BENCH.sub = name;
   document.querySelectorAll('.bsub button').forEach(b=>b.classList.toggle('active', b.dataset.sub===name));
-  for(const s of ['run','questions','prompts','informes','componentes','repeticiones','compare']) $('bsub-'+s).hidden = (s!==name);
+  for(const s of ['run','questions','prompts','informes','componentes','repeticiones','consulta','compare']) $('bsub-'+s).hidden = (s!==name);
   if(name==='prompts') loadPrompts();
   if(name==='informes') loadInformes();
   if(name==='componentes') loadComponentes(); else clearTimeout(COMP.poll);
   if(name==='repeticiones') loadRepeticiones(); else clearTimeout(REP.poll);
+  if(name==='consulta') loadBenchConsulta(); else clearTimeout(BC.poll);
   benchUrlSync();
 }
 function benchUrlSync(){
@@ -1614,3 +1615,62 @@ async function repPrompts(){
       <p class="muted" style="font-size:12px;margin:4px 0">${esc(p.nota || '')}</p>
       <div style="white-space:pre-wrap;font:12.5px/1.5 ui-monospace,monospace;background:#0f1115;border:1px solid #2a2f3a;border-radius:8px;padding:8px 10px">${texto(p)}</div></div>`).join('')}</div></details>`;
 }
+
+
+// ── 🗨️ Consulta (catálogo): benchmark de la consulta de la ronda 3 (consulta/bench.py) ─────────────────────────────
+const BC = {poll: null, sel: null};
+const bcPct = (a, b) => b ? `${a}/${b} <span class="muted">(${Math.round(100 * a / b)} %)</span>` : '—';
+async function loadBenchConsulta(){
+  clearTimeout(BC.poll);
+  let d; try{ d = await bjson('/api/bench_consulta'); }catch(e){ $('bc-corridas').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
+  const filas = d.corridas.map(c => { const r = c.resumen || {};
+    return `<tr class="${BC.sel === c.id ? 'sel' : ''}" style="cursor:pointer" onclick="bcVer(${c.id})">
+      <td>#${c.id}</td><td>${esc(c.creada.slice(0, 16).replace('T', ' '))}</td><td><code>${esc(c.catalogo_md5 || '')}</code></td><td><code>${esc(c.commit || '')}</code></td>
+      <td>${esc(c.estado)}${c.error ? ` <span style="color:#f87171" title="${escA(c.error)}">⚠</span>` : ''}</td>
+      <td>${bcPct(r.orienta ?? 0, r.casos)}</td><td>${bcPct(r.tipos ?? 0, r.casos)}</td><td>${bcPct(r.datos_acierta ?? 0, r.datos_total)}</td>
+      <td>${bcPct(r.reglas ?? 0, r.casos)}</td><td>${r.preguntas_promedio ?? '—'}</td><td>${r.casos ? r.preguntas_de_mas + '/' + r.casos : '—'}</td><td>${r.segundos ?? '—'}</td></tr>`; }).join('');
+  $('bc-corridas').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Corridas</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 6px"><b>Orienta</b>: llegó a la orientación. <b>Tipos</b>: quedaron los tipos de caso esperados.
+      <b>Datos</b>: datos del expediente con el valor esperado. <b>Reglas</b>: casos donde aplican las reglas esperadas y ninguna de las prohibidas.
+      <b>Preguntas</b>: promedio antes de orientar; <b>de más</b>: casos que preguntaron más de lo esperado. <b>Catálogo</b> y <b>commit</b>: con qué se corrió.
+      Clic en una fila para ver cada caso.</p>
+    <div class="row" style="margin:0 0 8px"><button id="bc-run" ${d.en_curso ? 'disabled' : ''}>▶ Correr todos los casos</button>
+      ${d.en_curso ? `<span class="muted">Corrida #${d.en_curso} en curso…</span>` : ''}</div>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>#</th><th>Fecha</th><th>Catálogo</th><th>Commit</th><th>Estado</th><th>Orienta</th><th>Tipos</th>
+      <th>Datos</th><th>Reglas</th><th>Preguntas</th><th>De más</th><th>Segundos</th></tr>${filas || '<tr><td colspan="12" class="muted">Todavía no hay corridas.</td></tr>'}</table></div></div>`;
+  $('bc-run').onclick = async () => { try{ const r = await bpost('/api/bench_consulta/correr'); BC.sel = r.corrida; loadBenchConsulta(); }catch(e){ alert(e.message); } };
+  if(!$('bc-yaml')){
+    $('bc-casos').innerHTML = `<details class="bcard"><summary style="cursor:pointer"><b>📝 Casos</b> <span class="muted">(YAML; se guardan en la base, no en el repo)</span></summary>
+      <p class="muted" style="font-size:12px">Cada caso: <code>id</code>, <code>relato</code> (primer mensaje), <code>respuestas</code> (lo que contesta a cada dato; una lista = una
+        respuesta por cada vez que se lo pregunta; lo que falte lo contesta «no sé») y <code>esperado</code> (<code>tipos</code>, <code>datos</code>, <code>reglas</code>,
+        <code>reglas_no</code>, <code>max_preguntas</code>). Solo casos inventados: nunca mensajes de participantes.</p>
+      <textarea id="bc-yaml" style="min-height:320px"></textarea>
+      <div class="row"><button id="bc-guardar">Guardar casos</button><span class="muted" id="bc-msg"></span></div></details>`;
+    $('bc-yaml').value = d.casos_yaml;
+    $('bc-guardar').onclick = async () => {
+      try{ const r = await bjson('/api/bench_consulta/casos', {method:'PUT', headers:{'Content-Type':'text/yaml'}, body:$('bc-yaml').value});
+           $('bc-msg').textContent = `Guardado: ${r.casos} casos ✓`; }catch(e){ $('bc-msg').textContent = '⚠ ' + e.message; } };
+  }
+  if(BC.sel) bcVer(BC.sel, true);
+  if(d.en_curso) BC.poll = setTimeout(loadBenchConsulta, 4000);
+}
+async function bcVer(id, sinPintar){
+  BC.sel = id;
+  if(!sinPintar) document.querySelectorAll('#bc-corridas tr').forEach(tr => tr.classList.toggle('sel', (tr.getAttribute('onclick') || '').includes(`(${id})`)));
+  let d; try{ d = await bjson(`/api/bench_consulta/corridas/${id}`); }catch(e){ $('bc-detalle').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
+  const ok = b => b ? '✓' : '<b style="color:#f87171">✗</b>';
+  $('bc-detalle').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Corrida #${id}: por caso</h3>
+    <p class="muted" style="font-size:12px;margin:0 0 6px">Primero los casos con algún error. Clic en «conversación» para ver lo que se simuló.</p>
+    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Caso</th><th>Tipos</th><th>Datos</th><th>Reglas</th><th>Preguntas</th><th>Segundos</th></tr>
+    ${[...d.filas].sort((a, b) => bcMal(b) - bcMal(a)).map(x => { const mal = Object.entries(x.datos).filter(([, v]) => v !== 'acierta');
+      const reglas = [...(x.reglas_faltan.length ? ['faltan ' + x.reglas_faltan.join(', ')] : []), ...(x.reglas_de_mas.length ? ['de más ' + x.reglas_de_mas.join(', ')] : [])];
+      return `<tr><td><b>${esc(x.id)}</b>${x.orienta ? '' : ' <span style="color:#f87171">(no orientó)</span>'}
+          <details><summary class="muted" style="cursor:pointer;font-size:12px">conversación</summary><pre>${esc(x.conversacion.map(m => (m.role === 'user' ? 'Persona: ' : 'Asistente: ') + m.content).join('\n'))}</pre>
+          <div class="muted" style="font-size:12px">Expediente: ${esc(JSON.stringify(x.expediente))}${(x.no_sabe || []).length ? ' · no sabe: ' + esc(x.no_sabe.join(', ')) : ''}<br>Reglas: ${esc((x.reglas || []).join(', '))}${(x.inciertas || []).length ? ' · inciertas: ' + esc(x.inciertas.join(', ')) : ''}</div></details></td>
+        <td>${ok(x.tipos)}${x.tipos ? '' : ' ' + esc((x.tipos_caso || []).join(', '))}</td>
+        <td>${mal.length ? mal.map(([k, v]) => `<span style="color:#f87171">${esc(k)}: ${esc(v)}</span>`).join('<br>') : `✓ <span class="muted">${Object.keys(x.datos).length}</span>`}</td>
+        <td>${reglas.length ? `<span style="color:#f87171">${esc(reglas.join('; '))}</span>` : '✓'}</td>
+        <td>${x.n_preguntas}${x.preguntas_de_mas ? ` <span style="color:#fbbf24">(+${x.preguntas_de_mas})</span>` : ''} <span class="muted" style="font-size:12px">${esc(x.preguntas.join(', '))}</span></td>
+        <td>${x.segundos}</td></tr>`; }).join('')}</table></div></div>`;
+}
+const bcMal = x => (!x.orienta) + (!x.tipos) + Object.values(x.datos).filter(v => v !== 'acierta').length + x.reglas_faltan.length + x.reglas_de_mas.length + (x.preguntas_de_mas > 0);

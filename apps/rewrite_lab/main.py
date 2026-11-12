@@ -1701,6 +1701,12 @@ from consulta import orientar as consulta_orientar  # noqa: E402
 from consulta.ia import ConsultaIA  # noqa: E402
 consulta_ia = ConsultaIA(llm)
 
+# 🧪 Benchmark → Consulta (catálogo): casos inventados que simulan la consulta y miden el expediente (consulta/bench.py).
+from consulta.bench import BenchConsulta  # noqa: E402
+bench_consulta = BenchConsulta(connect=connect, catalogo=lambda: catalogo.leer()[0], ia=consulta_ia,
+                               current_email=current_email, can_run=can_ingest)
+app.include_router(bench_consulta.router)
+
 
 CONSULTA_ESTUDIO_PROMPTS = Path(__file__).resolve().parent / 'study' / 'estudios' / 'ronda2_penal.yaml'
 CONSULTA_PROMPT = 'ronda2:intermedio'   # por omisión: el prompt que salió mejor en la ronda 2
