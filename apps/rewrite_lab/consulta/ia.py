@@ -82,7 +82,8 @@ class ConsultaIA:
             raw = self.llm.chat(system, user, temperature=0.0, max_tokens=max_tokens, timeout=90)
         except Exception as e:   # el LLM caído no tumba la conversación: se pregunta lo que falte
             raw = f'__error__: {e}'
-        return raw, {'tarea': tarea, 'prompt_md5': _md5(system), 'raw': raw, 'segundos': round(time.time() - t0, 2)}
+        return raw, {'tarea': tarea, 'prompt_md5': _md5(system), 'system': system, 'user': user, 'raw': raw,
+                     'segundos': round(time.time() - t0, 2)}
 
     def clasificar_caso(self, conversacion: str, actuales: list[str], catalogo: dict) -> dict:
         """La conversación (persona y asistente) y los tipos de caso del expediente → qué agregar y qué quitar.
@@ -122,8 +123,8 @@ class ConsultaIA:
                 texto_lugar = f'{texto[:-len(ultimo)]}{jgate.PREGUNTA_PREFIJO}{ultima_pregunta}]\n{ultimo}'
             # El respaldo por regex lee solo a la persona: los ejemplos de la pregunta («Ciudad de México, Querétaro…») no cuentan.
             lug = jgate.extraer_lugares(texto_lugar, self.llm, sistema=sistema, texto_regex=texto)
-            llamadas.append({'tarea': 'extraer_lugares', 'prompt_md5': _md5(sistema), 'raw': lug.get('raw', ''),
-                             'fuente': lug.get('fuente')})
+            llamadas.append({'tarea': 'extraer_lugares', 'prompt_md5': _md5(sistema), 'system': sistema,
+                             'user': f'CONSULTA:\n{texto_lugar}', 'raw': lug.get('raw', ''), 'fuente': lug.get('fuente')})
             hechos = list(dict.fromkeys(x['estado'] for x in lug.get('lugares', [])
                                         if x.get('estado') and x.get('rol', 'hechos') == 'hechos'))
             if len(hechos) == 1:          # dos estados distintos: no se decide; se vuelve a preguntar

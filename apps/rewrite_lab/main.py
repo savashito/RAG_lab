@@ -1886,6 +1886,8 @@ def consulta_turno_stream(body: dict):
                 yield sse({'stage': 'done', 'segundos_respuesta': round(time.time() - t, 2)})
                 return
             if mensajes:                           # la pregunta del dato que falta, redactada por el LLM
+                yield sse({'stage': 'llm_entrada', 'tarea': 'redactar_pregunta', 'system': mensajes[0]['content'],
+                           'user': mensajes[1]['content']})
                 for piece in llm.chat_stream(mensajes, max_tokens=400, timeout=90):
                     yield sse({'stage': 'token', 'text': piece})
             if not preparar:
@@ -1894,6 +1896,7 @@ def consulta_turno_stream(body: dict):
             system, prep = preparar()
             user = prep.pop('user')
             yield sse({'stage': 'contexto', 'orientacion': prep})
+            yield sse({'stage': 'llm_entrada', 'tarea': 'orientar', 'system': system, 'user': user})
             t = time.time()
             for piece in llm.chat_stream([{'role': 'system', 'content': system}, {'role': 'user', 'content': user}],
                                          max_tokens=4096, timeout=180):

@@ -6,7 +6,7 @@
   const e = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const PROMPT_POR_OMISION = 'ronda2:intermedio';
   let C = {cat:null, nombres:{}, md5:''}, S = nuevo(), iniciado = false;
-  function nuevo(){ return {estado:null, expediente:null, historial:[], ultima:null, orientacion:null, buscador:null, registros:[]}; }
+  function nuevo(){ return {estado:null, expediente:null, historial:[], ultima:null, orientacion:null, buscador:null, extra:[], registros:[]}; }
 
   async function catInit(){
     if (iniciado) return;
@@ -73,12 +73,14 @@
       if (!r.ok) throw new Error('HTTP ' + r.status);
       await readSSE(r, ev => {
         if (ev.stage === 'turno') {
-          Object.assign(S, {estado:ev.estado, expediente:ev.expediente, ultima:ev.salida, orientacion:null, buscador:ev.buscador ? [] : null});
+          Object.assign(S, {estado:ev.estado, expediente:ev.expediente, ultima:ev.salida, orientacion:null, buscador:ev.buscador ? [] : null, extra:[]});
           S.registros.push(ev.registro);
           quitarEspera(); responder(ev.salida, g('cat-preg-llm').checked, ev.buscador); panel();
           if (ev.buscador) espera = burbuja('assistant', 'El catálogo no tiene reglas para este caso: buscando en las leyes…');
           if (ev.salida.tipo === 'pregunta' && g('cat-preg-llm').checked) espera = burbuja('assistant', '…');
           if (ev.salida.tipo === 'orientar' && !ev.salida.sin_reglas && g('cat-modo').value !== 'ninguno') espera = burbuja('assistant', 'Leyendo los artículos del catálogo…');
+        } else if (ev.stage === 'llm_entrada') {    // lo que recibe el LLM al redactar la pregunta o la orientación
+          S.extra.push({tarea:ev.tarea, system:ev.system, user:ev.user, raw:''}); panel();
         } else if (ev.stage === 'buscador') {
           S.buscador = ev.chunks || []; panel();
         } else if (ev.stage === 'contexto') {
@@ -92,6 +94,7 @@
         } else if (ev.stage === 'done') {
           if (S.orientacion) { S.orientacion.respuesta = respuesta; S.orientacion.segundos.respuesta = ev.segundos_respuesta; panel(); }
           if (respuesta) S.historial.push({role:'assistant', content:respuesta});
+          if (S.extra.length) { S.extra[S.extra.length - 1].raw = respuesta; S.extra[S.extra.length - 1].segundos = ev.segundos_respuesta; panel(); }
         } else if (ev.stage === 'error') {     // readSSE se traga lo que lance este callback: se muestra aquí
           quitarEspera(); burbuja('assistant', '').innerHTML = `<span class="bad">Error: ${e(ev.error)}</span>`;
           if (S.ultima && S.ultima.tipo === 'pregunta' && !respuesta) decir(S.ultima.texto);   // la pregunta fija del catálogo
@@ -161,9 +164,16 @@
     }
     if (S.buscador) h += `<h3>Respuesta del buscador (el catálogo no tiene reglas para este caso) · ${S.buscador.length} fragmentos</h3>`
       + (S.buscador.length ? `<table>${S.buscador.map(c => `<tr><td>${e(c.rank)}</td><td>${e(c.citation || '')}<div class="muted">${e(c.hierarchy || '')}</div></td></tr>`).join('')}</table>` : '<span class="muted">buscando…</span>');
+    // Cada llamada al LLM: lo que recibió (mensaje de sistema y mensaje con el caso) y lo que respondió.
+    const NOMBRE = {clasificar_caso:'clasificar el caso', extraer_lugares:'extraer los lugares', extraer_expediente:'extraer los datos del expediente',
+                    redactar_pregunta:'redactar la pregunta', orientar:'redactar la orientación'};
     const llamada = l => l.partes ? l.partes.map(llamada).join('')
-      : `<details><summary>${e(l.tarea)}${l.segundos != null ? ` · ${l.segundos} s` : ''}</summary><pre>${e(l.raw)}</pre></details>`;
-    h += '<h3>Llamadas al LLM en este mensaje</h3>' + ((r.llamadas || []).length ? r.llamadas.map(llamada).join('') : '<span class="muted">ninguna</span>');
+      : `<details><summary>${e(NOMBRE[l.tarea] || l.tarea)}${l.segundos != null ? ` · ${l.segundos} s` : ''}</summary>
+          ${l.system != null ? `<details><summary class="muted">mensaje de sistema (${l.system.length} caracteres)</summary><pre>${e(l.system)}</pre></details>
+          <div class="muted">mensaje con el caso:</div><pre>${e(l.user)}</pre>` : ''}
+          <div class="muted">respuesta:</div><pre>${e(l.raw || '…')}</pre></details>`;
+    const todas = [...(r.llamadas || []), ...(S.extra || [])];
+    h += `<h3>Llamadas al LLM en este mensaje (estado ${e(r.estado_antes || '')})</h3>` + (todas.length ? todas.map(llamada).join('') : '<span class="muted">ninguna</span>');
     g('cat-panel').innerHTML = h;
   }
   async function leer(codigo, num){
