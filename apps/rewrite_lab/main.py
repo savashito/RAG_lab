@@ -1692,6 +1692,10 @@ from consulta.catalogo import Catalogo  # noqa: E402
 catalogo = Catalogo(connect=connect, current_email=current_email, can_edit=can_ingest, is_superadmin=is_superadmin,
                     table=TABLE, static_dir=STATIC)
 app.include_router(catalogo.router)
+# Valores de referencia (UMA, Unidad de Cuenta CDMX): se editan en /catalogo; la orientación convierte las multas a pesos.
+from consulta.valores import Valores  # noqa: E402
+valores_ref = Valores(connect=connect, current_email=current_email, can_edit=can_ingest)
+app.include_router(valores_ref.router)
 
 # 📚 Preguntar (Catálogo): la máquina de estados de la consulta (consulta/maquina.py) con el catálogo de la base, para
 # probar a mano cómo clasifica, qué datos pide y a qué reglas y artículos llega. El estado y el expediente viajan con
@@ -1843,7 +1847,7 @@ def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict, seguimien
         with connect() as c, c.cursor() as cur:
             prep = consulta_orientar.preparar(
                 cur=cur, table=TABLE, salida=salida, expediente=exp, catalogo=doc, conversacion=conversacion,
-                contexto=modo, tope=body.get('tope_tokens'), seguimiento=seguimiento,
+                contexto=modo, tope=body.get('tope_tokens'), seguimiento=seguimiento, valores=valores_ref.vigentes(),
                 embed=lambda t: tei.embed([query_prefix(instruct_for(topic)) + t], use_cache=False)[0])
         return system, {**prep, 'prompt': prompt}
     return preparar

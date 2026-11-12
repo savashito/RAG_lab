@@ -162,7 +162,8 @@
           <table><tr><th>Artículo</th><th>Entra</th><th>Orden</th>${emb ? '<th>Distancia</th>' : ''}<th>Tokens</th></tr>
           ${[...o.contexto].sort((a, b) => (a.orden || 999) - (b.orden || 999)).map(a => `<tr><td><span class="cat-chip" onclick="catLeer('${e(a.codigo)}','${e(a.num)}')">${e(C.nombres[a.codigo] || a.codigo)} ${e(a.num)}</span></td>
             <td>${a.entra ? '✓' : '<span class="muted">✗</span>'}</td><td>${a.orden || ''}</td>${emb ? `<td>${a.distancia ?? ''}</td>` : ''}<td>${a.tokens}</td></tr>`).join('')}</table>
-          ${o.no_encontrados.length ? `<div class="warn">No están en el corpus: ${e(o.no_encontrados.join(', '))}</div>` : ''}`;
+          ${o.no_encontrados.length ? `<div class="warn">No están en el corpus: ${e(o.no_encontrados.join(', '))}</div>` : ''}
+          ${(o.valores || []).length ? `<h3>Multas en pesos (valores de referencia)</h3><ul>${o.valores.map(v => `<li>${e(v)}</li>`).join('')}</ul>` : ''}`;
       }
       h += '<div id="cat-texto"></div>';
       if ((s.tipos_quitados || []).length) h += `<div class="warn">Tipos que ya no aplican: ${e(s.tipos_quitados.map(tipo).join(', '))}</div>`;

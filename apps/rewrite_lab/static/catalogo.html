@@ -96,7 +96,7 @@
 </div>
 <script>
 let NOMBRES = {cdmx:'CDMX', queretaro:'Querétaro', edomex:'Edomex', morelos:'Morelos', federal:'Federal'}, MATERIA_LEY = {};
-const PARTES = [['reglas','Reglas'],['tipos_caso','Tipos de caso'],['datos','Datos del expediente'],['otro','Van a «otro»']];
+const PARTES = [['reglas','Reglas'],['tipos_caso','Tipos de caso'],['datos','Datos del expediente'],['otro','Van a «otro»'],['valores','Valores (UMA…)']];
 let S = {cat:null, puede:false, codigos:[], parte:'reglas', sel:null, f:{tipo:'', estado:'', materia:'', q:'', orden:''}, vista:'yaml', lect:null, md5:null, limpio:'', marcas:[]};
 const cm = CodeMirror(document.getElementById('cmwrap'), {mode:'yaml', lineNumbers:true, lineWrapping:true, foldGutter:true,
   styleActiveLine:true, tabSize:2, indentUnit:2, gutters:['CodeMirror-linenumbers','CodeMirror-foldgutter'],
@@ -151,6 +151,7 @@ const $ = id => document.getElementById(id);
 
 async function cargar(forzarYaml){
   const r = await fetch('/api/catalogo'); const j = await r.json();
+  try { S.valores = await (await fetch('/api/valores')).json(); } catch(_) { S.valores = null; }
   if (!S.lect) { try { const l = await (await fetch('/api/catalogo/lecturas')).json(); S.lect = l.reglas ? l : null; } catch(_) {}
     S.lect = S.lect || {modelos:{}, reglas:{}}; }
   S.cat = j.catalogo; S.puede = j.puede_editar; S.codigos = j.codigos; S.md5 = j.md5; NOMBRES = j.nombres || NOMBRES; MATERIA_LEY = j.materia_ley || {};
@@ -161,12 +162,14 @@ async function cargar(forzarYaml){
   pintar();
 }
 function progreso(p){
+  if (p === 'valores') return S.valores ? ` (${Object.keys(S.valores.vigentes).length})` + (Object.values(S.valores.vigentes).some(v => v.revisar) ? ' ⚠' : '') : '';
   const l = S.cat[p] || []; const c = l.filter(e => e.estado === 'confirmada').length;
   return Array.isArray(l) && typeof l[0] === 'object' ? ` (${c}/${l.length})` : ` (${l.length})`;
 }
 function pintar(){
   $('tabs').innerHTML = PARTES.map(([p,n]) => `<button class="${p===S.parte?'on':''}" onclick="S.parte='${p}';S.sel=null;pintar();panelVacio()">${n}${progreso(p)}</button>`).join('');
   const tipos = S.cat.tipos_caso || [];
+  if (S.parte === 'valores') { pintarValores(); return; }
   if (S.parte === 'reglas') {
     $('filtros').innerHTML = `<select onchange="S.f.tipo=this.value;pintar()"><option value="">Todos los tipos de caso</option>${tipos.map(t=>`<option value="${t.id}" ${S.f.tipo===t.id?'selected':''}>${esc(t.titulo)}</option>`).join('')}</select>
       ${selEstado()} <select onchange="S.f.orden=this.value;pintarLista()"><option value="">Orden del catálogo</option><option value="dudas" ${S.f.orden==='dudas'?'selected':''}>Más dudas primero</option></select>
@@ -188,6 +191,43 @@ function datosUsados(tipo){
   (S.cat.reglas||[]).filter(r => r.tipo_caso === tipo && r.estado !== 'descartada')
     .forEach(r => (r.cuando||[]).forEach(c => { const m = String(c).trim().match(/^(?:NO\s+)?(\w+)/); if (m) u.add(m[1]); }));
   return u;
+}
+// Valores de referencia (tabla valores_referencia): la UMA y lo que se calcula con ella. Un cambio es una fila nueva;
+// la anterior queda en el historial. La orientación convierte a pesos las multas de los artículos con el valor vigente.
+function pintarValores(){
+  const V = S.valores; vista('form');
+  $('filtros').innerHTML = `<span class="muted small">Cantidades que cambian cada año y que los artículos citan («trescientas veces la UMA»). Al orientar, el sistema convierte esas multas a pesos con el valor vigente; los «días multa» no se convierten (dependen de los ingresos de la persona sentenciada). Un valor con ⚠ tiene más de un año: revisa si ya hay uno nuevo.</span>`;
+  if (!V) { $('lista').innerHTML = '<span class="muted">No se pudieron leer los valores.</span>'; return; }
+  const vig = Object.values(V.vigentes);
+  $('lista').innerHTML = `<h3 style="margin:6px 0">Vigentes</h3><table><tr><th>Valor</th><th>Pesos (diario)</th><th>Desde</th><th>Fuente</th></tr>${vig.map(v => `
+      <tr><td>${esc(v.nombre)}<div class="muted small">${esc(v.clave)}</div></td>
+      <td>${v.valor != null ? '$' + Number(v.valor).toFixed(2) : '—'}${v.igual_a ? `<div class="muted small">= ${esc(v.igual_a)}</div>` : ''}${v.revisar ? ' <span title="Más de un año: revisa si hay un valor nuevo">⚠</span>' : ''}</td>
+      <td class="small">${esc(String(v.vigente_desde).slice(0, 10))}</td>
+      <td class="small">${v.url ? `<a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.fuente)}</a>` : esc(v.fuente)}${v.nota ? `<div class="muted">${esc(v.nota)}</div>` : ''}</td></tr>`).join('')}</table>
+    <h3 style="margin:14px 0 6px">Historial</h3><table><tr><th>Clave</th><th>Valor</th><th>Desde</th><th>Registró</th></tr>${V.historial.map(f => `
+      <tr><td class="small">${esc(f.clave)}</td><td class="small">${f.valor != null ? '$' + Number(f.valor).toFixed(2) : '= ' + esc(f.igual_a)}</td>
+      <td class="small">${esc(String(f.vigente_desde).slice(0, 10))}</td><td class="small muted">${esc(f.por || '')} · ${esc(String(f.creado || '').slice(0, 16))}</td></tr>`).join('')}</table>`;
+  const claves = [...new Set(V.historial.map(f => f.clave))];
+  $('panel').innerHTML = !S.puede ? '<span class="muted">Solo lectura.</span>' : `<h3 style="margin-top:0">Registrar un valor nuevo</h3>
+    <p class="muted small">Para actualizar la UMA, usa la misma clave (<code>uma</code>) con el valor y la fecha nuevos: el anterior queda en el historial.</p>
+    <label>Clave</label><input id="vr-clave" list="vr-claves" placeholder="uma"><datalist id="vr-claves">${claves.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+    <label>Nombre</label><input id="vr-nombre" placeholder="Unidad de Medida y Actualización (UMA)">
+    <label>Valor diario en pesos</label><input id="vr-valor" placeholder="117.31">
+    <label>O igual a (clave de otro valor)</label><select id="vr-igual"><option value="">— tiene su propio valor —</option>${claves.map(c => `<option>${esc(c)}</option>`).join('')}</select>
+    <label>Vigente desde</label><input id="vr-desde" type="date">
+    <label>Fuente (publicación oficial)</label><input id="vr-fuente" placeholder="INEGI, comunicado …; DOF …">
+    <label>Liga</label><input id="vr-url" placeholder="https://…">
+    <label>Nota</label><textarea id="vr-nota" rows="3"></textarea>
+    <button class="primary" onclick="guardarValor()">Guardar</button> <span class="msg" id="vr-msg"></span>`;
+  const sel = $('vr-clave'); sel.onchange = () => { const v = V.vigentes[sel.value]; if (v) { $('vr-nombre').value = v.nombre; $('vr-fuente').value = ''; } };
+}
+async function guardarValor(){
+  const v = id => $(id).value.trim();
+  const r = await fetch('/api/valores', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({clave:v('vr-clave'), nombre:v('vr-nombre'),
+    valor:v('vr-valor'), igual_a:v('vr-igual') || null, vigente_desde:v('vr-desde'), fuente:v('vr-fuente'), url:v('vr-url') || null, nota:v('vr-nota') || null})});
+  const j = await r.json();
+  if (!r.ok) { $('vr-msg').className = 'msg err'; $('vr-msg').textContent = j.error || 'Error'; return; }
+  S.valores = j; pintar();
 }
 function titulo(id){ return ((S.cat.tipos_caso||[]).find(t=>t.id===id)||{}).titulo || id; }
 function pintarLista(){
@@ -253,7 +293,7 @@ function tablaLecturas(e){
     <div style="max-height:40vh;overflow:auto;border:1px solid var(--line);border-radius:8px"><table class="lect"><tr><th>Artículo</th>${cols.map(([, n]) => `<th>${esc(n)}</th>`).join('')}</tr>
     ${filas.map(f => `<tr class="${esDuda(f) ? 'duda' : ''}"><td><span class="chip" onclick="leer('${f.ley}','${esc(f.art)}')">${esc(NOMBRES[f.ley] || f.ley)} ${esc(f.art)}</span></td>${cols.map(([c]) => `<td>${v(f[c])}</td>`).join('')}</tr>`).join('')}</table></div>`;
 }
-function panelVacio(){ $('lect').innerHTML = ''; document.body.classList.remove('con-lect'); cm.refresh(); $('panel').innerHTML = '<span class="muted">Elige una fila para verla o editarla.</span>'; S.marcas.forEach(l => cm.removeLineClass(l, 'background', 'sel-line')); S.marcas = []; }
+function panelVacio(){ if (S.parte === 'valores') return; $('lect').innerHTML = ''; document.body.classList.remove('con-lect'); cm.refresh(); $('panel').innerHTML = '<span class="muted">Elige una fila para verla o editarla.</span>'; S.marcas.forEach(l => cm.removeLineClass(l, 'background', 'sel-line')); S.marcas = []; }
 function materiaSel(v){ return `<select id="e-materia" ${S.puede?'':'disabled'}>${['penal','familiar'].map(m=>`<option ${(v||'penal')===m?'selected':''}>${m}</option>`).join('')}</select>`; }
 // Leyes que el editor de una regla muestra: las de su materia y las que ya cita.
 function leyesDe(e){ return S.codigos.filter(k => (MATERIA_LEY[k] || 'penal') === (e.materia || 'penal') || (e.articulos?.[k]||[]).length); }

@@ -610,3 +610,41 @@ def test_actualizacion_y_hechos_llegan_al_llm_que_orienta():
 def test_bench_hechos_conservados():
     assert B.hechos_conservados(['pistola|arma', 'cartera', 'Metro'], ['Le apuntaron con un ARMA', 'le quitaron la cartera']) == \
         {'pistola|arma': True, 'cartera': True, 'Metro': False}
+
+
+# ── valores de referencia ───────────────────────────────────────────────────────────────────────────────────────
+from consulta import valores as V  # noqa: E402
+
+
+@pytest.mark.parametrize('texto,esperado', [
+    ('multa de trescientas a setecientas veces la unidad de medida y actualización vigente', [(300, 700, 'uma')]),
+    ('de ciento cincuenta a trescientas unidades de medida y actualización.', [(150, 300, 'uma')]),
+    ('de mil a cinco mil UMA de multa', [(1000, 5000, 'uma')]),
+    ('multa de 250 a 2000 veces el valor de la Unidad de Medida y Actualización', [(250, 2000, 'uma')]),
+    ('multa de un mil a dos mil veces el importe del valor diario de la Unidad de Medida y Actualización',
+     [(1000, 2000, 'uma')]),
+    ('no exceda de trescientas cincuenta y una veces la Unidad de Cuenta de la Ciudad de México vigente',
+     [(None, 351, 'uc_cdmx')]),
+    ('de ciento cincuenta a trescientos días de salario mínimo', [(150, 300, 'salario_minimo')]),
+    ('una multa equivalente a un año de valor de la Unidad de Medida', []),
+    ('de doscientos a seiscientos días multa', []),
+])
+def test_valores_menciones(texto, esperado):
+    assert V.menciones(texto) == esperado
+
+
+def test_valores_vigentes_y_bloque():
+    import datetime as dt
+    filas = [{'id': 1, 'clave': 'uma', 'nombre': 'UMA', 'valor': 113.14, 'vigente_desde': '2025-02-01', 'fuente': 'x'},
+             {'id': 2, 'clave': 'uma', 'nombre': 'UMA', 'valor': 117.31, 'vigente_desde': '2026-02-01', 'fuente': 'x'},
+             {'id': 3, 'clave': 'uc_cdmx', 'nombre': 'Unidad de Cuenta', 'igual_a': 'uma', 'vigente_desde': '2017-02-01',
+              'fuente': 'x'}]
+    assert V.vigentes(filas, dt.date(2026, 1, 15))['uma']['valor'] == 113.14      # enero: todavía la de 2025
+    vals = V.vigentes(filas, dt.date(2026, 11, 12))
+    assert vals['uma']['valor'] == vals['uc_cdmx']['valor'] == 117.31 and not vals['uma']['revisar']
+    assert V.vigentes(filas, dt.date(2027, 3, 1))['uma']['revisar']               # más de un año sin valor nuevo
+    b, conv = V.bloque(['no exceda de trescientas veces la Unidad de Cuenta de la Ciudad de México', 'cien días multa'], vals)
+    assert conv == ['300 × Unidad de Cuenta = $35,193.00'] and 'días multa' in b and 'vigente desde 2026-02-01' in b
+    assert V.bloque(['sin multas'], vals) == ('', [])
+    with pytest.raises(ValueError):
+        V.Valores.validar({'clave': 'uma', 'nombre': 'UMA', 'fuente': 'x', 'vigente_desde': '2027-02-01', 'valor': 'mucho'}, {'uma'})

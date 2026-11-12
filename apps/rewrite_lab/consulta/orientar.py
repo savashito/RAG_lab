@@ -17,6 +17,7 @@ import re
 import time
 import unicodedata
 
+from consulta import valores as V
 from consulta.leyes import CODIGOS, NOMBRES
 
 CONTEXTOS = ('todos', 'embedding')
@@ -201,11 +202,14 @@ def elegir(arts: list[dict], reglas: list[dict], contexto: str, tope: int | None
 
 
 def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict, conversacion: str,
-             contexto: str, embed, tope: int | None = None, seguimiento: str | None = None) -> dict:
+             contexto: str, embed, tope: int | None = None, seguimiento: str | None = None,
+             valores: dict | None = None) -> dict:
     """Salida 'orientar' de la máquina → {user: el mensaje para el LLM, y qué artículos entraron al contexto}.
     `embed(texto) → vector` lo pone quien llama. La respuesta la pide quien llama (orientar() o en streaming).
     `seguimiento`: el último mensaje de la persona cuando ya se había orientado (estado ORIENTACION antes del mensaje,
-    o una actualización: salida['actualizacion'])."""
+    o una actualización: salida['actualizacion']).
+    `valores`: los valores de referencia vigentes (valores.vigentes): las multas en UMA de los artículos que entran se
+    convierten a pesos aquí y van al final del contexto."""
     if contexto not in CONTEXTOS:
         raise ValueError(f'contexto desconocido: {contexto!r} (usa {CONTEXTOS})')
     t0 = time.time()
@@ -229,6 +233,9 @@ def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
                       + (' [INCIERTA: falta un dato]' if r['incierta'] else '') for r in reglas) or '(ninguna)'
     texto = '\n\n'.join(f'[{a["orden"]}] {NOMBRES.get(a["codigo"], a["codigo"])} — {a["ruta"]}\n{a["texto"]}'
                         for a in elegidos)
+    extra, conversiones = V.bloque([a['texto'] for a in elegidos], valores or {})
+    if extra:
+        texto = f'{texto}\n\n{extra}'
     user = ORIENTAR_USER.format(conversacion=conversacion, datos=datos, reglas=lista, contexto=texto or '(vacío)')
     if salida.get('actualizacion'):
         user += ACTUALIZACION.format(ultimo=seguimiento or '',
@@ -238,6 +245,7 @@ def preparar(*, cur, table: str, salida: dict, expediente: dict, catalogo: dict,
     if salida.get('por_preguntar'):
         user += POR_PREGUNTAR.format(preguntas='\n'.join(f'- {q}' for q in salida['por_preguntar']))
     return {'user': user, 'seguimiento': bool(seguimiento), 'actualizacion': bool(salida.get('actualizacion')),
+            'valores': conversiones,
             'modo_contexto': contexto, 'tope_tokens': tope or TOPE[contexto],
             'tokens_contexto': sum(tokens(a['texto']) for a in elegidos),
             'contexto': [{'codigo': a['codigo'], 'num': a['num'], 'entra': a['entra'], 'orden': a.get('orden'),
