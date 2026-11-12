@@ -1654,23 +1654,36 @@ async function loadBenchConsulta(){
   if(BC.sel) bcVer(BC.sel, true);
   if(d.en_curso) BC.poll = setTimeout(loadBenchConsulta, 4000);
 }
+// Detalle por caso, en el orden en que se corrieron. Mientras la corrida avanza solo se agregan las filas nuevas al
+// final: lo que la persona tiene abierto («conversación») no se cierra ni se mueve.
 async function bcVer(id, sinPintar){
+  const otra = BC.sel !== id;
   BC.sel = id;
   if(!sinPintar) document.querySelectorAll('#bc-corridas tr').forEach(tr => tr.classList.toggle('sel', (tr.getAttribute('onclick') || '').includes(`(${id})`)));
   let d; try{ d = await bjson(`/api/bench_consulta/corridas/${id}`); }catch(e){ $('bc-detalle').innerHTML = `<p class="muted">${esc(e.message)}</p>`; return; }
+  if(otra || !$('bc-filas') || BC.pintada !== id){
+    $('bc-detalle').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Corrida #${id}: por caso</h3>
+      <div class="row" style="margin:0 0 6px"><span class="muted" style="font-size:12px">En el orden en que se corrieron. Clic en «conversación» para ver lo que se simuló.</span>
+        <label class="chk"><input type="checkbox" id="bc-solo-error"> solo casos con error</label></div>
+      <div style="overflow-x:auto"><table class="comp-tab" id="bc-filas"><tr><th>Caso</th><th>Tipos</th><th>Datos</th><th>Reglas</th><th>Preguntas</th><th>Segundos</th></tr></table></div></div>`;
+    $('bc-solo-error').onchange = e => $('bc-filas').classList.toggle('bc-solo-error', e.target.checked);
+    BC.pintada = id; BC.n = 0;
+  }
+  const tabla = $('bc-filas');
+  for(const x of d.filas.slice(BC.n)) tabla.insertAdjacentHTML('beforeend', bcFila(x));
+  BC.n = d.filas.length;
+}
+function bcFila(x){
   const ok = b => b ? '✓' : '<b style="color:#f87171">✗</b>';
-  $('bc-detalle').innerHTML = `<div class="bcard" style="margin-bottom:10px"><h3 style="margin:0 0 4px;font-size:14px">Corrida #${id}: por caso</h3>
-    <p class="muted" style="font-size:12px;margin:0 0 6px">Primero los casos con algún error. Clic en «conversación» para ver lo que se simuló.</p>
-    <div style="overflow-x:auto"><table class="comp-tab"><tr><th>Caso</th><th>Tipos</th><th>Datos</th><th>Reglas</th><th>Preguntas</th><th>Segundos</th></tr>
-    ${[...d.filas].sort((a, b) => bcMal(b) - bcMal(a)).map(x => { const mal = Object.entries(x.datos).filter(([, v]) => v !== 'acierta');
-      const reglas = [...(x.reglas_faltan.length ? ['faltan ' + x.reglas_faltan.join(', ')] : []), ...(x.reglas_de_mas.length ? ['de más ' + x.reglas_de_mas.join(', ')] : [])];
-      return `<tr><td><b>${esc(x.id)}</b>${x.orienta ? '' : ' <span style="color:#f87171">(no orientó)</span>'}
-          <details><summary class="muted" style="cursor:pointer;font-size:12px">conversación</summary><pre>${esc(x.conversacion.map(m => (m.role === 'user' ? 'Persona: ' : 'Asistente: ') + m.content).join('\n'))}</pre>
-          <div class="muted" style="font-size:12px">Expediente: ${esc(JSON.stringify(x.expediente))}${(x.no_sabe || []).length ? ' · no sabe: ' + esc(x.no_sabe.join(', ')) : ''}<br>Reglas: ${esc((x.reglas || []).join(', '))}${(x.inciertas || []).length ? ' · inciertas: ' + esc(x.inciertas.join(', ')) : ''}</div></details></td>
-        <td>${ok(x.tipos)}${x.tipos ? '' : ' ' + esc((x.tipos_caso || []).join(', '))}</td>
-        <td>${mal.length ? mal.map(([k, v]) => `<span style="color:#f87171">${esc(k)}: ${esc(v)}</span>`).join('<br>') : `✓ <span class="muted">${Object.keys(x.datos).length}</span>`}</td>
-        <td>${reglas.length ? `<span style="color:#f87171">${esc(reglas.join('; '))}</span>` : '✓'}</td>
-        <td>${x.n_preguntas}${x.preguntas_de_mas ? ` <span style="color:#fbbf24">(+${x.preguntas_de_mas})</span>` : ''} <span class="muted" style="font-size:12px">${esc(x.preguntas.join(', '))}</span></td>
-        <td>${x.segundos}</td></tr>`; }).join('')}</table></div></div>`;
+  const mal = Object.entries(x.datos).filter(([, v]) => v !== 'acierta');
+  const reglas = [...(x.reglas_faltan.length ? ['faltan ' + x.reglas_faltan.join(', ')] : []), ...(x.reglas_de_mas.length ? ['de más ' + x.reglas_de_mas.join(', ')] : [])];
+  return `<tr class="${bcMal(x) ? 'bc-mal' : 'bc-bien'}"><td><b>${esc(x.id)}</b>${x.orienta ? '' : ' <span style="color:#f87171">(no orientó)</span>'}
+      <details><summary class="muted" style="cursor:pointer;font-size:12px">conversación</summary><pre>${esc(x.conversacion.map(m => (m.role === 'user' ? 'Persona: ' : 'Asistente: ') + m.content).join('\n'))}</pre>
+      <div class="muted" style="font-size:12px">Expediente: ${esc(JSON.stringify(x.expediente))}${(x.no_sabe || []).length ? ' · no sabe: ' + esc(x.no_sabe.join(', ')) : ''}<br>Reglas: ${esc((x.reglas || []).join(', '))}${(x.inciertas || []).length ? ' · inciertas: ' + esc(x.inciertas.join(', ')) : ''}</div></details></td>
+    <td>${ok(x.tipos)}${x.tipos ? '' : ' ' + esc((x.tipos_caso || []).join(', '))}</td>
+    <td>${mal.length ? mal.map(([k, v]) => `<span style="color:#f87171">${esc(k)}: ${esc(v)}</span>`).join('<br>') : `✓ <span class="muted">${Object.keys(x.datos).length}</span>`}</td>
+    <td>${reglas.length ? `<span style="color:#f87171">${esc(reglas.join('; '))}</span>` : '✓'}</td>
+    <td>${x.n_preguntas}${x.preguntas_de_mas ? ` <span style="color:#fbbf24">(+${x.preguntas_de_mas})</span>` : ''} <span class="muted" style="font-size:12px">${esc(x.preguntas.join(', '))}</span></td>
+    <td>${x.segundos}</td></tr>`;
 }
 const bcMal = x => (!x.orienta) + (!x.tipos) + Object.values(x.datos).filter(v => v !== 'acierta').length + x.reglas_faltan.length + x.reglas_de_mas.length + (x.preguntas_de_mas > 0);
