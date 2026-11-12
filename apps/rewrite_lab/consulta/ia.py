@@ -31,7 +31,9 @@ Responde SOLO un JSON:
   dicho. Que no lo repita en su último mensaje no es motivo para quitar.
 - "por_que": en una frase, qué dijo la persona que justifica agregar o quitar. Vacío si no cambias nada.
 - Si nada de lo que dijo cambia el tipo de caso, deja "agregar" y "quitar" vacíos.
-- Si los actuales están vacíos y no corresponde ningún tipo, "agregar": ["otro"].
+- Si la persona todavía no ha contado ninguna situación (solo saluda, pide ayuda sin decir de qué, o solo da datos
+  sueltos como su estado o su edad), deja "agregar" vacío y "dudoso": false: el asistente le pedirá que la cuente.
+- Si los actuales están vacíos y la persona contó algo que no corresponde a ningún tipo, "agregar": ["otro"].
 - Si los actuales están vacíos y no puedes decidir entre 2 o 3 tipos, deja "agregar" vacío, pon "dudoso": true y en
   "opciones" esos 2 o 3 ids.
 - No inventes ids. No expliques nada fuera del JSON."""

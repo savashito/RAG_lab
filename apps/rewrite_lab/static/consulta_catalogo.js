@@ -6,7 +6,7 @@
   const e = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const PROMPT_POR_OMISION = 'ronda2:intermedio';
   let C = {cat:null, nombres:{}, md5:''}, S = nuevo(), iniciado = false;
-  function nuevo(){ return {estado:null, expediente:null, historial:[], ultima:null, orientacion:null, registros:[]}; }
+  function nuevo(){ return {estado:null, expediente:null, historial:[], ultima:null, orientacion:null, buscador:null, registros:[]}; }
 
   async function catInit(){
     if (iniciado) return;
@@ -42,11 +42,14 @@
       if (!r.ok) throw new Error('HTTP ' + r.status);
       await readSSE(r, ev => {
         if (ev.stage === 'turno') {
-          Object.assign(S, {estado:ev.estado, expediente:ev.expediente, ultima:ev.salida, orientacion:null});
+          Object.assign(S, {estado:ev.estado, expediente:ev.expediente, ultima:ev.salida, orientacion:null, buscador:ev.buscador ? [] : null});
           S.registros.push(ev.registro);
-          quitarEspera(); responder(ev.salida, g('cat-preg-llm').checked); panel();
+          quitarEspera(); responder(ev.salida, g('cat-preg-llm').checked, ev.buscador); panel();
+          if (ev.buscador) espera = burbuja('assistant', 'El catálogo no tiene reglas para este caso: buscando en las leyes…');
           if (ev.salida.tipo === 'pregunta' && g('cat-preg-llm').checked) espera = burbuja('assistant', '…');
           if (ev.salida.tipo === 'orientar' && !ev.salida.sin_reglas && g('cat-modo').value !== 'ninguno') espera = burbuja('assistant', 'Leyendo los artículos del catálogo…');
+        } else if (ev.stage === 'buscador') {
+          S.buscador = ev.chunks || []; panel();
         } else if (ev.stage === 'contexto') {
           S.orientacion = ev.orientacion; panel();
         } else if (ev.stage === 'token') {
@@ -70,8 +73,10 @@
 
   function decir(texto, extra){ burbuja('assistant', texto, extra); S.historial.push({role:'assistant', content:texto}); }
   // `llm`: la pregunta (y el aviso) los redacta el LLM y llegan como tokens; aquí no se escriben.
-  function responder(s, llm){
+  // `buscador`: el catálogo no tiene reglas y la respuesta la escribe el buscador (llega como tokens).
+  function responder(s, llm, buscador){
     if (s.tipo === 'pregunta' && llm) return;
+    if (s.tipo === 'orientar' && buscador) return;
     if (s.aviso) decir(s.aviso);
     if (s.tipo === 'pregunta') decir(s.texto);
     else if (s.tipo === 'elegir_tipo')
@@ -123,6 +128,8 @@
       h += '<div id="cat-texto"></div>';
       if ((s.tipos_quitados || []).length) h += `<div class="warn">Tipos que ya no aplican: ${e(s.tipos_quitados.map(tipo).join(', '))}</div>`;
     }
+    if (S.buscador) h += `<h3>Respuesta del buscador (el catálogo no tiene reglas para este caso) · ${S.buscador.length} fragmentos</h3>`
+      + (S.buscador.length ? `<table>${S.buscador.map(c => `<tr><td>${e(c.rank)}</td><td>${e(c.citation || '')}<div class="muted">${e(c.hierarchy || '')}</div></td></tr>`).join('')}</table>` : '<span class="muted">buscando…</span>');
     const llamada = l => l.partes ? l.partes.map(llamada).join('')
       : `<details><summary>${e(l.tarea)}${l.segundos != null ? ` · ${l.segundos} s` : ''}</summary><pre>${e(l.raw)}</pre></details>`;
     h += '<h3>Llamadas al LLM en este mensaje</h3>' + ((r.llamadas || []).length ? r.llamadas.map(llamada).join('') : '<span class="muted">ninguna</span>');

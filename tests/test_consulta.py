@@ -392,3 +392,21 @@ def test_la_pregunta_redactada_lleva_el_dato_su_texto_y_el_aviso():
     assert m[0]['role'] == 'system' and 'Pregunta solo eso' in m[0]['content']
     u = m[1]['content']
     assert 'DATO QUE FALTA: edad_victima' in u and '¿Qué edad tiene la víctima?' in u and 'AVISO: Voy a asumir' in u
+
+
+class IASaludo(IAFalsa):
+    """Sin tipo de caso mientras la persona no cuenta nada; con «fotos» en la conversación, imagenes_intimas."""
+
+    def clasificar_caso(self, conversacion, actuales, catalogo):
+        c = super().clasificar_caso(conversacion, actuales, catalogo)
+        return c if 'fotos' in conversacion else {**c, 'agregar': []}
+
+
+def test_sin_relato_pide_que_cuente_su_situacion_y_guarda_lo_que_ya_dio():
+    ia = IASaludo(respuestas={'Hola, soy de Querétaro': {'lugar_hechos': 'Querétaro'}})
+    pasos = conversar(ia, ['Hola, soy de Querétaro', 'Me piden dinero por mis fotos íntimas'])
+    estado, exp, salida, _ = pasos[0]
+    assert estado == M.LLENAR_EXPEDIENTE and salida == {'tipo': 'pregunta', 'dato': 'relato', 'texto': M.RELATO}
+    assert exp['datos'] == {'lugar_hechos': 'Querétaro'}
+    estado, exp, salida, _ = pasos[1]
+    assert exp['tipos_caso'] == ['imagenes_intimas'] and salida['dato'] != 'lugar_hechos'   # el lugar ya estaba

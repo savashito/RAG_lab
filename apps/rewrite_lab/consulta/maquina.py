@@ -49,6 +49,7 @@ TRANSICIONES = {
 
 MAX_PREGUNTAS = 2    # un dato no obligatorio que se preguntó 2 veces sin respuesta cuenta como «no sé»
 OTRO = 'otro'
+RELATO = '¿En qué te puedo ayudar? Cuéntame tu situación.'   # sin tipo de caso todavía: se pide el relato
 
 
 def _siguiente(estado: str, evento: str) -> str:
@@ -140,6 +141,12 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
                 exp = {**exp, 'supuestos': list(dict.fromkeys(exp.get('supuestos', []) + ['lugar_hechos']))}
                 registro['cambios'] += cambios
                 registro['aviso'] = f'Voy a asumir que lo que te pasó ocurrió en {exp["residencia"]}, donde vives.'
+        if not exp.get('tipos_caso') and not dudoso:
+            # Todavía no contó ninguna situación («Hola», «necesito ayuda»): primero el relato, luego los datos (los que
+            # ya dio, como el estado, se guardaron arriba).
+            registro['faltan'] = ['relato']
+            salida = {'tipo': 'pregunta', 'dato': 'relato', 'texto': RELATO}
+            return _cerrar(registro['estado_antes'], _siguiente(estado, 'falta_dato'), exp, salida, registro)
         if dudoso:
             titulos = {t['id']: t['titulo'] for t in catalogo.get('tipos_caso', [])}
             salida = {'tipo': 'elegir_tipo', 'texto': '¿Lo que te pasó se parece más a alguna de estas opciones?',

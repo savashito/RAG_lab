@@ -1719,6 +1719,16 @@ def consulta_prompts() -> list[dict]:
     return out
 
 
+def consulta_buscador_cfg(prompt: str) -> dict:
+    """Configuración del buscador para orientar sin catálogo: la del asistente de la ronda 2 con el prompt elegido."""
+    try:
+        cfg = dict(yaml.safe_load(CONSULTA_ESTUDIO_PROMPTS.read_text()).get('asistente') or {})
+    except Exception:   # sin el archivo del estudio: la configuración de Preguntar (RAG) más simple
+        cfg = {'tema': 'derecho_penal_mexicano', 'setting': 'híbrido', 'k': 10, 'vecinos': True, 'filtro_estado': True}
+    cfg['sistema'] = next((p['texto'] for p in consulta_prompts() if p['id'] == prompt and p.get('texto')), None)
+    return cfg
+
+
 @app.get('/api/consulta/prompts')
 def consulta_prompts_route():
     return [{'id': p['id'], 'nombre': p['nombre']} for p in consulta_prompts()]
@@ -1738,7 +1748,11 @@ def _consulta_turno(body: dict):
                              for m in body.get('historial') or [])
     if salida.get('tipo') == 'pregunta' and body.get('preguntas_llm'):
         out['mensajes_pregunta'] = consulta_orientar.mensajes_pregunta(conversacion, salida, doc)
-    if salida.get('tipo') != 'orientar' or salida.get('sin_reglas') or modo == 'ninguno':
+    if salida.get('tipo') != 'orientar' or modo == 'ninguno':
+        return out, None
+    if salida.get('sin_reglas') or exp.get('tipos_caso') == [consulta_maquina.OTRO]:
+        # El catálogo no tiene reglas para el caso («otro» o ninguna aplica): orienta el buscador, como en el estudio.
+        out['buscador'] = consulta_buscador_cfg(body.get('prompt') or CONSULTA_PROMPT)
         return out, None
 
     def preparar():
@@ -1763,6 +1777,10 @@ def consulta_turno(body: dict):
     out, preparar = _consulta_turno(body)
     if out.get('mensajes_pregunta'):
         out['pregunta_llm'] = llm.chat_messages(out.pop('mensajes_pregunta'), max_tokens=400, timeout=90)
+    if out.get('buscador'):
+        evs = list(_study_chat_stream(body.get('historial') or [], out.pop('buscador')))
+        out['buscador'] = {'respuesta': ''.join(e.get('text', '') for e in evs if e.get('stage') == 'token'),
+                           'chunks': next((e['chunks'] for e in evs if e.get('stage') == 'context'), [])}
     if preparar:
         system, prep = preparar()
         t = time.time()
@@ -1783,7 +1801,18 @@ def consulta_turno_stream(body: dict):
         try:
             out, preparar = _consulta_turno(body)
             mensajes = out.pop('mensajes_pregunta', None)
-            yield sse({'stage': 'turno', **out})
+            buscador = out.pop('buscador', None)
+            yield sse({'stage': 'turno', **out, 'buscador': bool(buscador)})
+            if buscador:                           # sin reglas del catálogo: responde el buscador (como el estudio)
+                t = time.time()
+                for ev in _study_chat_stream(body.get('historial') or [], buscador):
+                    if ev.get('stage') == 'context':
+                        yield sse({'stage': 'buscador', 'chunks': [{'citation': c.get('citation'), 'hierarchy': c.get('hierarchy'),
+                                                                    'rank': c.get('rank')} for c in ev.get('chunks') or []]})
+                    elif ev.get('stage') in ('token', 'error'):
+                        yield sse(ev)
+                yield sse({'stage': 'done', 'segundos_respuesta': round(time.time() - t, 2)})
+                return
             if mensajes:                           # la pregunta del dato que falta, redactada por el LLM
                 for piece in llm.chat_stream(mensajes, max_tokens=400, timeout=90):
                     yield sse({'stage': 'token', 'text': piece})
