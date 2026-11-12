@@ -406,7 +406,13 @@ def test_sin_relato_pide_que_cuente_su_situacion_y_guarda_lo_que_ya_dio():
     ia = IASaludo(respuestas={'Hola, soy de Querétaro': {'lugar_hechos': 'Querétaro'}})
     pasos = conversar(ia, ['Hola, soy de Querétaro', 'Me piden dinero por mis fotos íntimas'])
     estado, exp, salida, _ = pasos[0]
-    assert estado == M.LLENAR_EXPEDIENTE and salida == {'tipo': 'pregunta', 'dato': 'relato', 'texto': M.RELATO}
+    assert estado == M.LLENAR_EXPEDIENTE and salida['dato'] == 'relato'
+    assert salida['texto'] == 'Hola, soy Tlacua, tu asistente jurídico.\n¿En qué te puedo ayudar? Cuéntame tu situación.'
     assert exp['datos'] == {'lugar_hechos': 'Querétaro'}
     estado, exp, salida, _ = pasos[1]
     assert exp['tipos_caso'] == ['imagenes_intimas'] and salida['dato'] != 'lugar_hechos'   # el lugar ya estaba
+
+
+def test_el_saludo_va_solo_en_el_primer_mensaje_del_asistente():
+    pasos = conversar(IASaludo(), ['Hola', 'mmm'])
+    assert pasos[0][2]['texto'].startswith('Hola, soy Tlacua') and pasos[1][2]['texto'] == M.RELATO

@@ -47,7 +47,8 @@ Escribe UN mensaje breve (máximo 3 oraciones), en español de México, tuteando
 - Si la persona contó algo difícil, reconócelo en pocas palabras (sin repetir su historia ni exagerar).
 - Si hay un AVISO, dilo con tus palabras. Sin AVISO, no digas que supones o que tomas como base algún dato: lo que
   la persona dijo, dalo por dicho.
-- Si el DATO QUE FALTA es «relato», la persona todavía no ha contado qué le pasó: invítala a contar su situación.
+- Si el DATO QUE FALTA es «relato», la persona todavía no ha contado qué le pasó: invítala a contar su situación. Si
+  en la CONVERSACIÓN el asistente no ha dicho nada todavía, empieza presentándote: «Hola, soy Tlacua, tu asistente jurídico».
 - Termina con la PREGUNTA que falta, con sentido claro para la persona. Pregunta solo eso: ningún otro dato.
 - No des orientación legal, no cites artículos, no prometas resultados y no inventes datos del caso."""
 
