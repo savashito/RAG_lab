@@ -141,7 +141,12 @@ def main() -> None:
         with connect() as c, c.cursor() as cur:
             prep = O.preparar(cur=cur, table=TABLE, salida=v['salida'], expediente=v['expediente'], catalogo=catalogo,
                               conversacion=conversacion, contexto='todos', embed=None, valores={})
-        respuesta = llm.chat(system, prep['user'], max_tokens=4096, timeout=300)
+        try:
+            respuesta = llm.chat(system, prep['user'], max_tokens=4096, timeout=300)
+        except Exception as e:               # un error del LLM (p. ej. 500) no tumba la corrida: queda anotado
+            cuerpo = getattr(e, 'read', lambda: b'')()[:300].decode(errors='replace')
+            print(f'{cid:24} {v["nombre"]:32} rep {rep}: ERROR {e} {cuerpo} · ~{prep["tokens_contexto"]} tokens', flush=True)
+            return {'filas': [], 'error': f'{e} {cuerpo}', 'tokens_contexto': prep['tokens_contexto']}
         lista = '\n'.join(f'- {rid}: {reglas[rid]["delito"]}' + (f' ({reglas[rid]["condicion"]})' if reglas[rid].get('condicion') else '')
                           + ' · DATO que falta: ' + '; '.join(f'{d} («{datos_cat.get(d, {}).get("pregunta", d)}»)' for d in ds)
                           for rid, ds in v['faltan'].items())
@@ -153,7 +158,7 @@ def main() -> None:
                   'dato_en_conversacion': bool((juicio.get(rid) or {}).get('dato_en_conversacion')),
                   'cita': (juicio.get(rid) or {}).get('cita', '')} for rid, ds in v['faltan'].items()]
         print(f'{cid:24} {v["nombre"]:32} rep {rep}: ' + ', '.join(f'{f["regla"]} {f["trato"]}' for f in filas), flush=True)
-        return {'filas': filas, 'respuesta': respuesta, 'juez': raw}
+        return {'filas': filas, 'respuesta': respuesta, 'juez': raw, 'tokens_contexto': prep['tokens_contexto']}
 
     with ThreadPoolExecutor(args.hilos) as pool:
         res = list(pool.map(correr, trabajos))
@@ -169,7 +174,8 @@ def main() -> None:
     mencionadas = cuenta['aplica'] + cuenta['condiciona']
     out = [f'# Reglas inciertas · catálogo {md5} · {datetime.now():%Y-%m-%d %H:%M}', '',
            f'{len(trabajos)} orientaciones ({args.reps} por variante), {len(filas)} reglas inciertas calificadas. '
-           f'El LLM que orienta y el que califica es el de la app ({llm.model}).', '',
+           f'El LLM que orienta y el que califica es el de la app ({llm.model}). '
+           f'Orientaciones con error del LLM: {sum(bool(x.get("error")) for x in res)}.', '',
            f'Sin contar las {len(filas) - len(limpias)} en que la conversación ya dice el dato:', '',
            '| Trato | Reglas |', '|---|---|'] + [f'| {k} | {v} |' for k, v in cuenta.most_common()] + [
            '', f'**Trata la regla como si aplicara: {cuenta["aplica"]}/{mencionadas} de las que menciona '
