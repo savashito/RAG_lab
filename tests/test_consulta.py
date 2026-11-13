@@ -127,17 +127,18 @@ FOTOS = {
 
 
 def test_no_orienta_hasta_tener_los_datos_y_luego_orienta():
-    mensajes = [m for m in FOTOS if m.startswith(('Me escribe', 'En Quer', 'A mí', 'Tengo'))]
+    mensajes = [m for m in FOTOS if m.startswith(('Me escribe', 'En Quer', 'A mí', 'Tengo', 'Sí'))]
     pasos = conversar(IAFalsa(respuestas=FOTOS), mensajes)
     for estado, _, salida, _ in pasos[:-1]:
         assert estado == M.LLENAR_EXPEDIENTE and salida['tipo'] == 'pregunta'
-    # Solo lo que cambia el resultado: lugar y papel (generales) y la edad (la usan las reglas de menores). El dinero ya
-    # lo dijo; si ya se difundió, el consentimiento o si es mujer no los usa ninguna regla de imágenes íntimas.
-    assert [p[2]['dato'] for p in pasos[:-1]] == ['lugar_hechos', 'papel', 'edad_victima']
+    # Solo lo que cambia el resultado: lugar y papel (generales), la edad (la usan las reglas de menores) y si es mujer
+    # (condición de ley de la Ley General de Acceso de las Mujeres). El dinero ya lo dijo; si ya se difundió o el
+    # consentimiento no los usa ninguna regla de imágenes íntimas.
+    assert [p[2]['dato'] for p in pasos[:-1]] == ['lugar_hechos', 'papel', 'edad_victima', 'victima_mujer']
     estado, exp, salida, reg = pasos[-1]
     # Orienta, y como faltan datos complementarios (los que ninguna regla usa), sigue en LLENAR_EXPEDIENTE con el primero.
     assert salida['tipo'] == 'orientar' and estado == M.LLENAR_EXPEDIENTE and reg['estado_antes'] == M.LLENAR_EXPEDIENTE
-    assert salida['pregunta']['dato'] == 'ya_difundido' and exp['por_actualizar'] == ['ya_difundido', 'consentimiento_difusion', 'victima_mujer']
+    assert salida['pregunta']['dato'] == 'ya_difundido' and exp['por_actualizar'] == ['ya_difundido', 'consentimiento_difusion']
     delitos = {r['delito'] for r in CAT['reglas'] if r['id'] in salida['reglas']}
     assert 'extorsión' in delitos and 'amenazas' not in delitos                       # pide dinero
     assert 'pornografía de personas menores de edad' not in delitos                  # tiene 24
@@ -480,13 +481,13 @@ from consulta import bench as B  # noqa: E402
 
 def test_bench_simula_hasta_orientar_y_califica():
     caso = {'id': 'x', 'relato': 'Me escribe alguien que conocí en una app: si no le deposito 5,000 pesos publica mis fotos íntimas',
-            'respuestas': {'lugar_hechos': 'En Querétaro', 'papel': 'A mí', 'edad_victima': 'Tengo 24'},
+            'respuestas': {'lugar_hechos': 'En Querétaro', 'papel': 'A mí', 'edad_victima': 'Tengo 24', 'victima_mujer': 'Sí'},
             'esperado': {'tipos': ['imagenes_intimas'], 'datos': {'lugar_hechos': 'Querétaro', 'edad_victima': 24},
                          'reglas': ['r021'], 'reglas_no': ['r023'], 'max_preguntas': 2}}
     x = B.fila(caso, CAT, IAFalsa(respuestas=FOTOS))
     assert x['orienta'] and x['tipos'] and x['datos'] == {'lugar_hechos': 'acierta', 'edad_victima': 'acierta'}
     assert not x['reglas_faltan'] and not x['reglas_de_mas']
-    assert x['preguntas'] == ['lugar_hechos', 'papel', 'edad_victima'] and x['preguntas_de_mas'] == 1
+    assert x['preguntas'] == ['lugar_hechos', 'papel', 'edad_victima', 'victima_mujer'] and x['preguntas_de_mas'] == 2
     r = B.resumen([x])
     assert r['datos_acierta'] == r['datos_total'] == 2 and r['preguntas_de_mas'] == 1
 
@@ -507,7 +508,7 @@ def test_bench_casos_iniciales_son_validos_y_se_rechazan_los_mal_hechos():
 
 def test_bench_con_preguntas_redactadas_por_el_llm():
     caso = {'id': 'x', 'relato': 'Me escribe alguien que conocí en una app: si no le deposito 5,000 pesos publica mis fotos íntimas',
-            'respuestas': {'lugar_hechos': 'En Querétaro', 'papel': 'A mí', 'edad_victima': 'Tengo 24'},
+            'respuestas': {'lugar_hechos': 'En Querétaro', 'papel': 'A mí', 'edad_victima': 'Tengo 24', 'victima_mujer': 'Sí'},
             'esperado': {'tipos': ['imagenes_intimas'], 'datos': {'edad_victima': 24}}}
     x = B.fila(caso, CAT, IAFalsa(respuestas=FOTOS), {'preguntas': 'llm'},
                redactar=lambda m: 'Gracias por contarme. ' + m[1]['content'].split('PREGUNTA DEL CATÁLOGO: ')[1].split('\n')[0],
@@ -648,3 +649,38 @@ def test_valores_vigentes_y_bloque():
     assert V.bloque(['sin multas'], vals) == ('', [])
     with pytest.raises(ValueError):
         V.Valores.validar({'clave': 'uma', 'nombre': 'UMA', 'fuente': 'x', 'vigente_desde': '2027-02-01', 'valor': 'mucho'}, {'uma'})
+
+
+# ── condiciones de ley ──────────────────────────────────────────────────────────────────────────────────────────
+def test_condicion_de_ley_pide_el_dato_antes_de_orientar():
+    """Acoso cita la Ley General de Acceso de las Mujeres: victima_mujer se pregunta antes de orientar aunque ninguna
+    regla de acoso lo use."""
+    necesarios = [d['id'] for d in E.datos_necesarios({'tipos_caso': ['acoso_hostigamiento'], 'datos': {}}, CAT)]
+    assert 'victima_mujer' in necesarios
+    assert 'victima_mujer' not in [d['id'] for d in E.datos_complementarios({'tipos_caso': ['acoso_hostigamiento'],
+                                                                             'datos': {}}, CAT)]
+
+
+@pytest.mark.parametrize('respuesta,entra,aviso', [('si', True, False), ('no', False, False),
+                                                    (E.NO_SABE, False, True)])
+def test_la_ley_de_mujeres_solo_entra_si_la_victima_es_mujer(respuesta, entra, aviso):
+    resp = {'mi jefe me acosa en Querétaro': {'lugar_hechos': 'Querétaro', 'papel': 'victima', 'superior_o_docente': 'si'},
+            'respuesta': {'victima_mujer': respuesta}}
+    pasos = conversar(IAFalsa(tipos=['acoso_hostigamiento'], respuestas=resp), ['mi jefe me acosa en Querétaro', 'respuesta'])
+    (_, _, s1, _), (_, x2, s2, _) = pasos
+    assert s1 == {'tipo': 'pregunta', 'dato': 'victima_mujer', 'texto': s1['texto']}
+    assert s2['tipo'] == 'orientar' and ('lgamvlv' in s2['articulos']) == entra
+    assert s2['leyes_quitadas'] == ([] if entra else ['lgamvlv'])
+    assert bool(s2['avisos_ley']) == aviso
+    if aviso:                                   # le pasó a la persona: el aviso es de tú, y se dice una sola vez
+        assert s2['avisos_ley'][0].startswith('Si eres mujer') and x2['leyes_avisadas'] == ['lgamvlv']
+        _, _, s3, _ = M.turno(M.ORIENTACION, {**x2, 'por_actualizar': []},
+                              {'tipo': 'mensaje', 'texto': 'gracias', 'historial': []}, CAT, IAFalsa(tipos=['acoso_hostigamiento']))
+        assert s3['tipo'] == 'orientar' and s3['avisos_ley'] == [] and 'lgamvlv' not in s3['articulos']
+
+
+def test_catalogo_rechaza_condiciones_de_ley_mal_hechas():
+    for malas in ({'no_existe': {'cuando': ['victima_mujer = si']}}, {'lgamvlv': {'cuando': ['dato_inventado = si']}},
+                  {'lgamvlv': {'aviso': 'sin cuando'}}):
+        with pytest.raises(ValueError):
+            C.validar_condiciones_ley({**CAT, 'condiciones_ley': malas})

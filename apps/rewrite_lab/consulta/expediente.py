@@ -11,6 +11,7 @@ El expediente es un dict:
      'preguntas': {'lugar_hechos': 2},             # cuántas veces se preguntó cada dato
      'orientados': ['imagenes_intimas'],           # tipos de caso de la última orientación
      'por_actualizar': ['monto'],                  # datos complementarios que se preguntan después de orientar
+     'leyes_avisadas': ['lgamvlv'],                # leyes con condición de ley cuyo aviso ya se dijo
      'hechos': ['la golpearon muy feo']}           # lo que contó y no cabe en ningún dato: el LLM que llena el
                                                    # expediente reescribe la lista completa en cada mensaje
 
@@ -88,29 +89,51 @@ def combinar(expediente: dict, extraido: dict, catalogo: dict) -> tuple[dict, li
     return exp, cambios
 
 
-def datos_en_condiciones(catalogo: dict, tipo: str) -> set[str]:
-    """Ids de los datos que usa alguna condición `cuando` de las reglas (no descartadas) de un tipo de caso."""
-    usados = set()
+def _dato_de(c) -> str | None:
+    m = _COND.match(str(c))
+    return (m.group('id') or m.group('solo')) if m else None
+
+
+def datos_de_leyes(catalogo: dict, tipo: str) -> list[str]:
+    """Datos que usan las condiciones de ley (catalogo['condiciones_ley']) de las leyes que citan las reglas (no
+    descartadas) de un tipo de caso. Ej.: si una regla de acoso cita la Ley General de Acceso de las Mujeres, el tipo
+    acoso pide victima_mujer."""
+    conds = catalogo.get('condiciones_ley') or {}
+    out = []
     for r in catalogo.get('reglas', []):
         if r.get('tipo_caso') != tipo or r.get('estado') == 'descartada':
             continue
-        for c in r.get('cuando') or []:
-            m = _COND.match(str(c))
-            if m:
-                usados.add(m.group('id') or m.group('solo'))
+        for ley, arts in (r.get('articulos') or {}).items():
+            for c in (conds.get(ley) or {}).get('cuando') or [] if arts else []:
+                d = _dato_de(c)
+                if d and d not in out:
+                    out.append(d)
+    return out
+
+
+def datos_en_condiciones(catalogo: dict, tipo: str) -> set[str]:
+    """Ids de los datos que usa alguna condición `cuando` de las reglas (no descartadas) de un tipo de caso, o alguna
+    condición de ley de las leyes que citan."""
+    usados = set(datos_de_leyes(catalogo, tipo))
+    for r in catalogo.get('reglas', []):
+        if r.get('tipo_caso') != tipo or r.get('estado') == 'descartada':
+            continue
+        usados |= {d for d in map(_dato_de, r.get('cuando') or []) if d}
     return usados
 
 
 def datos_necesarios(expediente: dict, catalogo: dict) -> list[dict]:
     """Datos que pide el caso, en orden: primero los de todos los casos (`generales`), luego los de cada tipo de caso
     del expediente que cambian el resultado: los que usa alguna condición de sus reglas. Un dato que el tipo de caso
-    lista pero que ninguna regla usa no se pregunta (no cambia ningún artículo). Sin tipo de caso, solo los generales."""
+    lista pero que ninguna regla usa no se pregunta (no cambia ningún artículo). También los de las condiciones de ley
+    (datos_de_leyes). Sin tipo de caso, solo los generales."""
     por_id = {d['id']: d for d in catalogo.get('datos', [])}
     ids = list(catalogo.get('generales', ['lugar_hechos']))
     tipos = {t['id']: t for t in catalogo.get('tipos_caso', [])}
     for t in expediente.get('tipos_caso', []):
         usados = datos_en_condiciones(catalogo, t)
         ids += [d for d in tipos.get(t, {}).get('datos', []) if d not in ids and d in usados]
+        ids += [d for d in datos_de_leyes(catalogo, t) if d not in ids]   # aunque el tipo de caso no lo liste
     return [por_id[i] for i in ids if i in por_id and por_id[i].get('preguntar', True)]
 
 
@@ -190,6 +213,23 @@ def reglas_aplicables(expediente: dict, catalogo: dict, solo_confirmadas: bool =
     return out
 
 
+def leyes_condicionadas(expediente: dict, catalogo: dict) -> tuple[set[str], set[str]]:
+    """Condiciones de ley (catalogo['condiciones_ley']): una ley cuyos artículos valen solo si se cumple una condición,
+    en cualquier regla que la cite. Ej.: la Ley General de Acceso de las Mujeres a una Vida Libre de Violencias solo si
+    `victima_mujer = si`. → (leyes que no entran, de esas las que no entran porque falta el dato o la persona no sabe).
+    Con el dato desconocido la ley tampoco entra: si sus artículos estuvieran en el contexto, el LLM podría suponer el
+    dato; en su lugar el asistente dice el `aviso` de la condición (texto fijo)."""
+    datos = {**expediente.get('datos', {}), **{k: NO_SABE for k in expediente.get('no_sabe', [])}}
+    fuera, inciertas = set(), set()
+    for ley, c in (catalogo.get('condiciones_ley') or {}).items():
+        valores = [evaluar(x, datos) for x in c.get('cuando') or []]
+        if False in valores or None in valores:
+            fuera.add(ley)
+        if None in valores and False not in valores:
+            inciertas.add(ley)
+    return fuera, inciertas
+
+
 def codigos_del_caso(expediente: dict, reglas: list[dict]) -> list[str]:
     """Qué leyes del catálogo usar (llaves de `articulos`), de las que citan las reglas aplicables:
       · las del estado de los hechos (su código penal, su código civil…);
@@ -208,10 +248,10 @@ def codigos_del_caso(expediente: dict, reglas: list[dict]) -> list[str]:
     return out
 
 
-def articulos_del_caso(expediente: dict, reglas: list[dict]) -> dict[str, list[str]]:
-    """{código: [artículos]} de las reglas aplicables, solo de los códigos del caso, sin repetir."""
+def articulos_del_caso(expediente: dict, reglas: list[dict], sin: set[str] = frozenset()) -> dict[str, list[str]]:
+    """{código: [artículos]} de las reglas aplicables, solo de los códigos del caso (menos los de `sin`), sin repetir."""
     out: dict[str, list[str]] = {}
-    for cod in codigos_del_caso(expediente, reglas):
+    for cod in [k for k in codigos_del_caso(expediente, reglas) if k not in sin]:
         for r in reglas:
             for a in r.get('articulos', {}).get(cod, []):
                 if a not in out.setdefault(cod, []):

@@ -16,59 +16,59 @@
 casos:
 - id: fotos_extorsion_adulta
   relato: Mandé unas fotos íntimas a alguien que conocí en una app y ahora me pide dinero para no publicarlas
-  respuestas: {lugar_hechos: En la CDMX, papel: a mí, edad_victima: tengo 24}
+  respuestas: {lugar_hechos: En la CDMX, papel: a mí, edad_victima: tengo 24, victima_mujer: sí, soy mujer}
   esperado:
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Ciudad de México, papel: victima, pide_dinero: si, contenido_intimo: si, edad_victima: 24}
+    datos: {lugar_hechos: Ciudad de México, papel: victima, pide_dinero: si, contenido_intimo: si, edad_victima: 24, victima_mujer: 'si'}
     reglas: [r021, r020]
     reglas_no: [r022, r023, r024]
-    max_preguntas: 3
+    max_preguntas: 4
 
 - id: fotos_extorsion_menor
   relato: Tengo 17 años, mandé fotos sin ropa a un chavo y ahora me pide mucho dinero o las sube
-  respuestas: {lugar_hechos: Querétaro, papel: a mí}
+  respuestas: {lugar_hechos: Querétaro, papel: a mí, victima_mujer: sí}
   esperado:
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Querétaro, papel: victima, pide_dinero: si, contenido_intimo: si, edad_victima: 17}
+    datos: {lugar_hechos: Querétaro, papel: victima, pide_dinero: si, contenido_intimo: si, edad_victima: 17, victima_mujer: 'si'}
     reglas: [r021, r020, r023, r024]
     reglas_no: [r022]
-    max_preguntas: 2
+    max_preguntas: 3
 
 - id: fotos_amenaza_sin_dinero
   relato: Mi ex me amenaza con subir mis fotos íntimas si no regreso con él
-  respuestas: {lugar_hechos: Estado de México, papel: me pasa a mí, pide_dinero: no, no me pide dinero, edad_victima: '30'}
+  respuestas: {lugar_hechos: Estado de México, papel: me pasa a mí, pide_dinero: no, no me pide dinero, edad_victima: '30', victima_mujer: sí, soy mujer}
   esperado:
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Estado de México, papel: victima, pide_dinero: 'no', edad_victima: 30}
+    datos: {lugar_hechos: Estado de México, papel: victima, pide_dinero: 'no', edad_victima: 30, victima_mujer: 'si'}
     reglas: [r022]
     reglas_no: [r021, r023]
-    max_preguntas: 4
+    max_preguntas: 5
 
 - id: fotos_ya_publicadas
   relato: Mi expareja publicó mis videos íntimos en Facebook sin mi permiso
-  respuestas: {lugar_hechos: en Querétaro, papel: a mí, pide_dinero: 'no', edad_victima: tengo 26}
+  respuestas: {lugar_hechos: en Querétaro, papel: a mí, pide_dinero: 'no', edad_victima: tengo 26, victima_mujer: no, soy hombre}
   esperado:
     hechos: ['facebook']
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Querétaro, papel: victima, edad_victima: 26}
+    datos: {lugar_hechos: Querétaro, papel: victima, edad_victima: 26, victima_mujer: 'no'}
     reglas: [r020]
     reglas_no: [r023]
-    max_preguntas: 4
+    max_preguntas: 5
 
 - id: fotos_me_acusan
   relato: Me denunciaron por compartir unas fotos de mi exnovia, ¿qué me puede pasar?
-  respuestas: {lugar_hechos: CDMX, papel: a mí me acusan, pide_dinero: 'no', edad_victima: ella tiene 22}
+  respuestas: {lugar_hechos: CDMX, papel: a mí me acusan, pide_dinero: 'no', edad_victima: ella tiene 22, victima_mujer: sí, es mujer}
   esperado:
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Ciudad de México, papel: persona_senalada}
+    datos: {lugar_hechos: Ciudad de México, papel: persona_senalada, victima_mujer: 'si'}
     max_preguntas: 4
 
 - id: fotos_hija_menor
   relato: A mi hija de 15 años le están pidiendo dinero porque tienen unas fotos íntimas de ella
-  respuestas: {lugar_hechos: Morelos, papel: a mi hija}
+  respuestas: {lugar_hechos: Morelos, papel: a mi hija, victima_mujer: sí}
   esperado:
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Morelos, papel: familiar_o_tercero, pide_dinero: si, edad_victima: 15}
+    datos: {lugar_hechos: Morelos, papel: familiar_o_tercero, pide_dinero: si, edad_victima: 15, victima_mujer: 'si'}
     reglas: [r021, r023, r024]
     max_preguntas: 2
 
@@ -92,12 +92,12 @@ casos:
 
 - id: violencia_familiar
   relato: Mi esposo me golpea y me insulta enfrente de mis hijos
-  respuestas: {lugar_hechos: Cuernavaca, Morelos, papel: a mí}
+  respuestas: {lugar_hechos: Cuernavaca, Morelos, papel: a mí, victima_mujer: sí}
   esperado:
     hechos: ['insult', 'hijos']
     tipos: [violencia_familiar]
     datos: {lugar_hechos: Morelos, papel: victima}
-    max_preguntas: 2
+    max_preguntas: 3
 
 - id: fraude_en_linea
   relato: Me estafaron en una venta por internet, pagué un celular y nunca llegó
@@ -146,13 +146,13 @@ casos:
 
 - id: acoso_del_jefe
   relato: Mi jefe me manda mensajes sexuales y me toca sin mi permiso en la oficina
-  respuestas: {lugar_hechos: Estado de México, papel: a mí}
+  respuestas: {lugar_hechos: Estado de México, papel: a mí, victima_mujer: prefiero no decirlo}
   esperado:
     hechos: ['oficina|trabajo', 'mensaje']
     tipos: [acoso_hostigamiento]
     datos: {lugar_hechos: Estado de México, papel: victima, superior_o_docente: si}
     reglas: [r018, r019]
-    max_preguntas: 2
+    max_preguntas: 3
 
 - id: amenaza_de_muerte
   relato: Un vecino me amenazó con matarme si sigo estacionando mi coche frente a su casa
@@ -184,17 +184,17 @@ casos:
 
 - id: fotos_intimas_16
   relato: Tengo 16 y un chavo con el que me mandaba fotos sin ropa las está pasando en un grupo de la escuela
-  respuestas: {lugar_hechos: Querétaro, papel: a mí, pide_dinero: no, no me pide nada}
+  respuestas: {lugar_hechos: Querétaro, papel: a mí, pide_dinero: no, no me pide nada, victima_mujer: sí}
   esperado:
     hechos: ['escuela|grupo']
     tipos: [imagenes_intimas]
-    datos: {lugar_hechos: Querétaro, papel: victima, contenido_intimo: si, edad_victima: 16}
+    datos: {lugar_hechos: Querétaro, papel: victima, contenido_intimo: si, edad_victima: 16, victima_mujer: 'si'}
     reglas: [r020, r023, r024]
-    max_preguntas: 3
+    max_preguntas: 4
 
 - id: feminicidio
   relato: Mataron a mi hermana, su pareja la golpeaba desde hace años
-  respuestas: {lugar_hechos: CDMX, papel: a mi hermana}
+  respuestas: {lugar_hechos: CDMX, papel: a mi hermana, victima_mujer: sí}
   esperado:
     hechos: ['golpe']
     tipos: [muerte]
@@ -215,73 +215,73 @@ casos:
 
 - id: abuso_nina_10
   relato: Un vecino tocó a mi hija de 10 años en sus partes íntimas
-  respuestas: {lugar_hechos: Querétaro, papel: a mi hija, relacion_partes: es un vecino, ninguna}
+  respuestas: {lugar_hechos: Querétaro, papel: a mi hija, relacion_partes: es un vecino, ninguna, victima_mujer: sí}
   esperado:
     tipos: [agresion_sexual]
-    datos: {lugar_hechos: Querétaro, edad_victima: 10}
+    datos: {lugar_hechos: Querétaro, edad_victima: 10, victima_mujer: 'si'}
     reglas: [r016]
     reglas_no: [r014, r015]
     max_preguntas: 3
 
 - id: estupro_15
   relato: Mi hija de 15 años tuvo relaciones con un hombre de 30 que la engañó diciendo que se iban a casar
-  respuestas: {lugar_hechos: CDMX, papel: a mi hija, relacion_partes: ninguna, no es familiar}
+  respuestas: {lugar_hechos: CDMX, papel: a mi hija, relacion_partes: ninguna, no es familiar, victima_mujer: sí}
   esperado:
     hechos: ['casar|engan']
     tipos: [agresion_sexual]
-    datos: {lugar_hechos: Ciudad de México, edad_victima: 15}
+    datos: {lugar_hechos: Ciudad de México, edad_victima: 15, victima_mujer: 'si'}
     reglas: [r014]
     reglas_no: [r015, r016]
     max_preguntas: 3
 
 - id: incesto
   relato: Mi tío abusa de mí desde que tengo 16, ahora tengo 19
-  respuestas: {lugar_hechos: Morelos, papel: a mí, relacion_partes: es mi tío, familiar}
+  respuestas: {lugar_hechos: Morelos, papel: a mí, relacion_partes: es mi tío, familiar, victima_mujer: sí, soy mujer}
   esperado:
     tipos: [agresion_sexual]
-    datos: {lugar_hechos: Morelos, relacion_partes: familiar}
+    datos: {lugar_hechos: Morelos, relacion_partes: familiar, victima_mujer: 'si'}
     reglas: [r015]
-    max_preguntas: 3
+    max_preguntas: 4
 
 - id: acoso_compañero
   relato: Un compañero del transporte me manda mensajes sexuales y me sigue, no es mi jefe ni nada
-  respuestas: {lugar_hechos: CDMX, papel: a mí, superior_o_docente: no}
+  respuestas: {lugar_hechos: CDMX, papel: a mí, superior_o_docente: no, victima_mujer: no, soy hombre}
   esperado:
     tipos: [acoso_hostigamiento]
-    datos: {lugar_hechos: Ciudad de México, superior_o_docente: 'no'}
+    datos: {lugar_hechos: Ciudad de México, superior_o_docente: 'no', victima_mujer: 'no'}
     reglas: [r018]
     reglas_no: [r019]
-    max_preguntas: 3
+    max_preguntas: 4
 
 - id: secuestro
   relato: Se llevaron a mi esposo y piden un rescate de 500 mil pesos
-  respuestas: {lugar_hechos: Estado de México, papel: a mi esposo, edad_victima: '45', servidor_publico: no sé}
+  respuestas: {lugar_hechos: Estado de México, papel: a mi esposo, edad_victima: '45', servidor_publico: no sé, victima_mujer: no, es hombre}
   esperado:
     hechos: ['rescate|500']
     tipos: [privacion_libertad]
-    datos: {lugar_hechos: Estado de México, pide_dinero: si}
+    datos: {lugar_hechos: Estado de México, pide_dinero: si, victima_mujer: 'no'}
     reglas: [r030]
     reglas_no: [r032, r033]
     max_preguntas: 4
 
 - id: sustraccion_menor
   relato: Mi expareja se llevó a mi hijo de 5 años y no me lo quiere regresar
-  respuestas: {lugar_hechos: Querétaro, papel: a mi hijo, pide_dinero: 'no', servidor_publico: 'no'}
+  respuestas: {lugar_hechos: Querétaro, papel: a mi hijo, pide_dinero: 'no', servidor_publico: 'no', victima_mujer: no, es niño}
   esperado:
     hechos: ['regres']
     tipos: [privacion_libertad]
-    datos: {lugar_hechos: Querétaro, edad_victima: 5}
+    datos: {lugar_hechos: Querétaro, edad_victima: 5, victima_mujer: 'no'}
     reglas: [r032]
     reglas_no: [r030, r034]
     max_preguntas: 4
 
 - id: desaparicion_forzada
   relato: Unos policías se llevaron a mi hermano en una patrulla y no sabemos dónde está
-  respuestas: {lugar_hechos: Morelos, papel: a mi hermano, pide_dinero: 'no', edad_victima: '28'}
+  respuestas: {lugar_hechos: Morelos, papel: a mi hermano, pide_dinero: 'no', edad_victima: '28', victima_mujer: no, es hombre}
   esperado:
     hechos: ['patrulla']
     tipos: [privacion_libertad]
-    datos: {lugar_hechos: Morelos, servidor_publico: si}
+    datos: {lugar_hechos: Morelos, servidor_publico: si, victima_mujer: 'no'}
     reglas: [r034]
     reglas_no: [r030, r032]
     max_preguntas: 4

@@ -36,7 +36,9 @@ Salida (qué le toca hacer al asistente):
      'tipos_quitados': [...],   # tipos de los que ya se orientó y ya no aplican: la orientación debe decirlo
      'pregunta': {'dato', 'texto'},        # el primer dato complementario: va después de la orientación
      'por_preguntar': ['¿…?'],             # todos los complementarios que faltan: el LLM que orienta no los pregunta
-     'actualizacion': {'monto': 'no sabe'}}   # ya se había orientado: solo qué cambia con estos datos
+     'actualizacion': {'monto': 'no sabe'},   # ya se había orientado: solo qué cambia con estos datos
+     'leyes_quitadas': ['lgamvlv'],         # leyes cuya condición de ley no se cumple o no se sabe: no entran
+     'avisos_ley': ['Si la víctima es mujer, …']}   # texto fijo del catálogo, va al final de la orientación
 """
 from __future__ import annotations
 
@@ -211,19 +213,14 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
         exp, salida = _preguntar(exp, complementarios[0])
         return _cerrar(registro['estado_antes'], _siguiente(estado, 'falta_dato'), exp, salida, registro)
 
-    reglas = E.reglas_aplicables(exp, catalogo, solo_confirmadas=solo_confirmadas)
-    codigos = E.codigos_del_caso(exp, reglas)
-    salida = {'tipo': 'orientar', 'reglas': [r['id'] for r in reglas],
-              'inciertas': [r['id'] for r in reglas if r['incierta']],
-              'codigos': codigos, 'articulos': E.articulos_del_caso(exp, reglas),
-              'fuera_de_corpus': exp['datos'].get('lugar_hechos') not in E.CODIGO_DE_ESTADO and not codigos,
-              'sin_reglas': not reglas, 'supuestos': list(exp.get('supuestos', [])),
-              'tipos_quitados': [t for t in exp.get('orientados', []) if t not in exp['tipos_caso']]}
+    salida, avisar = salida_orientar(exp, catalogo, solo_confirmadas)
     if ya_orientado and exp.get('por_actualizar'):
         # Ya contestó (o no) los complementarios: la orientación es una actualización corta con esos datos.
         salida['actualizacion'] = {k: exp['datos'].get(k, 'no sabe') for k in exp['por_actualizar']}
         exp = {**exp, 'por_actualizar': []}
     exp = {**exp, 'orientados': list(exp['tipos_caso'])}
+    if avisar:
+        exp = {**exp, 'leyes_avisadas': exp.get('leyes_avisadas', []) + avisar}
     if complementarios and not ya_orientado:
         exp, pregunta = _preguntar(exp, complementarios[0])
         salida.update({'pregunta': {'dato': pregunta['dato'], 'texto': pregunta['texto']},
@@ -233,6 +230,29 @@ def turno(estado: str | None, expediente: dict | None, evento: dict, catalogo: d
         return _cerrar(registro['estado_antes'], _siguiente(estado, 'faltan_complementarios'), exp, salida, registro)
     evento_interno = 'expediente_completo' if estado == LLENAR_EXPEDIENTE else 'seguimiento'
     return _cerrar(registro['estado_antes'], _siguiente(estado, evento_interno), exp, salida, registro)
+
+
+def salida_orientar(exp: dict, catalogo: dict, solo_confirmadas: bool = False) -> tuple[dict, list[str]]:
+    """Expediente completo → (salida 'orientar', leyes cuyo aviso hay que decir). La usa turno() y el benchmark de reglas
+    inciertas (para orientar con un expediente modificado sin pasar por el LLM que lo llena)."""
+    reglas = E.reglas_aplicables(exp, catalogo, solo_confirmadas=solo_confirmadas)
+    # Leyes con condición de ley que no se cumple (o que no se sabe): sus artículos no entran al contexto. Si no se sabe,
+    # el asistente lo dice con el aviso fijo del catálogo, una sola vez por expediente.
+    fuera, sin_saber = E.leyes_condicionadas(exp, catalogo)
+    citadas = E.codigos_del_caso(exp, reglas)
+    codigos = [k for k in citadas if k not in fuera]
+    conds = catalogo.get('condiciones_ley') or {}
+    tu = exp['datos'].get('papel') == 'victima'   # le pasó a la persona: «si eres mujer», no «si la víctima es mujer»
+    avisar = [k for k in citadas if k in sin_saber and conds[k].get('aviso') and k not in exp.get('leyes_avisadas', [])]
+    salida = {'tipo': 'orientar', 'reglas': [r['id'] for r in reglas],
+              'inciertas': [r['id'] for r in reglas if r['incierta']],
+              'codigos': codigos, 'articulos': E.articulos_del_caso(exp, reglas, sin=fuera),
+              'leyes_quitadas': [k for k in citadas if k in fuera],
+              'avisos_ley': [conds[k].get('aviso_tu') if tu and conds[k].get('aviso_tu') else conds[k]['aviso'] for k in avisar],
+              'fuera_de_corpus': exp['datos'].get('lugar_hechos') not in E.CODIGO_DE_ESTADO and not codigos,
+              'sin_reglas': not reglas, 'supuestos': list(exp.get('supuestos', [])),
+              'tipos_quitados': [t for t in exp.get('orientados', []) if t not in exp['tipos_caso']]}
+    return salida, avisar
 
 
 def _texto_pregunta(exp: dict, d: dict) -> str:

@@ -119,7 +119,10 @@
     else if (s.tipo === 'orientar' && g('cat-modo').value === 'ninguno')
       decir(`Tengo lo necesario para orientarte: ${s.reglas.length} regla(s) del catálogo y ${Object.values(s.articulos).flat().length} artículo(s). Míralos en el panel.`);
     // Sin orientación del LLM, el dato complementario se escribe aquí; con ella, el servidor lo manda al final.
-    if (s.tipo === 'orientar' && s.pregunta && (s.sin_reglas || g('cat-modo').value === 'ninguno') && !buscador) decir(s.pregunta.texto);
+    if (s.tipo === 'orientar' && (s.sin_reglas || g('cat-modo').value === 'ninguno') && !buscador) {
+      (s.avisos_ley || []).forEach(decir);
+      if (s.pregunta) decir(s.pregunta.texto);
+    }
   }
 
   function enviar(){
@@ -155,6 +158,7 @@
       h += `<h3>Artículos por ley (${Object.values(s.articulos).flat().length})</h3>` + (Object.keys(s.articulos).length ? Object.entries(s.articulos).map(([k, arts]) =>
           `<div><b>${e(C.nombres[k] || k)}</b> ${arts.map(a => `<span class="cat-chip" onclick="catLeer('${e(k)}','${e(a)}')">${e(a)}</span>`).join('')}</div>`).join('')
           : '<span class="muted">ninguno</span>');
+      if ((s.leyes_quitadas || []).length) h += `<div class="warn">No entran (condición de ley no cumplida o desconocida): ${e(s.leyes_quitadas.map(k => C.nombres[k] || k).join(', '))}${(s.avisos_ley || []).length ? ' · se dice el aviso fijo' : ''}</div>`;
       const o = S.orientacion;
       if (o) {
         const entra = o.contexto.filter(a => a.entra).length, emb = o.modo_contexto === 'embedding';

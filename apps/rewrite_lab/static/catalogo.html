@@ -189,7 +189,11 @@ function selEstado(){
 function datosUsados(tipo){
   const u = new Set();
   (S.cat.reglas||[]).filter(r => r.tipo_caso === tipo && r.estado !== 'descartada')
-    .forEach(r => (r.cuando||[]).forEach(c => { const m = String(c).trim().match(/^(?:NO\s+)?(\w+)/); if (m) u.add(m[1]); }));
+    .forEach(r => {
+      const conds = (r.cuando||[]).concat(...Object.entries(r.articulos||{})       // y las condiciones de ley de las leyes que cita
+        .filter(([ley, arts]) => (arts||[]).length).map(([ley]) => ((S.cat.condiciones_ley||{})[ley]||{}).cuando||[]));
+      conds.forEach(c => { const m = String(c).trim().match(/^(?:NO\s+)?(\w+)/); if (m) u.add(m[1]); });
+    });
   return u;
 }
 // Valores de referencia (tabla valores_referencia): la UMA y lo que se calcula con ella. Un cambio es una fila nueva;

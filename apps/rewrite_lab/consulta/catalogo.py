@@ -61,11 +61,12 @@ def cargar(path: Path = YAML_INICIAL) -> tuple[dict, str]:
     doc = yaml.safe_load(texto)
     for parte in PARTES:
         doc[parte] = [validar_entrada(parte, e, doc) for e in doc.get(parte, [])]
+    validar_condiciones_ley(doc)
     return doc, hashlib.md5(texto.encode()).hexdigest()
 
 
 # Orden de las llaves al escribir el YAML: la base (jsonb) no guarda el orden y el YAML se lee mejor siempre igual.
-ORDEN = {None: ['version', 'nota', 'generales', 'datos', 'tipos_caso', 'reglas', 'otro'],
+ORDEN = {None: ['version', 'nota', 'generales', 'condiciones_ley', 'datos', 'tipos_caso', 'reglas', 'otro'],
          'datos': ['id', 'materia', 'tipo', 'opciones', 'obligatorio', 'preguntar', 'pregunta', 'pregunta_tu', 'para_que',
                    'estado', 'nota'],
          'tipos_caso': ['id', 'materia', 'titulo', 'descripcion', 'datos', 'estado', 'nota'],
@@ -85,6 +86,27 @@ def a_yaml(doc: dict) -> str:
     doc['reglas'] = [{**r, 'articulos': _ordenar(r['articulos'], ORDEN['articulos'])}
                      if isinstance(r, dict) and isinstance(r.get('articulos'), dict) else r for r in doc.get('reglas', [])]
     return yaml.safe_dump(doc, allow_unicode=True, sort_keys=False, width=120)
+
+
+def validar_condiciones_ley(doc: dict) -> dict:
+    """condiciones_ley: {ley: {cuando: [condición, …], aviso: texto, aviso_tu: texto si la víctima es quien escribe}}. Una ley cuyos artículos valen solo si se cumple
+    la condición (expediente.leyes_condicionadas). Lanza ValueError con el motivo."""
+    conds = doc.get('condiciones_ley') or {}
+    if not isinstance(conds, dict):
+        raise ValueError('condiciones_ley debe ser {ley: {cuando: [...], aviso: ...}}.')
+    ids_datos = {d['id'] for d in doc.get('datos', []) if isinstance(d, dict)}
+    for ley, c in conds.items():
+        if ley not in CODIGOS:
+            raise ValueError(f'condiciones_ley: ley que no existe: {ley}')
+        if not isinstance(c, dict) or not c.get('cuando'):
+            raise ValueError(f'condiciones_ley.{ley}: falta «cuando».')
+        for x in c['cuando']:
+            m = E._COND.match(str(x))
+            if not m:
+                raise ValueError(f'condiciones_ley.{ley}: condición que no entiendo: «{x}»')
+            if (m.group('id') or m.group('solo')) not in ids_datos:
+                raise ValueError(f'condiciones_ley.{ley}: usa un dato que no existe: «{x}»')
+    return conds
 
 
 def validar_entrada(parte: str, e: dict, doc: dict) -> dict:
@@ -194,6 +216,7 @@ class Catalogo:
             if repetidos:
                 raise ValueError(f'ids repetidos en {parte}: {", ".join(map(str, repetidos))}')
             doc[parte] = [validar_entrada(parte, e, doc) for e in doc[parte]]
+        validar_condiciones_ley(doc)
         with self.connect() as c, c.cursor() as cur:
             cur.execute("SELECT doc FROM consulta_catalogo WHERE id = 1 FOR UPDATE")
             if base_md5 and md5_de(cur.fetchone()[0]) != base_md5:

@@ -1828,9 +1828,12 @@ def _consulta_turno(body: dict):
 
 
 def _consulta_despues(salida: dict) -> str:
-    """Lo que va después de la orientación: el primer dato complementario (texto del catálogo), si falta alguno."""
-    p = salida.get('pregunta') if salida.get('tipo') == 'orientar' else None
-    return f'\n\n**{p["texto"]}**' if p else ''
+    """Lo que va después de la orientación (textos fijos del catálogo, no del LLM): el aviso de cada ley que no entró
+    porque no se sabe su condición (condiciones_ley) y el primer dato complementario, si falta alguno."""
+    if salida.get('tipo') != 'orientar':
+        return ''
+    p = salida.get('pregunta')
+    return ''.join(f'\n\n{a}' for a in salida.get('avisos_ley') or []) + (f'\n\n**{p["texto"]}**' if p else '')
 
 
 def _consulta_preparar(body: dict, doc: dict, salida: dict, exp: dict, seguimiento: str | None = None):

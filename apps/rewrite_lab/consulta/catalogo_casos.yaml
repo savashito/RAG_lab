@@ -6,6 +6,14 @@ nota: 'Borrador generado por Claude a partir del corpus. estado: borrador/sugeri
 generales:
 - lugar_hechos
 - papel
+condiciones_ley:
+  lgamvlv:
+    cuando:
+    - victima_mujer = si
+    aviso: Si la víctima es mujer, también la protege la Ley General de Acceso de las Mujeres a una Vida Libre de Violencias.
+      Dime si es el caso y te explico qué protecciones le da.
+    aviso_tu: Si eres mujer, también te protege la Ley General de Acceso de las Mujeres a una Vida Libre de Violencias. Dime
+      si es tu caso y te explico qué protecciones te da.
 datos:
 - id: lugar_hechos
   materia: penal
